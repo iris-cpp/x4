@@ -1,4 +1,20 @@
-# Spirit [![Build Status](https://github.com/boostorg/spirit/actions/workflows/ci.yml/badge.svg)](https://github.com/boostorg/spirit/actions/workflows/ci.yml)
+# Spirit.X4 is currently under heavy development. It is considered NOT USABLE in applications yet.
+
+**This library is official, developed under organization-wide consensus, but not part of the `boostorg/boost` superproject (yet).**
+
+**We will not accept contributions from outside collaborators until the X3 -> X4 transition is complete.**
+
+For background information, see:
+
+- <https://lists.boost.org/archives/list/boost@lists.boost.org/thread/K3EQLEQJHEUBROB6ODUKTZHFP2FDUS2E/?sort=date>
+- <https://github.com/boostorg/spirit/issues/795>
+- <https://github.com/boostorg/spirit/pull/807>
+
+
+# ... Outdated README follows...
+
+
+# Spirit.X4 [![Build Status](https://github.com/boostorg/spirit/actions/workflows/ci.yml/badge.svg)](https://github.com/boostorg/spirit/actions/workflows/ci.yml)
 
 Spirit is a set of C++ libraries for parsing and output generation implemented as
 Domain Specific Embedded Languages (DSEL) using Expression templates and Template
@@ -6,6 +22,10 @@ Meta-Programming. The Spirit libraries enable a target grammar to be written
 exclusively in C++. Inline grammar specifications can mix freely with other
 C++ code and, thanks to the generative power of C++ templates, are immediately
 executable.
+
+## Spirit.X4 (4th generation)
+
+Stay tuned!
 
 ## Spirit.X3 (3rd generation)
 
