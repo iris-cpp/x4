@@ -17,58 +17,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       spirit_component: ${{ steps.filter.outputs.changes }}
-      karma: ${{ steps.filter.outputs.karma }}
-      lex: ${{ steps.filter.outputs.lex }}
-      qi: ${{ steps.filter.outputs.qi }}
-      support: ${{ steps.filter.outputs.support }}
-      repository: ${{ steps.filter.outputs.repository }}
       x3: ${{ steps.filter.outputs.x3 }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          # Note: references to "support" directory in X3 can be completely
-          # eliminated as soon as those components are moved to X3's
-          # self-contained location
           filters: |
-            karma:
-              - '.github/workflows/*.yml'
-              - 'include/boost/spirit/home/support/**/*'
-              - 'include/boost/spirit/home/support.hpp'
-              - 'include/boost/spirit/home/karma/**/*'
-              - 'include/boost/spirit/home/karma.hpp'
-              - 'test/karma/**/*'
-            lex:
-              - '.github/workflows/*.yml'
-              - 'include/boost/spirit/home/support/**/*'
-              - 'include/boost/spirit/home/support.hpp'
-              - 'include/boost/spirit/home/lex/**/*'
-              - 'include/boost/spirit/home/lex.hpp'
-              - 'test/lex/**/*'
-            qi:
-              - '.github/workflows/*.yml'
-              - 'include/boost/spirit/home/support/**/*'
-              - 'include/boost/spirit/home/support.hpp'
-              - 'include/boost/spirit/home/qi/**/*'
-              - 'include/boost/spirit/home/qi.hpp'
-              - 'test/qi/**/*'
-            support:
-              - '.github/workflows/*.yml'
-              - 'include/boost/spirit/home/support/**/*'
-              - 'include/boost/spirit/home/support.hpp'
-              - 'test/support/**/*'
-            repository:
-              - '.github/workflows/*.yml'
-              - 'include/boost/spirit/repository/**/*'
-              - 'repository/**/*'
             x3:
               - '.github/workflows/*.yml'
               - 'include/boost/spirit/home/x3/**/*'
               - 'include/boost/spirit/home/x3.hpp'
               - 'test/x3/**/*'
-              - 'include/boost/spirit/home/support/char_set/**/*'
-              - 'include/boost/spirit/home/support/char_encoding/**/*'
 
   build:
     name: "[${{ matrix.cpp_version.name }}] ${{ matrix.spirit_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
@@ -93,8 +53,6 @@ jobs:
           - name: Release
             lowercase: release
         cpp_version:
-          - name: C++11
-            number: 11
           - name: C++23
             number: 23
             msvc_std: /std:c++23preview
@@ -121,10 +79,6 @@ jobs:
           # Blacklist all invalid combinations of environments
           - os:
               name: windows
-            cpp_version:
-              number: 11 # /std:c++11 is no longer supported
-          - os:
-              name: windows
             compiler:
               name: GCC
           - os:
@@ -135,41 +89,6 @@ jobs:
               name: ubuntu
             compiler:
               name: MSVC
-
-          # Blacklist incompatible toolchains
-          - spirit_component: karma
-            cpp_version:
-              number: 23
-          - spirit_component: karma
-            cpp_version:
-              number: 26
-          - spirit_component: lex
-            cpp_version:
-              number: 23
-          - spirit_component: lex
-            cpp_version:
-              number: 26
-          - spirit_component: qi
-            cpp_version:
-              number: 23
-          - spirit_component: qi
-            cpp_version:
-              number: 26
-          - spirit_component: support
-            cpp_version:
-              number: 23
-          - spirit_component: support
-            cpp_version:
-              number: 26
-          - spirit_component: repository
-            cpp_version:
-              number: 23
-          - spirit_component: repository
-            cpp_version:
-              number: 26
-          - spirit_component: x3
-            cpp_version:
-              number: 11
 
     steps:
       - uses: actions/checkout@v5
