@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2017 wanghan02
-    Copyright (c) 2024 Nana Sakisaka
+    Copyright (c) 2024-2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,55 +14,76 @@
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/operator/detail/alternative.hpp>
 
-#include <boost/variant/variant_fwd.hpp>
+#include <boost/variant/variant.hpp> // TODO: remove this
 
-namespace boost { namespace spirit { namespace x3
+#include <iterator>
+#include <type_traits>
+#include <utility>
+
+namespace boost::spirit::x3
 {
     template <typename Left, typename Right>
     struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
     {
-        typedef binary_parser<Left, Right, alternative<Left, Right>> base_type;
+        using base_type = binary_parser<Left, Right, alternative<Left, Right>>;
 
-        constexpr alternative(Left const& left, Right const& right)
-            : base_type(left, right) {}
+        template <typename LeftT, typename RightT>
+            requires std::is_constructible_v<Left, LeftT> && std::is_constructible_v<Right, RightT>
+        constexpr alternative(LeftT&& left, RightT&& right)
+            noexcept(std::is_nothrow_constructible_v<Left, LeftT> && std::is_nothrow_constructible_v<Right, RightT>)
+            : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
+        {}
 
-        template <typename Iterator, typename Context, typename RContext>
-        bool parse(
-            Iterator& first, Iterator const& last
-          , Context const& context, RContext& rcontext, unused_type) const
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, unused_type) const
+            noexcept(
+                is_nothrow_parsable_v<Left, It, Se, Context, RContext, unused_type> &&
+                is_nothrow_parsable_v<Right, It, Se, Context, RContext, unused_type>
+            )
         {
             return this->left.parse(first, last, context, rcontext, unused)
-                || (!has_expectation_failure(context)
+                || (!x3::has_expectation_failure(context)
                     && this->right.parse(first, last, context, rcontext, unused));
         }
 
-        template <typename Iterator, typename Context
-          , typename RContext, typename Attribute>
-        bool parse(
-            Iterator& first, Iterator const& last
-          , Context const& context, RContext& rcontext, Attribute& attr) const
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+            noexcept(
+                noexcept(detail::parse_alternative(this->left, first, last, context, rcontext, attr)) &&
+                noexcept(detail::parse_alternative(this->right, first, last, context, rcontext, attr))
+            )
         {
             return detail::parse_alternative(this->left, first, last, context, rcontext, attr)
-                || (!has_expectation_failure(context)
+                || (!x3::has_expectation_failure(context)
                     && detail::parse_alternative(this->right, first, last, context, rcontext, attr));
         }
     };
 
-    template <typename Left, typename Right>
-    constexpr alternative<
-        typename extension::as_parser<Left>::value_type
-      , typename extension::as_parser<Right>::value_type>
-    operator|(Left const& left, Right const& right)
+    template <X3Subject Left, X3Subject Right>
+    [[nodiscard]] constexpr alternative<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
+    operator|(Left&& left, Right&& right)
+        noexcept(
+            is_parser_nothrow_castable_v<Left> &&
+            is_parser_nothrow_castable_v<Right> &&
+            std::is_nothrow_constructible_v<
+                alternative<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
+                as_parser_t<Left>,
+                as_parser_t<Right>
+            >
+        )
     {
-        return { as_parser(left), as_parser(right) };
+        return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
     }
-}}}
+} // boost::spirit::x3
 
-namespace boost { namespace spirit { namespace x3 { namespace traits
+namespace boost::spirit::x3::traits
 {
     template <typename Left, typename Right, typename Context>
     struct attribute_of<x3::alternative<Left, Right>, Context>
-        : x3::detail::attribute_of_binary<boost::variant, x3::alternative, Left, Right, Context> {};
-}}}}
+        : x3::detail::attribute_of_binary<boost::variant, x3::alternative, Left, Right, Context>
+    {};
+} // boost::spirit::x3::traits
 
 #endif
