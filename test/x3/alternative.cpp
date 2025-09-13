@@ -1,6 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
     Copyright (c) 2001-2011 Hartmut Kaiser
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -37,25 +38,25 @@ BOOST_FUSION_ADAPT_STRUCT(di_include,
 struct undefined {};
 
 
-struct stationary : boost::noncopyable
+struct stationary
 {
     explicit stationary(int i) : val{i} {}
+    stationary(stationary const&) = delete;
     stationary& operator=(int i) { val = i; return *this; }
 
     int val;
 };
 
 
-int
-main()
+int main()
 {
     using spirit_test::test;
     using spirit_test::test_attr;
 
+    using boost::spirit::x3::standard::char_;
+    using boost::spirit::x3::standard::lit;
     using boost::spirit::x3::attr;
-    using boost::spirit::x3::char_;
     using boost::spirit::x3::int_;
-    using boost::spirit::x3::lit;
     using boost::spirit::x3::unused_type;
     using boost::spirit::x3::unused;
     using boost::spirit::x3::omit;
@@ -75,7 +76,7 @@ main()
     }
 
     {
-        typedef boost::variant<undefined, int, char> attr_type;
+        using attr_type = boost::variant<undefined, int, char>;
         attr_type v;
 
         BOOST_TEST((test_attr("12345", int_ | char_, v)));
@@ -137,24 +138,22 @@ main()
         // (compile check only)
 
         using boost::spirit::x3::rule;
-        using boost::spirit::x3::eps;
         using boost::spirit::x3::_attr;
         using boost::spirit::x3::_val;
 
         rule<class r1, wchar_t> r1;
         rule<class r2, wchar_t> r2;
         rule<class r3, wchar_t> r3;
-        
+
         auto f = [&](auto& ctx){ _val(ctx) = _attr(ctx); };
 
-        r3  = ((eps >> r1))[f];
-        r3  = ((r1) | r2)[f];
-        r3 = ((eps >> r1) | r2);
+        (void)(r3 = ((eps >> r1))[f]);
+        (void)(r3 = ((r1) | r2)[f]);
+        (void)(r3 = ((eps >> r1) | r2));
     }
 
     {
         std::string s;
-        using boost::spirit::x3::eps;
 
         // test having a variant<container, ...>
         BOOST_TEST( (test_attr("a,b", (char_ % ',') | eps, s )) );
@@ -162,8 +161,6 @@ main()
     }
 
     {
-        using boost::spirit::x3::eps;
-
         // testing a sequence taking a container as attribute
         std::string s;
         BOOST_TEST( (test_attr("abc,a,b,c",
@@ -189,10 +186,9 @@ main()
 
     {
         //compile test only (bug_march_10_2011_8_35_am)
-        typedef boost::variant<double, std::string> value_type;
+        using value_type = boost::variant<double, std::string>;
 
         using boost::spirit::x3::rule;
-        using boost::spirit::x3::eps;
 
         rule<class r1, value_type> r1;
         auto r1_ = r1 = r1 | eps; // left recursive!
@@ -202,7 +198,7 @@ main()
 
     {
         using boost::spirit::x3::rule;
-        typedef boost::variant<di_ignore, di_include> d_line;
+        using d_line = boost::variant<di_ignore, di_include>;
 
         rule<class ignore, di_ignore> ignore;
         rule<class include, di_include> include;
@@ -227,9 +223,9 @@ main()
 
     // alternative over single element sequences as part of another sequence
     {
-        auto  key1 = lit("long") >> attr(long());
-        auto  key2 = lit("char") >> attr(char());
-        auto  keys = key1 | key2;
+        auto key1 = lit("long") >> attr(long());
+        auto key2 = lit("char") >> attr(char());
+        auto keys = key1 | key2;
         auto pair = keys >> lit("=") >> +char_;
 
         boost::fusion::deque<boost::variant<long, char>, std::string> attr_;
@@ -239,7 +235,8 @@ main()
         BOOST_TEST(boost::get<char>(&boost::fusion::front(attr_)) == nullptr);
     }
 
-    { // ensure no unneeded synthesization, copying and moving occurred
+    {
+        // ensure no unneeded synthesization, copying and moving occurred
         auto p = '{' >> int_ >> '}';
 
         stationary st { 0 };
@@ -247,7 +244,8 @@ main()
         BOOST_TEST_EQ(st.val, 42);
     }
 
-    { // attributeless parsers must not insert values
+    {
+        // attributeless parsers must not insert values
         std::vector<int> v;
         BOOST_TEST(test_attr("1 2 3 - 5 - - 7 -", (int_ | '-') % ' ', v));
         BOOST_TEST_EQ(v.size(), 5)
@@ -259,22 +257,24 @@ main()
             ;
     }
 
-    { // regressing test for #603
-        using boost::spirit::x3::attr;
+    {
+        // regressing test for #603
         struct X {};
         std::vector<boost::variant<std::string, int, X>> v;
         BOOST_TEST(test_attr("xx42x9y", *(int_ | +char_('x') | 'y' >> attr(X{})), v));
         BOOST_TEST_EQ(v.size(), 5);
     }
 
-    { // sequence parser in alternative into container
+    {
+        // sequence parser in alternative into container
         std::string s;
         BOOST_TEST(test_attr("abcbbcd",
             *(char_('a') >> *(*char_('b') >> char_('c')) | char_('d')), s));
         BOOST_TEST_EQ(s, "abcbbcd");
     }
 
-    { // conversion between alternatives
+    {
+        // conversion between alternatives
         struct X {};
         struct Y {};
         struct Z {};
