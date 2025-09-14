@@ -67,7 +67,7 @@ jobs:
           - name: Clang
             toolset: clang
             version: 21
-            cxxflags: -fcolor-diagnostics -ftemplate-backtrace-limit=0
+            cxxflags: -fcolor-diagnostics
           - name: MSVC
             toolset: msvc
             version: 2022
