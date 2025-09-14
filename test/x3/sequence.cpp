@@ -23,22 +23,25 @@
 
 int main()
 {
-    using boost::spirit::x3::unused_type;
+    namespace x3 = boost::spirit::x3;
+    namespace traits = x3::traits;
 
-    using boost::spirit::x3::standard::char_;
-    using boost::spirit::x3::standard::space;
-    using boost::spirit::x3::standard::string;
-    using boost::spirit::x3::standard::lit;
-    using boost::spirit::x3::standard::alnum;
-    using boost::spirit::x3::attr;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::unused;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::float_;
-    using boost::spirit::x3::no_case;
-    using boost::spirit::x3::rule;
+    using x3::unused_type;
 
-    using boost::spirit::x3::traits::attribute_of_t;
+    using x3::standard::char_;
+    using x3::standard::space;
+    using x3::standard::string;
+    using x3::standard::lit;
+    using x3::standard::alnum;
+    using x3::attr;
+    using x3::omit;
+    using x3::unused;
+    using x3::int_;
+    using x3::float_;
+    using x3::no_case;
+    using x3::rule;
+
+    using traits::attribute_of_t;
 
     using boost::fusion::vector;
     using boost::fusion::deque;
@@ -492,9 +495,43 @@ int main()
 #endif
     }
 
-    { // test move only types
+    {
+        // test move only types
         using boost::spirit::x3::eps;
         std::vector<move_only> v;
+
+        using T = std::vector<move_only>;
+        static_assert(requires(T& c) {
+            typename T::value_type;
+        });
+        static_assert(requires(T& c) {
+            traits::begin(c);
+        });
+        static_assert(requires(T& c) {
+            requires std::forward_iterator<decltype(traits::begin(c))>;
+        });
+        static_assert(requires(T& c) {
+            traits::end(c);
+        });
+        static_assert(requires(T& c) {
+            requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
+        });
+        static_assert(requires(T& c) {
+            traits::is_empty(c);
+        });
+        static_assert(requires(T& c) {
+            traits::push_back(c, std::declval<typename T::value_type>());
+        });
+        static_assert(requires(T& c) {
+            traits::append(
+                c,
+                std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
+                std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
+            );
+        });
+
+        static_assert(traits::is_container_v<std::vector<move_only>>);
+        // static_assert(traits::CategorizedAttr<std::vector<move_only>, traits::container_attribute>);
         BOOST_TEST(test_attr("ssszs", *synth_move_only >> 'z' >> synth_move_only, v));
         BOOST_TEST_EQ(v.size(), 4);
     }

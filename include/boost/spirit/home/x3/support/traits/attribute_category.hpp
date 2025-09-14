@@ -5,7 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM)
+#ifndef BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 #define BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 
 #include <boost/spirit/home/x3/support/traits/is_variant.hpp>
@@ -121,10 +121,7 @@ namespace boost::spirit::x3::traits
     };
 
     template <typename T>
-        requires
-            (!traits::is_range_v<std::remove_cvref_t<T>>) &&
-            traits::is_container_v<std::remove_cvref_t<T>> &&
-            (!fusion::traits::is_sequence<std::remove_cvref_t<T>>::value)
+        requires traits::is_container_v<std::remove_cvref_t<T>>
     struct attribute_category<T>
     {
         using type = container_attribute;

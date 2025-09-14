@@ -99,8 +99,8 @@ namespace boost::spirit::x3
 
         std::optional<x3::expectation_failure<It>> expect_failure;
         auto failure_ctx = x3::make_context<expectation_failure_tag>(expect_failure);
-        using Context = decltype(failure_ctx);
 
+        // using Context = decltype(failure_ctx);
         // static_assert(Parsable<as_parser_plain_t<Parser>, It, Se, Context, unused_type, Attribute>);
 
         It first = std::ranges::begin(range);
@@ -126,8 +126,8 @@ namespace boost::spirit::x3
 
         res.expect_failure.reset();
         auto failure_ctx = x3::make_context<expectation_failure_tag>(res.expect_failure);
-        using Context = decltype(failure_ctx);
 
+        // using Context = decltype(failure_ctx);
         // static_assert(Parsable<as_parser_plain_t<Parser>, It, Se, Context, unused_type, Attribute>);
 
         It first = std::ranges::begin(range);
@@ -197,7 +197,8 @@ namespace boost::spirit::x3
     )
     {
         auto skipper_ctx = x3::make_context<skipper_tag>(as_parser(std::forward<Skipper>(s)));
-        using Context = decltype(skipper_ctx);
+
+        // using Context = decltype(skipper_ctx);
         // static_assert(Parsable<as_parser_plain_t<Parser>, It, Se, Context, unused_type, Attribute>);
 
         bool const ok = as_parser(std::forward<Parser>(p)).parse(first, last, skipper_ctx, unused, attr);
@@ -289,7 +290,7 @@ namespace boost::spirit::x3
         std::optional<x3::expectation_failure<It>> expect_failure;
         auto ctx = x3::make_context<expectation_failure_tag>(expect_failure, skipper_ctx);
 
-        using Context = decltype(ctx);
+        // using Context = decltype(ctx);
         // static_assert(Parsable<as_parser_plain_t<Parser>, It, Se, Context, unused_type, Attribute>);
 
         It first = std::ranges::begin(range);
@@ -331,7 +332,7 @@ namespace boost::spirit::x3
         res.expect_failure.reset();
         auto ctx = x3::make_context<expectation_failure_tag>(res.expect_failure, skipper_ctx);
 
-        using Context = decltype(ctx);
+        // using Context = decltype(ctx);
         // static_assert(Parsable<as_parser_plain_t<Parser>, It, Se, Context, unused_type, Attribute>);
 
         It first = std::ranges::begin(range);

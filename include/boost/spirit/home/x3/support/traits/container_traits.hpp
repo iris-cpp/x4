@@ -6,12 +6,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM)
+#ifndef BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM
 #define BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM
 
-#include <boost/fusion/support/category_of.hpp>
 #include <boost/spirit/home/x3/support/unused.hpp>
+#include <boost/fusion/support/category_of.hpp>
 #include <boost/fusion/include/deque.hpp>
+#include <boost/fusion/include/is_sequence.hpp>
 
 #include <ranges>
 #include <iterator>
@@ -366,17 +367,23 @@ namespace boost::spirit::x3::traits
         static_assert(!std::is_const_v<T>);
     };
 
-    // TODO: fully replace this trait using std::ranges
     template <typename T>
         requires
+            // required; fusion pollutes ADL on `size`, which is called by `std::ranges::empty` on Clang 22
+            (!fusion::traits::is_sequence<std::remove_cvref_t<T>>::value) &&
             requires(T& c) {
                 typename T::value_type; // required
                 traits::begin(c);
                 requires std::forward_iterator<decltype(traits::begin(c))>;
                 traits::end(c);
                 requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
+                traits::is_empty(c);
                 traits::push_back(c, std::declval<typename T::value_type>());
-                traits::append(c, std::declval<decltype(traits::begin(c))>(), std::declval<decltype(traits::end(c))>());
+                traits::append(
+                    c,
+                    std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
+                    std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
+                );
             }
     struct is_container<T> : std::true_type
     {};
