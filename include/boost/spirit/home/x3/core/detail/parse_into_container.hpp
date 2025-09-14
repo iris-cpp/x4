@@ -101,7 +101,8 @@ namespace boost::spirit::x3::detail
             Context const& context, RContext& rcontext, Attribute& attr
         ) // never noexcept (requires container insertion)
         {
-            // synthesized attribute needs to be value initialized
+            static_assert(!std::same_as<std::remove_const_t<Attribute>, unused_container_type>);
+
             using value_type = traits::container_value_t<Attribute>;
             value_type val; // default-initialize
 
@@ -114,6 +115,18 @@ namespace boost::spirit::x3::detail
             // push the parsed value into our attribute
             traits::push_back(attr, std::move(val));
             return true;
+        }
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+            requires (!parser_accepts_container_v<Parser, unused_container_type, Context>)
+        [[nodiscard]] static constexpr bool
+        call_synthesize(
+            Parser const& parser, It& first, Se const& last,
+            Context const& context, RContext& rcontext, unused_container_type const&
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_type>)
+        {
+            static_assert(Parsable<Parser, It, Se, Context, RContext, unused_type>);
+            return parser.parse(first, last, context, rcontext, unused);
         }
 
         // Parser has attribute (synthesize; Attribute is a container)
@@ -199,10 +212,10 @@ namespace boost::spirit::x3::detail
         call(
             Parser const& parser, It& first, Se const& last,
             Context const& context, RContext& rcontext, Attribute& /* attr */
-        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_type>)
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_container_type>)
         {
-            static_assert(Parsable<Parser, It, Se, Context, RContext, unused_type>);
-            return parser.parse(first, last, context, rcontext, unused);
+            // static_assert(Parsable<Parser, It, Se, Context, RContext, unused_container_type>);
+            return parser.parse(first, last, context, rcontext, unused_container);
         }
     };
 
@@ -244,15 +257,15 @@ namespace boost::spirit::x3::detail
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se>
-            requires pass_attibute_as_is<It, Se, unused_type>
+            requires pass_attibute_as_is<It, Se, unused_container_type>
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, unused_type
-        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_type>)
+            Context const& context, RContext& rcontext, unused_container_type
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_container_type>)
         {
-            static_assert(Parsable<Parser, It, Se, Context, RContext, unused_type>);
-            return parser.parse(first, last, context, rcontext, unused);
+            static_assert(Parsable<Parser, It, Se, Context, RContext, unused_container_type>);
+            return parser.parse(first, last, context, rcontext, unused_container);
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
@@ -263,7 +276,11 @@ namespace boost::spirit::x3::detail
             Context const& context, RContext& rcontext, Attribute& attr
         ) // never noexcept (requires container insertion)
         {
+            static_assert(!std::is_same_v<std::remove_const_t<Attribute>, unused_type>);
+            static_assert(!std::is_same_v<std::remove_const_t<Attribute>, unused_container_type>);
+
             static_assert(Parsable<Parser, It, Se, Context, RContext, Attribute>);
+
             if (traits::is_empty(attr))
             {
                 return parser.parse(first, last, context, rcontext, attr);
@@ -295,6 +312,11 @@ namespace boost::spirit::x3::detail
         parser, first, last, context, rcontext, attr
     )))
     {
+        static_assert(
+            !std::same_as<Attribute, unused_type>,
+            "`unused_type` should not be passed to `parse_into_container`. Use `x3::assume_container(attr)`"
+        );
+
         return parse_into_container_impl<Parser, Context, RContext>::call(
             parser, first, last, context, rcontext, attr
         );

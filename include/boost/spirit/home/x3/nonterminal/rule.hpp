@@ -46,9 +46,9 @@ namespace boost::spirit::x3
             , name(name)
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute_>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute_>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, unused_type, Attribute_& attr) const
+        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute_& attr) const
             // never noexcept; requires very complex implementation details
         {
             return detail::rule_parser<attribute_type, ID, SkipDefinitionInjection>
@@ -69,7 +69,7 @@ namespace boost::spirit::x3
         using id = ID;
         using attribute_type = Attribute;
         static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<Attribute>, unused_type>;
-        static constexpr bool handles_container = traits::is_container<Attribute>::value;
+        static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<Attribute>>;
         static constexpr bool force_attribute = ForceAttribute;
 
 #if !defined(BOOST_SPIRIT_X3_NO_RTTI)
@@ -151,22 +151,22 @@ namespace boost::spirit::x3
             return { as_parser(std::forward<RHS>(rhs)), name };
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Exposed>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Exposed>
             requires (!std::is_same_v<std::remove_const_t<Exposed>, unused_type>)
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, unused_type, Exposed& exposed_attr) const
+        parse(It& first, Se const& last, Context const& context, RContext const&, Exposed& exposed_attr) const
             // never noexcept; requires very complex implementation details
         {
             static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
 
             static_assert(
-                traits::Transformable<Exposed, Attribute, detail::parser_id>,
+                traits::Transformable<Attribute, Exposed>,
                 "Attribute type mismatch; the rule's attribute is not assignable to "
                 "the exposed attribute, and no eligible specialization of "
                 "`x3::traits::transform_attribute` was found."
             );
 
-            using transform = traits::transform_attribute<Exposed, Attribute, detail::parser_id>;
+            using transform = traits::transform_attribute<Attribute, Exposed>;
             using transformed_type = typename transform::type;
             transformed_type transformed_attr = transform::pre(exposed_attr);
 
@@ -178,9 +178,9 @@ namespace boost::spirit::x3
             return false;
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, unused_type, unused_type) const
+        parse(It& first, Se const& last, Context const& context, RContext const&, unused_type const&) const
             // never noexcept; requires very complex implementation details
         {
             // make sure we pass exactly the rule attribute type

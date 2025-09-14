@@ -17,41 +17,28 @@
 #include <iterator>
 #include <vector>
 #include <string>
-#include <algorithm>
 #include <type_traits>
+#include <utility>
 
 namespace boost::spirit::x3::traits
 {
+    // Customization point
     template <typename T>
-    struct is_container : std::false_type {};
-
-    // TODO: fully replace this trait using std::ranges
-    template <typename T>
-        requires
-            //std::ranges::range<T> && // TODO: this breaks `fusion::vector<>`; test case in omit.cpp.
-            requires {
-                typename T::value_type;
-                typename T::iterator;
-                typename T::size_type;
-                typename T::reference;
-            }
-    struct is_container<T> : std::true_type {};
-
-    template <typename T>
-    constexpr bool is_container_v = is_container<T>::value;
-
-    template <typename T>
-    concept ContainerAttr = is_container_v<std::remove_cvref_t<T>>;
-
-
-    template <typename T>
-    struct is_associative : std::false_type {};
+    struct is_associative : std::false_type
+    {
+        static_assert(!std::is_reference_v<T>);
+        static_assert(!std::is_const_v<T>);
+    };
 
     template <typename T>
         requires requires {
             typename T::key_type;
         }
-    struct is_associative<T> : std::true_type {};
+    struct is_associative<T> : std::true_type
+    {
+        static_assert(!std::is_reference_v<T>);
+        static_assert(!std::is_const_v<T>);
+    };
 
     template <typename T>
     constexpr bool is_associative_v = is_associative<T>::value;
@@ -60,22 +47,27 @@ namespace boost::spirit::x3::traits
     namespace detail
     {
         template <typename T>
-        struct remove_value_const : std::type_identity<T> {};
+        struct remove_value_const
+        {
+            using type = T;
+        };
 
         template <typename T>
-        struct remove_value_const<T const> : remove_value_const<T> {};
+        struct remove_value_const<T const> : remove_value_const<T>
+        {};
 
         template <typename F, typename S>
         struct remove_value_const<std::pair<F, S>>
         {
-            using first_type = typename remove_value_const<F>::type;
-            using second_type = typename remove_value_const<S>::type;
-            using type = std::pair<first_type, second_type>;
+            using type = std::pair<
+                typename remove_value_const<F>::type,
+                typename remove_value_const<S>::type
+            >;
         };
     }
 
-    ///////////////////////////////////////////////////////////////////////
-    template <typename Container, typename Enable = void>
+    // Customization point
+    template <typename Container>
     struct container_value
         : detail::remove_value_const<typename Container::value_type>
     {};
@@ -91,306 +83,366 @@ namespace boost::spirit::x3::traits
     // saved to container, we simply return whole fusion::map as is
     // so that check can be done in traits::is_substitute specialisation
     template <typename T>
-    struct container_value<
-        T,
-        std::enable_if_t<
-            std::conditional_t<
-				fusion::traits::is_sequence<T>::value,
-                fusion::traits::is_associative<T>,
-                std::false_type
-            >::type::value
-        >
-    > : std::type_identity<T> {};
+        requires
+            fusion::traits::is_sequence<T>::value &&
+            fusion::traits::is_associative<T>::value
+    struct container_value<T>
+    {
+        using type = T;
+    };
 
     template <>
-    struct container_value<unused_type> : std::type_identity<unused_type> {};
+    struct container_value<unused_container_type>
+    {
+        using type = unused_type;
+    };
 
-    template <>
-    struct container_value<unused_container_type> : std::type_identity<unused_type> {};
 
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Container, typename Enable = void>
+    // Customization point
+    template <typename Container>
+        requires requires(Container& c) {
+            std::ranges::begin(c);
+        }
     struct container_iterator
-        : std::type_identity<typename Container::iterator> {};
-
-    template <typename Container>
-    struct container_iterator<Container const>
-         : std::type_identity<typename Container::const_iterator> {};
-
-    template <>
-    struct container_iterator<unused_type>
-        : std::type_identity<unused_type const*> {};
-
-    template <>
-    struct container_iterator<unused_type const>
-        : std::type_identity<unused_type const*> {};
-
-    template <>
-    struct container_iterator<unused_container_type>
-        : std::type_identity<unused_container_type const*> {};
-
-    template <>
-    struct container_iterator<unused_container_type const>
-        : std::type_identity<unused_container_type const*> {};
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Container, typename T>
-    bool push_back(Container& c, T&& val);
-
-    template <typename Container, typename Enable = void>
-    struct push_back_container
     {
-        template <typename T>
-        static bool call(Container& c, T&& val)
-        {
-            c.insert(c.end(), static_cast<T&&>(val));
-            return true;
-        }
-    };
-
-    template <typename Container, typename T>
-    inline bool push_back(Container& c, T&& val)
-    {
-        return push_back_container<Container>::call(c, static_cast<T&&>(val));
-    }
-
-    template <typename Container>
-    inline bool push_back(Container&, unused_type const&)
-    {
-        return true;
-    }
-
-    template <typename T>
-    inline bool push_back(unused_type, T&&)
-    {
-        return true;
-    }
-
-    template <typename T>
-    inline bool push_back(unused_container_type, T&&)
-    {
-        return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Container, typename Iterator>
-    bool append(Container& c, Iterator first, Iterator last);
-
-    template <typename Container, typename Enable = void>
-    struct append_container
-    {
-    private:
-        template <typename Iterator>
-        static void insert(Container& c, Iterator first, Iterator last, std::false_type)
-        {
-            c.insert(c.end(), first, last);
-        }
-
-        template <typename Iterator>
-        static void insert(Container& c, Iterator first, Iterator last, std::true_type)
-        {
-            c.insert(first, last);
-        }
-
-    public:
-        template <typename Iterator>
-        static bool call(Container& c, Iterator first, Iterator last)
-        {
-            insert(c, first, last, is_associative<Container>{});
-            return true;
-        }
-    };
-
-    template <typename Container, typename Iterator>
-    inline bool append(Container& c, Iterator first, Iterator last)
-    {
-        return append_container<Container>::call(c, first, last);
-    }
-
-    template <typename Iterator>
-    inline bool append(unused_type, Iterator /* first */, Iterator /* last */)
-    {
-        return true;
-    }
-
-    template <typename Iterator>
-    inline bool append(unused_container_type, Iterator /* first */, Iterator /* last */)
-    {
-        return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Container, typename Enable = void>
-    struct is_empty_container;
-
-    [[nodiscard]] constexpr bool is_empty(unused_type) noexcept
-    {
-        return true;
-    }
-
-    [[nodiscard]] constexpr bool is_empty(unused_container_type) noexcept
-    {
-        return true;
-    }
-
-    template <ContainerAttr Container>
-    [[nodiscard]] constexpr bool is_empty(Container const& c) noexcept
-    {
-        return is_empty_container<Container>::call(c);
-    }
-
-    template <ContainerAttr Container>
-        requires requires {
-            std::ranges::empty(std::declval<Container const&>());
-        }
-    [[nodiscard]] constexpr bool is_empty(Container const& c) noexcept
-    {
-        return std::ranges::empty(c);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Container, typename Enable = void>
-    struct begin_container
-    {
-        static typename container_iterator<Container>::type call(Container& c)
-        {
-            return c.begin();
-        }
+        using type = decltype(std::ranges::begin(std::declval<Container&>()));
     };
 
     template <typename Container>
-    inline typename container_iterator<Container>::type
-    begin(Container& c)
-    {
-        return begin_container<Container>::call(c);
-    }
+    using container_iterator_t = typename container_iterator<Container>::type;
 
-    inline unused_type const*
-    begin(unused_type)
-    {
-        return &unused;
-    }
 
-    inline unused_container_type const*
-    begin(unused_container_type)
-    {
-        return &unused_container;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Container, typename Enable = void>
-    struct end_container
-    {
-        static typename container_iterator<Container>::type call(Container& c)
-        {
-            return c.end();
+    // Customization point
+    template <typename Container>
+        requires requires(Container& c) {
+            std::ranges::end(c);
         }
+    struct container_sentinel
+    {
+        using type = decltype(std::ranges::end(std::declval<Container&>()));
     };
 
     template <typename Container>
-    inline typename container_iterator<Container>::type
-    end(Container& c)
-    {
-        return end_container<Container>::call(c);
-    }
-
-    inline unused_type const*
-    end(unused_type)
-    {
-        return &unused;
-    }
-
-    inline unused_container_type const*
-    end(unused_container_type)
-    {
-        return &unused_container;
-    }
+    using container_sentinel_t = typename container_sentinel<Container>::type;
 
 
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Iterator, typename Enable = void>
-    struct deref_iterator
+    // Customization point
+    template <typename Container>
+    struct push_back_container; // not defined
+
+    namespace detail
     {
-        typedef typename std::iterator_traits<Iterator>::reference type;
-        static type call(Iterator& it)
+        struct push_back_fn
         {
-            return *it;
-        }
-    };
+            template <typename Container>
+            static constexpr void operator()(Container&, unused_type const&) noexcept
+            {
+                static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
+                static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+            }
 
-    template <typename Iterator>
-    typename deref_iterator<Iterator>::type
-    deref(Iterator& it)
-    {
-        return deref_iterator<Iterator>::call(it);
-    }
+            template <typename Container, typename T>
+                requires requires(Container& c) {
+                    c.push_back(std::declval<T>());
+                }
+            static constexpr void operator()(Container& c, T&& val)
+                noexcept(noexcept(c.push_back(std::declval<T>())))
+            {
+                c.push_back(std::forward<T>(val));
+            }
 
-    inline unused_type
-    deref(unused_type const*)
-    {
-        return unused;
-    }
+            template <typename Container, typename T>
+                requires (!requires(Container& c) {
+                    c.push_back(std::declval<T>());
+                }) && requires(Container& c) {
+                    c.insert(std::ranges::end(c), std::declval<T>());
+                }
+            static constexpr void operator()(Container& c, T&& val)
+                noexcept(noexcept(c.insert(std::ranges::end(c), std::declval<T>())))
+            {
+                c.insert(std::ranges::end(c), std::forward<T>(val));
+            }
 
-    inline unused_type
-    deref(unused_container_type const*)
-    {
-        return unused;
-    }
+            template <typename Container, typename T>
+                requires requires(Container& c) {
+                    push_back_container<Container>::call(c, std::declval<T>());
+                }
+            static constexpr void operator()(Container& c, T&& val)
+                noexcept(noexcept(push_back_container<Container>::call(c, std::forward<T>(val))))
+            {
+                static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
+                static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+                push_back_container<Container>::call(c, std::forward<T>(val));
+            }
+        };
+    } // detail
 
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Iterator, typename Enable = void>
-    struct next_iterator
+    inline namespace cpos
     {
-        static void call(Iterator& it)
+        inline constexpr detail::push_back_fn push_back{};
+    } // cpos
+
+
+    // Customization point
+    template <typename Container>
+    struct append_container; // not defined
+
+    namespace detail
+    {
+        struct append_fn
         {
-            ++it;
-        }
-    };
+            template <typename Container, std::forward_iterator It, std::sentinel_for<It> Se>
+                requires
+                    is_associative_v<Container> &&
+                    requires(Container& c, It first, Se last) {
+                        c.insert(first, last);
+                    }
+            static constexpr void operator()(Container& c, It first, Se last)
+                noexcept(noexcept(c.insert(first, last)))
+            {
+                c.insert(first, last);
+            }
 
-    template <typename Iterator>
-    void next(Iterator& it)
-    {
-        next_iterator<Iterator>::call(it);
-    }
+            template <typename Container, std::forward_iterator It, std::sentinel_for<It> Se>
+                requires
+                    (!is_associative_v<Container>) &&
+                    requires(Container& c, It first, Se last) {
+                        c.insert(std::ranges::end(c), first, last);
+                    }
+            static constexpr void operator()(Container& c, It first, Se last)
+                noexcept(noexcept(c.insert(std::ranges::end(c), first, last)))
+            {
+                c.insert(std::ranges::end(c), first, last);
+            }
 
-    inline void next(unused_type const*)
-    {
-        // do nothing
-    }
+            template <typename Container, std::forward_iterator It, std::sentinel_for<It> Se>
+                requires requires(Container& c, It first, Se last) {
+                    append_container<Container>::call(c, first, last);
+                }
+            static constexpr void operator()(Container& c, It first, Se last)
+                noexcept(noexcept(append_container<Container>::call(c, first, last)))
+            {
+                static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
+                static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+                append_container<Container>::call(c, first, last);
+            }
+        };
 
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Iterator, typename Enable = void>
-    struct compare_iterators
+    } // detail
+
+    inline namespace cpos
     {
-        static bool call(Iterator const& it1, Iterator const& it2)
+        inline constexpr detail::append_fn append{};
+    } // cpos
+
+
+    // Customization point
+    template <typename Container>
+    struct is_empty_container; // not defined
+
+    namespace detail
+    {
+        struct is_empty_fn
         {
-            return it1 == it2;
-        }
-    };
+            template <typename Container>
+                requires requires(Container const& c) {
+                    std::ranges::empty(c);
+                }
+            [[nodiscard]] static constexpr bool
+            operator()(Container const& c) noexcept
+            {
+                static_assert(!std::is_same_v<Container, unused_type>);
+                static_assert(!std::is_same_v<Container, unused_container_type>);
+                return std::ranges::empty(c);
+            }
 
-    template <typename Iterator>
-    bool compare(Iterator& it1, Iterator& it2)
+            template <typename Container>
+                requires requires(Container const& c) {
+                    { is_empty_container<Container>::call(c) } -> std::same_as<bool>;
+                }
+            [[nodiscard]] static constexpr bool
+            operator()(Container const& c)
+                noexcept(noexcept(is_empty_container<Container>::call(c)))
+            {
+                static_assert(!std::is_same_v<Container, unused_type>);
+                static_assert(!std::is_same_v<Container, unused_container_type>);
+                return is_empty_container<Container>::call(c);
+            }
+        };
+
+    } // detail
+
+    inline namespace cpos
     {
-        return compare_iterators<Iterator>::call(it1, it2);
-    }
+        inline constexpr detail::is_empty_fn is_empty{};
+    } // cpos
 
-    inline bool compare(unused_type const*, unused_type const*)
+
+    // Customization point
+    template <typename Container>
+    struct begin_container; // not defined
+
+    namespace detail
     {
-        return false;
-    }
+        struct begin_fn
+        {
+            template <typename Container>
+                requires requires(Container& c) {
+                    std::ranges::begin(c);
+                }
+            [[nodiscard]] static constexpr container_iterator_t<Container>
+            operator()(Container& c)
+                noexcept(noexcept(std::ranges::begin(c)))
+            {
+                static_assert(std::same_as<decltype(std::ranges::begin(c)), container_iterator_t<Container>>);
+                return std::ranges::begin(c);
+            }
 
-    ///////////////////////////////////////////////////////////////////////////
+            template <typename Container>
+                requires requires (Container& c) {
+                    begin_container<Container>::call(c);
+                }
+            [[nodiscard]] static constexpr container_iterator_t<Container>
+            operator()(Container& c)
+                noexcept(noexcept(begin_container<Container>::call(c)))
+            {
+                static_assert(std::same_as<decltype(begin_container<Container>::call(c)), container_iterator_t<Container>>);
+                return begin_container<Container>::call(c);
+            }
+        };
+    } // detail
+
+    inline namespace cpos
+    {
+        inline constexpr detail::begin_fn begin{};
+    } // cpos
+
+    // Customization point
+    template <typename Container>
+    struct end_container; // not defined
+
+    namespace detail
+    {
+        struct end_fn
+        {
+            template <typename Container>
+                requires requires(Container& c) {
+                    std::ranges::end(c);
+                }
+            [[nodiscard]] static constexpr container_sentinel_t<Container>
+            operator()(Container& c)
+                noexcept(noexcept(std::ranges::end(c)))
+            {
+                static_assert(std::same_as<decltype(std::ranges::end(c)), container_sentinel_t<Container>>);
+                return std::ranges::end(c);
+            }
+
+            template <typename Container>
+                requires requires (Container& c) {
+                    end_container<Container>::call(c);
+                }
+            [[nodiscard]] static constexpr container_sentinel_t<Container>
+            operator()(Container& c)
+                noexcept(noexcept(end_container<Container>::call(c)))
+            {
+                static_assert(std::same_as<decltype(end_container<Container>::call(c)), container_sentinel_t<Container>>);
+                return end_container<Container>::call(c);
+            }
+        };
+    } // detail
+
+    inline namespace cpos
+    {
+        inline constexpr detail::end_fn end{};
+    } // cpos
+
+    // -------------------------------------------------
+
+    // This is NOT a customization point. Don't specialize this.
     template <typename T>
-    struct build_container : std::type_identity<std::vector<T>> {};
+    struct is_container : std::false_type
+    {
+        static_assert(!std::is_reference_v<T>);
+        static_assert(!std::is_const_v<T>);
+    };
+
+    // TODO: fully replace this trait using std::ranges
+    template <typename T>
+        requires
+            requires(T& c) {
+                typename T::value_type; // required
+                traits::begin(c);
+                requires std::forward_iterator<decltype(traits::begin(c))>;
+                traits::end(c);
+                requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
+                traits::push_back(c, std::declval<typename T::value_type>());
+                traits::append(c, std::declval<decltype(traits::begin(c))>(), std::declval<decltype(traits::end(c))>());
+            }
+    struct is_container<T> : std::true_type
+    {};
+
+    // The attribute category type for `unused_container_type` is
+    // `container_attribute`, but it does not satisfy `is_container`.
 
     template <typename T>
-    struct build_container<boost::fusion::deque<T> > : build_container<T> {};
+    constexpr bool is_container_v = is_container<T>::value;
+
+    template <typename T>
+    concept ContainerAttr = is_container_v<std::remove_cvref_t<T>>;
+
+    // -------------------------------------------------
+
+    // Customization point
+    template <typename T>
+    struct build_container
+    {
+        using type = std::vector<T>;
+    };
+
+    template <typename T>
+    struct build_container<boost::fusion::deque<T>> : build_container<T> {};
 
     template <>
-    struct build_container<unused_type> : std::type_identity<unused_type> {};
+    struct build_container<unused_type>
+    {
+        using type = unused_container_type;
+    };
 
     template <>
-    struct build_container<char> : std::type_identity<std::string> {};
+    struct build_container<unused_container_type>
+    {
+        using type = unused_container_type;
+    };
+
+    template <>
+    struct build_container<char>
+    {
+        using type = std::basic_string<char>;
+    };
+
+    template <>
+    struct build_container<wchar_t>
+    {
+        using type = std::basic_string<wchar_t>;
+    };
+
+    template <>
+    struct build_container<char8_t>
+    {
+        using type = std::basic_string<char8_t>;
+    };
+
+    template <>
+    struct build_container<char16_t>
+    {
+        using type = std::basic_string<char16_t>;
+    };
+
+    template <>
+    struct build_container<char32_t>
+    {
+        using type = std::basic_string<char32_t>;
+    };
 
 } // boost::spirit::x3::traits
 

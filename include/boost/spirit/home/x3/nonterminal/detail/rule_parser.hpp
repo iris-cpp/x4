@@ -6,15 +6,15 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_DETAIL_RULE_JAN_08_2012_0326PM)
+#ifndef BOOST_SPIRIT_X3_DETAIL_RULE_JAN_08_2012_0326PM
 #define BOOST_SPIRIT_X3_DETAIL_RULE_JAN_08_2012_0326PM
 
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/core/skip_over.hpp>
 #include <boost/spirit/home/x3/core/error_handler_types.hpp>
-#include <boost/spirit/home/x3/support/expectation.hpp>
 #include <boost/spirit/home/x3/directive/expect.hpp>
-#include <boost/spirit/home/x3/nonterminal/detail/transform_attribute.hpp>
+#include <boost/spirit/home/x3/support/expectation.hpp>
+#include <boost/spirit/home/x3/support/traits/transform_attribute.hpp>
 
 #if defined(BOOST_SPIRIT_X3_DEBUG)
 #include <boost/spirit/home/x3/nonterminal/simple_trace.hpp>
@@ -255,12 +255,12 @@ namespace boost::spirit::x3::detail
     {
         template <
             typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-            typename Context, typename RContext, typename ActualAttribute
+            typename Context, typename RContext, typename Exposed
         >
         [[nodiscard]] static constexpr bool
         parse_rhs(
             RHS const& rhs, It& first, Se const& last,
-            Context const& context, RContext& rcontext, ActualAttribute& attr
+            Context const& context, RContext& rcontext, Exposed& attr
         ) // never noexcept; requires complex handling
         {
             It start = first;
@@ -293,7 +293,7 @@ namespace boost::spirit::x3::detail
             }
 
             // Note: this check uses `It, It` because the value is actually iterator-iterator pair
-            if constexpr (has_on_success<ID, It, It, ActualAttribute, Context>::value)
+            if constexpr (has_on_success<ID, It, It, Exposed, Context>::value)
             {
                 if (!ok) return false;
 
@@ -313,12 +313,12 @@ namespace boost::spirit::x3::detail
 
         template <
             typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-            typename Context, typename RContext, typename ActualAttribute
+            typename Context, typename RContext, typename Exposed
         >
         [[nodiscard]] static constexpr bool
         parse_rhs_with_on_error(
             RHS const& rhs, It& first, Se const& last,
-            Context const& context, RContext& rcontext, ActualAttribute& attr
+            Context const& context, RContext& rcontext, Exposed& attr
         ) // never noexcept; requires complex handling
         {
             while (true)
@@ -367,17 +367,17 @@ namespace boost::spirit::x3::detail
         template <
             bool ForceAttribute,
             typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-            typename Context, typename ActualAttribute
+            typename Context, typename Exposed
         >
         [[nodiscard]] static constexpr bool
         call_rule_definition(
             RHS const& rhs, char const* rule_name,
             It& first, Se const& last,
-            Context const& context, ActualAttribute& attr
+            Context const& context, Exposed& attr
         )
         {
             // Do down-stream transformation, provides attribute for rhs parser
-            using transform = traits::transform_attribute<ActualAttribute, Attribute, parser_id>;
+            using transform = traits::transform_attribute<Attribute, Exposed>;
             using transform_attr = typename transform::type;
             transform_attr attr_ = transform::pre(attr);
 
@@ -391,7 +391,7 @@ namespace boost::spirit::x3::detail
                 // modifications are made to the attribute, attr_ passed
                 // to parse_rhs (such as might be done in
                 // transform::post when, for example,
-                // ActualAttribute is a recursive variant).
+                // Exposed is a recursive variant).
                 scoped_debug<It, Se, transform_attr>
                 dbg(rule_name, first, last, attr_, parse_ok);
             #else

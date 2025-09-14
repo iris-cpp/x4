@@ -19,29 +19,7 @@ namespace boost::spirit::x3
     {
         constexpr explicit unused_type() noexcept = default;
 
-        template <typename T>
-        constexpr unused_type(T&&) noexcept
-        {
-            // consume arbitrary type
-        }
-
-        template <typename T>
-        constexpr unused_type&
-        operator=(T&&) noexcept
-        {
-            // consume arbitrary type
-            return *this;
-        }
-
-        template <typename T>
-        constexpr unused_type const&
-        operator=(T&&) const noexcept
-        {
-            // consume arbitrary type
-            return *this;
-        }
-
-        // unused_type can also masquerade as an empty context (see context.hpp)
+        // unused_type can masquerade as an empty context (see context.hpp)
 
         template <typename ID>
         [[nodiscard]] constexpr unused_type get(ID&&) const noexcept
@@ -60,10 +38,11 @@ namespace boost::spirit::x3
         }
     };
 
-    struct unused_container_type : unused_type
+    // The attribute category type for `unused_container_type` is
+    // `container_attribute`, but it does not satisfy `is_container`.
+    struct unused_container_type
     {
-        // constexpr explicit unused_container_type() noexcept = default;
-        using unused_type::unused_type;
+        constexpr explicit unused_container_type() noexcept = default;
     };
 
     inline namespace cpos
@@ -71,6 +50,20 @@ namespace boost::spirit::x3
         inline constexpr unused_type unused{};
         inline constexpr unused_container_type unused_container{};
     } // cpos
+
+    template <typename T>
+        requires (!std::is_same_v<std::remove_const_t<T>, unused_type>)
+    [[nodiscard]] constexpr T&
+    assume_container(T& attr) noexcept
+    {
+        return attr;
+    }
+
+    [[nodiscard]] constexpr unused_container_type const&
+    assume_container(unused_type const&) noexcept
+    {
+        return unused_container;
+    }
 
 } // boost::spirit::x3
 

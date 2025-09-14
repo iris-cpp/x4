@@ -70,18 +70,21 @@ namespace boost::spirit::x3::traits
     struct attribute_category<unused_container_type>
     {
         using type = container_attribute;
+
+        // The attribute category type for `unused_container_type` is
+        // `container_attribute`, but it does not satisfy `is_container`.
     };
 
     template <typename T, typename AttributeCategoryTag>
-    concept CategorizedAttr = std::is_same_v<typename attribute_category<T>::type, AttributeCategoryTag>;
+    concept CategorizedAttr = std::is_same_v<typename attribute_category<std::remove_cvref_t<T>>::type, AttributeCategoryTag>;
 
     template <typename T>
     concept NonUnusedAttr = !CategorizedAttr<T, unused_attribute>;
 
     template <typename T>
         requires
-            fusion::traits::is_sequence<T>::value &&
-            fusion::traits::is_associative<T>::value
+            fusion::traits::is_sequence<std::remove_cvref_t<T>>::value &&
+            fusion::traits::is_associative<std::remove_cvref_t<T>>::value
     struct attribute_category<T>
     {
         using type = associative_attribute;
@@ -89,29 +92,29 @@ namespace boost::spirit::x3::traits
 
     template <typename T>
         requires
-            fusion::traits::is_sequence<T>::value &&
-            (!fusion::traits::is_associative<T>::value)
+            fusion::traits::is_sequence<std::remove_cvref_t<T>>::value &&
+            (!fusion::traits::is_associative<std::remove_cvref_t<T>>::value)
     struct attribute_category<T>
     {
         using type = tuple_attribute;
     };
 
     template <typename T>
-        requires is_variant_v<T>
+        requires is_variant_v<std::remove_cvref_t<T>>
     struct attribute_category<T>
     {
         using type = variant_attribute;
     };
 
     template <typename T>
-        requires is_optional_v<T>
+        requires is_optional_v<std::remove_cvref_t<T>>
     struct attribute_category<T>
     {
         using type = optional_attribute;
     };
 
     template <typename T>
-        requires is_range_v<T>
+        requires is_range_v<std::remove_cvref_t<T>>
     struct attribute_category<T>
     {
         using type = range_attribute;
@@ -119,9 +122,9 @@ namespace boost::spirit::x3::traits
 
     template <typename T>
         requires
-            (!traits::is_range_v<T>) &&
-            traits::is_container_v<T> &&
-            (!fusion::traits::is_sequence<T>::value)
+            (!traits::is_range_v<std::remove_cvref_t<T>>) &&
+            traits::is_container_v<std::remove_cvref_t<T>> &&
+            (!fusion::traits::is_sequence<std::remove_cvref_t<T>>::value)
     struct attribute_category<T>
     {
         using type = container_attribute;

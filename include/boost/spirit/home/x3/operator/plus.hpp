@@ -11,6 +11,7 @@
 #define BOOST_SPIRIT_X3_PLUS_MARCH_13_2007_0127PM
 
 #include <boost/spirit/home/x3/core/parser.hpp>
+#include <boost/spirit/home/x3/support/unused.hpp>
 #include <boost/spirit/home/x3/support/expectation.hpp>
 #include <boost/spirit/home/x3/support/traits/container_traits.hpp>
 #include <boost/spirit/home/x3/support/traits/attribute_of.hpp>
@@ -41,14 +42,14 @@ namespace boost::spirit::x3
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, rcontext, attr)))
+            noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr))))
         {
-            if (!detail::parse_into_container(this->subject, first, last, context, rcontext, attr))
+            if (!detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr)))
             {
                 return false;
             }
 
-            while (detail::parse_into_container(this->subject, first, last, context, rcontext, attr))
+            while (detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr)))
                 /* loop */;
 
             return !x3::has_expectation_failure(context);

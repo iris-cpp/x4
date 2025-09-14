@@ -61,14 +61,14 @@ namespace boost::spirit::x3::traits
 
         template <typename T, typename Attribute>
             requires
-                is_container_v<T> &&
-                is_container_v<Attribute>
+                is_container_v<std::remove_const_t<T>> &&
+                is_container_v<std::remove_const_t<Attribute>>
         struct is_substitute_impl<T, Attribute>
             : value_type_is_substitute<T, Attribute>
         {};
 
         template <typename T, typename Attribute>
-            requires is_variant_v<Attribute>
+            requires is_variant_v<std::remove_const_t<Attribute>>
         struct is_substitute_impl<T, Attribute>
             : variant_has_substitute<Attribute, T>
         {};

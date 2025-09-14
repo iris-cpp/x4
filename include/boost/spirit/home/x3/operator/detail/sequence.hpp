@@ -447,27 +447,32 @@ namespace boost::spirit::x3::detail
                 "is value to be stored under that key"
             );
 
-            std::conditional_t<
-                std::is_same_v<std::remove_const_t<Attribute>, unused_type>,
-                unused_container_type,
-                Attribute
-            > attr_;
-
             static_assert(
                 std::same_as<traits::attribute_category_t<Attribute>, traits::container_attribute> ||
                 std::same_as<traits::attribute_category_t<Attribute>, traits::unused_attribute>
             );
 
-            if (!detail::parse_sequence(parser, first, last, context, rcontext, attr_))
+            if constexpr (
+                std::is_same_v<std::remove_const_t<Attribute>, unused_type> ||
+                std::is_same_v<std::remove_const_t<Attribute>, unused_container_type>
+            )
             {
-                return false;
+                return detail::parse_sequence(parser, first, last, context, rcontext, x3::assume_container(attr));
             }
-            traits::append(
-                attr,
-                std::make_move_iterator(traits::begin(attr_)),
-                std::make_move_iterator(traits::end(attr_))
-            );
-            return true;
+            else
+            {
+                Attribute attr_;
+                if (!detail::parse_sequence(parser, first, last, context, rcontext, attr_))
+                {
+                    return false;
+                }
+                traits::append(
+                    attr,
+                    std::make_move_iterator(traits::begin(attr_)),
+                    std::make_move_iterator(traits::end(attr_))
+                );
+                return true;
+            }
         }
     };
 

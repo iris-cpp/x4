@@ -11,10 +11,11 @@
 #define BOOST_SPIRIT_X3_LIST_MARCH_24_2007_1031AM
 
 #include <boost/spirit/home/x3/core/parser.hpp>
+#include <boost/spirit/home/x3/core/detail/parse_into_container.hpp>
+#include <boost/spirit/home/x3/support/expectation.hpp>
+#include <boost/spirit/home/x3/support/unused.hpp>
 #include <boost/spirit/home/x3/support/traits/container_traits.hpp>
 #include <boost/spirit/home/x3/support/traits/attribute_of.hpp>
-#include <boost/spirit/home/x3/support/expectation.hpp>
-#include <boost/spirit/home/x3/core/detail/parse_into_container.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -40,13 +41,13 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
             noexcept(
-                noexcept(detail::parse_into_container(this->left, first, last, context, rcontext, attr)) &&
+                noexcept(detail::parse_into_container(this->left, first, last, context, rcontext, x3::assume_container(attr))) &&
                 std::is_nothrow_copy_assignable_v<It> &&
                 is_nothrow_parsable_v<Right, It, Se, Context, RContext, unused_type>
             )
         {
             // In order to succeed we need to match at least one element
-            if (!detail::parse_into_container(this->left, first, last, context, rcontext, attr))
+            if (!detail::parse_into_container(this->left, first, last, context, rcontext, x3::assume_container(attr)))
             {
                 return false;
             }
@@ -54,7 +55,7 @@ namespace boost::spirit::x3
             It last_parse_it = first;
             while (
                 this->right.parse(last_parse_it, last, context, rcontext, unused) &&
-                detail::parse_into_container(this->left, last_parse_it, last, context, rcontext, attr)
+                detail::parse_into_container(this->left, last_parse_it, last, context, rcontext, x3::assume_container(attr))
             )
             {
                 // TODO: can we reduce this copy assignment?
