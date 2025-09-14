@@ -105,6 +105,9 @@ namespace boost::spirit::x3::traits
     template <>
     struct container_value<unused_type> : std::type_identity<unused_type> {};
 
+    template <>
+    struct container_value<unused_container_type> : std::type_identity<unused_type> {};
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Container, typename Enable = void>
     struct container_iterator
@@ -121,6 +124,14 @@ namespace boost::spirit::x3::traits
     template <>
     struct container_iterator<unused_type const>
         : std::type_identity<unused_type const*> {};
+
+    template <>
+    struct container_iterator<unused_container_type>
+        : std::type_identity<unused_container_type const*> {};
+
+    template <>
+    struct container_iterator<unused_container_type const>
+        : std::type_identity<unused_container_type const*> {};
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Container, typename T>
@@ -144,7 +155,7 @@ namespace boost::spirit::x3::traits
     }
 
     template <typename Container>
-    inline bool push_back(Container&, unused_type)
+    inline bool push_back(Container&, unused_type const&)
     {
         return true;
     }
@@ -155,7 +166,8 @@ namespace boost::spirit::x3::traits
         return true;
     }
 
-    inline bool push_back(unused_type, unused_type)
+    template <typename T>
+    inline bool push_back(unused_container_type, T&&)
     {
         return true;
     }
@@ -201,11 +213,22 @@ namespace boost::spirit::x3::traits
         return true;
     }
 
+    template <typename Iterator>
+    inline bool append(unused_container_type, Iterator /* first */, Iterator /* last */)
+    {
+        return true;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Container, typename Enable = void>
     struct is_empty_container;
 
     [[nodiscard]] constexpr bool is_empty(unused_type) noexcept
+    {
+        return true;
+    }
+
+    [[nodiscard]] constexpr bool is_empty(unused_container_type) noexcept
     {
         return true;
     }
@@ -248,6 +271,12 @@ namespace boost::spirit::x3::traits
         return &unused;
     }
 
+    inline unused_container_type const*
+    begin(unused_container_type)
+    {
+        return &unused_container;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Container, typename Enable = void>
     struct end_container
@@ -271,6 +300,12 @@ namespace boost::spirit::x3::traits
         return &unused;
     }
 
+    inline unused_container_type const*
+    end(unused_container_type)
+    {
+        return &unused_container;
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Iterator, typename Enable = void>
@@ -292,6 +327,12 @@ namespace boost::spirit::x3::traits
 
     inline unused_type
     deref(unused_type const*)
+    {
+        return unused;
+    }
+
+    inline unused_type
+    deref(unused_container_type const*)
     {
         return unused;
     }

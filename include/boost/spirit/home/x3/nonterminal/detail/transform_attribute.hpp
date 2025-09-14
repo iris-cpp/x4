@@ -11,8 +11,10 @@
 
 #include <boost/spirit/home/x3/support/traits/transform_attribute.hpp>
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
+#include <boost/spirit/home/x3/support/unused.hpp>
 
 #include <type_traits>
+#include <concepts>
 #include <utility>
 
 namespace boost::spirit::x3
@@ -23,12 +25,16 @@ namespace boost::spirit::x3
     } // detail
 
     template <typename Exposed, typename Transformed>
-        requires std::is_assignable_v<Exposed&, Transformed&&>
-    struct default_transform_attribute
+    struct transform_attribute
     {
+        static_assert(!std::is_reference_v<Exposed>, "Exposed cannot be a reference type");
+        static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
+
+        static_assert(std::assignable_from<Exposed&, Transformed&&>);
+
         using type = Transformed;
 
-        static constexpr Transformed pre(Exposed&)
+        [[nodiscard]] static constexpr Transformed pre(Exposed&)
             noexcept(std::is_nothrow_default_constructible_v<Transformed>)
         {
             return Transformed{};
@@ -42,22 +48,17 @@ namespace boost::spirit::x3
         }
     };
 
-    // handle case where no transformation is required as the types are the same
+    // Same attribute types; no transformation needed
     template <typename Attribute>
-    struct default_transform_attribute<Attribute, Attribute>
+    struct transform_attribute<Attribute, Attribute>
     {
+        static_assert(!std::is_reference_v<Attribute>, "Attribute cannot be a reference type");
+
         using type = Attribute&;
         static constexpr Attribute& pre(Attribute& val) noexcept { return val; }
         static constexpr void post(Attribute&, Attribute const&) noexcept {}
     };
 
-    // main specialization for x3
-    template <typename Exposed, typename Transformed, typename Enable = void>
-        requires std::is_assignable_v<Exposed&, Transformed&&>
-    struct transform_attribute
-        : default_transform_attribute<Exposed, Transformed> {};
-
-    // unused_type needs some special handling as well
     template <>
     struct transform_attribute<unused_type, unused_type>
     {
@@ -67,38 +68,59 @@ namespace boost::spirit::x3
     };
 
     template <>
-    struct transform_attribute<unused_type const, unused_type>
-        : transform_attribute<unused_type, unused_type> {};
+    struct transform_attribute<unused_container_type, unused_container_type>
+    {
+        using type = unused_container_type;
+        static constexpr unused_container_type pre(unused_container_type) noexcept { return unused_container; }
+        static constexpr void post(unused_container_type, unused_container_type) noexcept {}
+    };
 
-    template <typename Attribute>
-    struct transform_attribute<unused_type, Attribute>
-        : transform_attribute<unused_type, unused_type> {};
+    template <typename Exposed, typename Transformed>
+        requires
+            std::is_same_v<std::remove_const_t<Exposed>, unused_type>
+    struct transform_attribute<Exposed, Transformed>
+        : transform_attribute<unused_type, unused_type>
+    {
+        static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
+    };
 
-    template <typename Attribute>
-    struct transform_attribute<unused_type const, Attribute>
-        : transform_attribute<unused_type, unused_type> {};
+    template <typename Exposed, typename Transformed>
+        requires
+            std::is_same_v<std::remove_const_t<Exposed>, unused_container_type>
+    struct transform_attribute<Exposed, Transformed>
+        : transform_attribute<unused_container_type, unused_container_type>
+    {
+        static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
+    };
 
-    template <typename Attribute>
-    struct transform_attribute<Attribute, unused_type>
-        : transform_attribute<unused_type, unused_type> {};
+    template <typename Exposed, typename Transformed>
+        requires
+            (!std::is_same_v<std::remove_const_t<Exposed>, unused_type>) &&
+            std::is_same_v<std::remove_const_t<Transformed>, unused_type>
+    struct transform_attribute<Exposed, Transformed>
+        : transform_attribute<unused_type, unused_type>
+    {
+        static_assert(!std::is_reference_v<Exposed>, "Exposed cannot be a reference type");
+    };
 
-    template <typename Attribute>
-    struct transform_attribute<Attribute const, unused_type>
-        : transform_attribute<unused_type, unused_type> {};
+    template <typename Exposed, typename Transformed>
+        requires
+            (!std::is_same_v<std::remove_const_t<Exposed>, unused_container_type>) &&
+            std::is_same_v<std::remove_const_t<Transformed>, unused_container_type>
+    struct transform_attribute<Exposed, Transformed>
+        : transform_attribute<unused_container_type, unused_container_type>
+    {
+        static_assert(!std::is_reference_v<Exposed>, "Exposed cannot be a reference type");
+    };
 
 } // boost::spirit::x3
 
-///////////////////////////////////////////////////////////////////////////////
 namespace boost::spirit::x3::traits
 {
     template <typename Exposed, typename Transformed>
-        requires std::is_assignable_v<Exposed&, Transformed&&>
     struct transform_attribute<Exposed, Transformed, x3::detail::parser_id>
         : x3::transform_attribute<Exposed, Transformed>
-    {
-        static_assert(!std::is_reference_v<Exposed>, "Exposed cannot be a reference type");
-        static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
-    };
+    {};
 } // boost::spirit::x3::traits
 
 #endif

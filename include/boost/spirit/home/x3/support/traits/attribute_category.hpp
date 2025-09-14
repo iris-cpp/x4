@@ -20,7 +20,9 @@
 
 namespace boost::spirit::x3
 {
-   struct unused_type;
+    struct unused_type;
+    struct unused_container_type;
+
 } // boost::spirit::x3
 
 namespace boost::spirit::x3::traits
@@ -62,6 +64,12 @@ namespace boost::spirit::x3::traits
     struct attribute_category<unused_type>
     {
         using type = unused_attribute;
+    };
+
+    template <>
+    struct attribute_category<unused_container_type>
+    {
+        using type = container_attribute;
     };
 
     template <typename T, typename AttributeCategoryTag>

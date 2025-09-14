@@ -36,9 +36,6 @@ namespace boost::spirit::x3
         {}
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
-            requires
-                is_parsable_v<Left, It, Se, Context, RContext, unused_type> &&
-                is_parsable_v<Right, It, Se, Context, RContext, unused_type>
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, unused_type) const
             noexcept(
@@ -68,17 +65,12 @@ namespace boost::spirit::x3
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+            requires (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(noexcept(detail::parse_sequence(
-                *this, first, last, context, rcontext, attr,
-                typename traits::attribute_category<Attribute>::type()
-            )))
+            noexcept(noexcept(detail::parse_sequence(*this, first, last, context, rcontext, attr)))
         {
-            return detail::parse_sequence(
-                *this, first, last, context, rcontext, attr,
-                typename traits::attribute_category<Attribute>::type()
-            );
+            return detail::parse_sequence(*this, first, last, context, rcontext, attr);
         }
     };
 
