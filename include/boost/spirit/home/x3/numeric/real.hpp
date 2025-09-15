@@ -38,11 +38,11 @@ namespace boost::spirit::x3
             : policies_(std::forward<RealPoliciesT>(policies))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
         [[nodiscard]] constexpr bool
         parse(
             It& first, Se const& last,
-            Context const& context, unused_type, T& attr_
+            Context const& context, RContext const&, T& attr_
         ) const noexcept(
             noexcept(x3::skip_over(first, last, context)) &&
             noexcept(extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
@@ -52,10 +52,10 @@ namespace boost::spirit::x3
             return extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last,
-            Context const& context, unused_type, Attribute& attr_param
+            Context const& context, RContext const&, Attribute& attr_param
         ) const noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(this->parse(first, last, context, unused, std::declval<T&>())) &&

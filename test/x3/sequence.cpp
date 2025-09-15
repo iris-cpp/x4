@@ -1,39 +1,47 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#define BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL 0
+
+#include "test.hpp"
+#include "utils.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/deque.hpp>
 #include <boost/fusion/include/at.hpp>
 #include <boost/fusion/include/comparison.hpp>
 
+#include <optional>
 #include <string>
 #include <iostream>
-#include "test.hpp"
-#include "utils.hpp"
 
-int
-main()
+int main()
 {
-    using boost::spirit::x3::unused_type;
+    namespace x3 = boost::spirit::x3;
+    namespace traits = x3::traits;
 
-    using boost::spirit::x3::char_;
-    using boost::spirit::x3::space;
-    using boost::spirit::x3::string;
-    using boost::spirit::x3::attr;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::lit;
-    using boost::spirit::x3::unused;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::float_;
-    using boost::spirit::x3::no_case;
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::alnum;
+    using x3::unused_type;
 
-    using boost::spirit::x3::traits::attribute_of;
+    using x3::standard::char_;
+    using x3::standard::space;
+    using x3::standard::string;
+    using x3::standard::lit;
+    using x3::standard::alnum;
+    using x3::attr;
+    using x3::omit;
+    using x3::unused;
+    using x3::int_;
+    using x3::float_;
+    using x3::no_case;
+    using x3::rule;
+
+    using traits::attribute_of_t;
 
     using boost::fusion::vector;
     using boost::fusion::deque;
@@ -74,10 +82,10 @@ main()
 
 
     {
-        vector<char, char> attr;
-        BOOST_TEST((test_attr("ab", char_ >> char_, attr)));
-        BOOST_TEST((at_c<0>(attr) == 'a'));
-        BOOST_TEST((at_c<1>(attr) == 'b'));
+        vector<char, char> vec;
+        BOOST_TEST((test_attr("ab", char_ >> char_, vec)));
+        BOOST_TEST((at_c<0>(vec) == 'a'));
+        BOOST_TEST((at_c<1>(vec) == 'b'));
     }
 
 #ifdef BOOST_SPIRIT_COMPILE_ERROR_CHECK
@@ -91,49 +99,49 @@ main()
 #endif
 
     {
-        vector<char, char, char> attr;
-        BOOST_TEST((test_attr(" a\n  b\n  c", char_ >> char_ >> char_, attr, space)));
-        BOOST_TEST((at_c<0>(attr) == 'a'));
-        BOOST_TEST((at_c<1>(attr) == 'b'));
-        BOOST_TEST((at_c<2>(attr) == 'c'));
+        vector<char, char, char> vec;
+        BOOST_TEST((test_attr(" a\n  b\n  c", char_ >> char_ >> char_, vec, space)));
+        BOOST_TEST((at_c<0>(vec) == 'a'));
+        BOOST_TEST((at_c<1>(vec) == 'b'));
+        BOOST_TEST((at_c<2>(vec) == 'c'));
     }
 
     {
         // 'b' has an unused_type. unused attributes are not part of the sequence
-        vector<char, char> attr;
-        BOOST_TEST((test_attr("abc", char_ >> 'b' >> char_, attr)));
-        BOOST_TEST((at_c<0>(attr) == 'a'));
-        BOOST_TEST((at_c<1>(attr) == 'c'));
+        vector<char, char> vec;
+        BOOST_TEST((test_attr("abc", char_ >> 'b' >> char_, vec)));
+        BOOST_TEST((at_c<0>(vec) == 'a'));
+        BOOST_TEST((at_c<1>(vec) == 'c'));
     }
 
     {
         // 'b' has an unused_type. unused attributes are not part of the sequence
-        vector<char, char> attr;
-        BOOST_TEST((test_attr("acb", char_ >> char_ >> 'b', attr)));
-        BOOST_TEST((at_c<0>(attr) == 'a'));
-        BOOST_TEST((at_c<1>(attr) == 'c'));
+        vector<char, char> vec;
+        BOOST_TEST((test_attr("acb", char_ >> char_ >> 'b', vec)));
+        BOOST_TEST((at_c<0>(vec) == 'a'));
+        BOOST_TEST((at_c<1>(vec) == 'c'));
     }
 
     {
         // "hello" has an unused_type. unused attributes are not part of the sequence
-        vector<char, char> attr;
-        BOOST_TEST((test_attr("a hello c", char_ >> "hello" >> char_, attr, space)));
-        BOOST_TEST((at_c<0>(attr) == 'a'));
-        BOOST_TEST((at_c<1>(attr) == 'c'));
+        vector<char, char> vec;
+        BOOST_TEST((test_attr("a hello c", char_ >> "hello" >> char_, vec, space)));
+        BOOST_TEST((at_c<0>(vec) == 'a'));
+        BOOST_TEST((at_c<1>(vec) == 'c'));
     }
 
     {
         // a single element
-        char attr;
-        BOOST_TEST((test_attr("ab", char_ >> 'b', attr)));
-        BOOST_TEST((attr == 'a'));
+        char c;
+        BOOST_TEST((test_attr("ab", char_ >> 'b', c)));
+        BOOST_TEST((c == 'a'));
     }
 
     {
         // a single element fusion sequence
-        vector<char> attr;
-        BOOST_TEST((test_attr("ab", char_ >> 'b', attr)));
-        BOOST_TEST((at_c<0>(attr) == 'a'));
+        vector<char> vec;
+        BOOST_TEST((test_attr("ab", char_ >> 'b', vec)));
+        BOOST_TEST((at_c<0>(vec) == 'a'));
     }
 
     {
@@ -145,7 +153,7 @@ main()
         // single element tuple (it's a deque<char, int>), so the original
         // comment is not accurate.
 
-        typedef deque<char, int> attr_type;
+        using attr_type = deque<char, int>;
         attr_type fv;
 
         auto r = rule<class r_id, attr_type>()
@@ -160,7 +168,7 @@ main()
         // has a single element tuple as its attribute. This is a correction
         // of the test above.
 
-        typedef deque<int> attr_type;
+        using attr_type = deque<int>;
         attr_type fv;
 
         auto r = rule<class r_id, attr_type>()
@@ -367,7 +375,7 @@ main()
     }
 
     {
-        std::vector<boost::optional<char>> v;
+        std::vector<std::optional<char>> v;
         BOOST_TEST(test_attr("ab", char_ >> -char_, v));
         BOOST_TEST(v.size() == 2 && v[0] == 'a' && v[1] == 'b');
 
@@ -384,38 +392,38 @@ main()
     // test from spirit mailing list
     // "Error with container within sequence"
     {
-        typedef vector<std::string> attr_type;
-        attr_type attr;
+        using attr_type = vector<std::string>;
+        attr_type vec;
 
         auto r = *alnum;
 
-        BOOST_TEST(test_attr("abcdef", r, attr));
-        BOOST_TEST(at_c<0>(attr) == "abcdef");
+        BOOST_TEST(test_attr("abcdef", r, vec));
+        BOOST_TEST(at_c<0>(vec) == "abcdef");
     }
 
     // test from spirit mailing list (variation of above)
     // "Error with container within sequence"
     {
-        typedef vector<std::vector<int>> attr_type;
-        attr_type attr;
+        using attr_type = vector<std::vector<int>>;
+        attr_type vec;
 
         auto r = *int_;
 
-        BOOST_TEST(test_attr("123 456", r, attr, space));
-        BOOST_TEST(at_c<0>(attr).size() == 2);
-        BOOST_TEST(at_c<0>(attr)[0] == 123);
-        BOOST_TEST(at_c<0>(attr)[1] == 456);
+        BOOST_TEST(test_attr("123 456", r, vec, space));
+        BOOST_TEST(at_c<0>(vec).size() == 2);
+        BOOST_TEST(at_c<0>(vec)[0] == 123);
+        BOOST_TEST(at_c<0>(vec)[1] == 456);
     }
 
     { // non-flat optional
-        vector<int, boost::optional<vector<int, int>>> v;
+        vector<int, std::optional<vector<int, int>>> v;
         auto const p = int_ >> -(':' >> int_ >> '-' >> int_);
         BOOST_TEST(test_attr("1:2-3", p, v))
             && BOOST_TEST(at_c<1>(v)) && BOOST_TEST_EQ(at_c<0>(*at_c<1>(v)), 2);
     }
 
     { // optional with container attribute
-        vector<char, boost::optional<std::string>> v;
+        vector<char, std::optional<std::string>> v;
         auto const p = char_ >> -(':' >> +char_);
         BOOST_TEST(test_attr("x", p, v))
             && BOOST_TEST(!at_c<1>(v));
@@ -426,26 +434,27 @@ main()
 
     {
         using Attr = boost::variant<int, float>;
-        Attr attr;
         auto const term = rule<class term_id, Attr>("term") = int_ | float_;
         auto const expr = rule<class expr_id, Attr>("expr") = term | ('(' > term > ')');
-        BOOST_TEST((test_attr("(1)", expr, attr, space)));
+        Attr var;
+        BOOST_TEST((test_attr("(1)", expr, var, space)));
     }
 
     // test that failing sequence leaves attribute consistent
     {
-	std::string attr;
-	//no need to use omit[], but lit() is buggy ATM
-	BOOST_TEST(test_attr("A\nB\nC", *(char_ >> omit[lit("\n")]), attr, false));
-	BOOST_TEST(attr == "AB");
+	    std::string str;
+	    //no need to use omit[], but lit() is buggy ATM
+	    BOOST_TEST(test_attr("A\nB\nC", *(char_ >> omit[lit("\n")]), str, false));
+	    BOOST_TEST(str == "AB");
     }
 
     // test that sequence with only one parser producing attribute
     // makes it unwrapped
     {
-	BOOST_TEST((boost::is_same<
-		    typename attribute_of<decltype(lit("abc") >> attr(long())), unused_type>::type,
-		    long>() ));
+	    BOOST_TEST((std::is_same_v<
+		    attribute_of_t<decltype(lit("abc") >> attr(long())), unused_type>,
+		    long
+        >));
     }
 
     {   // test action
@@ -486,9 +495,43 @@ main()
 #endif
     }
 
-    { // test move only types
+    {
+        // test move only types
         using boost::spirit::x3::eps;
         std::vector<move_only> v;
+
+        using T = std::vector<move_only>;
+        static_assert(requires(T& c) {
+            typename T::value_type;
+        });
+        static_assert(requires(T& c) {
+            traits::begin(c);
+        });
+        static_assert(requires(T& c) {
+            requires std::forward_iterator<decltype(traits::begin(c))>;
+        });
+        static_assert(requires(T& c) {
+            traits::end(c);
+        });
+        static_assert(requires(T& c) {
+            requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
+        });
+        static_assert(requires(T& c) {
+            traits::is_empty(c);
+        });
+        static_assert(requires(T& c) {
+            traits::push_back(c, std::declval<typename T::value_type>());
+        });
+        static_assert(requires(T& c) {
+            traits::append(
+                c,
+                std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
+                std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
+            );
+        });
+
+        static_assert(traits::is_container_v<std::vector<move_only>>);
+        // static_assert(traits::CategorizedAttr<std::vector<move_only>, traits::container_attribute>);
         BOOST_TEST(test_attr("ssszs", *synth_move_only >> 'z' >> synth_move_only, v));
         BOOST_TEST_EQ(v.size(), 4);
     }

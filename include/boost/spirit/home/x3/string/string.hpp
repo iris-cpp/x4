@@ -13,8 +13,13 @@
 #include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 
 #include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
+#include <boost/spirit/home/x3/char_encoding/ascii.hpp>
+#include <boost/spirit/home/x3/char_encoding/iso8859_1.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
-#include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
+
+#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+# include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
+#endif
 
 #ifdef BOOST_SPIRIT_X3_UNICODE
 # include <boost/spirit/home/x3/char_encoding/unicode.hpp>

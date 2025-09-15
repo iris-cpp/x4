@@ -90,7 +90,7 @@ namespace boost::spirit::x3
             typename Bounds::value_type i{};
             for (; !bounds_.got_min(i); ++i)
             {
-                if (!detail::parse_into_container(this->subject, local_it, last, context, rcontext, attr))
+                if (!detail::parse_into_container(this->subject, local_it, last, context, rcontext, x3::assume_container(attr)))
                 {
                     return false;
                 }
@@ -100,7 +100,7 @@ namespace boost::spirit::x3
             // parse some more up to the maximum specified
             for (; !bounds_.got_max(i); ++i)
             {
-                if (!detail::parse_into_container(this->subject, first, last, context, rcontext, attr))
+                if (!detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr)))
                 {
                     break;
                 }

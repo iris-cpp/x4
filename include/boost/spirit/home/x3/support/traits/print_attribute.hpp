@@ -6,14 +6,16 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#if !defined(BOOST_SPIRIT_X3_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM)
+#ifndef BOOST_SPIRIT_X3_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
 #define BOOST_SPIRIT_X3_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
 
-#include <boost/variant.hpp>
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/for_each.hpp>
 #include <boost/spirit/home/x3/support/traits/attribute_category.hpp>
 #include <boost/spirit/home/x3/support/traits/is_variant.hpp>
+
+#include <boost/variant.hpp>
+#include <boost/variant/apply_visitor.hpp> // TODO: remove this
 
 #ifdef BOOST_SPIRIT_X3_UNICODE
 # include <boost/spirit/home/x3/char_encoding/unicode.hpp>
@@ -24,27 +26,29 @@ namespace boost::spirit::x3::traits
     template <typename Out, typename T>
     void print_attribute(Out& out, T const& val);
 
-    template <typename Out>
-    inline void print_attribute(Out&, unused_type) {}
-
-    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         template <typename Out>
         struct print_fusion_sequence
         {
             print_fusion_sequence(Out& out)
-              : out(out), is_first(true) {}
+                : out(out)
+                , is_first(true)
+            {}
 
-            typedef void result_type;
+            using result_type = void;
 
             template <typename T>
             void operator()(T const& val) const
             {
                 if (is_first)
+                {
                     is_first = false;
+                }
                 else
+                {
                     out << ", ";
+                }
                 x3::traits::print_attribute(out, val);
             }
 
@@ -56,7 +60,9 @@ namespace boost::spirit::x3::traits
         template <typename Out>
         struct print_visitor : static_visitor<>
         {
-            print_visitor(Out& out) : out(out) {}
+            print_visitor(Out& out)
+                : out(out)
+            {}
 
             template <typename T>
             void operator()(T const& val) const
@@ -68,28 +74,30 @@ namespace boost::spirit::x3::traits
         };
     }
 
-    template <typename Out, typename T, typename Enable = void>
+    template <typename Out, typename T>
     struct print_attribute_debug
     {
-        // for unused_type
-        static void call(Out& out, unused_type, unused_attribute)
+        static void call(Out& out, unused_type const&)
         {
             out << "unused";
         }
 
-        // for plain data types
-        template <typename T_>
-        static void call(Out& out, T_ const& val, plain_attribute)
+        static void call(Out& out, unused_container_type const&)
+        {
+            out << "unused_container";
+        }
+
+        static void call(Out& out, CategorizedAttr<plain_attribute> auto const& val)
         {
             out << val;
         }
 
 #ifdef BOOST_SPIRIT_X3_UNICODE
-        static void call(Out& out, char_encoding::unicode::char_type val, plain_attribute)
+        static void call(Out& out, char_encoding::unicode::char_type const& val)
         {
             if (val >= 0 && val < 127)
             {
-              if (iscntrl(val))
+              if (iscntrl(val)) // TODO
                 out << "\\" << std::oct << int(val) << std::dec;
               else if (isprint(val))
                 out << char(val);
@@ -100,72 +108,67 @@ namespace boost::spirit::x3::traits
               out << "\\x" << std::hex << int(val) << std::dec;
         }
 
-        static void call(Out& out, char val, plain_attribute tag)
+        static void call(Out& out, char const& val)
         {
-            call(out, static_cast<char_encoding::unicode::char_type>(val), tag);
+            print_attribute_debug::call(out, static_cast<char_encoding::unicode::char_type>(val));
         }
 #endif
 
         // for fusion data types
-        template <typename T_>
-        static void call(Out& out, T_ const& val, tuple_attribute)
+        static void call(Out& out, CategorizedAttr<tuple_attribute> auto const& val)
         {
             out << '[';
             fusion::for_each(val, detail::print_fusion_sequence<Out>(out));
             out << ']';
         }
 
-        // stl container
-        template <typename T_>
-        static void call(Out& out, T_ const& val, container_attribute)
+        template <CategorizedAttr<container_attribute> T_>
+            requires (!std::is_same_v<T_, unused_container_type>)
+        static void call(Out& out, T_ const& val)
         {
             out << '[';
-            if (!traits::is_empty(val))
+            bool is_first = true;
+            auto last = traits::end(val);
+            for (auto it = traits::begin(val); it != last; ++it)
             {
-                bool first = true;
-                typename container_iterator<T_ const>::type iend = traits::end(val);
-                for (typename container_iterator<T_ const>::type i = traits::begin(val);
-                     !traits::compare(i, iend); traits::next(i))
+                if (is_first)
                 {
-                    if (!first)
-                        out << ", ";
-                    first = false;
-                    x3::traits::print_attribute(out, traits::deref(i));
+                    is_first = false;
                 }
+                else
+                {
+                    out << ", ";
+                }
+                x3::traits::print_attribute(out, *it);
             }
             out << ']';
         }
 
         // for variant types
-        template <typename T_>
-        static void call(Out& out, T_ const& val, variant_attribute)
+        static void call(Out& out, CategorizedAttr<variant_attribute> auto const& val)
         {
-            apply_visitor(detail::print_visitor<Out>(out), val);
+            boost::apply_visitor(detail::print_visitor<Out>(out), val);
         }
 
-        // for optional types
-        template <typename T_>
-        static void call(Out& out, T_ const& val, optional_attribute)
+        static void call(Out& out, CategorizedAttr<optional_attribute> auto const& val)
         {
             if (val)
+            {
                 x3::traits::print_attribute(out, *val);
+            }
             else
+            {
                 out << "[empty]";
-        }
-
-        // main entry point
-        static void call(Out& out, T const& val)
-        {
-            call(out, val, typename attribute_category<T>::type());
+            }
         }
     };
 
-    ///////////////////////////////////////////////////////////////////////////
     template <typename Out, typename T>
-    inline void print_attribute(Out& out, T const& val)
+    void print_attribute(Out& out, T const& val)
     {
         print_attribute_debug<Out, T>::call(out, val);
     }
+
 } // boost::spirit::x3::traits
 
 #endif

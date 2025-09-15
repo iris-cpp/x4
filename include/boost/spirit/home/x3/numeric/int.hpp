@@ -34,10 +34,11 @@ namespace boost::spirit::x3
         using attribute_type = T;
         static constexpr bool has_attribute = true;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool parse(
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(
             It& first, Se const& last,
-            Context const& context, unused_type, Attribute& attr
+            Context const& context, RContext const&, Attribute& attr
         ) const noexcept(
             noexcept(x3::skip_over(first, last, context)) &&
             noexcept(extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))

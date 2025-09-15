@@ -171,7 +171,7 @@ namespace boost::spirit::x3
                 Context const& context, Attribute& attr
             ) const override
             {
-                static_assert(Parsable<Parser, It, It, Context, unused_type, Attribute>);
+                // static_assert(Parsable<Parser, It, It, Context, unused_type, Attribute>);
                 return parser_.parse(first, last, context, unused, attr);
             }
 

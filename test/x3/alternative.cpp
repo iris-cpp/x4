@@ -191,9 +191,7 @@ int main()
         using boost::spirit::x3::rule;
 
         rule<class r1, value_type> r1;
-        auto r1_ = r1 = r1 | eps; // left recursive!
-
-        unused = r1_; // silence unused local warning
+        [[maybe_unused]] auto r1_ = r1 = r1 | eps; // left recursive!
     }
 
     {
@@ -204,10 +202,8 @@ int main()
         rule<class include, di_include> include;
         rule<class line, d_line> line;
 
-        auto start =
+        [[maybe_unused]] auto start =
             line = include | ignore;
-
-        unused = start; // silence unused local warning
     }
 
     // single-element fusion vector tests

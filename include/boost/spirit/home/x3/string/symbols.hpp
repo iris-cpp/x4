@@ -249,13 +249,13 @@ namespace detail
             return this->find_impl(s.begin(), s.end());
         }
 
-        template <std::forward_iterator Iterator, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool parse(
-            Iterator& first, Iterator const& last, Context const& context, unused_type, Attribute& attr
-        ) const noexcept(
-            noexcept(x3::skip_over(first, last, context)) &&
-            noexcept(x3::traits::move_to(std::declval<value_type const&>(), attr))
-        )
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr) const
+            noexcept(
+                noexcept(x3::skip_over(first, last, context)) &&
+                noexcept(x3::traits::move_to(std::declval<value_type const&>(), attr))
+            )
         {
             x3::skip_over(first, last, context);
 

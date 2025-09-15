@@ -28,6 +28,7 @@
 #include <iterator>
 #include <ranges>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 
 namespace boost::spirit::x3::traits
@@ -87,19 +88,32 @@ namespace boost::spirit::x3::traits
     // unused_type -------------------------------------------
     template <typename Source, typename Dest>
         requires
-            CategorizedAttr<Source, unused_attribute> ||
-            CategorizedAttr<Dest, unused_attribute>
+            std::same_as<std::remove_cvref_t<Source>, unused_type> ||
+            std::same_as<std::remove_const_t<Dest>, unused_type> ||
+            std::same_as<std::remove_cvref_t<Source>, unused_container_type> ||
+            std::same_as<std::remove_const_t<Dest>, unused_container_type>
     constexpr void move_to(Source&&, Dest&) noexcept
     {
+        // unused attribute
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Dest>
-        requires
-            std::is_same_v<std::remove_const_t<Dest>, unused_type>
-    constexpr void
-    move_to(It, Se, Dest&) noexcept
+    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    constexpr void move_to(It const&, Se const&, unused_container_type const&)
     {
+        // unused attribute
     }
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    constexpr void move_to(It const&, Se const&, unused_type&) = delete; // the call site is lacking `x3::assume_container`
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    constexpr void move_to(It const&, Se const&, unused_type const&) = delete; // the call site is lacking `x3::assume_container`
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    constexpr void move_to(It const&, Se const&, unused_type&&) = delete; // the call site is lacking `x3::assume_container`
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // the call site is lacking `x3::assume_container`
 
     // Category specific --------------------------------------
 
@@ -207,6 +221,8 @@ namespace boost::spirit::x3::traits
     move_to(It first, Se last, Dest& dest)
         // never noexcept, requires container insertion
     {
+        static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
+
         if (traits::is_empty(dest))
         {
             dest = Dest(first, last);

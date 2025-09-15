@@ -1,11 +1,12 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Hartmut Kaiser
     Copyright (c) 2001-2011 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM)
+#ifndef BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM
 #define BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM
 
 #include <boost/spirit/home/x3/core/parser.hpp>
@@ -13,8 +14,8 @@
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
 #include <cstdint>
 
-#include <boost/endian/conversion.hpp>
-#include <boost/endian/arithmetic.hpp>
+#include <boost/endian/conversion.hpp> // TODO: remove this
+#include <boost/endian/arithmetic.hpp> // TODO: remove this
 #include <boost/mpl/or.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_enum.hpp>

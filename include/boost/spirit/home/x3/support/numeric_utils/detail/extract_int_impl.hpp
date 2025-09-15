@@ -183,6 +183,10 @@ namespace boost::spirit::x3::detail
             requires need_check_overflow<T>
         [[nodiscard]] static constexpr bool
         call(Char ch, std::size_t count, T& n)
+            noexcept(
+                noexcept(Accumulator::unchecked_add(n, ch)) &&
+                noexcept(Accumulator::checked_add(n, ch))
+            )
         {
             constexpr std::size_t overflow_free = digits_traits<T, Radix>::value - 1;
 
@@ -204,6 +208,7 @@ namespace boost::spirit::x3::detail
             requires (!need_check_overflow<T>)
         [[nodiscard]] static constexpr bool
         call(Char ch, std::size_t /*count*/, T& n)
+            noexcept(noexcept(Accumulator::unchecked_add(n, ch)))
         {
             Accumulator::unchecked_add(n, ch);
             return true;
@@ -211,7 +216,7 @@ namespace boost::spirit::x3::detail
 
         template <typename Char>
         [[nodiscard]] static constexpr bool
-        call(Char /*ch*/, std::size_t /*count*/, unused_type&)
+        call(Char /*ch*/, std::size_t /*count*/, unused_type const&) noexcept
         {
             return true;
         }
@@ -308,14 +313,21 @@ namespace boost::spirit::x3::detail
 
         template <std::forward_iterator It, std::sentinel_for<It> Se>
         [[nodiscard]] static constexpr bool
-        parse(It& first, Se const& last, unused_type)
+        parse(It& first, Se const& last, unused_type const&)
             noexcept(
                 std::is_nothrow_constructible_v<T, int> &&
                 noexcept(extract_int::parse_main(first, last, std::declval<T&>()))
             )
         {
-            T n(0); // must calculate value to detect over/underflow
-            return extract_int::parse_main(first, last, n);
+            if constexpr (std::is_same_v<T, unused_type>)
+            {
+                return extract_int::parse_main(first, last, unused);
+            }
+            else
+            {
+                T n(0); // must calculate value to detect over/underflow
+                return extract_int::parse_main(first, last, n);
+            }
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
@@ -372,14 +384,17 @@ namespace boost::spirit::x3::detail
                 if (it == last)
                 {
                     if (count == 0) return false; // must have at least one digit
-                    attr = 0;
+                    if constexpr (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+                    {
+                        attr = 0;
+                    }
                     first = it;
                     return true;
                 }
             }
 
             using attribute_type = traits::attribute_type_t<Attribute>;
-            attribute_type val = Accumulate ? attr : attribute_type(0);
+            attribute_type val = Accumulate ? attr : attribute_type{};
 
             char_type ch = *it;
             if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val))
@@ -413,8 +428,15 @@ namespace boost::spirit::x3::detail
                 noexcept(extract_int::parse_main(first, last, std::declval<T&>()))
             )
         {
-            T n(0); // must calculate value to detect over/underflow
-            return extract_int::parse_main(first, last, n);
+            if constexpr (std::is_same_v<T, unused_type>)
+            {
+                return extract_int::parse_main(first, last, unused);
+            }
+            else
+            {
+                T n(0); // must calculate value to detect over/underflow
+                return extract_int::parse_main(first, last, n);
+            }
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>

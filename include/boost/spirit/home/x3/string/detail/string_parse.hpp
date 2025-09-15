@@ -30,7 +30,7 @@ namespace boost::spirit::x3::detail
         for (; stri != str_last; ++stri, ++i)
             if (i == last || (compare(*stri, *i) != 0))
                 return false;
-        x3::traits::move_to(first, i, attr);
+        x3::traits::move_to(first, i, x3::assume_container(attr));
         first = i;
         return true;
     }
@@ -62,7 +62,7 @@ namespace boost::spirit::x3::detail
         for (; uc_i != uc_last; ++uc_i, ++lc_i, ++i)
             if (i == last || ((*uc_i != *i) && (*lc_i != *i)))
                 return false;
-        x3::traits::move_to(first, i, attr);
+        x3::traits::move_to(first, i, x3::assume_container(attr));
         first = i;
         return true;
     }
