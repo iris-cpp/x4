@@ -1,31 +1,32 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>
 
 #include <string>
 #include <cstring>
 #include <iostream>
-#include "test.hpp"
 
-int
-main()
+int main()
 {
     using spirit_test::test_attr;
     using spirit_test::test;
 
-    using namespace boost::spirit::x3::ascii;
+    using namespace boost::spirit::x3::standard;
     using boost::spirit::x3::rule;
     using boost::spirit::x3::lit;
     using boost::spirit::x3::int_;
     using boost::spirit::x3::unused_type;
     using boost::spirit::x3::phrase_parse;
     using boost::spirit::x3::skip_flag;
-    using boost::spirit::x3::traits::has_attribute;
+    using boost::spirit::x3::traits::has_attribute_v;
 
 #ifdef BOOST_SPIRIT_X3_NO_RTTI
     BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(rule<class r>{});
@@ -34,11 +35,10 @@ main()
     BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"} = 'x');
 
     // check attribute advertising
-    static_assert( has_attribute<rule<class r, int>, /*Context=*/unused_type>::value, "");
-    static_assert(!has_attribute<rule<class r     >, /*Context=*/unused_type>::value, "");
-    static_assert( has_attribute<decltype(rule<class r, int>{} = int_), /*Context=*/unused_type>::value, "");
-    static_assert(!has_attribute<decltype(rule<class r     >{} = int_), /*Context=*/unused_type>::value, "");
-
+    static_assert( has_attribute_v<rule<class r, int>, /*Context=*/unused_type>);
+    static_assert(!has_attribute_v<rule<class r     >, /*Context=*/unused_type>);
+    static_assert( has_attribute_v<decltype(rule<class r, int>{} = int_), /*Context=*/unused_type>);
+    static_assert(!has_attribute_v<decltype(rule<class r     >{} = int_), /*Context=*/unused_type>);
 
     { // basic tests
 
