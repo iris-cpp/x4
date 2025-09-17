@@ -203,7 +203,6 @@ jobs:
           set -xe
           cp -rp $GITHUB_WORKSPACE libs/spirit
           cd libs/spirit/test
-          ln -s ../repository/test repository # workaround legacy directory structure
           cd ${{ matrix.spirit_component }}
 
           $BOOST_ROOT/b2 -d1 -j$BOOST_SPIRIT_BUILD_JOBS link=shared threading=multi variant=${{ matrix.build_type.lowercase }} toolset=${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} cxxstd=${{ matrix.cpp_version.number }} cxxflags="${{ matrix.compiler.cxxflags }}" $BOOST_SPIRIT_STDLIB warnings=extra warnings-as-errors=off
