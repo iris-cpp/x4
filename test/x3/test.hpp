@@ -9,9 +9,6 @@
 #ifndef BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 #define BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 
-// TODO: remove this
-#define BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE 0
-
 #include <boost/spirit/home/x3/core/parse.hpp>
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>

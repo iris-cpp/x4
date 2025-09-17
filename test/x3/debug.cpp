@@ -6,7 +6,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 #define BOOST_SPIRIT_X3_DEBUG
-#define BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE 0
 
 #include "test.hpp"
 
@@ -28,8 +27,7 @@ namespace x3 = boost::spirit::x3;
 struct my_error_handler
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    boost::spirit::x3::error_handler_result
-    operator()(It const&, Se const& last, Exception const& x, Context const&) const
+    void operator()(It const&, Se const& last, Exception const& x, Context const&) const
     {
         std::cout
             << "Error! Expecting: "
@@ -38,7 +36,6 @@ struct my_error_handler
             << std::string(x.where(), last)
             << "\""
             << std::endl;
-        return boost::spirit::x3::error_handler_result::fail;
     }
 };
 

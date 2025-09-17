@@ -69,12 +69,10 @@ namespace boost::spirit::x3
             auto const local_ctx = x3::make_context<skipper_tag>(skipper, context);
             bool const r = this->subject.parse(first, last, local_ctx, rcontext, attr);
 
-        #if !BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
             if (x3::has_expectation_failure(local_ctx))
             {
                 x3::set_expectation_failure(x3::get_expectation_failure(local_ctx), context);
             }
-        #endif
 
             return r;
         }
@@ -133,10 +131,6 @@ namespace boost::spirit::x3
         {
             static_assert(Parsable<Subject, It, Se, x3::context<skipper_tag, Context>, RContext, Attribute>);
 
-        #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-            return this->subject.parse(first, last, x3::make_context<skipper_tag>(skipper_, context), rcontext, attr);
-
-        #else
             static_assert(
                 !std::is_same_v<expectation_failure_t<Context>, unused_type>,
                 "Context type was not specified for x3::expectation_failure_tag. "
@@ -154,7 +148,6 @@ namespace boost::spirit::x3
                 x3::set_expectation_failure(x3::get_expectation_failure(local_ctx), context);
             }
             return r;
-        #endif
         }
 
     private:

@@ -22,16 +22,13 @@ struct my_tag;
 struct my_rule_class
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    [[nodiscard]] x3::error_handler_result
-    on_error(It const&, Se const&, Exception const&, Context const& context)
+    void on_error(It const&, Se const&, Exception const&, Context const& context)
     {
         ++x3::get<my_tag>(context);
-        return x3::error_handler_result::fail;
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
-    void
-    on_success(It const&, Se const&, Attribute&, Context const& context)
+    void on_success(It const&, Se const&, Attribute&, Context const& context)
     {
         ++x3::get<my_tag>(context);
     }
@@ -50,15 +47,6 @@ namespace
         static_assert(std::same_as<decltype(with_val), T>);
         _pass(ctx) = with_val == _attr(ctx);
     })];
-
-    struct move_only
-    {
-        move_only() = default;
-        move_only(move_only const&) = delete;
-        move_only(move_only&&) noexcept {}
-        move_only& operator=(move_only const&) = delete;
-        move_only& operator=(move_only&&) noexcept { return *this; }
-    };
 
 } // anonymous
 
@@ -113,11 +101,11 @@ int main()
 
         // lvalue `move_only`
         {
-            move_only mo;
+            spirit_test::move_only mo;
             (void)with<my_tag>(mo)[int_];
         }
         {
-            move_only mo;
+            spirit_test::move_only mo;
             auto with_gen = with<my_tag>(mo); // passed-by-reference
             (void)with_gen[int_]; // permitted, never copies
             (void)std::move(with_gen)[int_];
@@ -125,10 +113,10 @@ int main()
 
         // rvalue `move_only`
         {
-            (void)with<my_tag>(move_only{})[int_];
+            (void)with<my_tag>(spirit_test::move_only{})[int_];
         }
         {
-            auto with_gen = with<my_tag>(move_only{});
+            auto with_gen = with<my_tag>(spirit_test::move_only{});
             // (void)with_gen[int_]; // requires copy-constructible
             (void)std::move(with_gen)[int_];
         }

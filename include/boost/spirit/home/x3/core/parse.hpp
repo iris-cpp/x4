@@ -8,9 +8,6 @@
 #ifndef BOOST_SPIRIT_X3_PARSE_APRIL_16_2006_0442PM
 #define BOOST_SPIRIT_X3_PARSE_APRIL_16_2006_0442PM
 
-// TODO: remove this
-#define BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE 0
-
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/core/parse_result.hpp>
 #include <boost/spirit/home/x3/core/skip_over.hpp>

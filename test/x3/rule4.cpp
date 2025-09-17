@@ -26,12 +26,8 @@ int got_it = 0;
 
 struct my_rule_class
 {
-    //template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    //x3::error_handler_result
-    //on_error(It const&, Se const& last, Exception const& x, Context const&)
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    x3::error_handler_result
-    on_error(It const&, Se const& last, Exception const& x, Context const&)
+    void on_error(It const&, Se const& last, Exception const& x, Context const&)
     {
         std::cout
             << "Error! Expecting: "
@@ -39,14 +35,11 @@ struct my_rule_class
             << ", got: \""
             << std::string(x.where(), last)
             << "\""
-            << std::endl
-            ;
-        return x3::error_handler_result::fail;
+            << std::endl;
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
-    void
-    on_success(It const&, Se const&, Attribute&, Context const&)
+    void on_success(It const&, Se const&, Attribute&, Context const&)
     {
         ++got_it;
     }

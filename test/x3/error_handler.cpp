@@ -21,15 +21,11 @@ namespace x3 = boost::spirit::x3;
 struct error_handler_base
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    x3::error_handler_result on_error(
-        It const&, Se const&,
-        Exception const& x, Context const& context
-    ) const
+    void on_error(It const&, Se const&, Exception const& x, Context const& context) const
     {
         std::string message = "Error! Expecting: " + x.which() + " here:";
         auto& error_handler = x3::get<x3::error_handler_tag>(context).get();
         error_handler(x.where(), message);
-        return x3::error_handler_result::fail;
     }
 };
 

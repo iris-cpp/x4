@@ -21,11 +21,6 @@ namespace boost::spirit::x3
     template <std::forward_iterator It, std::sentinel_for<It> Se = It>
     struct [[nodiscard]] parse_result
     {
-        static_assert(
-            BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE == 0,
-            "Using this class requires `#define BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE 0`"
-        );
-
         using iterator_type = It;
         using sentinel_type = Se;
 

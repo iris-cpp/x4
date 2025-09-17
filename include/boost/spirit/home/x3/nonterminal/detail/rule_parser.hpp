@@ -11,7 +11,6 @@
 
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/core/skip_over.hpp>
-#include <boost/spirit/home/x3/core/error_handler_types.hpp>
 #include <boost/spirit/home/x3/directive/expect.hpp>
 #include <boost/spirit/home/x3/support/expectation.hpp>
 #include <boost/spirit/home/x3/support/traits/transform_attribute.hpp>
@@ -156,16 +155,15 @@ namespace boost::spirit::x3::detail
     {
         // We intentionally make this hard error to prevent error-prone definition
         static_assert(
-            std::convertible_to<
+            std::is_void_v<
                 decltype(std::declval<ID&>().on_error(
                     std::declval<It const&>(),
                     std::declval<Se const&>(),
                     std::declval<expectation_failure<It> const&>(),
                     std::declval<Context const&>()
-                )),
-                x3::error_handler_result
+                ))
             >,
-            "The return type of `on_error` should be convertible to `x3::error_handler_result`."
+            "The return type of `on_error` should be `void`."
         );
     };
 
@@ -330,22 +328,12 @@ namespace boost::spirit::x3::detail
 
                 if (x3::has_expectation_failure(context)) {
                     auto const& x = x3::get_expectation_failure(context);
-
-                    switch (ID{}.on_error(std::as_const(first), std::as_const(last), *x, context))
-                    {
-                        case error_handler_result::fail:
-                            x3::clear_expectation_failure(context);
-                            return false;
-
-                        case error_handler_result::retry:
-                            continue;
-
-                        case error_handler_result::accept:
-                            return true;
-
-                        case error_handler_result::rethrow:
-                            return false; // TODO: design decision required
-                    }
+                    static_assert(
+                        std::is_void_v<decltype(ID{}.on_error(std::as_const(first), std::as_const(last), *x, context))>,
+                        "error handler should not return a value"
+                    );
+                    ID{}.on_error(std::as_const(first), std::as_const(last), *x, context);
+                    return false;
                 }
                 return false;
             }
