@@ -55,7 +55,7 @@ namespace boost::spirit::x3
                 typename detail::range_parse_parser_impl<R>::sentinel_type
             >;
 
-        struct parse_fn
+        struct parse_fn_main
         {
             // --------------------------------------------
             // parse(it/se)
@@ -118,7 +118,7 @@ namespace boost::spirit::x3
             static constexpr parse_result_for<R>
             operator()(R const& str, Parser&& p, Attribute& attr)
             {
-                return parse_fn::operator()(std::basic_string_view{str}, std::forward<Parser>(p), attr);
+                return parse_fn_main::operator()(std::basic_string_view{str}, std::forward<Parser>(p), attr);
             }
 
             // parse_result + R + Parser + Attribute
@@ -144,7 +144,7 @@ namespace boost::spirit::x3
             static constexpr void
             operator()(parse_result_for<R>& res, R const& str, Parser&& p, Attribute& attr)
             {
-                return parse_fn::operator()(res, std::basic_string_view{str}, std::forward<Parser>(p), attr);
+                return parse_fn_main::operator()(res, std::basic_string_view{str}, std::forward<Parser>(p), attr);
             }
 
             // --------------------------------------------
@@ -239,7 +239,7 @@ namespace boost::spirit::x3
             static constexpr parse_result_for<R>
             operator()(R const& str, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
-                return parse_fn::operator()(std::basic_string_view{str}, std::forward<Parser>(p), attr, s, flag);
+                return parse_fn_main::operator()(std::basic_string_view{str}, std::forward<Parser>(p), attr, s, flag);
             }
 
             // parse_result + R + Parser + Attribute + Skipper
@@ -282,9 +282,13 @@ namespace boost::spirit::x3
             static constexpr void
             operator()(parse_result_for<R>& res, R const& str, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
-                return parse_fn::operator()(res, std::basic_string_view{str}, std::forward<Parser>(p), attr, s, flag);
+                return parse_fn_main::operator()(res, std::basic_string_view{str}, std::forward<Parser>(p), attr, s, flag);
             }
+        }; // parse_fn_main
 
+        struct parse_fn : parse_fn_main
+        {
+            using parse_fn_main::operator();
 
             // --------------------------------------------
             // deprecated

@@ -34,9 +34,9 @@ namespace spirit_test
     namespace detail
     {
         // Provide `x3::unused` default arg fallback
-        struct parse_overloads : x3::detail::parse_fn
+        struct parse_overloads : x3::detail::parse_fn_main
         {
-            using x3::detail::parse_fn::operator();
+            using x3::detail::parse_fn_main::operator();
 
             // It/Se + Parser
             template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser>
