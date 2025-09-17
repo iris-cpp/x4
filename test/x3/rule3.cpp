@@ -36,21 +36,10 @@ struct f
     }
 };
 
-
-struct stationary
-{
-    explicit stationary(int i) : val{i} {}
-    stationary(stationary const&) = delete;
-    stationary& operator=(int i) { val = i; return *this; }
-
-    int val;
-};
-
-
 namespace check_stationary {
 
-boost::spirit::x3::rule<class a_r, stationary> const a;
-boost::spirit::x3::rule<class b_r, stationary> const b;
+boost::spirit::x3::rule<class a_r, spirit_test::stationary> const a;
+boost::spirit::x3::rule<class b_r, spirit_test::stationary> const b;
 
 auto const a_def = '{' >> boost::spirit::x3::int_ >> '}';
 auto const b_def = a;
@@ -155,7 +144,7 @@ int main()
 
     // ensure no unneeded synthesization, copying and moving occurred
     {
-        stationary st { 0 };
+        spirit_test::stationary st { 0 };
         BOOST_TEST(parse("{42}", check_stationary::b, st));
         BOOST_TEST_EQ(st.val, 42);
     }

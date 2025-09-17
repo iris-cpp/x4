@@ -127,6 +127,19 @@ namespace spirit_test
         return true;
     }
 
+    struct stationary
+    {
+        explicit stationary(int i) : val{i} {}
+        stationary(stationary const&) = delete;
+        stationary(stationary&&) = default;
+        stationary& operator=(stationary const&) = delete;
+        stationary& operator=(stationary&&) = default;
+
+        stationary& operator=(int i) { val = i; return *this; }
+
+        int val = 0;
+    };
+
     struct move_only
     {
         move_only() = default;

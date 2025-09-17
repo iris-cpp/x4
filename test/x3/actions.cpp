@@ -59,16 +59,6 @@ struct setnext
     char& next;
 };
 
-
-struct stationary : boost::noncopyable
-{
-    explicit stationary(int i) : val{i} {}
-    stationary& operator=(int i) { val = i; return *this; }
-
-    int val;
-};
-
-
 int main()
 {
     using x3::int_;
@@ -98,10 +88,13 @@ int main()
        BOOST_TEST(next == '1');
     }
 
-    { // ensure no unneeded synthesization, copying and moving occurred
+    {
+        // ensure no unneeded synthesization, copying and moving occurred
         auto p = '{' >> int_ >> '}';
 
-        stationary st { 0 };
+        spirit_test::stationary st { 0 };
+        static_assert(x3::X3Attribute<spirit_test::stationary>);
+
         BOOST_TEST(parse("{42}", p[([]{})], st));
         BOOST_TEST_EQ(st.val, 42);
     }

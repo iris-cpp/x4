@@ -63,6 +63,12 @@ int main()
         static_assert(test_use(unused_type{}));
     }
 
+    static_assert(x3::X3Attribute<unused_type>);
+    static_assert(x3::X3Attribute<unused_type const>);
+
+    static_assert(x3::X3Attribute<unused_container_type>);
+    static_assert(x3::X3Attribute<unused_container_type const>);
+
     std::cout << unused;
     std::cout << unused_mut;
     std::cin >> unused_mut;

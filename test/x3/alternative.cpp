@@ -38,17 +38,6 @@ BOOST_FUSION_ADAPT_STRUCT(di_include,
 
 struct undefined {};
 
-
-struct stationary
-{
-    explicit stationary(int i) : val{i} {}
-    stationary(stationary const&) = delete;
-    stationary& operator=(int i) { val = i; return *this; }
-
-    int val;
-};
-
-
 int main()
 {
     using boost::spirit::x3::standard::char_;
@@ -233,7 +222,7 @@ int main()
         // ensure no unneeded synthesization, copying and moving occurred
         auto p = '{' >> int_ >> '}';
 
-        stationary st { 0 };
+        spirit_test::stationary st { 0 };
         BOOST_TEST(parse("{42}", p | eps | p, st));
         BOOST_TEST_EQ(st.val, 42);
     }

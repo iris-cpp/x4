@@ -61,9 +61,9 @@ namespace boost::spirit::x3
             // parse(it/se)
 
             // It/Se + Parser + Attribute
-            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser, typename Attribute>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser>
             static constexpr parse_result<It, Se>
-            operator()(It first, Se last, Parser&& p, Attribute& attr)
+            operator()(It first, Se last, Parser&& p, X3Attribute auto& attr)
             {
                 std::optional<x3::expectation_failure<It>> expect_failure;
                 auto failure_ctx = x3::make_context<expectation_failure_tag>(expect_failure);
@@ -77,9 +77,9 @@ namespace boost::spirit::x3
             }
 
             // parse_result + It/Se + Parser + Attribute
-            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser, typename Attribute>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser>
             static constexpr void
-            operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, Attribute& attr)
+            operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, X3Attribute auto& attr)
             {
                 res.expect_failure.reset();
                 auto failure_ctx = x3::make_context<expectation_failure_tag>(res.expect_failure);
@@ -92,10 +92,10 @@ namespace boost::spirit::x3
             // parse(range)
 
             // R + Parser + Attribute
-            template <std::ranges::forward_range R, X3Parser<std::ranges::iterator_t<R>, std::ranges::sentinel_t<R>> Parser, typename Attribute>
+            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser>
                 requires (!traits::CharArray<R>)
             static constexpr parse_result_for<R>
-            operator()(R&& range, Parser&& p, Attribute& attr)
+            operator()(R&& range, Parser&& p, X3Attribute auto& attr)
             {
                 using It = std::ranges::iterator_t<R>;
                 using Se = std::ranges::sentinel_t<R>;
@@ -114,18 +114,18 @@ namespace boost::spirit::x3
             }
 
             // "str" + Parser + Attribute
-            template <traits::CharArray R, X3RangeParseParser<R> Parser, typename Attribute>
+            template <traits::CharArray R, X3RangeParseParser<R> Parser>
             static constexpr parse_result_for<R>
-            operator()(R const& str, Parser&& p, Attribute& attr)
+            operator()(R const& str, Parser&& p, X3Attribute auto& attr)
             {
                 return parse_fn_main::operator()(std::basic_string_view{str}, std::forward<Parser>(p), attr);
             }
 
             // parse_result + R + Parser + Attribute
-            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser, typename Attribute>
+            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser>
                 requires (!traits::CharArray<R>)
             static constexpr void
-            operator()(parse_result_for<R>& res, R&& range, Parser&& p, Attribute& attr)
+            operator()(parse_result_for<R>& res, R&& range, Parser&& p, X3Attribute auto& attr)
             {
                 using It = std::ranges::iterator_t<R>;
                 using Se = std::ranges::sentinel_t<R>;
@@ -140,9 +140,9 @@ namespace boost::spirit::x3
             }
 
             // parse_result + "str" + Parser + Attribute
-            template <traits::CharArray R, X3RangeParseParser<R> Parser, typename Attribute>
+            template <traits::CharArray R, X3RangeParseParser<R> Parser>
             static constexpr void
-            operator()(parse_result_for<R>& res, R const& str, Parser&& p, Attribute& attr)
+            operator()(parse_result_for<R>& res, R const& str, Parser&& p, X3Attribute auto& attr)
             {
                 return parse_fn_main::operator()(res, std::basic_string_view{str}, std::forward<Parser>(p), attr);
             }
@@ -151,9 +151,9 @@ namespace boost::spirit::x3
             // phrase_parse(it/se)
 
             // It/Se + Parser + Skipper + Attribute + (root_skipper_flag)
-            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser, typename Attribute, X3ExplicitParser<It, Se> Skipper>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser, X3ExplicitParser<It, Se> Skipper>
             static constexpr parse_result<It, Se>
-            operator()(It first, Se last, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+            operator()(It first, Se last, Parser&& p, X3Attribute auto& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
                 auto skipper_ctx = x3::make_context<skipper_tag>(s);
 
@@ -174,9 +174,9 @@ namespace boost::spirit::x3
             }
 
             // parse_result + It/Se + Parser + Skipper + Attribute + (root_skipper_flag)
-            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser, typename Attribute, X3ExplicitParser<It, Se> Skipper>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, X3Parser<It, Se> Parser, X3ExplicitParser<It, Se> Skipper>
             static constexpr void
-            operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+            operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, X3Attribute auto& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
                 auto skipper_ctx = x3::make_context<skipper_tag>(s);
 
@@ -196,15 +196,10 @@ namespace boost::spirit::x3
             // phrase_parse(range)
 
             // R + Parser + Attribute + Skipper + (root_skipper_flag)
-            template <
-                std::ranges::forward_range R,
-                X3RangeParseParser<R> Parser,
-                typename Attribute,
-                X3RangeParseSkipper<R> Skipper
-            >
+            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser, X3RangeParseSkipper<R> Skipper>
                 requires (!traits::CharArray<R>)
             static constexpr parse_result_for<R>
-            operator()(R&& range, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+            operator()(R&& range, Parser&& p, X3Attribute auto& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
                 using It = std::ranges::iterator_t<R>;
                 using Se = std::ranges::sentinel_t<R>;
@@ -230,28 +225,18 @@ namespace boost::spirit::x3
             }
 
             // "str" + Parser + Attribute + Skipper + (root_skipper_flag)
-            template <
-                traits::CharArray R,
-                X3RangeParseParser<R> Parser,
-                typename Attribute,
-                X3RangeParseSkipper<R> Skipper
-            >
+            template <traits::CharArray R, X3RangeParseParser<R> Parser, X3RangeParseSkipper<R> Skipper>
             static constexpr parse_result_for<R>
-            operator()(R const& str, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+            operator()(R const& str, Parser&& p, X3Attribute auto& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
                 return parse_fn_main::operator()(std::basic_string_view{str}, std::forward<Parser>(p), attr, s, flag);
             }
 
             // parse_result + R + Parser + Attribute + Skipper
-            template <
-                std::ranges::forward_range R,
-                X3RangeParseParser<R> Parser,
-                typename Attribute,
-                X3RangeParseSkipper<R> Skipper
-            >
+            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser, X3RangeParseSkipper<R> Skipper>
                 requires (!traits::CharArray<R>)
             static constexpr void
-            operator()(parse_result_for<R>& res, R&& range, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+            operator()(parse_result_for<R>& res, R&& range, Parser&& p, X3Attribute auto& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
                 using It = std::ranges::iterator_t<R>;
                 using Se = std::ranges::sentinel_t<R>;
@@ -273,14 +258,9 @@ namespace boost::spirit::x3
             }
 
             // parse_result + "str" + Parser + Attribute + Skipper
-            template <
-                traits::CharArray R,
-                X3RangeParseParser<R> Parser,
-                typename Attribute,
-                X3RangeParseSkipper<R> Skipper
-            >
+            template <traits::CharArray R, X3RangeParseParser<R> Parser, X3RangeParseSkipper<R> Skipper>
             static constexpr void
-            operator()(parse_result_for<R>& res, R const& str, Parser&& p, Attribute& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+            operator()(parse_result_for<R>& res, R const& str, Parser&& p, X3Attribute auto& attr, Skipper const& s, root_skipper_flag flag = root_skipper_flag::do_post_skip)
             {
                 return parse_fn_main::operator()(res, std::basic_string_view{str}, std::forward<Parser>(p), attr, s, flag);
             }
@@ -327,20 +307,12 @@ namespace boost::spirit::x3
             operator()(parse_result<It, Se>&, It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x3::unused`.
 
             // R + Parser + Skipper
-            template <
-                std::ranges::forward_range R,
-                X3RangeParseParser<R> Parser,
-                X3RangeParseSkipper<R> Skipper
-            >
+            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser, X3RangeParseSkipper<R> Skipper>
             static constexpr void
             operator()(R&&, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x3::unused`.
 
             // parse_result + R + Parser + Skipper
-            template <
-                std::ranges::forward_range R,
-                X3RangeParseParser<R> Parser,
-                X3RangeParseSkipper<R> Skipper
-            >
+            template <std::ranges::forward_range R, X3RangeParseParser<R> Parser, X3RangeParseSkipper<R> Skipper>
             static constexpr void
             operator()(parse_result_for<R>&, R&&, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x3::unused`.
 
