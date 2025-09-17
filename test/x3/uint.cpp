@@ -25,10 +25,10 @@
 
 constexpr std::string_view max_unsigned = "4294967295";
 constexpr std::string_view unsigned_overflow = "4294967296";
-constexpr std::string_view max_int = "2147483647";
-constexpr std::string_view int_overflow = "2147483648";
-constexpr std::string_view min_int = "-2147483648";
-constexpr std::string_view int_underflow = "-2147483649";
+// constexpr std::string_view max_int = "2147483647";
+// constexpr std::string_view int_overflow = "2147483648";
+// constexpr std::string_view min_int = "-2147483648";
+// constexpr std::string_view int_underflow = "-2147483649";
 constexpr std::string_view max_binary = "11111111111111111111111111111111";
 constexpr std::string_view binary_overflow = "100000000000000000000000000000000";
 constexpr std::string_view max_octal = "37777777777";
