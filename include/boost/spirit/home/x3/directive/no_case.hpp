@@ -1,54 +1,84 @@
 /*=============================================================================
     Copyright (c) 2014 Thomas Bernard
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_NO_CASE_SEPT_16_2014_0912PM)
+#ifndef BOOST_SPIRIT_X3_NO_CASE_SEPT_16_2014_0912PM
 #define BOOST_SPIRIT_X3_NO_CASE_SEPT_16_2014_0912PM
 
 #include <boost/spirit/home/x3/support/context.hpp>
 #include <boost/spirit/home/x3/support/unused.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 #include <boost/spirit/home/x3/core/parser.hpp>
 
-namespace boost { namespace spirit { namespace x3
+#include <iterator>
+#include <type_traits>
+#include <utility>
+
+namespace boost::spirit::x3
 {
     // propagate no_case information through the context
     template <typename Subject>
     struct no_case_directive : unary_parser<Subject, no_case_directive<Subject>>
     {
-        typedef unary_parser<Subject, no_case_directive<Subject> > base_type;
-        static bool const is_pass_through_unary = true;
-        static bool const handles_container = Subject::handles_container;
+        using base_type = unary_parser<Subject, no_case_directive<Subject>>;
 
-        constexpr no_case_directive(Subject const& subject)
-          : base_type(subject) {}
+        static constexpr bool is_pass_through_unary = true;
+        static constexpr bool handles_container = Subject::handles_container;
 
-        template <typename Iterator, typename Context
-          , typename RContext, typename Attribute>
-        bool parse(Iterator& first, Iterator const& last
-          , Context const& context, RContext& rcontext, Attribute& attr) const
+        template <typename SubjectT>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<SubjectT>, no_case_directive>) &&
+                std::is_constructible_v<Subject, SubjectT>
+        constexpr no_case_directive(SubjectT&& subject)
+            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            : base_type(std::forward<SubjectT>(subject))
+        {}
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+            noexcept(noexcept(
+                this->subject.parse(
+                    first, last,
+                    x3::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
+                    rcontext,
+                    attr
+                )
+            ))
         {
             return this->subject.parse(
-                first, last
-              , make_context<no_case_tag>(no_case_compare_, context)
-              , rcontext
-              , attr);
+                first, last,
+                x3::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
+                rcontext,
+                attr
+            );
         }
     };
 
-    struct no_case_gen
+    namespace detail
     {
-        template <typename Subject>
-        constexpr no_case_directive<typename extension::as_parser<Subject>::value_type>
-        operator[](Subject const& subject) const
+        struct no_case_gen
         {
-            return { as_parser(subject) };
-        }
-    };
+            template <X3Subject Subject>
+            [[nodiscard]] constexpr no_case_directive<as_parser_plain_t<Subject>>
+            operator[](Subject&& subject) const
+                noexcept(is_parser_nothrow_constructible_v<no_case_directive<as_parser_plain_t<Subject>>, Subject>)
+            {
+                return { as_parser(std::forward<Subject>(subject)) };
+            }
+        };
 
-    constexpr auto no_case = no_case_gen{};
-}}}
+    } // detail
+
+    inline namespace cpos
+    {
+        inline constexpr detail::no_case_gen no_case{};
+
+    } // cpos
+
+} // boost::spirit::x3
 
 #endif

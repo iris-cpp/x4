@@ -15,7 +15,7 @@
 #include <boost/spirit/home/x3/support/unused.hpp>
 #include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 
 #include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
 #include <boost/spirit/home/x3/char_encoding/ascii.hpp>

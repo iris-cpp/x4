@@ -14,7 +14,7 @@
 #include <boost/spirit/home/x3/core/skip_over.hpp>
 
 #include <boost/spirit/home/x3/support/unused.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 #include <boost/spirit/home/x3/support/utility/utf8.hpp>
 
 #include <string>
