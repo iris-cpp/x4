@@ -12,11 +12,6 @@
 #include <boost/spirit/home/x3/support/traits/attribute_of.hpp>
 #include <boost/spirit/home/x3/core/call.hpp>
 
-#ifndef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
-# pragma message("Use of `boost::iterator_range` is deprecated in X3. #define BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE")
-# include <boost/range/iterator_range_core.hpp>
-#endif
-
 #include <ranges>
 #include <iterator>
 #include <concepts>
@@ -97,11 +92,7 @@ namespace boost::spirit::x3
             Attribute,
             x3::context<
                 where_context_tag,
-            #ifdef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
                 std::ranges::subrange<It, Se> const,
-            #else
-                boost::iterator_range<It> const,
-            #endif
                 x3::context<
                     rule_val_context_tag,
                     RContext,
@@ -122,11 +113,7 @@ namespace boost::spirit::x3
             Context const& context, RContext& rcontext, Attribute& attr
         ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
         {
-        #ifdef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
             using where_range_t = std::ranges::subrange<It, Se>;
-        #else
-            using where_range_t = boost::iterator_range<It>;
-        #endif
 
             static_assert(
                 std::is_void_v<std::invoke_result_t<Action const&, composed_context_t<It, Se, Context, RContext, Attribute> const&>>,
@@ -216,12 +203,8 @@ namespace boost::spirit::x3
             It& first, Se const& last, Context const& context, RContext& rcontext, raw_attribute_type&
         ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
         {
-        #ifdef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
-            std::ranges::subrange<It, Se> rng;
-        #else
-            boost::iterator_range<It> rng;
-        #endif
             // synthesize the attribute since one is not supplied
+            std::ranges::subrange<It, Se> rng;
             return this->parse_main(first, last, context, rcontext, rng);
         }
     };

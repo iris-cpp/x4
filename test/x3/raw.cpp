@@ -12,6 +12,7 @@
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/variant.hpp>
 
+#include <ranges>
 #include <iostream>
 #include <string>
 
@@ -39,7 +40,7 @@ int main()
     BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(raw['x']);
 
     {
-        boost::iterator_range<std::string_view::const_iterator> range;
+        std::ranges::subrange<std::string_view::const_iterator> range;
         std::string str;
         BOOST_TEST(parse("spirit_test_123", raw[alpha >> *(alnum | '_')], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "spirit_test_123"));
@@ -58,38 +59,38 @@ int main()
     }
 
     {
-        boost::iterator_range<std::string_view::const_iterator> range;
+        std::ranges::subrange<std::string_view::const_iterator> range;
         BOOST_TEST(parse("x", raw[alpha]));
         BOOST_TEST(parse("x", raw[alpha], range));
         BOOST_TEST(parse("x", raw[alpha] >> eps, range));
     }
 
     {
-        boost::iterator_range<std::string_view::const_iterator> range;
+        std::ranges::subrange<std::string_view::const_iterator> range;
         BOOST_TEST(parse("x", raw[alpha][ ([&](auto& ctx){ range = _attr(ctx); }) ]));
         BOOST_TEST(range.size() == 1 && *range.begin() == 'x');
     }
 
     {
-        boost::iterator_range<std::string_view::const_iterator> range;
+        std::ranges::subrange<std::string_view::const_iterator> range;
         BOOST_TEST(parse("x123x", lit('x') >> raw[+digit] >> lit('x')));
         BOOST_TEST(parse("x123x", lit('x') >> raw[+digit] >> lit('x'), range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "123"));
     }
 
     {
-        using range = boost::iterator_range<std::string::iterator>;
+        using range = std::ranges::subrange<std::string::iterator>;
         boost::variant<int, range> attr;
 
         std::string str("test");
-        (void)parse(str.begin(), str.end(),  (int_ | raw[*char_]), attr);
+        (void)parse(str.begin(), str.end(), (int_ | raw[*char_]), attr);
 
         auto rng = boost::get<range>(attr);
         BOOST_TEST(std::string(rng.begin(), rng.end()) == "test");
     }
 
     {
-        std::vector<boost::iterator_range<std::string::iterator>> attr;
+        std::vector<std::ranges::subrange<std::string::iterator>> attr;
         std::string str("123abcd");
         (void)parse(str.begin(), str.end()
           , (raw[int_] >> raw[*char_])
@@ -101,7 +102,7 @@ int main()
     }
 
     {
-        std::pair<int, boost::iterator_range<std::string::iterator>> attr;
+        std::pair<int, std::ranges::subrange<std::string::iterator>> attr;
         std::string str("123abcd");
         (void)parse(str.begin(), str.end()
           , (int_ >> raw[*char_])
@@ -113,14 +114,14 @@ int main()
 
     {
         // test with simple rule
-        boost::iterator_range<std::string_view::const_iterator> range;
+        std::ranges::subrange<std::string_view::const_iterator> range;
         BOOST_TEST(parse("123", raw[direct_rule], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "123"));
     }
 
     {
         // test with complex rule
-        boost::iterator_range<std::string_view::const_iterator> range;
+        std::ranges::subrange<std::string_view::const_iterator> range;
         BOOST_TEST(parse("123", raw[indirect_rule], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "123"));
     }

@@ -20,10 +20,6 @@
 #include <boost/fusion/include/copy.hpp>
 #include <boost/fusion/include/is_sequence.hpp>
 
-#ifndef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
-# include <boost/range/iterator_range_core.hpp> // deprecated
-#endif
-
 #include <memory>
 #include <iterator>
 #include <ranges>
@@ -232,15 +228,6 @@ namespace boost::spirit::x3::traits
             traits::append(dest, first, last);
         }
     }
-
-#ifndef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
-    template <std::forward_iterator It>
-    constexpr void
-    move_to(It first, It last, boost::iterator_range<It>& rng)
-    {
-        rng = {first, last};
-    }
-#endif
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
     constexpr void

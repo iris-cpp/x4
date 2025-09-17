@@ -7,7 +7,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 #define BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL 0
-#define BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
 
 #include "test.hpp"
 

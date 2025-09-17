@@ -1,17 +1,19 @@
 /*=============================================================================
     Copyright (c) 2014 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_POSITION_TAGGED_MAY_01_2014_0321PM)
+
+#ifndef BOOST_SPIRIT_X3_POSITION_TAGGED_MAY_01_2014_0321PM
 #define BOOST_SPIRIT_X3_POSITION_TAGGED_MAY_01_2014_0321PM
 
-#include <boost/range/iterator_range_core.hpp>
-#include <boost/type_traits/is_base_of.hpp>
-#include <boost/core/enable_if.hpp>
+#include <ranges>
+#include <type_traits>
+#include <utility>
 
-namespace boost { namespace spirit { namespace x3
+namespace boost::spirit::x3
 {
     struct position_tagged
     {
@@ -26,35 +28,31 @@ namespace boost { namespace spirit { namespace x3
     class position_cache
     {
     public:
-
-        typedef typename Container::value_type iterator_type;
+        using iterator_type = typename Container::value_type;
 
         position_cache(
             iterator_type first
           , iterator_type last)
           : first_(first), last_(last) {}
 
-        // This will catch all nodes inheriting from position_tagged
-        boost::iterator_range<iterator_type>
-        position_of(position_tagged const& ast) const
+        template <typename AST>
+            requires std::derived_from<AST, position_tagged>
+        [[nodiscard]] std::ranges::subrange<iterator_type>
+        position_of(AST const& ast) const
         {
-            return
-                boost::iterator_range<iterator_type>(
-                    positions.at(ast.id_first) // throws if out of range
-                  , positions.at(ast.id_last)  // throws if out of range
-                );
+            return std::ranges::subrange<iterator_type>{
+                positions.at(ast.id_first),
+                positions.at(ast.id_last)
+            };
         }
 
-        // This will catch all nodes except those inheriting from position_tagged
         template <typename AST>
-        typename boost::enable_if_c<
-            (!is_base_of<position_tagged, AST>::value)
-          , boost::iterator_range<iterator_type>
-        >::type
+            requires (!std::derived_from<AST, position_tagged>)
+        [[nodiscard]] std::ranges::subrange<iterator_type>
         position_of(AST const& /* ast */) const
         {
             // returns an empty position
-            return boost::iterator_range<iterator_type>();
+            return std::ranges::subrange<iterator_type>{};
         }
 
         // This will catch all nodes except those inheriting from position_tagged
@@ -89,12 +87,11 @@ namespace boost { namespace spirit { namespace x3
         iterator_type last() const { return last_; }
 
     private:
-
         Container positions;
         iterator_type first_;
         iterator_type last_;
     };
 
-}}}
+} // boost::spirit::x3
 
 #endif
