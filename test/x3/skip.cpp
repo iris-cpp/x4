@@ -6,6 +6,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
 #include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>
@@ -14,8 +15,6 @@
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
     using boost::spirit::x3::standard::space;
     using boost::spirit::x3::standard::space_type;
     using boost::spirit::x3::standard::char_;
@@ -24,28 +23,28 @@ int main()
     using boost::spirit::x3::skip;
     using boost::spirit::x3::lit;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
 
     {
-        BOOST_TEST((test("a b c d", skip(space)[*char_])));
+        BOOST_TEST(parse("a b c d", skip(space)[*char_]));
     }
 
     {
         // test attribute
         std::string s;
-        BOOST_TEST((test_attr("a b c d", skip(space)[*char_], s)));
+        BOOST_TEST(parse("a b c d", skip(space)[*char_], s));
         BOOST_TEST(s == "abcd");
     }
 
     {
         // reskip
-        BOOST_TEST((test("ab c d", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space)));
-        BOOST_TEST((test("abcd", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space)));
-        BOOST_TEST(!(test("a bcd", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space)));
+        BOOST_TEST(parse("ab c d", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space));
+        BOOST_TEST(parse("abcd", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space));
+        BOOST_TEST(!(parse("a bcd", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space)));
 
-        BOOST_TEST((test("ab c d", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space)));
-        BOOST_TEST((test("abcd", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space)));
-        BOOST_TEST(!(test("a bcd", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space)));
+        BOOST_TEST(parse("ab c d", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space));
+        BOOST_TEST(parse("abcd", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space));
+        BOOST_TEST(!(parse("a bcd", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space)));
     }
 
     return boost::report_errors();

@@ -1,28 +1,28 @@
 /*=============================================================================
     Copyright (c) 2001-2010 Joel de Guzman
     Copyright (c) 2001-2010 Hartmut Kaiser
+    Copyright (c) 2025 Nana Sakisaka
 
     Use, modification and distribution is subject to the Boost Software
     License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
     http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_TEST_X3_REAL_HPP)
+#ifndef BOOST_SPIRIT_TEST_X3_REAL_HPP
 #define BOOST_SPIRIT_TEST_X3_REAL_HPP
 
-#include <climits>
+#include "test.hpp"
+
 #include <boost/spirit/home/x3/char.hpp>
 #include <boost/spirit/home/x3/numeric.hpp>
 #include <boost/spirit/home/x3/operator.hpp>
 
-#include "test.hpp"
+#include <climits>
 
-#include <boost/type_traits/type_identity.hpp>
+#include <type_traits>
 
-///////////////////////////////////////////////////////////////////////////////
-//  These policies can be used to parse thousand separated
-//  numbers with at most 2 decimal digits after the decimal
-//  point. e.g. 123,456,789.01
-///////////////////////////////////////////////////////////////////////////////
+// These policies can be used to parse thousand separated
+// numbers with at most 2 decimal digits after the decimal
+// point. e.g. 123,456,789.01
 template <typename T>
 struct ts_real_policies : boost::spirit::x3::ureal_policies<T>
 {
@@ -62,13 +62,22 @@ struct ts_real_policies : boost::spirit::x3::ureal_policies<T>
         uint_parser<unsigned, 10, 1, 3> uint3;
         uint_parser<unsigned, 10, 3, 3> uint3_3;
 
-        if (parse(first, last, uint3, result))
+        if (auto res = parse(first, last, uint3, result); res.ok)
         {
             Accumulator n;
-            Iterator iter = first;
+            Iterator iter = res.remainder.begin();
+            first = iter;
 
-            while (x3::parse(iter, last, ',') && x3::parse(iter, last, uint3_3, n))
+            while (true)
             {
+                parse(res, iter, last, ',');
+                if (!res.ok) break;
+                iter = res.remainder.begin();
+
+                parse(res, iter, last, uint3_3, n);
+                if (!res.ok) break;
+                iter = res.remainder.begin();
+
                 result = result * 1000 + n;
                 first = iter;
             }
@@ -92,7 +101,7 @@ struct no_leading_dot_policy : boost::spirit::x3::real_policies<T>
 };
 
 template <typename T>
-bool compare(T n, boost::type_identity_t<T> expected)
+bool compare(T n, std::type_identity_t<T> expected)
 {
     using std::abs;
     using std::log10;
@@ -102,7 +111,6 @@ bool compare(T n, boost::type_identity_t<T> expected)
     return (delta >= -eps) && (delta <= eps);
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // A custom real type
 struct custom_real
 {

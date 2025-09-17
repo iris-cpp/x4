@@ -1,162 +1,172 @@
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman
+    Copyright (c) 2019 Nikita Kniazev
     Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM)
+#ifndef BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 #define BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 
+// TODO: remove this
+#define BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE 0
+
 #include <boost/spirit/home/x3/core/parse.hpp>
+#include <boost/spirit/home/x3/core/parser.hpp>
+#include <boost/spirit/home/x3/support/traits/move_to.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <iterator>
+#include <optional>
 #include <string_view>
 #include <iostream>
+#include <type_traits>
+#include <concepts>
+#include <utility>
+#include <print>
+
+namespace x3 = boost::spirit::x3;
 
 namespace spirit_test
 {
-    template <typename Char, typename Parser>
-    [[nodiscard]] bool test(
-        Char const* in, Parser const& p, bool full_match = true
-    )
+    namespace detail
     {
-        Char const* last = in;
-        while (*last)
-            last++;
-        return boost::spirit::x3::parse(in, last, p)
-            && (!full_match || (in == last));
-    }
+        // Provide `x3::unused` default arg fallback
+        struct parse_overloads : x3::detail::parse_fn
+        {
+            using x3::detail::parse_fn::operator();
 
-    template <typename Char, typename CharTraits, typename Parser>
-    [[nodiscard]] bool test(
-        std::basic_string_view<Char, CharTraits> in,
-        Parser const& p, bool full_match = true
-    )
+            // It/Se + Parser
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser>
+            static constexpr x3::parse_result<It, Se>
+            operator()(It first, Se last, Parser&& p)
+            {
+                return x3::parse(first, last, std::forward<Parser>(p), x3::unused);
+            }
+
+            // parse_result + It/Se + Parser
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser>
+            static constexpr void
+            operator()(x3::parse_result<It, Se>& res, It first, Se last, Parser&& p)
+            {
+                return x3::parse(res, first, last, std::forward<Parser>(p), x3::unused);
+            }
+
+            // R + Parser
+            template <std::ranges::forward_range R, x3::detail::X3RangeParseParser<R> Parser>
+            static constexpr x3::parse_result_for<R>
+            operator()(R&& r, Parser&& p)
+            {
+                return x3::parse(std::forward<R>(r), std::forward<Parser>(p), x3::unused);
+            }
+
+            // parse_result + R + Parser
+            template <std::ranges::forward_range R, x3::detail::X3RangeParseParser<R> Parser>
+            static constexpr void
+            operator()(x3::parse_result_for<R>& res, R&& r, Parser&& p)
+            {
+                return x3::parse(res, std::forward<R>(r), std::forward<Parser>(p), x3::unused);
+            }
+
+            // It/Se + Parser + Skipper
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser, x3::X3ExplicitParser<It, Se> Skipper>
+            static constexpr x3::parse_result<It, Se>
+            operator()(It first, Se last, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            {
+                return x3::parse(first, last, std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+            }
+
+            // parse_result + It/Se + Parser + Skipper
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser, x3::X3ExplicitParser<It, Se> Skipper>
+            static constexpr void
+            operator()(x3::parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            {
+                return x3::parse(res, first, last, std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+            }
+
+            // R + Parser + Skipper
+            template <
+                std::ranges::forward_range R,
+                x3::detail::X3RangeParseParser<R> Parser,
+                x3::detail::X3RangeParseSkipper<R> Skipper
+            >
+            static constexpr x3::parse_result_for<R>
+            operator()(R&& r, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            {
+                return x3::parse(std::forward<R>(r), std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+            }
+
+            // parse_result + R + Parser + Skipper
+            template <
+                std::ranges::forward_range R,
+                x3::detail::X3RangeParseParser<R> Parser,
+                x3::detail::X3RangeParseSkipper<R> Skipper
+            >
+            static constexpr void
+            operator()(x3::parse_result_for<R>& res, R&& r, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            {
+                return x3::parse(res, std::forward<R>(r), std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+            }
+        }; // parse_overload
+
+    } // detail
+
+    inline namespace cpos
     {
-        auto const last = in.end();
-        auto pos        = in.begin();
+        inline constexpr detail::parse_overloads parse{};
 
-        return boost::spirit::x3::parse(pos, last, p) && (!full_match || (pos == last));
-    }
-
-    template <typename Char, typename Parser, typename Skipper>
-    [[nodiscard]] bool test(
-        Char const* in, Parser const& p,
-        Skipper const& s, bool full_match = true
-    )
-    {
-        Char const* last = in;
-        while (*last)
-            last++;
-        return boost::spirit::x3::phrase_parse(in, last, p, s)
-            && (!full_match || (in == last));
-    }
-
-    template <typename Char, typename Parser>
-    [[nodiscard]] bool test_failure(Char const* in, Parser const& p)
-    {
-        Char const * const start = in;
-        Char const* last = in;
-        while (*last)
-            last++;
-
-        return !boost::spirit::x3::parse(in, last, p) && (in == start);
-    }
-
-    template <typename Char, typename CharTraits, typename Parser>
-    [[nodiscard]] bool test_failure(
-        std::basic_string_view<Char, CharTraits> const in, Parser const& p
-    )
-    {
-        auto pos = in.begin();
-        return !boost::spirit::x3::parse(pos, in.end(), p) && (pos == in.begin());
-    }
-
-    template <typename Char, typename Parser, typename Attr>
-    [[nodiscard]] bool test_attr(
-        Char const* in, Parser const& p,
-        Attr& attr, bool full_match = true
-    )
-    {
-        Char const* last = in;
-        while (*last)
-            last++;
-        return boost::spirit::x3::parse(in, last, p, attr)
-            && (!full_match || (in == last));
-    }
-
-    template <typename Char, typename Parser, typename Attr, typename Skipper>
-    [[nodiscard]] bool test_attr(
-        Char const* in, Parser const& p,
-        Attr& attr, Skipper const& s, bool full_match = true
-    )
-    {
-        Char const* last = in;
-        while (*last)
-            last++;
-        return boost::spirit::x3::phrase_parse(in, last, p, s, attr)
-            && (!full_match || (in == last));
-    }
-
-    template <typename Char, typename Parser>
-    [[nodiscard]] bool binary_test(
-        Char const* in, std::size_t size, Parser const& p,
-        bool full_match = true
-    )
-    {
-        Char const* last = in + size;
-        return boost::spirit::x3::parse(in, last, p)
-            && (!full_match || (in == last));
-    }
-
-    template <typename Char, typename Parser, typename Skipper>
-    [[nodiscard]] bool binary_test(
-        Char const* in, std::size_t size, Parser const& p,
-        Skipper const& s, bool full_match = true
-    )
-    {
-        Char const* last = in + size;
-        return boost::spirit::x3::phrase_parse(in, last, p, s)
-            && (!full_match || (in == last));
-    }
-
-    template <typename Char, typename Parser, typename Attr>
-    [[nodiscard]] bool binary_test_attr(
-        Char const* in, std::size_t size, Parser const& p,
-        Attr& attr, bool full_match = true
-    )
-    {
-        Char const* last = in + size;
-        return boost::spirit::x3::parse(in, last, p, attr)
-            && (!full_match || (in == last));
-    }
-
-    template <typename Char, typename Parser, typename Attr, typename Skipper>
-    [[nodiscard]] bool binary_test_attr(
-        Char const* in, std::size_t size, Parser const& p,
-        Attr& attr, Skipper const& s, bool full_match = true
-    )
-    {
-        Char const* last = in + size;
-        return boost::spirit::x3::phrase_parse(in, last, p, s, attr)
-            && (!full_match || (in == last));
-    }
-
-    template <typename... T>
-    [[nodiscard]] constexpr bool always_true(T&&...) { return true; }
+    } // cpos
 
     template <typename Parser>
-    [[nodiscard]] constexpr bool test_ctors(Parser const& p)
+    [[nodiscard]] constexpr bool test_constexpr_copy_move_ctors(Parser const& p)
     {
-        return always_true(
-                   static_cast<Parser>(static_cast<Parser&&>(  // test move ctor
-                       static_cast<Parser>(p))));              // test copy ctor
+        [[maybe_unused]] Parser copy_ctor(p);
+        [[maybe_unused]] Parser move_ctor(std::move(copy_ctor));
+        return true;
     }
-}
 
-# define BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(...) \
-    static_assert(::spirit_test::test_ctors(__VA_ARGS__), "")
+    struct move_only
+    {
+        move_only() = default;
+        move_only(move_only&&) = default;
+        move_only& operator=(move_only&&) = default;
+    };
+
+    template <typename T>
+    struct synth_parser : boost::spirit::x3::parser<synth_parser<T>>
+    {
+        using attribute_type = T;
+
+        static constexpr bool has_attribute = true;
+        static constexpr bool handles_container = false;
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool parse(
+            It& iter, Se const& last, Context const&,
+            RContext&, Attribute& attr
+        ) const
+        {
+            if (iter != last && *iter == 's') {
+                ++iter;
+                boost::spirit::x3::traits::move_to(attribute_type{}, attr);
+                return true;
+            }
+            return false;
+        }
+    };
+
+    template <typename T>
+    constexpr synth_parser<T> synth{};
+
+    constexpr synth_parser<move_only> synth_move_only{};
+
+} // spirit_test
+
+using spirit_test::parse;
+
+#define BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(...) \
+    static_assert(::spirit_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
 
 #endif

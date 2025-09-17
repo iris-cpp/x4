@@ -1,14 +1,18 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
-#include <cstring>
+
 #include <functional>
 
-#include "test.hpp"
+#include <cstring>
+
 
 #ifdef _MSC_VER
 // bogus https://developercommunity.visualstudio.com/t/buggy-warning-c4709/471956
@@ -67,28 +71,22 @@ struct stationary : boost::noncopyable
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
     using x3::int_;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(x3::int_type{}[std::true_type{}]);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(x3::int_type{}[std::true_type{}]);
 
     {
         char const *s1 = "{42}", *e1 = s1 + std::strlen(s1);
-        x3::parse(s1, e1, '{' >> int_[fun1] >> '}');
+        BOOST_TEST(parse(s1, e1, '{' >> int_[fun1] >> '}'));
     }
-
-
     {
         char const *s1 = "{42}", *e1 = s1 + std::strlen(s1);
-        x3::parse(s1, e1, '{' >> int_[fun_action()] >> '}');
+        BOOST_TEST(parse(s1, e1, '{' >> int_[fun_action()] >> '}'));
     }
-
     {
         using namespace std::placeholders;
         char const *s1 = "{42}", *e1 = s1 + std::strlen(s1);
-        x3::parse(s1, e1, '{' >> int_[std::bind(fun_action(), _1)] >> '}');
+        BOOST_TEST(parse(s1, e1, '{' >> int_[std::bind(fun_action(), _1)] >> '}'));
     }
 
     BOOST_TEST(x == (42*3));
@@ -96,8 +94,7 @@ int main()
     {
        std::string input("1234 6543");
        char next = '\0';
-       BOOST_TEST(x3::phrase_parse(input.begin(), input.end(),
-          x3::int_[fail] | x3::digit[setnext(next)], x3::space));
+       BOOST_TEST(parse(input, x3::int_[fail] | x3::digit[setnext(next)], x3::space).is_partial_match());
        BOOST_TEST(next == '1');
     }
 
@@ -105,7 +102,7 @@ int main()
         auto p = '{' >> int_ >> '}';
 
         stationary st { 0 };
-        BOOST_TEST(test_attr("{42}", p[([]{})], st));
+        BOOST_TEST(parse("{42}", p[([]{})], st));
         BOOST_TEST_EQ(st.val, 42);
     }
 

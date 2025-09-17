@@ -5,6 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
 #include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>
@@ -63,54 +64,51 @@ namespace
 
 int main()
 {
-    using spirit_test::test_attr;
-    using spirit_test::test;
-
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
 
     {
         constexpr int i = 0;
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
     }
 
     // check various value categories
     {
         {
             int i = 42;
-            BOOST_TEST(test("42", with<my_tag>(i)[value_equals<int&>]));
+            BOOST_TEST(parse("42", with<my_tag>(i)[value_equals<int&>]));
         }
         {
             int const i = 42;
-            BOOST_TEST(test("42", with<my_tag>(i)[value_equals<int const&>]));
+            BOOST_TEST(parse("42", with<my_tag>(i)[value_equals<int const&>]));
         }
         {
             int i = 42;
-            BOOST_TEST(test("42", with<my_tag>(std::move(i))[value_equals<int&>]));
+            BOOST_TEST(parse("42", with<my_tag>(std::move(i))[value_equals<int&>]));
         }
         {
             int const i = 42;
-            BOOST_TEST(test("42", with<my_tag>(std::move(i))[value_equals<int const&>]));
+            BOOST_TEST(parse("42", with<my_tag>(std::move(i))[value_equals<int const&>]));
         }
 
         {
             int i = 42;
             auto with_gen = with<my_tag>(i);
-            BOOST_TEST(test("42", with_gen[value_equals<int&>]));
+            BOOST_TEST(parse("42", with_gen[value_equals<int&>]));
         }
         {
             int const i = 42;
             auto with_gen = with<my_tag>(i);
-            BOOST_TEST(test("42", with_gen[value_equals<int const&>]));
+            BOOST_TEST(parse("42", with_gen[value_equals<int const&>]));
         }
         {
             int i = 42;
             auto with_gen = with<my_tag>(std::move(i));
-            BOOST_TEST(test("42", with_gen[value_equals<int&>]));
+            BOOST_TEST(parse("42", with_gen[value_equals<int&>]));
         }
         {
             int const i = 42;
             auto with_gen = with<my_tag>(std::move(i));
-            BOOST_TEST(test("42", with_gen[value_equals<int const&>]));
+            BOOST_TEST(parse("42", with_gen[value_equals<int const&>]));
         }
 
         // lvalue `move_only`
@@ -147,8 +145,8 @@ int main()
             with<my_tag>(std::ref(val)) [ r ]
             ;
 
-        BOOST_TEST(test("(123,456)", start));
-        BOOST_TEST(!test("(abc,def)", start));
+        BOOST_TEST(parse("(123,456)", start));
+        BOOST_TEST(!parse("(abc,def)", start));
         BOOST_TEST(val == 2);
     }
 
@@ -158,7 +156,7 @@ int main()
         auto const r  = int_[([](auto& ctx){
             x3::get<my_tag>(ctx) += x3::_attr(ctx);
         })];
-        BOOST_TEST(test("123,456", with<my_tag>(val)[r % ',']));
+        BOOST_TEST(parse("123,456", with<my_tag>(val)[r % ',']));
         BOOST_TEST(579 == val);
     }
 
@@ -172,7 +170,7 @@ int main()
                 x3::_val(ctx) = x3::get<my_tag>(ctx);
             })];
         int attr = 0;
-        BOOST_TEST(test_attr("(1,2,3)", with<my_tag>(100)[r2], attr));
+        BOOST_TEST(parse("(1,2,3)", with<my_tag>(100)[r2], attr));
         BOOST_TEST(106 == attr);
     }
 
@@ -194,17 +192,17 @@ int main()
 
         int attr = 0;
         int const cval = 10;
-        BOOST_TEST(test_attr("5", with<my_tag>(cval)[r], attr));
+        BOOST_TEST(parse("5", with<my_tag>(cval)[r], attr));
         BOOST_TEST(15 == attr); // x3::get returns const ref to cval
 
         attr = 0;
         int val = 10;
-        BOOST_TEST(test_attr("5", with<my_tag>(val)[r], attr));
+        BOOST_TEST(parse("5", with<my_tag>(val)[r], attr));
         BOOST_TEST(105 == attr); // x3::get returns ref to val
 
         attr = 0;
 
-        BOOST_TEST(test_attr("5", with<my_tag>(10)[r], attr));
+        BOOST_TEST(parse("5", with<my_tag>(10)[r], attr));
         // x3::get returns ref to member variable of with_directive
         BOOST_TEST(105 == attr);
     }

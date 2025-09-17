@@ -8,6 +8,7 @@
 #define BOOST_SPIRIT_X3_CORE_PARSE_RESULT_HPP
 
 #include <boost/spirit/home/x3/support/expectation.hpp>
+#include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 
 #include <optional>
 #include <iterator>
@@ -18,7 +19,7 @@
 namespace boost::spirit::x3
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se = It>
-    struct parse_result
+    struct [[nodiscard]] parse_result
     {
         static_assert(
             BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE == 0,
@@ -54,6 +55,11 @@ namespace boost::spirit::x3
             return std::basic_string_view<std::iter_value_t<It>>{remainder};
         }
 
+        [[nodiscard]] constexpr bool is_partial_match() const noexcept
+        {
+            return ok && !remainder.empty();
+        }
+
         [[nodiscard]] constexpr bool completed() const noexcept
         {
             // Cases:
@@ -83,8 +89,50 @@ namespace boost::spirit::x3
         }
     };
 
+    namespace detail
+    {
+        template <std::ranges::forward_range R>
+        struct parse_result_for_impl
+        {
+            using type = parse_result<std::ranges::iterator_t<R>, std::ranges::sentinel_t<R>>;
+        };
+
+        template <traits::CharArray R>
+        struct parse_result_for_impl<R>
+        {
+            using string_view_type = std::basic_string_view<
+                std::remove_const_t<std::remove_extent_t<std::remove_cvref_t<R>>>
+            >;
+
+            using type = parse_result<
+                typename string_view_type::const_iterator,
+                typename string_view_type::const_iterator
+            >;
+        };
+
+        template <std::ranges::forward_range R>
+        struct range_parse_parser_impl
+        {
+            using iterator_type = std::ranges::iterator_t<R>;
+            using sentinel_type = std::ranges::sentinel_t<R>;
+        };
+
+        template <traits::CharArray R>
+        struct range_parse_parser_impl<R>
+        {
+            using string_view_type = std::basic_string_view<
+                std::remove_const_t<std::remove_extent_t<std::remove_cvref_t<R>>>
+            >;
+
+            using iterator_type = typename string_view_type::const_iterator;
+            using sentinel_type = typename string_view_type::const_iterator;
+        };
+
+    } // detail
+
     template <std::ranges::forward_range R>
-    using parse_result_for = parse_result<std::ranges::iterator_t<R>, std::ranges::sentinel_t<R>>;
+    using parse_result_for = typename detail::parse_result_for_impl<R>::type;
+
 } // boost::spirit::x3
 
 #endif

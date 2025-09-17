@@ -36,19 +36,16 @@ int main()
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(omit['x']);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(omit['x']);
 
     {
-        BOOST_TEST(test("a", omit['a']));
+        BOOST_TEST(parse("a", omit['a']));
     }
 
     {
         // omit[] means we don't receive the attribute
         char attr;
-        BOOST_TEST((test_attr("abc", omit[char_] >> omit['b'] >> char_, attr)));
+        BOOST_TEST(parse("abc", omit[char_] >> omit['b'] >> char_, attr));
         BOOST_TEST((attr == 'c'));
     }
 
@@ -57,14 +54,14 @@ int main()
         // a single-element sequence. For this case alone, we allow
         // naked attributes (unwrapped in a fusion sequence).
         char attr;
-        BOOST_TEST((test_attr("abc", omit[char_] >> 'b' >> char_, attr)));
+        BOOST_TEST(parse("abc", omit[char_] >> 'b' >> char_, attr));
         BOOST_TEST((attr == 'c'));
     }
 
     {
         // omit[] means we don't receive the attribute
         vector<> attr;
-        BOOST_TEST((test_attr("abc", omit[char_] >> omit['b'] >> omit[char_], attr)));
+        BOOST_TEST(parse("abc", omit[char_] >> omit['b'] >> omit[char_], attr));
     }
 
     {
@@ -72,7 +69,7 @@ int main()
         // this test is merely a compile test, because using a unused as the
         // explicit attribute doesn't make any sense
         unused_type attr;
-        BOOST_TEST((test_attr("abc", omit[char_ >> 'b' >> char_], attr)));
+        BOOST_TEST(parse("abc", omit[char_ >> 'b' >> char_], attr));
     }
 
     {
@@ -80,7 +77,7 @@ int main()
         // sequence have unused attributes, the whole sequence has an unused
         // attribute as well
         vector<char, char> attr;
-        BOOST_TEST((test_attr("abcde",
+        BOOST_TEST((parse("abcde",
             char_ >> (omit[char_] >> omit['c'] >> omit[char_]) >> char_, attr)));
         BOOST_TEST((at_c<0>(attr) == 'a'));
         BOOST_TEST((at_c<1>(attr) == 'e'));
@@ -89,7 +86,7 @@ int main()
     {
         // "hello" has an unused_type. unused attrubutes are not part of the sequence
         vector<char, char> attr;
-        BOOST_TEST((test_attr("a hello c", char_ >> "hello" >> char_, attr, space)));
+        BOOST_TEST(parse("a hello c", char_ >> "hello" >> char_, attr, space));
         BOOST_TEST((at_c<0>(attr) == 'a'));
         BOOST_TEST((at_c<1>(attr) == 'c'));
     }
@@ -98,20 +95,20 @@ int main()
         // if only one node in a sequence is left (all the others are omitted),
         // then we need "naked" attributes (not wrapped in a tuple)
         int attr;
-        BOOST_TEST((test_attr("a 123 c", omit['a'] >> int_ >> omit['c'], attr, space)));
+        BOOST_TEST(parse("a 123 c", omit['a'] >> int_ >> omit['c'], attr, space));
         BOOST_TEST((attr == 123));
     }
 
     {
         // unused means we don't care about the attribute
-        BOOST_TEST((test_attr("abc", char_ >> 'b' >> char_, unused)));
+        BOOST_TEST(parse("abc", char_ >> 'b' >> char_, unused));
     }
 
     {   // test action with omitted attribute
         char c = 0;
         auto f = [&](auto& ctx){ c = _attr(ctx); };
 
-        BOOST_TEST(test("x123\"a string\"", (char_ >> omit[int_] >> "\"a string\"")[f]));
+        BOOST_TEST(parse("x123\"a string\"", (char_ >> omit[int_] >> "\"a string\"")[f]));
         BOOST_TEST(c == 'x');
     }
 
@@ -119,18 +116,18 @@ int main()
         int n = 0;
         auto f = [&](auto& ctx){ n = _attr(ctx); };
 
-        BOOST_TEST(test("x 123 \"a string\"", (omit[char_] >> int_ >> "\"a string\"")[f], space));
+        BOOST_TEST(parse("x 123 \"a string\"", (omit[char_] >> int_ >> "\"a string\"")[f], space));
         BOOST_TEST(n == 123);
     }
 
     {
         // test with simple rule
-        BOOST_TEST((test_attr("123", omit[direct_rule], unused)));
+        BOOST_TEST(parse("123", omit[direct_rule], unused));
     }
 
     {
         // test with complex rule
-        BOOST_TEST((test_attr("123", omit[indirect_rule], unused)));
+        BOOST_TEST(parse("123", omit[indirect_rule], unused));
     }
 
     return boost::report_errors();

@@ -13,15 +13,14 @@
 
 int main()
 {
-    using spirit_test::test;
     namespace x3 = boost::spirit::x3;
     using x3::eoi;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(eoi);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eoi);
 
     {
-        BOOST_TEST((test("", eoi)));
-        BOOST_TEST(!(test("x", eoi)));
+        BOOST_TEST(parse("", eoi));
+        BOOST_TEST(!(parse("x", eoi)));
     }
 
     {

@@ -18,7 +18,6 @@
 #include <boost/fusion/include/at.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/mpl/int.hpp>
 
 #include <optional>
 #include <iostream>
@@ -42,8 +41,6 @@ int eval(roman const & c)
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
     namespace x3 = boost::spirit::x3;
     using x3::shared_symbols;
 
@@ -70,28 +67,28 @@ int main()
         auto number = -hundreds >> -tens >> -ones;
 
         roman r;
-        BOOST_TEST((test_attr("CDXLII", number, r)));
+        BOOST_TEST(parse("CDXLII", number, r));
         BOOST_TEST(eval(r) == 442);
     }
 
     { // construction from initializer-list without attribute
         shared_symbols<> foo = {"a1", "a2", "a3"};
 
-        BOOST_TEST((test("a3", foo)));
+        BOOST_TEST(parse("a3", foo));
     }
 
     { // assignment from initializer-list
         shared_symbols<> foo;
         foo = {"a1", "a2", "a3"};
 
-        BOOST_TEST((test("a3", foo)));
+        BOOST_TEST(parse("a3", foo));
     }
 
     { // unicode | construction from initializer-list
         x3::shared_symbols_parser<x3::char_encoding::unicode, int> foo = {{U"a1", 1}, {U"a2", 2}, {U"a3", 3}};
 
         int r;
-        BOOST_TEST((test_attr(U"a3", foo, r)));
+        BOOST_TEST(parse(U"a3", foo, r));
         BOOST_TEST(r == 3);
     }
 

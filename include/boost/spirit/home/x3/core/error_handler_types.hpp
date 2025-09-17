@@ -19,10 +19,6 @@ namespace boost::spirit::x3
         rethrow, // see BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE for alternative behaviors
     };
 
-    // Note for X3 developers:
-    // You must at least sync the implementation of `rule_parser` and `guard`
-    // when you modify the semantics of error handlers.
-
 } // boost::spirit::x3
 
 #endif

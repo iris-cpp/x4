@@ -29,9 +29,6 @@ namespace boost::spirit::x3
     template <typename Subject, typename Action>
     struct action;
 
-    template <typename Subject, typename Handler>
-    struct guard;
-
     namespace detail
     {
         struct parser_base {};
@@ -83,23 +80,6 @@ namespace boost::spirit::x3
             >)
         {
             return { std::forward<Self>(self).derived(), std::forward<Action>(f) };
-        }
-
-        template <typename Self, typename Handler>
-            requires std::is_constructible_v<
-                guard<Derived, std::remove_cvref_t<Handler>>,
-                decltype(std::declval<Self>().derived()),
-                Handler
-            >
-        [[nodiscard]] constexpr guard<Derived, std::remove_cvref_t<Handler>>
-        on_error(this Self&& self, Handler&& f)
-            noexcept(std::is_nothrow_constructible_v<
-                guard<Derived, std::remove_cvref_t<Handler>>,
-                decltype(std::forward<Self>(self).derived()),
-                Handler
-            >)
-        {
-            return { std::forward<Self>(self).derived(), std::forward<Handler>(f) };
         }
     };
 
@@ -305,6 +285,16 @@ namespace boost::spirit::x3
     template <typename T>
     constexpr bool is_parser_nothrow_castable_v = is_parser_nothrow_castable<T>::value;
 
+
+    template <typename T>
+    concept X3ExplicitSubject =
+        std::is_base_of_v<detail::parser_base, std::remove_cvref_t<T>>;
+
+    template <typename T>
+    concept X3ImplicitSubject =
+        is_parser_castable_v<T> && // `as_parser(t)` is valid?
+        std::is_base_of_v<detail::parser_base, as_parser_plain_t<T>>;
+
     // A type that models `X3Subject` can be used in generic directives
     // and operators. Note that this concept is iterator-agnostic.
     //
@@ -313,9 +303,8 @@ namespace boost::spirit::x3
     // referring to that of the PEG semantics) if and only if `T`
     // models `X3Subject`.
     template <typename T>
-    concept X3Subject =
-        is_parser_castable_v<T> && // `as_parser(t)` is valid?
-        std::is_base_of_v<detail::parser_base, as_parser_plain_t<T>>;
+    concept X3Subject = X3ExplicitSubject<T> || X3ImplicitSubject<T>;
+
 
     // Checks whether `Parser(as_parser(t))` is valid.
     //
@@ -430,6 +419,17 @@ namespace boost::spirit::x3
     template <typename Parser, typename It, typename Se, typename Context, typename RContext, typename Attribute>
     constexpr bool is_nothrow_parsable_v = is_nothrow_parsable<Parser, It, Se, Context, RContext, Attribute>::value;
 
+
+    template <typename Parser, class It, class Se>
+    concept X3ExplicitParser =
+        X3ExplicitSubject<Parser> &&
+        is_parsable_v<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
+
+    template <typename Parser, class It, class Se>
+    concept X3ImplicitParser =
+        X3ImplicitSubject<Parser> &&
+        is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
+
     // The primary "parser" concept of X3, applicable in iterator-aware contexts.
     //
     // Let `it` denote an lvalue reference of `It`, and let `se` denote a prvalue of `Se`.
@@ -447,9 +447,7 @@ namespace boost::spirit::x3
     // core parsers of Spirit have historically been assuming natural use of `unused_type`
     // in many locations.
     template <typename Parser, class It, class Se>
-    concept X3Parser =
-        X3Subject<Parser> &&
-        is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
+    concept X3Parser = X3ExplicitParser<Parser, It, Se> || X3ImplicitParser<Parser, It, Se>;
 
 
     // The runtime type info that can be obtained via `x3::what(p)`.

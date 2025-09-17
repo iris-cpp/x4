@@ -24,9 +24,6 @@
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
     namespace x3 = boost::spirit::x3;
     namespace traits = x3::traits;
     using traits::Transformable;

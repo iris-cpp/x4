@@ -6,15 +6,17 @@
   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 
-#include <boost/core/lightweight_test.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/make_vector.hpp>
 #include <boost/fusion/include/equal_to.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/optional.hpp>
+
+#include <optional>
 #include <string>
+#include <type_traits>
 
 namespace x3 = boost::spirit::x3;
 
@@ -32,14 +34,13 @@ struct checked_attr_parser : x3::attr_parser<Value>
     bool parse(Iterator& first, Iterator const& last
       , Context const& ctx, RuleContext& rctx, Attribute& attr_) const
     {
-        static_assert(boost::is_same<Expected, Attribute>::value,
-            "attribute type check failed");
+        static_assert(std::is_same_v<Expected, Attribute>, "attribute type check failed");
         return base_t::parse(first, last, ctx, rctx, attr_);
     }
 };
 
 template <typename Expected, typename Value>
-static inline checked_attr_parser<boost::decay_t<Value>, Expected>
+static inline checked_attr_parser<std::decay_t<Value>, Expected>
 checked_attr(Value&& value) { return { std::forward<Value>(value) }; }
 
 // instantiate our type checker
@@ -106,12 +107,13 @@ void make_test(Attributes const&... attrs)
     // but it requires tremendous amount of heap to compile
     gen_tests<Attributes...>(attrs...);
     gen_tests<
-        boost::optional<Attributes>...
-      , boost::fusion::vector<Attributes>...
+        std::optional<Attributes>...,
+        boost::fusion::vector<Attributes>...
     >(attrs..., attrs...);
+
     gen_tests<
-        boost::optional<boost::fusion::vector<Attributes>>...
-      , boost::fusion::vector<boost::optional<Attributes>>...
+        std::optional<boost::fusion::vector<Attributes>>...,
+        boost::fusion::vector<std::optional<Attributes>>...
     >(boost::fusion::vector<Attributes>(attrs)..., attrs...);
 }
 

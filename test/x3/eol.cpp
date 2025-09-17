@@ -13,18 +13,17 @@
 
 int main()
 {
-    using spirit_test::test;
     namespace x3 = boost::spirit::x3;
     using x3::eol;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(eol);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eol);
 
     {
-        BOOST_TEST((test("\r\n", eol)));
-        BOOST_TEST((test("\r", eol)));
-        BOOST_TEST((test("\n", eol)));
-        BOOST_TEST((!test("\n\r", eol)));
-        BOOST_TEST((!test("", eol)));
+        BOOST_TEST(parse("\r\n", eol));
+        BOOST_TEST(parse("\r", eol));
+        BOOST_TEST(parse("\n", eol));
+        BOOST_TEST(!parse("\n\r", eol));
+        BOOST_TEST(!parse("", eol));
     }
 
     {

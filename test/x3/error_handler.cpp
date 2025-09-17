@@ -6,11 +6,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/utility/annotate_on_success.hpp>
 #include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
-
-#include <boost/core/lightweight_test.hpp>
 
 #include <iterator>
 #include <string>
@@ -44,7 +44,7 @@ auto const test_rule_def = x3::lit("foo") > test_inner_rule > x3::lit("git");
 BOOST_SPIRIT_X3_DEFINE(test_inner_rule)
 BOOST_SPIRIT_X3_DEFINE(test_rule)
 
-void test(std::string const& line_break)
+void do_parse(std::string const& line_break)
 {
     std::string const input("foo" + line_break + "  foo" + line_break + "git");
     auto const begin = std::begin(input);
@@ -55,7 +55,7 @@ void test(std::string const& line_break)
         x3::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
 
         auto const parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[test_rule];
-        (void)x3::phrase_parse(begin, end, parser, x3::standard::space);
+        (void)parse(begin, end, parser, x3::standard::space);
 
         BOOST_TEST_EQ(stream.str(), "In line 2:\nError! Expecting: \"bar\" here:\n  foo\n__^_\n");
     }
@@ -66,7 +66,7 @@ void test(std::string const& line_break)
         x3::error_handler<std::string::const_iterator> error_handler{ begin, end, stream };
 
         auto const parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[test_rule];
-        (void)x3::parse(begin, end, parser);
+        (void)parse(begin, end, parser);
 
         BOOST_TEST_CSTR_EQ(stream.str().c_str(), "In line 1:\nError! Expecting: \"bar\" here:\nfoo\n___^_\n");
     }
@@ -82,16 +82,16 @@ void test_line_break_first(std::string const& line_break)
     x3::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
 
     auto const parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[test_rule];
-    (void)x3::phrase_parse(begin, end, parser, x3::space);
+    (void)parse(begin, end, parser, x3::space);
 
     BOOST_TEST_EQ(stream.str(), "In line 2:\nError! Expecting: \"bar\" here:\nfoo  foo\n_____^_\n");
 }
 
 int main()
 {
-    test("\n");
-    test("\r");
-    test("\r\n");
+    do_parse("\n");
+    do_parse("\r");
+    do_parse("\r\n");
 
     test_line_break_first("\n");
     test_line_break_first("\r");

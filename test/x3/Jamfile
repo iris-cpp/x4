@@ -68,11 +68,10 @@ rule compile-fail ( sources + : requirements * : target-name ? )
 run actions.cpp ;
 run alternative.cpp ;
 run and_predicate.cpp ;
-run any_parser.cpp ;
 run attr.cpp ;
 run binary.cpp ;
 run bool.cpp ;
-run char1.cpp ;
+run char.cpp ;
 run char_class.cpp ;
 run container_support.cpp ;
 run debug.cpp ;
@@ -81,15 +80,10 @@ run eoi.cpp ;
 run eol.cpp ;
 run eps.cpp ;
 
-run expect_throw.cpp ;
-run expect_nothrow.cpp ;
-
-obj expect_odr_throw : expect_odr_throw.cpp ;
-obj expect_odr_nothrow : expect_odr_nothrow.cpp ;
-run expect_odr.cpp expect_odr_throw expect_odr_nothrow ;
+run expect.cpp ;
 
 run extract_int.cpp ;
-run int1.cpp ;
+run int.cpp ;
 run kleene.cpp ;
 run lexeme.cpp ;
 run lit.cpp ;
@@ -102,7 +96,6 @@ run omit.cpp ;
 run optional.cpp ;
 run plus.cpp ;
 run with.cpp ;
-run operators_adl.cpp ;
 
 run raw.cpp ;
 run real1.cpp ;
@@ -120,7 +113,7 @@ run symbols2.cpp ;
 run symbols3.cpp ;
 run tst.cpp ;
 
-run uint1.cpp ;
+run uint.cpp ;
 run uint_radix.cpp ;
 
 run confix.cpp ;

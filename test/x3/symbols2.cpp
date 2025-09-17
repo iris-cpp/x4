@@ -5,15 +5,15 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 
 #include <iostream>
-#include "test.hpp"
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
     using boost::spirit::x3::shared_symbols;
     using boost::spirit::x3::rule;
 
@@ -22,13 +22,13 @@ int main()
         char const* syms[] = {"Joel", "Ruby", "Tenji", "Tutit", "Kim", "Joey"};
         shared_symbols<int> sym(syms);
 
-        BOOST_TEST((test("Joel", sym)));
-        BOOST_TEST((test("Ruby", sym)));
-        BOOST_TEST((test("Tenji", sym)));
-        BOOST_TEST((test("Tutit", sym)));
-        BOOST_TEST((test("Kim", sym)));
-        BOOST_TEST((test("Joey", sym)));
-        BOOST_TEST((!test("XXX", sym)));
+        BOOST_TEST(parse("Joel", sym));
+        BOOST_TEST(parse("Ruby", sym));
+        BOOST_TEST(parse("Tenji", sym));
+        BOOST_TEST(parse("Tutit", sym));
+        BOOST_TEST(parse("Kim", sym));
+        BOOST_TEST(parse("Joey", sym));
+        BOOST_TEST(!parse("XXX", sym));
     }
 
     {
@@ -39,19 +39,19 @@ int main()
         shared_symbols<int> sym(syms, data);
 
         int i;
-        BOOST_TEST((test_attr("Joel", sym, i)));
+        BOOST_TEST(parse("Joel", sym, i));
         BOOST_TEST(i == 1);
-        BOOST_TEST((test_attr("Ruby", sym, i)));
+        BOOST_TEST(parse("Ruby", sym, i));
         BOOST_TEST(i == 2);
-        BOOST_TEST((test_attr("Tenji", sym, i)));
+        BOOST_TEST(parse("Tenji", sym, i));
         BOOST_TEST(i == 3);
-        BOOST_TEST((test_attr("Tutit", sym, i)));
+        BOOST_TEST(parse("Tutit", sym, i));
         BOOST_TEST(i == 4);
-        BOOST_TEST((test_attr("Kim", sym, i)));
+        BOOST_TEST(parse("Kim", sym, i));
         BOOST_TEST(i == 5);
-        BOOST_TEST((test_attr("Joey", sym, i)));
+        BOOST_TEST(parse("Joey", sym, i));
         BOOST_TEST(i == 6);
-        BOOST_TEST((!test_attr("XXX", sym, i)));
+        BOOST_TEST(!parse("XXX", sym, i));
     }
 
     {
@@ -63,17 +63,17 @@ int main()
         std::string const b("def");
         sym += a;
         sym += b;
-        BOOST_TEST((test("abc", sym)));
-        BOOST_TEST((test("def", sym)));
+        BOOST_TEST(parse("abc", sym));
+        BOOST_TEST(parse("def", sym));
         sym = a;
-        BOOST_TEST((test("abc", sym)));
-        BOOST_TEST((!test("def", sym)));
+        BOOST_TEST(parse("abc", sym));
+        BOOST_TEST(!parse("def", sym));
 
         // non-const C-style string
         char arr[2]; arr[0] = 'a'; arr[1] = '\0';
         sym = arr;
-        BOOST_TEST((test("a", sym)));
-        BOOST_TEST((!test("b", sym)));
+        BOOST_TEST(parse("a", sym));
+        BOOST_TEST(!parse("b", sym));
     }
 
     {
@@ -173,8 +173,8 @@ int main()
         sym += std::string("Joel");
         sym += std::string("Ruby");
 
-        BOOST_TEST((test("Joel", sym)));
-        BOOST_TEST((test("Ruby", sym)));
+        BOOST_TEST(parse("Joel", sym));
+        BOOST_TEST(parse("Ruby", sym));
     }
 
     return boost::report_errors();

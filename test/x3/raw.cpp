@@ -5,6 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
 #include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>
@@ -27,55 +28,52 @@ BOOST_SPIRIT_X3_DEFINE(indirect_rule)
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
     using namespace boost::spirit::x3::standard;
     using boost::spirit::x3::raw;
     using boost::spirit::x3::eps;
     using boost::spirit::x3::lit;
     using boost::spirit::x3::_attr;
-    using boost::spirit::x3::parse;
     using boost::spirit::x3::int_;
     using boost::spirit::x3::char_;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(raw['x']);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(raw['x']);
 
     {
-        boost::iterator_range<char const*> range;
+        boost::iterator_range<std::string_view::const_iterator> range;
         std::string str;
-        BOOST_TEST((test_attr("spirit_test_123", raw[alpha >> *(alnum | '_')], range)));
+        BOOST_TEST(parse("spirit_test_123", raw[alpha >> *(alnum | '_')], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "spirit_test_123"));
-        BOOST_TEST((test_attr("  spirit", raw[*alpha], range, space)));
+        BOOST_TEST(parse("  spirit", raw[*alpha], range, space));
         BOOST_TEST((range.size() == 6));
     }
 
     {
         std::string str;
-        BOOST_TEST((test_attr("spirit_test_123", raw[alpha >> *(alnum | '_')], str)));
+        BOOST_TEST(parse("spirit_test_123", raw[alpha >> *(alnum | '_')], str));
         BOOST_TEST((str == "spirit_test_123"));
 
         str.clear();
-        BOOST_TEST((test_attr("x123", alpha >> raw[+alnum], str)))
+        BOOST_TEST((parse("x123", alpha >> raw[+alnum], str)))
           && BOOST_TEST_EQ(str, "x123");
     }
 
     {
-        boost::iterator_range<char const*> range;
-        BOOST_TEST((test("x", raw[alpha])));
-        BOOST_TEST((test_attr("x", raw[alpha], range)));
-        BOOST_TEST((test_attr("x", raw[alpha] >> eps, range)));
+        boost::iterator_range<std::string_view::const_iterator> range;
+        BOOST_TEST(parse("x", raw[alpha]));
+        BOOST_TEST(parse("x", raw[alpha], range));
+        BOOST_TEST(parse("x", raw[alpha] >> eps, range));
     }
 
     {
-        boost::iterator_range<char const*> range;
-        BOOST_TEST((test("x", raw[alpha][ ([&](auto& ctx){ range = _attr(ctx); }) ])));
+        boost::iterator_range<std::string_view::const_iterator> range;
+        BOOST_TEST(parse("x", raw[alpha][ ([&](auto& ctx){ range = _attr(ctx); }) ]));
         BOOST_TEST(range.size() == 1 && *range.begin() == 'x');
     }
 
     {
-        boost::iterator_range<char const*> range;
-        BOOST_TEST((test("x123x", lit('x') >> raw[+digit] >> lit('x'))));
-        BOOST_TEST((test_attr("x123x", lit('x') >> raw[+digit] >> lit('x'), range)));
+        boost::iterator_range<std::string_view::const_iterator> range;
+        BOOST_TEST(parse("x123x", lit('x') >> raw[+digit] >> lit('x')));
+        BOOST_TEST(parse("x123x", lit('x') >> raw[+digit] >> lit('x'), range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "123"));
     }
 
@@ -115,15 +113,15 @@ int main()
 
     {
         // test with simple rule
-        boost::iterator_range<char const*> range;
-        BOOST_TEST((test_attr("123", raw[direct_rule], range)));
+        boost::iterator_range<std::string_view::const_iterator> range;
+        BOOST_TEST(parse("123", raw[direct_rule], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "123"));
     }
 
     {
         // test with complex rule
-        boost::iterator_range<char const*> range;
-        BOOST_TEST((test_attr("123", raw[indirect_rule], range)));
+        boost::iterator_range<std::string_view::const_iterator> range;
+        BOOST_TEST(parse("123", raw[indirect_rule], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "123"));
     }
 

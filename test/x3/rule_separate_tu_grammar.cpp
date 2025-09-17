@@ -13,37 +13,37 @@
 
 namespace unused_attr {
 
+using iterator_type = std::string_view::const_iterator;
+
 auto const skipper_def = x3::standard::lit('*');
 BOOST_SPIRIT_X3_DEFINE(skipper)
-BOOST_SPIRIT_X3_INSTANTIATE(skipper_type, char const*, x3::unused_type)
+BOOST_SPIRIT_X3_INSTANTIATE(skipper_type, iterator_type, x3::parse_context_for<iterator_type>)
 
 auto const skipper2_def = x3::standard::lit('#');
 BOOST_SPIRIT_X3_DEFINE(skipper2)
-BOOST_SPIRIT_X3_INSTANTIATE(skipper2_type, char const*, x3::unused_type)
+BOOST_SPIRIT_X3_INSTANTIATE(skipper2_type, iterator_type, x3::parse_context_for<iterator_type>)
 
 auto const grammar_def = *x3::standard::lit('=');
 BOOST_SPIRIT_X3_DEFINE(grammar)
-BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, char const*, x3::unused_type)
 
-using skipper_context_type = typename x3::phrase_parse_context<skipper_type, char const*>::type;
-BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, char const*, skipper_context_type)
-
-using skipper2_context_type = typename x3::phrase_parse_context<skipper2_type, char const*>::type;
-BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, char const*, skipper2_context_type)
+BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, iterator_type, x3::parse_context_for<iterator_type>)
+BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, iterator_type, x3::phrase_parse_context_for<skipper_type, iterator_type>)
+BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, iterator_type, x3::phrase_parse_context_for<skipper2_type, iterator_type>)
 
 }
 
 namespace used_attr {
 
+using iterator_type = std::string_view::const_iterator;
+
 auto const skipper_def = x3::standard::space;
 BOOST_SPIRIT_X3_DEFINE(skipper)
-BOOST_SPIRIT_X3_INSTANTIATE(skipper_type, char const*, x3::unused_type)
+BOOST_SPIRIT_X3_INSTANTIATE(skipper_type, iterator_type, x3::parse_context_for<iterator_type>)
 
 auto const grammar_def = x3::int_;
 BOOST_SPIRIT_X3_DEFINE(grammar)
-BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, char const*, x3::unused_type)
+BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, iterator_type, x3::parse_context_for<iterator_type>)
 
-using skipper_context_type = typename x3::phrase_parse_context<skipper_type, char const*>::type;
-BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, char const*, skipper_context_type)
+BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, iterator_type, x3::phrase_parse_context_for<skipper_type, iterator_type>)
 
 }

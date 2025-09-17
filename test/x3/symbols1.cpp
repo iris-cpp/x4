@@ -5,10 +5,12 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 
 #include <iostream>
-#include "test.hpp"
 
 // Custom string type with a C-style string conversion.
 struct custom_string_c
@@ -24,8 +26,6 @@ private:
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
     using boost::spirit::x3::shared_symbols;
     using boost::spirit::x3::no_case;
 
@@ -42,54 +42,54 @@ int main()
             ("Joeyboy")
         ;
 
-        BOOST_TEST((test("Joel", sym)));
-        BOOST_TEST((test("Ruby", sym)));
-        BOOST_TEST((test("Tenji", sym)));
-        BOOST_TEST((test("Tutit", sym)));
-        BOOST_TEST((test("Kim", sym)));
-        BOOST_TEST((test("Joey", sym)));
-        BOOST_TEST((test("Joeyboy", sym)));
-        BOOST_TEST((!test("XXX", sym)));
+        BOOST_TEST(parse("Joel", sym));
+        BOOST_TEST(parse("Ruby", sym));
+        BOOST_TEST(parse("Tenji", sym));
+        BOOST_TEST(parse("Tutit", sym));
+        BOOST_TEST(parse("Kim", sym));
+        BOOST_TEST(parse("Joey", sym));
+        BOOST_TEST(parse("Joeyboy", sym));
+        BOOST_TEST(!parse("XXX", sym));
 
         // test copy
         shared_symbols<int> sym2;
         sym2 = sym;
-        BOOST_TEST((test("Joel", sym2)));
-        BOOST_TEST((test("Ruby", sym2)));
-        BOOST_TEST((test("Tenji", sym2)));
-        BOOST_TEST((test("Tutit", sym2)));
-        BOOST_TEST((test("Kim", sym2)));
-        BOOST_TEST((test("Joey", sym2)));
-        BOOST_TEST((!test("XXX", sym2)));
+        BOOST_TEST(parse("Joel", sym2));
+        BOOST_TEST(parse("Ruby", sym2));
+        BOOST_TEST(parse("Tenji", sym2));
+        BOOST_TEST(parse("Tutit", sym2));
+        BOOST_TEST(parse("Kim", sym2));
+        BOOST_TEST(parse("Joey", sym2));
+        BOOST_TEST(!parse("XXX", sym2));
 
         // make sure it plays well with other parsers
-        BOOST_TEST((test("Joelyo", sym >> "yo")));
+        BOOST_TEST(parse("Joelyo", sym >> "yo"));
 
         sym.remove
             ("Joel")
             ("Ruby")
         ;
 
-        BOOST_TEST((!test("Joel", sym)));
-        BOOST_TEST((!test("Ruby", sym)));
+        BOOST_TEST(!parse("Joel", sym));
+        BOOST_TEST(!parse("Ruby", sym));
     }
 
     { // comma syntax
         shared_symbols<int> sym;
         sym += "Joel", "Ruby", "Tenji", "Tutit", "Kim", "Joey";
 
-        BOOST_TEST((test("Joel", sym)));
-        BOOST_TEST((test("Ruby", sym)));
-        BOOST_TEST((test("Tenji", sym)));
-        BOOST_TEST((test("Tutit", sym)));
-        BOOST_TEST((test("Kim", sym)));
-        BOOST_TEST((test("Joey", sym)));
-        BOOST_TEST((!test("XXX", sym)));
+        BOOST_TEST(parse("Joel", sym));
+        BOOST_TEST(parse("Ruby", sym));
+        BOOST_TEST(parse("Tenji", sym));
+        BOOST_TEST(parse("Tutit", sym));
+        BOOST_TEST(parse("Kim", sym));
+        BOOST_TEST(parse("Joey", sym));
+        BOOST_TEST(!parse("XXX", sym));
 
         sym -= "Joel", "Ruby";
 
-        BOOST_TEST((!test("Joel", sym)));
-        BOOST_TEST((!test("Ruby", sym)));
+        BOOST_TEST(!parse("Joel", sym));
+        BOOST_TEST(!parse("Ruby", sym));
     }
 
     { // no-case handling
@@ -99,22 +99,22 @@ int main()
         // NOTE: make sure all entries are in lower-case!!!
         sym = "joel", "ruby", "tenji", "tutit", "kim", "joey";
 
-        BOOST_TEST((test("joel", no_case[sym])));
-        BOOST_TEST((test("ruby", no_case[sym])));
-        BOOST_TEST((test("tenji", no_case[sym])));
-        BOOST_TEST((test("tutit", no_case[sym])));
-        BOOST_TEST((test("kim", no_case[sym])));
-        BOOST_TEST((test("joey", no_case[sym])));
+        BOOST_TEST(parse("joel", no_case[sym]));
+        BOOST_TEST(parse("ruby", no_case[sym]));
+        BOOST_TEST(parse("tenji", no_case[sym]));
+        BOOST_TEST(parse("tutit", no_case[sym]));
+        BOOST_TEST(parse("kim", no_case[sym]));
+        BOOST_TEST(parse("joey", no_case[sym]));
 
-        BOOST_TEST((test("JOEL", no_case[sym])));
-        BOOST_TEST((test("RUBY", no_case[sym])));
-        BOOST_TEST((test("TENJI", no_case[sym])));
-        BOOST_TEST((test("TUTIT", no_case[sym])));
-        BOOST_TEST((test("KIM", no_case[sym])));
-        BOOST_TEST((test("JOEY", no_case[sym])));
+        BOOST_TEST(parse("JOEL", no_case[sym]));
+        BOOST_TEST(parse("RUBY", no_case[sym]));
+        BOOST_TEST(parse("TENJI", no_case[sym]));
+        BOOST_TEST(parse("TUTIT", no_case[sym]));
+        BOOST_TEST(parse("KIM", no_case[sym]));
+        BOOST_TEST(parse("JOEY", no_case[sym]));
 
         // make sure it plays well with other parsers
-        BOOST_TEST((test("Joelyo", no_case[sym] >> "yo")));
+        BOOST_TEST(parse("Joelyo", no_case[sym] >> "yo"));
     }
 
     { // attributes
@@ -130,24 +130,24 @@ int main()
         ;
 
         int i;
-        BOOST_TEST((test_attr("Joel", sym, i)));
+        BOOST_TEST(parse("Joel", sym, i));
         BOOST_TEST(i == 1);
-        BOOST_TEST((test_attr("Ruby", sym, i)));
+        BOOST_TEST(parse("Ruby", sym, i));
         BOOST_TEST(i == 2);
-        BOOST_TEST((test_attr("Tenji", sym, i)));
+        BOOST_TEST(parse("Tenji", sym, i));
         BOOST_TEST(i == 3);
-        BOOST_TEST((test_attr("Tutit", sym, i)));
+        BOOST_TEST(parse("Tutit", sym, i));
         BOOST_TEST(i == 4);
-        BOOST_TEST((test_attr("Kim", sym, i)));
+        BOOST_TEST(parse("Kim", sym, i));
         BOOST_TEST(i == 5);
-        BOOST_TEST((test_attr("Joey", sym, i)));
+        BOOST_TEST(parse("Joey", sym, i));
         BOOST_TEST(i == 6);
-        BOOST_TEST((!test_attr("XXX", sym, i)));
+        BOOST_TEST(!parse("XXX", sym, i));
 
         // double add:
 
         sym.add("Joel", 265);
-        BOOST_TEST((test_attr("Joel", sym, i)));
+        BOOST_TEST(parse("Joel", sym, i));
         BOOST_TEST(i == 1);
     }
 
@@ -167,19 +167,19 @@ int main()
         int i;
         auto f = [&](auto& ctx){ i = _attr(ctx); };
 
-        BOOST_TEST((test("Joel", sym[f])));
+        BOOST_TEST(parse("Joel", sym[f]));
         BOOST_TEST(i == 1);
-        BOOST_TEST((test("Ruby", sym[f])));
+        BOOST_TEST(parse("Ruby", sym[f]));
         BOOST_TEST(i == 2);
-        BOOST_TEST((test("Tenji", sym[f])));
+        BOOST_TEST(parse("Tenji", sym[f]));
         BOOST_TEST(i == 3);
-        BOOST_TEST((test("Tutit", sym[f])));
+        BOOST_TEST(parse("Tutit", sym[f]));
         BOOST_TEST(i == 4);
-        BOOST_TEST((test("Kim", sym[f])));
+        BOOST_TEST(parse("Kim", sym[f]));
         BOOST_TEST(i == 5);
-        BOOST_TEST((test("Joey", sym[f])));
+        BOOST_TEST(parse("Joey", sym[f]));
         BOOST_TEST(i == 6);
-        BOOST_TEST((!test("XXX", sym[f])));
+        BOOST_TEST(!parse("XXX", sym[f]));
     }
 
     return boost::report_errors();

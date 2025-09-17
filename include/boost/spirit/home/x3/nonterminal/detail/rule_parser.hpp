@@ -323,24 +323,15 @@ namespace boost::spirit::x3::detail
         {
             while (true)
             {
-            #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-                try
-            #endif
+                if (rule_parser::parse_rhs(rhs, first, last, context, rcontext, attr))
                 {
-                    if (rule_parser::parse_rhs(rhs, first, last, context, rcontext, attr))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
 
-            #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-                catch (expectation_failure<It> const& x) {
-            #else
                 if (x3::has_expectation_failure(context)) {
                     auto const& x = x3::get_expectation_failure(context);
-            #endif
-                    // X3 developer note: don't forget to sync this implementation with x3::guard
-                    switch (ID{}.on_error(std::as_const(first), std::as_const(last), x, context))
+
+                    switch (ID{}.on_error(std::as_const(first), std::as_const(last), *x, context))
                     {
                         case error_handler_result::fail:
                             x3::clear_expectation_failure(context);
@@ -353,11 +344,7 @@ namespace boost::spirit::x3::detail
                             return true;
 
                         case error_handler_result::rethrow:
-                        #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-                            throw;
-                        #else
                             return false; // TODO: design decision required
-                        #endif
                     }
                 }
                 return false;

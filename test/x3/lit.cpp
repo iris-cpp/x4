@@ -17,19 +17,16 @@
 # define BOOST_SPIRIT_X3_UNICODE
 #endif
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/include/vector.hpp>
 
 #include <string>
 
-#include "test.hpp"
-
 int main()
 {
     namespace x3 = boost::spirit::x3;
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
     // standard
     {
         (void)x3::lit('f'); // deprecated
@@ -93,71 +90,71 @@ int main()
     {
         std::string attr;
         auto p = x3::standard::char_ >> x3::standard::lit("\n");
-        BOOST_TEST(test_attr("A\n", p, attr));
+        BOOST_TEST(parse("A\n", p, attr));
         BOOST_TEST(attr == "A");
     }
 
     {
         std::wstring attr;
         auto p = x3::standard_wide::char_ >> x3::standard_wide::lit(L"\n");
-        BOOST_TEST(test_attr(L"É\n", p, attr));
+        BOOST_TEST(parse(L"É\n", p, attr));
         BOOST_TEST(attr == L"É");
     }
 
     // -------------------------------------------------
 
     {
-        BOOST_TEST((test("kimpo", x3::standard::lit("kimpo"))));
+        BOOST_TEST(parse("kimpo", x3::standard::lit("kimpo")));
 
         std::basic_string<char> s("kimpo");
         std::basic_string<wchar_t> ws(L"kimpo");
-        BOOST_TEST((test("kimpo", x3::standard::lit(s))));
-        BOOST_TEST((test(L"kimpo", x3::standard_wide::lit(ws))));
+        BOOST_TEST(parse("kimpo", x3::standard::lit(s)));
+        BOOST_TEST(parse(L"kimpo", x3::standard_wide::lit(ws)));
     }
 
     {
         std::basic_string<char> s("kimpo");
-        BOOST_TEST((test("kimpo", x3::standard::lit(s))));
+        BOOST_TEST(parse("kimpo", x3::standard::lit(s)));
 
         std::basic_string<wchar_t> ws(L"kimpo");
-        BOOST_TEST((test(L"kimpo", x3::standard_wide::lit(ws))));
+        BOOST_TEST(parse(L"kimpo", x3::standard_wide::lit(ws)));
     }
 
     // -------------------------------------------------
 
     {
-        BOOST_TEST((test("kimpo", "kimpo")));
-        BOOST_TEST((test("kimpo", x3::standard::string("kimpo"))));
+        BOOST_TEST(parse("kimpo", "kimpo"));
+        BOOST_TEST(parse("kimpo", x3::standard::string("kimpo")));
 
-        BOOST_TEST((test("x", x3::standard::string("x"))));
-        BOOST_TEST((test(L"x", x3::standard_wide::string(L"x"))));
+        BOOST_TEST(parse("x", x3::standard::string("x")));
+        BOOST_TEST(parse(L"x", x3::standard_wide::string(L"x")));
 
         std::basic_string<char> s("kimpo");
         std::basic_string<wchar_t> ws(L"kimpo");
-        BOOST_TEST((test("kimpo", s)));
-        BOOST_TEST((test(L"kimpo", ws)));
-        BOOST_TEST((test("kimpo", x3::standard::string(s))));
-        BOOST_TEST((test(L"kimpo", x3::standard_wide::string(ws))));
+        BOOST_TEST(parse("kimpo", s));
+        BOOST_TEST(parse(L"kimpo", ws));
+        BOOST_TEST(parse("kimpo", x3::standard::string(s)));
+        BOOST_TEST(parse(L"kimpo", x3::standard_wide::string(ws)));
     }
 
     {
-        BOOST_TEST((test(L"kimpo", L"kimpo")));
-        BOOST_TEST((test(L"kimpo", x3::standard_wide::string(L"kimpo"))));
-        BOOST_TEST((test(L"x", x3::standard_wide::string(L"x"))));
+        BOOST_TEST(parse(L"kimpo", L"kimpo"));
+        BOOST_TEST(parse(L"kimpo", x3::standard_wide::string(L"kimpo")));
+        BOOST_TEST(parse(L"x", x3::standard_wide::string(L"x")));
     }
 
     {
         std::basic_string<char> s("kimpo");
-        BOOST_TEST((test("kimpo", x3::standard::string(s))));
+        BOOST_TEST(parse("kimpo", x3::standard::string(s)));
 
         std::basic_string<wchar_t> ws(L"kimpo");
-        BOOST_TEST((test(L"kimpo", x3::standard_wide::string(ws))));
+        BOOST_TEST(parse(L"kimpo", x3::standard_wide::string(ws)));
     }
 
     {
         // single-element fusion vector tests
         boost::fusion::vector<std::string> s;
-        BOOST_TEST(test_attr("kimpo", x3::standard::string("kimpo"), s));
+        BOOST_TEST(parse("kimpo", x3::standard::string("kimpo"), s));
         BOOST_TEST(boost::fusion::at_c<0>(s) == "kimpo");
     }
     return boost::report_errors();

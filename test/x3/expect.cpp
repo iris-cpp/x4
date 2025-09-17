@@ -9,6 +9,8 @@
 #define BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL 0
 #define BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/binary.hpp>
 #include <boost/spirit/home/x3/directive/with.hpp>
@@ -25,199 +27,85 @@
 #include <utility>
 #include <type_traits>
 
-#include "test.hpp"
-
 namespace x3 = boost::spirit::x3;
 
-
-#if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-# define TEST_SUCCESS_IMPL(tester, ...) \
+#define TEST_SUCCESS_IMPL(tester, input, parser, ...) \
     BOOST_TEST_NO_THROW({ \
-        BOOST_TEST(tester(__VA_ARGS__)); \
+        auto const res = parse(input, parser __VA_OPT__(,) __VA_ARGS__); \
+        BOOST_TEST(tester res.completed()); \
+        BOOST_TEST(!res.expect_failure.has_value()); \
     })
 
-# define TEST_FAILURE_IMPL_4(tester, input, parser, catch_stmt) \
-    BOOST_TEST_THROWS( \
-        { \
-            try \
-            { \
-                BOOST_TEST(tester(input, parser)); \
-            } \
-            catch (expectation_failure<char const*> const& x) \
-            { \
-                catch_stmt \
-                throw; \
-            } \
-        }, \
-        expectation_failure<char const*> \
-    )
-
-# define TEST_FAILURE_IMPL_5(tester, input, parser, arg0, catch_stmt) \
-    BOOST_TEST_THROWS( \
-        { \
-            try \
-            { \
-                BOOST_TEST(tester(input, parser, arg0)); \
-            } \
-            catch (expectation_failure<char const*> const& x) \
-            { \
-                catch_stmt \
-                throw; \
-            } \
-        }, \
-        expectation_failure<char const*> \
-    )
-
-# define TEST_FAILURE_IMPL_6(tester, input, parser, arg0, arg1, catch_stmt) \
-    BOOST_TEST_THROWS( \
-        { \
-            try \
-            { \
-                BOOST_TEST(tester(input, parser, arg0, arg1)); \
-            } \
-            catch (expectation_failure<char const*> const& x) \
-            { \
-                catch_stmt \
-                throw; \
-            } \
-        }, \
-        expectation_failure<char const*> \
-    )
-
-#else
-
-using expectation_failure_optional_t = x3::expectation_failure_optional<char const*>;
-
-namespace detail
-{
-    template <typename T, typename Enabled = std::enable_if_t<!std::is_const_v<T>>>
-    decltype(auto) wrap_with_expectation_failure(expectation_failure_optional_t&, T& attr)
-    {
-        return attr;
-    }
-
-    template <typename T>
-    auto wrap_with_expectation_failure(expectation_failure_optional_t& xopt, T const& skipper)
-    {
-        return x3::with<x3::expectation_failure_tag>(xopt)[skipper];
-    }
-} // detail
-
-# define TEST_SUCCESS_IMPL_3(tester, input, parser) \
-    BOOST_TEST_NO_THROW({ \
-        expectation_failure_optional_t xopt; \
-        BOOST_TEST(tester(input, with<expectation_failure_tag>(xopt)[parser])); \
-        BOOST_TEST(!xopt.has_value()); \
-    })
-
-# define TEST_SUCCESS_IMPL_4(tester, input, parser, arg0) \
-    BOOST_TEST_NO_THROW({ \
-        expectation_failure_optional_t xopt; \
-        BOOST_TEST(tester( \
-            input, \
-            with<expectation_failure_tag>(xopt)[parser], \
-            detail::wrap_with_expectation_failure(xopt, arg0) \
-        )); \
-        BOOST_TEST(!xopt.has_value()); \
-    })
-
-# define TEST_SUCCESS_IMPL_5(tester, input, parser, arg0, arg1) \
-    BOOST_TEST_NO_THROW({ \
-        expectation_failure_optional_t xopt; \
-        BOOST_TEST(tester( \
-            input, \
-            with<expectation_failure_tag>(xopt)[parser], \
-            detail::wrap_with_expectation_failure(xopt, arg0), \
-            detail::wrap_with_expectation_failure(xopt, arg1) \
-        )); \
-        BOOST_TEST(!xopt.has_value()); \
-    })
-
-# define TEST_SUCCESS_IMPL(...) BOOST_PP_EXPAND(BOOST_PP_OVERLOAD(TEST_SUCCESS_IMPL_, __VA_ARGS__) (__VA_ARGS__))
-
-
-# define TEST_FAILURE_IMPL_4(tester, input, parser, catch_stmt) \
+#define TEST_FAILURE_IMPL_4(tester, input, parser, catch_stmt) \
     BOOST_TEST_NO_THROW( \
         { \
-            expectation_failure_optional_t xopt; \
             do \
             { \
-                if (!BOOST_TEST(tester(input, with<expectation_failure_tag>(xopt)[parser]))) break; \
-                if (!BOOST_TEST(xopt.has_value())) break; \
-                auto const& x = *xopt; \
+                auto const res = parse(input, parser); \
+                if (!BOOST_TEST(tester res.completed())) break; \
+                if (!BOOST_TEST(res.expect_failure.has_value())) break; \
+                auto const& x = *res.expect_failure; \
+                auto const& which = x.which(); \
+                auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
             } while (false); \
         } \
     )
 
-# define TEST_FAILURE_IMPL_5(tester, input, parser, arg0, catch_stmt) \
+#define TEST_FAILURE_IMPL_5(tester, input, parser, arg0, catch_stmt) \
     BOOST_TEST_NO_THROW( \
         { \
-            expectation_failure_optional_t xopt; \
             do \
             { \
-                if (!BOOST_TEST(tester( \
-                    input, \
-                    with<expectation_failure_tag>(xopt)[parser], \
-                    detail::wrap_with_expectation_failure(xopt, arg0))) \
-                ) break; \
-                \
-                if (!BOOST_TEST(xopt.has_value())) break; \
-                auto const& x = *xopt; \
+                auto const res = parse(input, parser, arg0); \
+                if (!BOOST_TEST(tester res.completed())) break; \
+                if (!BOOST_TEST(res.expect_failure.has_value())) break; \
+                auto const& x = *res.expect_failure; \
+                auto const& which = x.which(); \
+                auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
             } while (false); \
         } \
     )
 
-# define TEST_FAILURE_IMPL_6(tester, input, parser, arg0, arg1, catch_stmt) \
+#define TEST_FAILURE_IMPL_6(tester, input, parser, arg0, arg1, catch_stmt) \
     BOOST_TEST_NO_THROW( \
         { \
-            expectation_failure_optional_t xopt; \
             do \
             { \
-                if (!BOOST_TEST(tester( \
-                    input, \
-                    with<expectation_failure_tag>(xopt)[parser], \
-                    detail::wrap_with_expectation_failure(xopt, arg0), \
-                    detail::wrap_with_expectation_failure(xopt, arg1))) \
-                ) break; \
-                \
-                if (!BOOST_TEST(xopt.has_value())) break; \
-                auto const& x = *xopt; \
+                auto const res = parse(input, parser, arg0, arg1); \
+                if (!BOOST_TEST(tester res.completed())) break; \
+                if (!BOOST_TEST(res.expect_failure.has_value())) break; \
+                auto const& x = *res.expect_failure; \
+                auto const& which = x.which(); \
+                auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
             } while (false); \
         } \
     )
-#endif
 
 #define TEST_FAILURE_IMPL(...) BOOST_PP_EXPAND(BOOST_PP_OVERLOAD(TEST_FAILURE_IMPL_, __VA_ARGS__) (__VA_ARGS__))
 
 // Comments below are intentionally written verbosely
 // to provide human-friendly intellisense tooltip for testers
 
-// expect_throw:   parser = ok, exception = none
-// expect_nothrow: parser = ok, exception = none, expectation_failure = none
-#define TEST_SUCCESS_PASS(...)      TEST_SUCCESS_IMPL(test, __VA_ARGS__)
+// parser = ok, exception = none, expectation_failure = none
+#define TEST_SUCCESS_PASS(...)      TEST_SUCCESS_IMPL(, __VA_ARGS__)
 
-// expect_throw:   parser = ok, exception = none
-// expect_nothrow: parser = ok, exception = none, expectation_failure = none
-#define TEST_ATTR_SUCCESS_PASS(...) TEST_SUCCESS_IMPL(test_attr, __VA_ARGS__)
+// parser = ok, exception = none, expectation_failure = none
+#define TEST_ATTR_SUCCESS_PASS(...) TEST_SUCCESS_IMPL(, __VA_ARGS__)
 
-// expect_throw:   parser = fail, exception = none
-// expect_nothrow: parser = fail, exception = none, expectation_failure = none
-#define TEST_SUCCESS_FAIL(...)      TEST_SUCCESS_IMPL(!test, __VA_ARGS__)
+// parser = fail, exception = none, expectation_failure = none
+#define TEST_SUCCESS_FAIL(...)      TEST_SUCCESS_IMPL(!, __VA_ARGS__)
 
-// expect_throw:   parser = fail, exception = none
-// expect_nothrow: parser = fail, exception = none, expectation_failure = none
-#define TEST_ATTR_SUCCESS_FAIL(...) TEST_SUCCESS_IMPL(!test_attr, __VA_ARGS__)
+// parser = fail, exception = none, expectation_failure = none
+#define TEST_ATTR_SUCCESS_FAIL(...) TEST_SUCCESS_IMPL(!, __VA_ARGS__)
 
-// expect_throw:   parser = fail, exception = thrown
-// expect_nothrow: parser = fail, exception = none, expectation_failure = yes
-#define TEST_FAILURE(...)           TEST_FAILURE_IMPL(!test, __VA_ARGS__)
+// parser = fail, exception = none, expectation_failure = yes
+#define TEST_FAILURE(...)           TEST_FAILURE_IMPL(!, __VA_ARGS__)
 
-// expect_throw:   parser = fail, exception = thrown
-// expect_nothrow: parser = fail, exception = none, expectation_failure = yes
-#define TEST_ATTR_FAILURE(...)      TEST_FAILURE_IMPL(!test_attr, __VA_ARGS__)
+// parser = fail, exception = none, expectation_failure = yes
+#define TEST_ATTR_FAILURE(...)      TEST_FAILURE_IMPL(!, __VA_ARGS__)
 
 
 // For testers; development QOL purpose only.
@@ -232,14 +120,7 @@ namespace detail
     } while (false)
 
 
-#if defined(TEST_MAIN_FUNC)
-# define TEST_MAIN_FUNC_IS_MAIN 0
-#else
-# define TEST_MAIN_FUNC_IS_MAIN 1
-# define TEST_MAIN_FUNC main
-#endif
-
-int TEST_MAIN_FUNC()
+int main()
 {
     using namespace std::string_view_literals;
 
@@ -259,6 +140,7 @@ int TEST_MAIN_FUNC()
     using x3::omit;
     using x3::raw;
     using x3::skip;
+    using x3::reskip;
     using x3::seek;
     using x3::repeat;
     using x3::matches;
@@ -277,10 +159,8 @@ int TEST_MAIN_FUNC()
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    using spirit_test::test;
-    using spirit_test::test_attr;
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(expect['x']);
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(char_ > char_);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(expect['x']);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ > char_);
 
     {
         TEST_SUCCESS_PASS("aa", char_ >> expect[char_]);
@@ -290,8 +170,8 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("xin", char_('x') >> expect[char_('i') >> char_('n')]);
 
         TEST_FAILURE("xi", char_('x') >> expect[char_('o')], {
-            BOOST_TEST(x.which() == "'o'"sv);
-            BOOST_TEST(x.where() == "i"sv);
+            BOOST_TEST(which == "'o'"sv);
+            BOOST_TEST(where == "i"sv);
         });
     }
 
@@ -304,8 +184,8 @@ int TEST_MAIN_FUNC()
 
         TEST_FAILURE("xi", char_('x') > char_('o'),
         {
-            BOOST_TEST(x.which() == "'o'"sv);
-            BOOST_TEST(x.where() == "i"sv);
+            BOOST_TEST(which == "'o'"sv);
+            BOOST_TEST(where == "i"sv);
         });
     }
 
@@ -314,13 +194,13 @@ int TEST_MAIN_FUNC()
         TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
             BOOST_TEST(x.which().find("sequence") != std::string::npos);
-            BOOST_TEST(x.where() == "y:a"sv);
+            BOOST_TEST(where == "y:a"sv);
         });
     #else
         TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
-            BOOST_TEST(x.which() == "undefined"sv);
-            BOOST_TEST(x.where() == "y:a"sv);
+            BOOST_TEST(which == "undefined"sv);
+            BOOST_TEST(where == "y:a"sv);
         });
     #endif
     }
@@ -370,16 +250,16 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS(" x i", char_('x') > char_('i'), space);
 
         TEST_FAILURE(" x i", char_('x') > char_('o'), space, {
-            BOOST_TEST(x.which() == "'o'"sv);
-            BOOST_TEST(x.where() == "i"sv);
+            BOOST_TEST(which == "'o'"sv);
+            BOOST_TEST(where == "i"sv);
         });
     }
 
     {
         TEST_FAILURE("bar", expect[lit("foo")],
         {
-            BOOST_TEST(x.which() == "\"foo\""sv);
-            BOOST_TEST(x.where() == "bar"sv);
+            BOOST_TEST(which == "\"foo\""sv);
+            BOOST_TEST(where == "bar"sv);
         });
     }
 
@@ -387,8 +267,8 @@ int TEST_MAIN_FUNC()
     // skipper
     {
         TEST_FAILURE("accb", repeat(7)[alpha], (lit('a') > 'b') | (lit('c') > 'd'), {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "ccb"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "ccb"sv);
         });
     }
 
@@ -421,8 +301,8 @@ int TEST_MAIN_FUNC()
 
         // if this test fails, there might be a problem in x3::skip_over
         TEST_FAILURE     ("a..b", lit('a') >> 'b', lit('.') >> expect[lit('z')], {
-            BOOST_TEST(x.which() == "'z'"sv);
-            BOOST_TEST(x.where() == ".b"sv);
+            BOOST_TEST(which == "'z'"sv);
+            BOOST_TEST(where == ".b"sv);
         });
 
         // ---------------------------------------------------------
@@ -438,8 +318,8 @@ int TEST_MAIN_FUNC()
 
         // if this test fails, there might be a problem in x3::skip_over and/or x3::skip_directive
         TEST_FAILURE     ("a..b", skip(lit('.') >> expect[lit('z')])[lit('a') >> 'b'], {
-            BOOST_TEST(x.which() == "'z'"sv);
-            BOOST_TEST(x.where() == ".b"sv);
+            BOOST_TEST(which == "'z'"sv);
+            BOOST_TEST(where == ".b"sv);
         });
     }
 
@@ -454,8 +334,8 @@ int TEST_MAIN_FUNC()
 
         // if this test fails, x3::skip_over is BUGGED when `post_skip` is run
         TEST_FAILURE("a..b.z", lit('a') >> 'b', lit('.') > '.', {
-            BOOST_TEST(x.which() == "'.'"sv);
-            BOOST_TEST(x.where() == "z"sv);
+            BOOST_TEST(which == "'.'"sv);
+            BOOST_TEST(where == "z"sv);
         });
     }
 
@@ -465,12 +345,12 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_FAIL("ac", lit('a') >> 'b');
 
         TEST_FAILURE("ac", lit('a') >> expect[lit('b')], {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
         TEST_FAILURE("ac", lit('a') > lit('b'), {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -481,13 +361,13 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("a12\n", lit('a') > +digit > eol);
 
         TEST_FAILURE("a12", lit('a') > eps(false) > +digit, {
-            BOOST_TEST(x.where() == "12"sv);
+            BOOST_TEST(where == "12"sv);
         });
         TEST_FAILURE("a12", lit('a') > eoi > +digit, {
-            BOOST_TEST(x.where() == "12"sv);
+            BOOST_TEST(where == "12"sv);
         });
         TEST_FAILURE("a12\n", lit('a') > eol > +digit, {
-            BOOST_TEST(x.where() == "12\n"sv);
+            BOOST_TEST(where == "12\n"sv);
         });
 
         int n = 0;
@@ -502,21 +382,21 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("12a", +digit > lit('a'));
 
         TEST_FAILURE("12abc", +digit > dword, {
-            BOOST_TEST(x.where() == "abc"sv);
+            BOOST_TEST(where == "abc"sv);
         });
         TEST_FAILURE("abc", +alpha > int_, {
-            BOOST_TEST(x.where() == ""sv);
+            BOOST_TEST(where == ""sv);
         });
         TEST_FAILURE("12a", +digit > lit('b'), {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "a"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "a"sv);
         });
 
         shared_symbols<> s;
         s.add("cat");
         TEST_SUCCESS_PASS("12cat", +digit > s);
         TEST_FAILURE("12dog", +digit > s, {
-            BOOST_TEST(x.where() == "dog"sv);
+            BOOST_TEST(where == "dog"sv);
         });
     }
 
@@ -524,8 +404,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("[12cat]", confix('[', ']')[+digit > lit("cat")]);
         TEST_FAILURE("[12dog]", confix('[', ']')[+digit > lit("cat")], {
-            BOOST_TEST(x.which() == "\"cat\""sv);
-            BOOST_TEST(x.where() == "dog]"sv);
+            BOOST_TEST(which == "\"cat\""sv);
+            BOOST_TEST(where == "dog]"sv);
         });
     }
 
@@ -533,11 +413,11 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("abc", lit('a') >> expect[lit('b') >> 'c']);
         TEST_FAILURE("abc", lit('a') >> expect[lit('b') >> 'd'], {
-            BOOST_TEST(x.where() == "bc"sv);
+            BOOST_TEST(where == "bc"sv);
         });
         TEST_FAILURE("abc", lit('a') >> expect[lit('b') > 'd'], {
-            BOOST_TEST(x.which() == "'d'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'d'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -545,8 +425,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("12 ab", int_ >> lexeme[lit('a') > 'b'], space);
         TEST_FAILURE("12 a b", int_ >> lexeme[lit('a') > 'b'], space, {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == " b"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == " b"sv);
         });
     }
 
@@ -556,8 +436,8 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("ac", matches[lit('a') >> 'b'] >> "ac");
         TEST_SUCCESS_PASS("ab", matches[lit('a') > 'b']);
         TEST_FAILURE("ac", matches[lit('a') > 'b'] >> "ac", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
 
         bool attr = false;
@@ -569,8 +449,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("12 aB", int_ >> no_case[lit('a') > 'b'], space);
         TEST_FAILURE("12 aB", int_ >> no_case[lit('a') > 'c'], space, {
-            BOOST_TEST(x.which() == "'c'"sv);
-            BOOST_TEST(x.where() == "B"sv);
+            BOOST_TEST(which == "'c'"sv);
+            BOOST_TEST(where == "B"sv);
         });
     }
 
@@ -578,8 +458,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("12 3ab", int_ >> int_ >> no_skip[lit('a') > 'b'], space);
         TEST_FAILURE("12 3ab", int_ >> int_ >> no_skip[lit('a') > 'c'], space, {
-            BOOST_TEST(x.which() == "'c'"sv);
-            BOOST_TEST(x.where() == "b"sv);
+            BOOST_TEST(which == "'c'"sv);
+            BOOST_TEST(where == "b"sv);
         });
     }
 
@@ -587,26 +467,26 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("ab[]c[]d", skip(lit('[') > ']')[+alpha]);
         TEST_FAILURE("ab[]c[5]d", skip(lit('[') > ']')[+alpha], {
-            BOOST_TEST(x.which() == "']'"sv);
-            BOOST_TEST(x.where() == "5]d"sv);
+            BOOST_TEST(which == "']'"sv);
+            BOOST_TEST(where == "5]d"sv);
         });
 
         TEST_SUCCESS_PASS("a1[]b2c3[]d4", skip(lit('[') > ']')[+(alpha > digit)]);
         TEST_FAILURE("a1[]b2c3[]d", skip(lit('[') > ']')[+(alpha > digit)], {
-            BOOST_TEST(x.where() == ""sv);
+            BOOST_TEST(where == ""sv);
         });
 
         TEST_FAILURE("a b c", lit('a') > 'c', space, {
-            BOOST_TEST(x.which() == "'c'"sv);
-            BOOST_TEST(x.where() == "b c"sv);
+            BOOST_TEST(which == "'c'"sv);
+            BOOST_TEST(where == "b c"sv);
         });
 
 
         {
             std::string s;
             TEST_ATTR_FAILURE("a b c d", skip(space)[*char_ > lit('z')], s, {
-                BOOST_TEST(x.which() == "'z'"sv);
-                BOOST_TEST(x.where() == ""sv);
+                BOOST_TEST(which == "'z'"sv);
+                BOOST_TEST(where == ""sv);
             });
         }
 
@@ -618,54 +498,54 @@ int TEST_MAIN_FUNC()
         {
             std::string s;
             TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('z') > skip(space)[char_('c') > char_('d')], s, blank, {
-                BOOST_TEST(x.which() == "'z'"sv);
-                BOOST_TEST(x.where() == "b\n c\n d"sv);
+                BOOST_TEST(which == "'z'"sv);
+                BOOST_TEST(where == "b\n c\n d"sv);
             });
         }
         {
             std::string s;
             TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('z') > char_('d')], s, blank, {
-                BOOST_TEST(x.where() == "\n c\n d"sv);
+                BOOST_TEST(where == "\n c\n d"sv);
             });
         }
         {
             std::string s;
             TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], s, blank, {
-                BOOST_TEST(x.which() == "'z'"sv);
-                BOOST_TEST(x.where() == "d"sv);
+                BOOST_TEST(which == "'z'"sv);
+                BOOST_TEST(where == "d"sv);
             });
         }
 
         // reskip
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > skip[char_('d')]], s, blank);
+            TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d')]], s, blank);
             BOOST_TEST(s == "abcd");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > skip[char_('z')]], s, blank, {
-                BOOST_TEST(x.where() == "d"sv);
+            TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z')]], s, blank, {
+                BOOST_TEST(where == "d"sv);
             });
         }
 
         // reskip with expectation failure context propagation
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > skip[char_('d') > char_('e')]], s, blank);
+            TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('e')]], s, blank);
             BOOST_TEST(s == "abcde");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > skip[char_('z') > char_('e')]], s, blank, {
-                BOOST_TEST(x.where() == " d e"sv);
+            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z') > char_('e')]], s, blank, {
+                BOOST_TEST(where == " d e"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > skip[char_('d') > char_('z')]], s, blank, {
-                BOOST_TEST(x.which() == "'z'"sv);
-                BOOST_TEST(x.where() == "e"sv);
+            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('z')]], s, blank, {
+                BOOST_TEST(which == "'z'"sv);
+                BOOST_TEST(where == "e"sv);
             });
         }
     }
@@ -674,8 +554,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("ab", omit[lit('a') > 'b']);
         TEST_FAILURE("ab", omit[lit('a') > 'c'], {
-            BOOST_TEST(x.which() == "'c'"sv);
-            BOOST_TEST(x.where() == "b"sv);
+            BOOST_TEST(which == "'c'"sv);
+            BOOST_TEST(where == "b"sv);
         });
     }
 
@@ -683,8 +563,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("ab", raw[lit('a') > 'b']);
         TEST_FAILURE("ab", raw[lit('a') > 'c'], {
-            BOOST_TEST(x.which() == "'c'"sv);
-            BOOST_TEST(x.where() == "b"sv);
+            BOOST_TEST(which == "'c'"sv);
+            BOOST_TEST(where == "b"sv);
         });
     }
 
@@ -693,12 +573,12 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("ababac", repeat(1, 3)[lit('a') >> 'b'] >> "ac" | +alpha);
 
         TEST_FAILURE("ababac", repeat(1, 3)[lit('a') > 'b'] | +alpha, {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
         TEST_FAILURE("acab", repeat(2, 3)[lit('a') > 'b'] | +alpha, {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "cab"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "cab"sv);
         });
 
         TEST_SUCCESS_PASS("bcab", repeat(2, 3)[lit('a') > 'b'] | +alpha);
@@ -708,8 +588,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("a1b1c1", seek[lit('c') > '1']);
         TEST_FAILURE("a1b1c2c1", seek[lit('c') > '1'], {
-            BOOST_TEST(x.which() == "'1'"sv);
-            BOOST_TEST(x.where() == "2c1"sv);
+            BOOST_TEST(which == "'1'"sv);
+            BOOST_TEST(where == "2c1"sv);
         });
     }
 
@@ -719,12 +599,12 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("ac", lit('a') >> 'b' | lit('a') >> 'd' | "ac");
 
         TEST_FAILURE("ac", (lit('a') > 'b') | "ac", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
         TEST_FAILURE("ac", lit('a') >> 'b' | (lit('a') > 'd') | "ac", {
-            BOOST_TEST(x.which() == "'d'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'d'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -732,8 +612,8 @@ int TEST_MAIN_FUNC()
     {
         TEST_SUCCESS_PASS("abc", lit('a') >> &(lit('b') > 'c') >> "bc");
         TEST_FAILURE("abc", lit('a') >> &(lit('b') > 'd') >> "bc", {
-            BOOST_TEST(x.which() == "'d'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'d'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -742,8 +622,8 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("bcac", *(char_ - (lit('a') >> 'b')));
         TEST_SUCCESS_PASS("bcab", *(char_ - (lit('a') > 'b')) >> "ab");
         TEST_FAILURE("bcac", *(char_ - (lit('a') > 'b')) >> "ab", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -752,8 +632,8 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("abac", *(lit('a') >> 'b') >> "ac");
         TEST_SUCCESS_PASS("abbc", *(lit('a') > 'b') >> "bc");
         TEST_FAILURE("abac", *(lit('a') > 'b') >> "ac", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -763,12 +643,12 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("ab::ab:ac", (lit('a') > 'b') % (lit(':') >> ':') >> ":ac");
 
         TEST_FAILURE("ab::ab::ac", (lit('a') > 'b') % (lit(':') >> ':') >> "::ac", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
         TEST_FAILURE("ab::ab:ab", (lit('a') >> 'b') % (lit(':') > ':') >> ":ab", {
-            BOOST_TEST(x.which() == "':'"sv);
-            BOOST_TEST(x.where() == "ab"sv);
+            BOOST_TEST(which == "':'"sv);
+            BOOST_TEST(where == "ab"sv);
         });
     }
 
@@ -777,8 +657,8 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("[ac]", lit('[') >> !(lit('a') >> 'b') >> +alpha >> ']');
         TEST_SUCCESS_PASS("[bc]", lit('[') >> !(lit('a') > 'b') >> +alpha >> ']');
         TEST_FAILURE("[ac]", lit('[') >> !(lit('a') > 'b') >> +alpha >> ']', {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c]"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c]"sv);
         });
     }
 
@@ -787,8 +667,8 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("ac", -(lit('a') >> 'b') >> "ac");
         TEST_SUCCESS_PASS("ab", -(lit('a') > 'b'));
         TEST_FAILURE("ac", -(lit('a') > 'b') >> "ac", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
@@ -797,14 +677,10 @@ int TEST_MAIN_FUNC()
         TEST_SUCCESS_PASS("abac", +(lit('a') >> 'b') >> "ac");
         TEST_SUCCESS_PASS("abbc", +(lit('a') > 'b') >> "bc");
         TEST_FAILURE("abac", +(lit('a') > 'b') >> "ac", {
-            BOOST_TEST(x.which() == "'b'"sv);
-            BOOST_TEST(x.where() == "c"sv);
+            BOOST_TEST(which == "'b'"sv);
+            BOOST_TEST(where == "c"sv);
         });
     }
 
-#if TEST_MAIN_FUNC_IS_MAIN
     return boost::report_errors();
-#else
-    return 0;
-#endif
 }

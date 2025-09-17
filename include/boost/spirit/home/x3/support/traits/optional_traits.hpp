@@ -24,7 +24,7 @@
 
 namespace boost::spirit::x3::traits
 {
-    template <typename T, typename Enable = void>
+    template <typename T>
     struct is_optional : std::false_type {};
 
     template <typename T>

@@ -13,14 +13,13 @@
 
 int main()
 {
-    using spirit_test::test;
     using boost::spirit::x3::int_;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(&int_);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(&int_);
 
     {
-        BOOST_TEST((test("1234", &int_, false)));
-        BOOST_TEST((!test("abcd", &int_)));
+        BOOST_TEST(parse("1234", &int_).is_partial_match());
+        BOOST_TEST(!parse("abcd", &int_));
     }
 
     return boost::report_errors();

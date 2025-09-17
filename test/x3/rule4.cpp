@@ -68,9 +68,6 @@ bool on_success_gets_preskipped_iterator::ok = false;
 
 int main()
 {
-    using spirit_test::test_attr;
-    using spirit_test::test;
-
     using namespace boost::spirit::x3::standard;
     using boost::spirit::x3::rule;
     using boost::spirit::x3::int_;
@@ -83,15 +80,15 @@ int main()
         int attr;
 
         auto ra_def = (ra %= int_);
-        BOOST_TEST(test_attr("123", ra_def, attr));
+        BOOST_TEST(parse("123", ra_def, attr));
         BOOST_TEST(attr == 123);
 
         auto rb_def = (rb %= ra_def);
-        BOOST_TEST(test_attr("123", rb_def, attr));
+        BOOST_TEST(parse("123", rb_def, attr));
         BOOST_TEST(attr == 123);
 
         auto rb_def2 = (rb = ra_def);
-        BOOST_TEST(test_attr("123", rb_def2, attr));
+        BOOST_TEST(parse("123", rb_def2, attr));
         BOOST_TEST(attr == 123);
     }
 
@@ -103,11 +100,11 @@ int main()
 
         auto f = [](auto&){};
         auto ra_def = (ra %= int_[f]);
-        BOOST_TEST(test_attr("123", ra_def, attr));
+        BOOST_TEST(parse("123", ra_def, attr));
         BOOST_TEST(attr == 123);
 
         auto ra_def2 = (rb = (ra %= int_[f]));
-        BOOST_TEST(test_attr("123", ra_def2, attr));
+        BOOST_TEST(parse("123", ra_def2, attr));
         BOOST_TEST(attr == 123);
     }
 
@@ -122,7 +119,7 @@ int main()
             = +(!char_(')') >> !char_('>') >> char_);
 
         attr.clear();
-        BOOST_TEST(test_attr("x", text, attr));
+        BOOST_TEST(parse("x", text, attr));
         BOOST_TEST(attr == "x");
     }
 
@@ -131,11 +128,11 @@ int main()
         auto r = rule<my_rule_class, char const*>()
             = '(' > int_ > ',' > int_ > ')';
 
-        BOOST_TEST(test("(123,456)", r));
-        BOOST_TEST(!test("(abc,def)", r));
-        BOOST_TEST(!test("(123,456]", r));
-        BOOST_TEST(!test("(123;456)", r));
-        BOOST_TEST(!test("[123,456]", r));
+        BOOST_TEST(parse("(123,456)", r));
+        BOOST_TEST(!parse("(abc,def)", r));
+        BOOST_TEST(!parse("(123,456]", r));
+        BOOST_TEST(!parse("(123;456)", r));
+        BOOST_TEST(!parse("[123,456]", r));
 
         BOOST_TEST(got_it == 1);
     }
@@ -144,7 +141,7 @@ int main()
     {
         auto r = rule<on_success_gets_preskipped_iterator, char const*>()
             = lit("b");
-        BOOST_TEST(test("a b", 'a' >> r, lit(' ')));
+        BOOST_TEST(parse("a b", 'a' >> r, lit(' ')));
         BOOST_TEST(on_success_gets_preskipped_iterator::ok);
     }
 
@@ -153,14 +150,14 @@ int main()
         auto r1 = rule<class r1_id, v_type>()
             = int_;
         v_type v;
-        BOOST_TEST(test_attr("1", r1, v) && v.which() == 1 &&
+        BOOST_TEST(parse("1", r1, v) && v.which() == 1 &&
             boost::get<int>(v) == 1);
 
         using ov_type = boost::optional<int>;
         auto r2 = rule<class r2_id, ov_type>()
             = int_;
         ov_type ov;
-        BOOST_TEST(test_attr("1", r2, ov) && ov && boost::get<int>(ov) == 1);
+        BOOST_TEST(parse("1", r2, ov) && ov && boost::get<int>(ov) == 1);
     }
 
     // test handling of single element fusion sequences
@@ -171,7 +168,7 @@ int main()
             = int_;
 
         vector<int> v(0);
-        BOOST_TEST(test_attr("1", r, v) && at_c<0>(v) == 1);
+        BOOST_TEST(parse("1", r, v) && at_c<0>(v) == 1);
     }
 
     // attribute compatibility test
@@ -179,14 +176,14 @@ int main()
         constexpr auto expr = int_;
 
         long long i = 0;
-        BOOST_TEST(test_attr("1", expr, i) && i == 1);
+        BOOST_TEST(parse("1", expr, i) && i == 1);
 
         constexpr rule<class int_rule, int> int_rule("int_rule");
         constexpr auto int_rule_def = int_;
         constexpr auto start = int_rule = int_rule_def;
 
         long long j = 0;
-        BOOST_TEST(test_attr("1", start, j) && j == 1);
+        BOOST_TEST(parse("1", start, j) && j == 1);
     }
 
     return boost::report_errors();

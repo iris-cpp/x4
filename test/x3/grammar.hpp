@@ -8,6 +8,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 
 namespace x3 = boost::spirit::x3;
