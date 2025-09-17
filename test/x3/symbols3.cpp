@@ -9,11 +9,12 @@
 
 #define BOOST_SPIRIT_X3_DEBUG
 #define BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL 0
+#define BOOST_SPIRIT_X3_UNICODE
 
 #include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>
-#include <boost/spirit/home/support/char_encoding/unicode.hpp>
+#include <boost/spirit/home/x3/char_encoding/unicode.hpp>
 #include <boost/fusion/include/at.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -43,7 +44,8 @@ int main()
 {
     using spirit_test::test;
     using spirit_test::test_attr;
-    using boost::spirit::x3::shared_symbols;
+    namespace x3 = boost::spirit::x3;
+    using x3::shared_symbols;
 
     { // construction from initializer-list
         shared_symbols<int> const ones =
@@ -86,8 +88,7 @@ int main()
     }
 
     { // unicode | construction from initializer-list
-        using namespace boost::spirit;
-        x3::shared_symbols_parser<char_encoding::unicode, int> foo = {{U"a1", 1}, {U"a2", 2}, {U"a3", 3}};
+        x3::shared_symbols_parser<x3::char_encoding::unicode, int> foo = {{U"a1", 1}, {U"a2", 2}, {U"a3", 3}};
 
         int r;
         BOOST_TEST((test_attr(U"a3", foo, r)));
