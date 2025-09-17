@@ -30,6 +30,8 @@ namespace boost::spirit::x3
     template <X3Subject Skipper>
     struct [[nodiscard]] unused_skipper
     {
+        constexpr unused_skipper(Skipper const&&) = delete; // dangling
+
         constexpr unused_skipper(Skipper const& skipper) noexcept
             : skipper(skipper)
         {}
