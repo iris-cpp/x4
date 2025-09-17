@@ -97,7 +97,8 @@ namespace boost::spirit::x3
             using type = parse_result<std::ranges::iterator_t<R>, std::ranges::sentinel_t<R>>;
         };
 
-        template <traits::CharArray R>
+        template <std::ranges::forward_range R>
+            requires traits::CharArray<R>
         struct parse_result_for_impl<R>
         {
             using string_view_type = std::basic_string_view<
@@ -117,7 +118,8 @@ namespace boost::spirit::x3
             using sentinel_type = std::ranges::sentinel_t<R>;
         };
 
-        template <traits::CharArray R>
+        template <std::ranges::forward_range R>
+            requires traits::CharArray<R>
         struct range_parse_parser_impl<R>
         {
             using string_view_type = std::basic_string_view<
