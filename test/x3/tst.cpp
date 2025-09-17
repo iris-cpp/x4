@@ -1,22 +1,26 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+#include "test.hpp"
+
 #include <boost/spirit/home/x3/string/tst.hpp>
 #include <boost/spirit/home/x3/string/tst_map.hpp>
 #include <boost/spirit/home/x3/support/no_case.hpp>
-#include <boost/spirit/home/support/char_encoding/standard.hpp>
-#include <boost/spirit/home/support/char_encoding/standard_wide.hpp>
+#include <boost/spirit/home/x3/char_encoding/standard.hpp>
+#include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
 
-#include <boost/core/lightweight_test.hpp>
 #include <string>
 #include <cctype>
 #include <iostream>
 
 namespace
 {
+    namespace x3 = boost::spirit::x3;
+
     template <typename TST, typename Char>
     void add(TST& tst, Char const* s, int data)
     {
@@ -69,10 +73,10 @@ namespace
 
 }
 
-boost::spirit::x3::case_compare<boost::spirit::char_encoding::standard> ncomp;
-boost::spirit::x3::case_compare<boost::spirit::char_encoding::standard_wide> wcomp;
-boost::spirit::x3::no_case_compare<boost::spirit::char_encoding::standard> nc_ncomp;
-boost::spirit::x3::no_case_compare<boost::spirit::char_encoding::standard_wide> nc_wcomp;
+x3::case_compare<x3::char_encoding::standard> ncomp;
+x3::case_compare<x3::char_encoding::standard_wide> wcomp;
+x3::no_case_compare<x3::char_encoding::standard> nc_ncomp;
+x3::no_case_compare<x3::char_encoding::standard_wide> nc_wcomp;
 
 template <typename Lookup, typename WideLookup>
 void tests()
@@ -328,8 +332,8 @@ void tests()
 
 int main()
 {
-    using boost::spirit::x3::tst;
-    using boost::spirit::x3::tst_map;
+    using x3::tst;
+    using x3::tst_map;
 
     tests<tst<char, int>, tst<wchar_t, int> >();
 //~    tests<tst_map<char, int>, tst_map<wchar_t, int> >();

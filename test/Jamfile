@@ -10,8 +10,4 @@
 
 project : requirements <library>/boost/spirit//boost_spirit ;
 
-build-project karma ;
-build-project lex ;
-build-project qi ;
-build-project support ;
 build-project x3 ;
