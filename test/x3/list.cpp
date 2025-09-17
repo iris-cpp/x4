@@ -60,8 +60,7 @@ int main()
         using boost::spirit::x3::omit;
 
         int i;
-        BOOST_TEST(parse("1:2,3", int_ >> ':' >> omit[int_] % ',', i))
-          && BOOST_TEST_EQ(i, 1);
+        BOOST_TEST(parse("1:2,3", int_ >> ':' >> omit[int_] % ',', i)) && BOOST_TEST_EQ(i, 1);
     }
 
     {
@@ -83,15 +82,13 @@ int main()
     {
         std::vector<std::string> v;
         BOOST_TEST(parse("a,b,c,d", +alpha % ',', v));
-        BOOST_TEST(4 == v.size() && "a" == v[0] && "b" == v[1]
-            && "c" == v[2] && "d" == v[3]);
+        BOOST_TEST(4 == v.size() && "a" == v[0] && "b" == v[1] && "c" == v[2] && "d" == v[3]);
     }
 
     {
-        std::vector<boost::optional<char> > v;
+        std::vector<std::optional<char>> v;
         BOOST_TEST(parse("#a,#", ('#' >> -alpha) % ',', v));
-        BOOST_TEST(2 == v.size() &&
-            !!v[0] && 'a' == boost::get<char>(v[0]) && !v[1]);
+        BOOST_TEST(2 == v.size() && v[0] && *v[0] == 'a' && !v[1]);
 
         std::vector<char> v2;
         BOOST_TEST(parse("#a,#", ('#' >> -alpha) % ',', v2));

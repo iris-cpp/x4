@@ -13,14 +13,9 @@
 #endif
 
 #include <boost/config.hpp> // for BOOST_SYMBOL_VISIBLE
+#include <boost/spirit/home/x3/core/parser.hpp> // for `x3::what`
 #include <boost/spirit/home/x3/support/unused.hpp>
 #include <boost/spirit/home/x3/support/context.hpp>
-#include <boost/spirit/home/x3/core/parser.hpp> // for `x3::what`
-
-// We utilize `x3::traits::build_optional<...>` for customization point
-// instead of directly wrapping `expectation_failure` with `boost::optional`.
-// This would make it possible for the user to eliminate the usages of
-// `boost::optional<T>`, and use `std::optional<T>` everywhere.
 #include <boost/spirit/home/x3/support/traits/optional_traits.hpp>
 
 #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE // throwing mode
@@ -124,17 +119,6 @@ namespace boost::spirit::x3
             [[nodiscard]]
             constexpr decltype(auto) which(std::optional<expectation_failure<It>> const& failure) noexcept { return failure->which(); }
 
-#if BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL
-            // boost::optional
-            template <std::forward_iterator It>
-            [[nodiscard, deprecated("Use std::optional")]]
-            constexpr decltype(auto) where(boost::optional<expectation_failure<It>> const& failure) noexcept { return failure->where(); }
-
-            template <std::forward_iterator It>
-            [[nodiscard, deprecated("Use std::optional")]]
-            constexpr decltype(auto) which(boost::optional<expectation_failure<It>> const& failure) noexcept { return failure->which(); }
-#endif
-
             // std::optional + std::reference_wrapper
             template <std::forward_iterator It>
             [[nodiscard]]
@@ -144,16 +128,6 @@ namespace boost::spirit::x3
             [[nodiscard]]
             constexpr decltype(auto) which(std::reference_wrapper<std::optional<expectation_failure<It>>> const& failure) noexcept { return failure.get()->which(); }
 
-#if BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL
-            // boost::optional + std::reference_wrapper
-            template <std::forward_iterator It>
-            [[nodiscard, deprecated("Use std::optional")]]
-            constexpr decltype(auto) where(std::reference_wrapper<boost::optional<expectation_failure<It>>> const& failure) noexcept { return failure.get()->where(); }
-
-            template <std::forward_iterator It>
-            [[nodiscard, deprecated("Use std::optional")]]
-            constexpr decltype(auto) which(std::reference_wrapper<boost::optional<expectation_failure<It>>> const& failure) noexcept { return failure.get()->which(); }
-#endif
         } // expectation_failure_helpers
 
         using expectation_failure_helpers::where;
@@ -178,15 +152,6 @@ namespace boost::spirit::x3
                 return failure.has_value();
             }
 
-#if BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL
-            template <std::forward_iterator It>
-            [[nodiscard, deprecated("Use std::optional")]]
-            constexpr bool has_expectation_failure_impl(boost::optional<expectation_failure<It>> const& failure) noexcept
-            {
-                return failure.has_value();
-            }
-#endif
-
             template <typename T>
             [[nodiscard]] constexpr bool has_expectation_failure_impl(std::reference_wrapper<T> const& ref) noexcept
             {
@@ -207,15 +172,6 @@ namespace boost::spirit::x3
             {
                 failure = std::forward<T>(value);
             }
-
-#if BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL
-            template <std::forward_iterator It, typename T>
-            [[deprecated("Use std::optional")]]
-            constexpr void set_expectation_failure_impl(boost::optional<expectation_failure<It>>& failure, T&& value)
-            {
-                failure = std::forward<T>(value);
-            }
-#endif
 
             template <typename AnyExpectationFailure, typename T>
             constexpr void set_expectation_failure_impl(std::reference_wrapper<AnyExpectationFailure>& failure, T&& value)
@@ -239,15 +195,6 @@ namespace boost::spirit::x3
             {
                 failure.reset();
             }
-
-#if BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL
-            template <std::forward_iterator It>
-            [[deprecated("Use std::optional")]]
-            constexpr void clear_expectation_failure_impl(boost::optional<expectation_failure<It>>& failure) noexcept
-            {
-                failure.reset();
-            }
-#endif
 
             template <typename T>
             constexpr void clear_expectation_failure_impl(std::reference_wrapper<T>& ref) noexcept

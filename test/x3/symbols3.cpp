@@ -8,7 +8,6 @@
 =============================================================================*/
 
 #define BOOST_SPIRIT_X3_DEBUG
-#define BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL 0
 #define BOOST_SPIRIT_X3_UNICODE
 
 #include "test.hpp"

@@ -6,8 +6,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL 0
-
 #include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>

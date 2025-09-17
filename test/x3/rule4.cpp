@@ -150,14 +150,12 @@ int main()
         auto r1 = rule<class r1_id, v_type>()
             = int_;
         v_type v;
-        BOOST_TEST(parse("1", r1, v) && v.which() == 1 &&
-            boost::get<int>(v) == 1);
+        BOOST_TEST(parse("1", r1, v) && v.which() == 1 && boost::get<int>(v) == 1);
 
-        using ov_type = boost::optional<int>;
-        auto r2 = rule<class r2_id, ov_type>()
-            = int_;
+        using ov_type = std::optional<int>;
+        auto r2 = rule<class r2_id, ov_type>() = int_;
         ov_type ov;
-        BOOST_TEST(parse("1", r2, ov) && ov && boost::get<int>(ov) == 1);
+        BOOST_TEST(parse("1", r2, ov) && ov && *ov == 1);
     }
 
     // test handling of single element fusion sequences
