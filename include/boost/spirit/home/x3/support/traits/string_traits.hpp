@@ -46,6 +46,11 @@ namespace boost::spirit::x3::traits
         std::same_as<std::remove_cvref_t<T>, char16_t> ||
         std::same_as<std::remove_cvref_t<T>, char32_t>;
 
+    template <typename T>
+    concept CharArray =
+        std::is_array_v<std::remove_cvref_t<T>> &&
+        CharLike<std::remove_extent_t<std::remove_cvref_t<T>>>;
+
     // Spirit has historically converted "c" to 'c'.
     //
     // While we think it's still useful to retain the conversion,

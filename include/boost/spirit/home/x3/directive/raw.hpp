@@ -13,11 +13,6 @@
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
 #include <boost/spirit/home/x3/support/traits/pseudo_attribute.hpp>
 
-#ifndef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
-# pragma message("Use of `boost::iterator_range` is deprecated in X3. #define BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE")
-# include <boost/range/iterator_range_core.hpp>
-#endif
-
 #include <ranges>
 #include <iterator>
 #include <type_traits>
@@ -98,11 +93,7 @@ namespace boost::spirit::x3
         struct pseudo_attribute<Context, raw_attribute_type, It>
         {
             using attribute_type = raw_attribute_type;
-        #ifdef BOOST_SPIRIT_X3_NO_BOOST_ITERATOR_RANGE
             using type = std::ranges::subrange<It>;
-        #else
-            using type = boost::iterator_range<It>;
-        #endif
 
             [[nodiscard]] static constexpr type call(It& first, std::sentinel_for<It> auto const& last, raw_attribute_type)
             {

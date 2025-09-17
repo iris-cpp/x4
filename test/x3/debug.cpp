@@ -10,20 +10,24 @@
 #include "test.hpp"
 
 #include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
+
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/fusion/include/vector.hpp>
 
+#include <optional>
 #include <iterator>
 #include <vector>
 #include <string>
 #include <cstring>
 #include <iostream>
 
+namespace x3 = boost::spirit::x3;
+
 struct my_error_handler
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    boost::spirit::x3::error_handler_result
-    operator()(It const&, Se const& last, Exception const& x, Context const&) const
+    void operator()(It const&, Se const& last, Exception const& x, Context const&) const
     {
         std::cout
             << "Error! Expecting: "
@@ -32,7 +36,6 @@ struct my_error_handler
             << std::string(x.where(), last)
             << "\""
             << std::endl;
-        return boost::spirit::x3::error_handler_result::fail;
     }
 };
 
@@ -58,13 +61,9 @@ struct my_attribute
 
 int main()
 {
-    using spirit_test::test_attr;
-    using spirit_test::test;
-
     using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::symbols;
-    using boost::spirit::x3::int_;
+    using x3::rule;
+    using x3::int_;
 
     { // basic tests
 
@@ -74,7 +73,7 @@ int main()
 
         {
             auto start = *(a | b | c);
-            BOOST_TEST(test("abcabcacb", start));
+            BOOST_TEST(parse("abcabcacb", start));
         }
 
         {
@@ -82,8 +81,8 @@ int main()
             auto start_def =
                 start = (a | b) >> (start | b);
 
-            BOOST_TEST(test("aaaabababaaabbb", start_def));
-            BOOST_TEST(test("aaaabababaaabba", start_def, false));
+            BOOST_TEST(parse("aaaabababaaabbb", start_def));
+            BOOST_TEST(parse("aaaabababaaabba", start_def).is_partial_match());
         }
     }
 
@@ -95,7 +94,7 @@ int main()
 
         {
             auto start = *(a | b | c);
-            BOOST_TEST(test(" a b c a b c a c b ", start, space));
+            BOOST_TEST(parse(" a b c a b c a c b ", start, space));
         }
 
         {
@@ -103,41 +102,45 @@ int main()
             auto start_def =
                 start = (a | b) >> (start | b);
 
-            BOOST_TEST(test(" a a a a b a b a b a a a b b b ", start_def, space));
-            BOOST_TEST(test(" a a a a b a b a b a a a b b a ", start_def, space, false));
+            BOOST_TEST(parse(" a a a a b a b a b a a a b b b ", start_def, space));
+            BOOST_TEST(parse(" a a a a b a b a b a a a b b a ", start_def, space).is_partial_match());
         }
     }
 
-    { // std::container attributes
+    {
+        // std::container attributes
 
         typedef boost::fusion::vector<int, char> fs;
         rule<class start, std::vector<fs>> start("start");
         auto start_def =
             start = *(int_ >> alpha);
 
-        BOOST_TEST(test("1 a 2 b 3 c", start_def, space));
-    }
-
-    { // error handling
-
-        auto r_def = '(' > int_ > ',' > int_ > ')';
-        auto r = r_def.on_error(my_error_handler());
-
-        BOOST_TEST(test("(123,456)", r));
-        BOOST_TEST(!test("(abc,def)", r));
-        BOOST_TEST(!test("(123,456]", r));
-        BOOST_TEST(!test("(123;456)", r));
-        BOOST_TEST(!test("[123,456]", r));
+        BOOST_TEST(parse("1 a 2 b 3 c", start_def, space));
     }
 
     {
-        symbols<my_attribute> a{{{ "a", my_attribute{} }}};
+         // error handling
+
+        auto r_def = '(' > int_ > ',' > int_ > ')';
+        my_error_handler error_handler;
+
+        auto parser = x3::with<x3::error_handler_tag>(error_handler)[r_def];
+
+        BOOST_TEST( parse("(123,456)", parser));
+        BOOST_TEST(!parse("(abc,def)", parser));
+        BOOST_TEST(!parse("(123,456]", parser));
+        BOOST_TEST(!parse("(123;456)", parser));
+        BOOST_TEST(!parse("[123,456]", parser));
+    }
+
+    {
+        x3::shared_symbols<my_attribute> a{{{ "a", my_attribute{} }}};
 
         auto b = rule<struct b_id, my_attribute>("b") = a;
 
         my_attribute attr;
 
-        BOOST_TEST(test_attr("a", b, attr));
+        BOOST_TEST(parse("a", b, attr));
     }
 
     return boost::report_errors();

@@ -1,43 +1,45 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 
+#include <iterator>
 #include <string>
 #include <cstring>
 #include <iostream>
-#include "test.hpp"
+#include <type_traits>
 
 namespace x3 = boost::spirit::x3;
 
 struct check_no_rule_injection_parser
     : x3::parser<check_no_rule_injection_parser>
 {
-    typedef x3::unused_type attribute_type;
-    static bool const has_attribute = false;
+    using attribute_type = x3::unused_type;
 
-    template <typename Iterator, typename Context
-      , typename RuleContext, typename Attribute>
-    bool parse(Iterator&, Iterator const&, Context const&,
-        RuleContext&, Attribute&) const
+    static constexpr bool has_attribute = false;
+
+    template <
+        std::forward_iterator It, std::sentinel_for<It> Se,
+        typename Context, typename RContext, typename Attribute
+    >
+    [[nodiscard]] constexpr bool
+    parse(It&, Se const&, Context const&, RContext const&, Attribute&) const
     {
-        static_assert(std::is_same<Context, x3::unused_type>::value,
-            "no rule definition injection should occur");
+        static_assert(std::is_same_v<Context, x3::parse_context_for<std::string_view>>, "no rule definition injection should occur");
         return true;
     }
 } const check_no_rule_injection{};
 
-int
-main()
+int main()
 {
-    using spirit_test::test_attr;
-    using spirit_test::test;
-
-    using namespace boost::spirit::x3::ascii;
+    using namespace boost::spirit::x3::standard;
     using boost::spirit::x3::rule;
     using boost::spirit::x3::lit;
     using boost::spirit::x3::unused_type;
@@ -50,20 +52,20 @@ main()
 
         // this semantic action requires the context
         auto f = [&](auto& ctx){ ch = _attr(ctx); };
-        BOOST_TEST(test("x", a[f]));
+        BOOST_TEST(parse("x", a[f]));
         BOOST_TEST(ch == 'x');
 
         // this semantic action requires the (unused) context
         auto f2 = [&](auto&){ ch = 'y'; };
-        BOOST_TEST(test("x", a[f2]));
+        BOOST_TEST(parse("x", a[f2]));
         BOOST_TEST(ch == 'y');
 
         // the semantic action may optionally not have any arguments at all
         auto f3 = [&]{ ch = 'z'; };
-        BOOST_TEST(test("x", a[f3]));
+        BOOST_TEST(parse("x", a[f3]));
         BOOST_TEST(ch == 'z');
 
-        BOOST_TEST(test_attr("z", a, ch)); // attribute is given.
+        BOOST_TEST(parse("z", a, ch)); // attribute is given.
         BOOST_TEST(ch == 'z');
     }
 
@@ -73,17 +75,17 @@ main()
         auto a = rule<class a_id, char>() = alpha;
         auto f = [&](auto& ctx){ ch = _attr(ctx); };
 
-        BOOST_TEST(test("x", a[f]));
+        BOOST_TEST(parse("x", a[f]));
         BOOST_TEST(ch == 'x');
         ch = '\0';
-        BOOST_TEST(test_attr("z", a, ch)); // attribute is given.
+        BOOST_TEST(parse("z", a, ch)); // attribute is given.
         BOOST_TEST(ch == 'z');
 
         ch = '\0';
-        BOOST_TEST(test("x", a[f]));
+        BOOST_TEST(parse("x", a[f]));
         BOOST_TEST(ch == 'x');
         ch = '\0';
-        BOOST_TEST(test_attr("z", a, ch)); // attribute is given.
+        BOOST_TEST(parse("z", a, ch)); // attribute is given.
         BOOST_TEST(ch == 'z');
     }
 
@@ -101,7 +103,7 @@ main()
                 = char_ >> *(',' >> char_)
                 ;
 
-            BOOST_TEST(test("a,b,c,d,e,f", r[f]));
+            BOOST_TEST(parse("a,b,c,d,e,f", r[f]));
             BOOST_TEST(s == "abcdef");
         }
 
@@ -109,7 +111,7 @@ main()
             auto r = rule<class r_id, std::string>()
                 = char_ >> *(',' >> char_);
             s.clear();
-            BOOST_TEST(test("a,b,c,d,e,f", r[f]));
+            BOOST_TEST(parse("a,b,c,d,e,f", r[f]));
             BOOST_TEST(s == "abcdef");
         }
 
@@ -117,14 +119,14 @@ main()
             auto r = rule<class r_id, std::string>()
                 = char_ >> char_ >> char_ >> char_ >> char_ >> char_;
             s.clear();
-            BOOST_TEST(test("abcdef", r[f]));
+            BOOST_TEST(parse("abcdef", r[f]));
             BOOST_TEST(s == "abcdef");
         }
     }
 
     {
-        BOOST_TEST(test("", rule<class a>{} = check_no_rule_injection));
-        BOOST_TEST(test("", rule<class a>{} %= check_no_rule_injection));
+        BOOST_TEST(parse("", rule<class a>{} = check_no_rule_injection));
+        BOOST_TEST(parse("", rule<class a>{} %= check_no_rule_injection));
     }
 
     return boost::report_errors();

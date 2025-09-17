@@ -5,7 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM)
+#ifndef BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM
 #define BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM
 
 #include <boost/spirit/home/x3/support/traits/container_traits.hpp>
@@ -151,13 +151,6 @@ namespace boost::spirit::x3::traits
             detail::has_fusion_kv_in_map<p_key, p_value, Attribute>
         >::value;
     };
-
-#if BOOST_SPIRIT_X3_USE_BOOST_OPTIONAL
-    template <typename T, typename Attribute>
-    struct [[deprecated("Use std::optional")]] is_substitute<boost::optional<T>, boost::optional<Attribute>>
-        : is_substitute<T, Attribute>
-    {};
-#endif
 
     template <typename T, typename Attribute>
     struct is_substitute<std::optional<T>, std::optional<Attribute>>

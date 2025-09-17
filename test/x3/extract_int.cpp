@@ -1,17 +1,20 @@
 /*=============================================================================
-  Copyright (c) 2018 Nikita Kniazev
+    Copyright (c) 2018 Nikita Kniazev
+    Copyright (c) 2025 Nana Sakisaka
 
-  Distributed under the Boost Software License, Version 1.0. (See accompanying
-  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#include "test.hpp"
 
 #include <boost/spirit/home/x3/support/numeric_utils/extract_int.hpp>
 
-#include <boost/core/lightweight_test.hpp>
-#include <cmath> // for std::pow
-#include <cstdio>
-#include <iosfwd>
+#include <iostream>
 #include <limits>
+
+#include <cmath>
+#include <cstdio>
 
 #ifdef _MSC_VER
 # pragma warning(disable: 4127)   // conditional expression is constant

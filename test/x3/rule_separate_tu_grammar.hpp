@@ -7,6 +7,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 
 // Check that `BOOST_SPIRIT_X3_INSTANTIATE` instantiates `parse_rule` with proper

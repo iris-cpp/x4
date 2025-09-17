@@ -1,42 +1,45 @@
 /*=============================================================================
     Copyright (c) 2014 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM)
+#ifndef BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM
 #define BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM
 
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 #include <boost/spirit/home/x3/support/utility/utf8.hpp>
+
+#include <string>
+#include <iterator>
 #include <ostream>
 
 // Clang-style error handling utilities
 
-namespace boost { namespace spirit { namespace x3
+namespace boost::spirit::x3
 {
     // tag used to get our error handler from the context
     struct error_handler_tag;
 
-    template <typename Iterator>
+    template <std::forward_iterator It>
     class error_handler
     {
     public:
-
-        typedef Iterator iterator_type;
+        using iterator_type = It;
 
         error_handler(
-            Iterator first, Iterator last, std::ostream& err_out
+            It first, It last, std::ostream& err_out
           , std::string file = "", int tabs = 4)
           : err_out(err_out)
           , file(file)
           , tabs(tabs)
           , pos_cache(first, last) {}
 
-        typedef void result_type;
+        using result_type = void;
 
-        void operator()(Iterator err_pos, std::string const& error_message) const;
-        void operator()(Iterator err_first, Iterator err_last, std::string const& error_message) const;
+        void operator()(It err_pos, std::string const& error_message) const;
+        void operator()(It err_first, It err_last, std::string const& error_message) const;
         void operator()(position_tagged pos, std::string const& message) const
         {
             auto where = pos_cache.position_of(pos);
@@ -44,17 +47,19 @@ namespace boost { namespace spirit { namespace x3
         }
 
         template <typename AST>
-        void tag(AST& ast, Iterator first, Iterator last)
+        void tag(AST& ast, It first, It last)
         {
             return pos_cache.annotate(ast, first, last);
         }
 
-        boost::iterator_range<Iterator> position_of(position_tagged pos) const
+        [[nodiscard]] std::ranges::subrange<It>
+        position_of(position_tagged pos) const
         {
             return pos_cache.position_of(pos);
         }
 
-        position_cache<std::vector<Iterator>> const& get_position_cache() const
+        [[nodiscard]] position_cache<std::vector<It>> const&
+        get_position_cache() const noexcept
         {
             return pos_cache;
         }
@@ -62,19 +67,19 @@ namespace boost { namespace spirit { namespace x3
     private:
 
         void print_file_line(std::size_t line) const;
-        void print_line(Iterator line_start, Iterator last) const;
-        void print_indicator(Iterator& line_start, Iterator last, char ind) const;
-        Iterator get_line_start(Iterator first, Iterator pos) const;
-        std::size_t position(Iterator i) const;
+        void print_line(It line_start, It last) const;
+        void print_indicator(It& line_start, It last, char ind) const;
+        It get_line_start(It first, It pos) const;
+        std::size_t position(It i) const;
 
         std::ostream& err_out;
         std::string file;
         int tabs;
-        position_cache<std::vector<Iterator>> pos_cache;
+        position_cache<std::vector<It>> pos_cache;
     };
 
-    template <typename Iterator>
-    void error_handler<Iterator>::print_file_line(std::size_t line) const
+    template <std::forward_iterator It>
+    void error_handler<It>::print_file_line(std::size_t line) const
     {
         if (file != "")
         {
@@ -88,8 +93,8 @@ namespace boost { namespace spirit { namespace x3
         err_out << "line " << line << ':' << '\n';
     }
 
-    template <typename Iterator>
-    void error_handler<Iterator>::print_line(Iterator start, Iterator last) const
+    template <std::forward_iterator It>
+    void error_handler<It>::print_line(It start, It last) const
     {
         auto end = start;
         while (end != last)
@@ -100,13 +105,13 @@ namespace boost { namespace spirit { namespace x3
             else
                 ++end;
         }
-        typedef typename std::iterator_traits<Iterator>::value_type char_type;
+        typedef typename std::iterator_traits<It>::value_type char_type;
         std::basic_string<char_type> line{start, end};
         err_out << x3::to_utf8(line) << '\n';
     }
 
-    template <typename Iterator>
-    void error_handler<Iterator>::print_indicator(Iterator& start, Iterator last, char ind) const
+    template <std::forward_iterator It>
+    void error_handler<It>::print_indicator(It& start, It last, char ind) const
     {
         for (; start != last; ++start)
         {
@@ -121,11 +126,11 @@ namespace boost { namespace spirit { namespace x3
         }
     }
 
-    template <class Iterator>
-    inline Iterator error_handler<Iterator>::get_line_start(Iterator first, Iterator pos) const
+    template <std::forward_iterator It>
+    It error_handler<It>::get_line_start(It first, It pos) const
     {
-        Iterator latest = first;
-        for (Iterator i = first; i != pos;)
+        It latest = first;
+        for (It i = first; i != pos;)
             if (*i == '\r' || *i == '\n')
                 latest = ++i;
             else
@@ -133,13 +138,13 @@ namespace boost { namespace spirit { namespace x3
         return latest;
     }
 
-    template <typename Iterator>
-    std::size_t error_handler<Iterator>::position(Iterator i) const
+    template <std::forward_iterator It>
+    std::size_t error_handler<It>::position(It i) const
     {
         std::size_t line { 1 };
-        typename std::iterator_traits<Iterator>::value_type prev { 0 };
+        typename std::iterator_traits<It>::value_type prev { 0 };
 
-        for (Iterator pos = pos_cache.first(); pos != i; ++pos) {
+        for (It pos = pos_cache.first(); pos != i; ++pos) {
             auto c = *pos;
             switch (c) {
             case '\n':
@@ -157,39 +162,39 @@ namespace boost { namespace spirit { namespace x3
         return line;
     }
 
-    template <typename Iterator>
-    void error_handler<Iterator>::operator()(
-        Iterator err_pos, std::string const& error_message) const
+    template <std::forward_iterator It>
+    void error_handler<It>::operator()(
+        It err_pos, std::string const& error_message) const
     {
-        Iterator first = pos_cache.first();
-        Iterator last = pos_cache.last();
+        It first = pos_cache.first();
+        It last = pos_cache.last();
 
         print_file_line(position(err_pos));
         err_out << error_message << '\n';
 
-        Iterator start = get_line_start(first, err_pos);
+        It start = get_line_start(first, err_pos);
         print_line(start, last);
         print_indicator(start, err_pos, '_');
         err_out << "^_" << '\n';
     }
 
-    template <typename Iterator>
-    void error_handler<Iterator>::operator()(
-        Iterator err_first, Iterator err_last, std::string const& error_message) const
+    template <std::forward_iterator It>
+    void error_handler<It>::operator()(
+        It err_first, It err_last, std::string const& error_message) const
     {
-        Iterator first = pos_cache.first();
-        Iterator last = pos_cache.last();
+        It first = pos_cache.first();
+        It last = pos_cache.last();
 
         print_file_line(position(err_first));
         err_out << error_message << '\n';
 
-        Iterator start = get_line_start(first, err_first);
+        It start = get_line_start(first, err_first);
         print_line(start, last);
         print_indicator(start, err_first, ' ');
         print_indicator(start, err_last, '~');
         err_out << " <<-- Here" << '\n';
     }
 
-}}}
+} // boost::spirit::x3
 
 #endif

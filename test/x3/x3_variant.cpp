@@ -1,27 +1,30 @@
 /*=============================================================================
     Copyright (c) 2001-2016 Joel de Guzman
+    Copyright (c) 2025 Nana Sakisaka
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 
 #include <string>
 #include <iostream>
-#include "test.hpp"
 
 namespace x3 = boost::spirit::x3;
 
 struct none {};
 
 using variant = x3::variant<
-        none
-      , bool
-      , std::string
-      , int
-      , double
-    >;
+    none,
+    bool,
+    std::string,
+    int,
+    double
+>;
 
 struct ast : variant
 {
@@ -39,8 +42,7 @@ struct ast : variant
     }
 };
 
-int
-main()
+int main()
 {
     {
         ast v{123};

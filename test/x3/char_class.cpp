@@ -19,131 +19,127 @@
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_failure;
-    using spirit_test::test_attr;
-
     using boost::spirit::x3::unused_type;
 
     {
         using namespace boost::spirit::x3::standard;
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(upper);
-        BOOST_TEST(test("1", alnum));
-        BOOST_TEST(!test(" ", alnum));
-        BOOST_TEST(!test("1", alpha));
-        BOOST_TEST(test("x", alpha));
-        BOOST_TEST(test(" ", blank));
-        BOOST_TEST(!test("x", blank));
-        BOOST_TEST(test("1", digit));
-        BOOST_TEST(!test("x", digit));
-        BOOST_TEST(test("a", lower));
-        BOOST_TEST(!test("A", lower));
-        BOOST_TEST(test("!", punct));
-        BOOST_TEST(!test("x", punct));
-        BOOST_TEST(test(" ", space));
-        BOOST_TEST(test("\n", space));
-        BOOST_TEST(test("\r", space));
-        BOOST_TEST(test("\t", space));
-        BOOST_TEST(test("A", upper));
-        BOOST_TEST(!test("a", upper));
-        BOOST_TEST(test("A", xdigit));
-        BOOST_TEST(test("0", xdigit));
-        BOOST_TEST(test("f", xdigit));
-        BOOST_TEST(!test("g", xdigit));
-        BOOST_TEST(!test("\xF1", print));
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alnum);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alpha);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(digit);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(xdigit);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(cntrl);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(graph);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lower);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(print);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(punct);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(space);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(blank);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(upper);
+        BOOST_TEST(parse("1", alnum));
+        BOOST_TEST(!parse(" ", alnum));
+        BOOST_TEST(!parse("1", alpha));
+        BOOST_TEST(parse("x", alpha));
+        BOOST_TEST(parse(" ", blank));
+        BOOST_TEST(!parse("x", blank));
+        BOOST_TEST(parse("1", digit));
+        BOOST_TEST(!parse("x", digit));
+        BOOST_TEST(parse("a", lower));
+        BOOST_TEST(!parse("A", lower));
+        BOOST_TEST(parse("!", punct));
+        BOOST_TEST(!parse("x", punct));
+        BOOST_TEST(parse(" ", space));
+        BOOST_TEST(parse("\n", space));
+        BOOST_TEST(parse("\r", space));
+        BOOST_TEST(parse("\t", space));
+        BOOST_TEST(parse("A", upper));
+        BOOST_TEST(!parse("a", upper));
+        BOOST_TEST(parse("A", xdigit));
+        BOOST_TEST(parse("0", xdigit));
+        BOOST_TEST(parse("f", xdigit));
+        BOOST_TEST(!parse("g", xdigit));
+        BOOST_TEST(!parse("\xF1", print));
     }
 
     {
         using namespace boost::spirit::x3::standard_wide;
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(upper);
-        BOOST_TEST(test(L"1", alnum));
-        BOOST_TEST(!test(L" ", alnum));
-        BOOST_TEST(!test(L"1", alpha));
-        BOOST_TEST(test(L"x", alpha));
-        BOOST_TEST(test(L" ", blank));
-        BOOST_TEST(!test(L"x", blank));
-        BOOST_TEST(test(L"1", digit));
-        BOOST_TEST(!test(L"x", digit));
-        BOOST_TEST(test(L"a", lower));
-        BOOST_TEST(!test(L"A", lower));
-        BOOST_TEST(test(L"!", punct));
-        BOOST_TEST(!test(L"x", punct));
-        BOOST_TEST(test(L" ", space));
-        BOOST_TEST(test(L"\n", space));
-        BOOST_TEST(test(L"\r", space));
-        BOOST_TEST(test(L"\t", space));
-        BOOST_TEST(test(L"A", upper));
-        BOOST_TEST(!test(L"a", upper));
-        BOOST_TEST(test(L"A", xdigit));
-        BOOST_TEST(test(L"0", xdigit));
-        BOOST_TEST(test(L"f", xdigit));
-        BOOST_TEST(!test(L"g", xdigit));
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alnum);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alpha);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(digit);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(xdigit);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(cntrl);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(graph);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lower);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(print);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(punct);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(space);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(blank);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(upper);
+        BOOST_TEST(parse(L"1", alnum));
+        BOOST_TEST(!parse(L" ", alnum));
+        BOOST_TEST(!parse(L"1", alpha));
+        BOOST_TEST(parse(L"x", alpha));
+        BOOST_TEST(parse(L" ", blank));
+        BOOST_TEST(!parse(L"x", blank));
+        BOOST_TEST(parse(L"1", digit));
+        BOOST_TEST(!parse(L"x", digit));
+        BOOST_TEST(parse(L"a", lower));
+        BOOST_TEST(!parse(L"A", lower));
+        BOOST_TEST(parse(L"!", punct));
+        BOOST_TEST(!parse(L"x", punct));
+        BOOST_TEST(parse(L" ", space));
+        BOOST_TEST(parse(L"\n", space));
+        BOOST_TEST(parse(L"\r", space));
+        BOOST_TEST(parse(L"\t", space));
+        BOOST_TEST(parse(L"A", upper));
+        BOOST_TEST(!parse(L"a", upper));
+        BOOST_TEST(parse(L"A", xdigit));
+        BOOST_TEST(parse(L"0", xdigit));
+        BOOST_TEST(parse(L"f", xdigit));
+        BOOST_TEST(!parse(L"g", xdigit));
     }
 
     {
         using namespace boost::spirit::x3::unicode;
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(upper);
-        BOOST_TEST(test(U"1", alnum));
-        BOOST_TEST(!test(U" ", alnum));
-        BOOST_TEST(!test(U"1", alpha));
-        BOOST_TEST(test(U"x", alpha));
-        BOOST_TEST(test(U" ", blank));
-        BOOST_TEST(!test(U"x", blank));
-        BOOST_TEST(test(U"1", digit));
-        BOOST_TEST(!test(U"x", digit));
-        BOOST_TEST(test(U"a", lower));
-        BOOST_TEST(!test(U"A", lower));
-        BOOST_TEST(test(U"!", punct));
-        BOOST_TEST(!test(U"x", punct));
-        BOOST_TEST(test(U" ", space));
-        BOOST_TEST(test(U"\n", space));
-        BOOST_TEST(test(U"\r", space));
-        BOOST_TEST(test(U"\t", space));
-        BOOST_TEST(test(U"A", upper));
-        BOOST_TEST(!test(U"a", upper));
-        BOOST_TEST(test(U"A", xdigit));
-        BOOST_TEST(test(U"0", xdigit));
-        BOOST_TEST(test(U"f", xdigit));
-        BOOST_TEST(!test(U"g", xdigit));
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alnum);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alpha);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(digit);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(xdigit);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(cntrl);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(graph);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lower);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(print);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(punct);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(space);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(blank);
+        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(upper);
+        BOOST_TEST(parse(U"1", alnum));
+        BOOST_TEST(!parse(U" ", alnum));
+        BOOST_TEST(!parse(U"1", alpha));
+        BOOST_TEST(parse(U"x", alpha));
+        BOOST_TEST(parse(U" ", blank));
+        BOOST_TEST(!parse(U"x", blank));
+        BOOST_TEST(parse(U"1", digit));
+        BOOST_TEST(!parse(U"x", digit));
+        BOOST_TEST(parse(U"a", lower));
+        BOOST_TEST(!parse(U"A", lower));
+        BOOST_TEST(parse(U"!", punct));
+        BOOST_TEST(!parse(U"x", punct));
+        BOOST_TEST(parse(U" ", space));
+        BOOST_TEST(parse(U"\n", space));
+        BOOST_TEST(parse(U"\r", space));
+        BOOST_TEST(parse(U"\t", space));
+        BOOST_TEST(parse(U"A", upper));
+        BOOST_TEST(!parse(U"a", upper));
+        BOOST_TEST(parse(U"A", xdigit));
+        BOOST_TEST(parse(U"0", xdigit));
+        BOOST_TEST(parse(U"f", xdigit));
+        BOOST_TEST(!parse(U"g", xdigit));
 
-        BOOST_TEST(test(U"A", alphabetic));
-        BOOST_TEST(test(U"9", decimal_number));
-        BOOST_TEST(test(U"\u2800", braille));
-        BOOST_TEST(!test(U" ", braille));
-        BOOST_TEST(test(U" ", ~braille));
+        BOOST_TEST(parse(U"A", alphabetic));
+        BOOST_TEST(parse(U"9", decimal_number));
+        BOOST_TEST(parse(U"\u2800", braille));
+        BOOST_TEST(!parse(U" ", braille));
+        BOOST_TEST(parse(U" ", ~braille));
         // TODO: Add more unicode tests
     }
 
@@ -153,13 +149,13 @@ int main()
         auto const invalid_unicode = char32_t{0x7FFFFFFF};
         auto const input           = std::u32string_view(&invalid_unicode, 1);
 
-        BOOST_TEST(test_failure(input, char_));
+        BOOST_TEST(!parse(input, char_));
 
         // force unicode category lookup
         // related issue: https://github.com/boostorg/spirit/issues/524
-        BOOST_TEST(test_failure(input, alpha));
-        BOOST_TEST(test_failure(input, upper));
-        BOOST_TEST(test_failure(input, lower));
+        BOOST_TEST(!parse(input, alpha));
+        BOOST_TEST(!parse(input, upper));
+        BOOST_TEST(!parse(input, lower));
     }
 
     {   // test attribute extraction
@@ -170,7 +166,7 @@ int main()
         static_assert(std::is_same_v<attribute_of_t<alpha_type, unused_type>, char>);
 
         int attr = 0;
-        BOOST_TEST(test_attr("a", alpha, attr));
+        BOOST_TEST(parse("a", alpha, attr));
         BOOST_TEST(attr == 'a');
     }
 
@@ -178,7 +174,7 @@ int main()
         using boost::spirit::x3::standard::alpha;
         using boost::spirit::x3::standard::space;
         char attr = 0;
-        BOOST_TEST(test_attr("     a", alpha, attr, space));
+        BOOST_TEST(parse("     a", alpha, attr, space));
         BOOST_TEST(attr == 'a');
     }
 
@@ -188,9 +184,9 @@ int main()
         char ch;
         auto f = [&](auto& ctx){ ch = _attr(ctx); };
 
-        BOOST_TEST(test("x", alnum[f]));
+        BOOST_TEST(parse("x", alnum[f]));
         BOOST_TEST(ch == 'x');
-        BOOST_TEST(test("   A", alnum[f], space));
+        BOOST_TEST(parse("   A", alnum[f], space));
         BOOST_TEST(ch == 'A');
     }
 

@@ -24,9 +24,6 @@
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
     namespace x3 = boost::spirit::x3;
     namespace traits = x3::traits;
     using traits::Transformable;
@@ -36,7 +33,8 @@ int main()
     using x3::unused_container_type;
     using x3::unused_container;
 
-    static_assert(std::is_trivial_v<unused_type>);
+    static_assert(std::is_trivially_copyable_v<unused_type>);
+    static_assert(std::is_trivially_default_constructible_v<unused_type>);
 
     static_assert(std::assignable_from<unused_type&, unused_type>);
     static_assert(std::assignable_from<unused_type&, unused_type const>);
@@ -65,6 +63,12 @@ int main()
         (void)test_use(unused_mut);
         static_assert(test_use(unused_type{}));
     }
+
+    static_assert(x3::X3Attribute<unused_type>);
+    static_assert(x3::X3Attribute<unused_type const>);
+
+    static_assert(x3::X3Attribute<unused_container_type>);
+    static_assert(x3::X3Attribute<unused_container_type const>);
 
     std::cout << unused;
     std::cout << unused_mut;

@@ -9,9 +9,6 @@
 
 #include "rule_separate_tu_grammar.hpp"
 
-
-#include "test.hpp"
-
 namespace sem_act {
 
 namespace x3 = boost::spirit::x3;
@@ -38,33 +35,30 @@ BOOST_SPIRIT_X3_DEFINE(unused_attr2);
 
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
     {
-        BOOST_TEST(test("*", unused_attr::skipper));
-        BOOST_TEST(test("#", unused_attr::skipper2));
-        BOOST_TEST(test("==", unused_attr::grammar));
-        BOOST_TEST(test("*=*=", unused_attr::grammar, unused_attr::skipper));
-        BOOST_TEST(test("#=#=", unused_attr::grammar, unused_attr::skipper2));
+        BOOST_TEST(parse("*", unused_attr::skipper));
+        BOOST_TEST(parse("#", unused_attr::skipper2));
+        BOOST_TEST(parse("==", unused_attr::grammar));
+        BOOST_TEST(parse("*=*=", unused_attr::grammar, unused_attr::skipper));
+        BOOST_TEST(parse("#=#=", unused_attr::grammar, unused_attr::skipper2));
     }
 
     {
         long i;
         static_assert(!std::is_same<decltype(i), used_attr::grammar_type::attribute_type>::value,
             "ensure we have instantiated the rule with a different attribute type");
-        BOOST_TEST(test_attr("123", used_attr::grammar, i));
+        BOOST_TEST(parse("123", used_attr::grammar, i));
         BOOST_TEST_EQ(i, 123);
-        BOOST_TEST(test_attr(" 42", used_attr::grammar, i, used_attr::skipper));
+        BOOST_TEST(parse(" 42", used_attr::grammar, i, used_attr::skipper));
         BOOST_TEST_EQ(i, 42);
     }
 
     {
         long i;
-        BOOST_TEST(test_attr("123", sem_act::used_attr1, i));
-        BOOST_TEST(test_attr("===", sem_act::used_attr2, i));
-        BOOST_TEST(test("123", sem_act::unused_attr1));
-        BOOST_TEST(test("===", sem_act::unused_attr2));
+        BOOST_TEST(parse("123", sem_act::used_attr1, i));
+        BOOST_TEST(parse("===", sem_act::used_attr2, i));
+        BOOST_TEST(parse("123", sem_act::unused_attr1));
+        BOOST_TEST(parse("===", sem_act::unused_attr2));
     }
 
     return boost::report_errors();

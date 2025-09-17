@@ -9,130 +9,146 @@
 #ifndef BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM
 #define BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM
 
+#include <boost/config.hpp>
+
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/core/skip_over.hpp>
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
-#include <cstdint>
 
-#include <boost/endian/conversion.hpp> // TODO: remove this
-#include <boost/endian/arithmetic.hpp> // TODO: remove this
-#include <boost/mpl/or.hpp>
-#include <boost/type_traits/is_integral.hpp>
-#include <boost/type_traits/is_enum.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
-#include <boost/config.hpp>
+#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
+
+#include <iterator>
+#include <type_traits>
+#include <utility>
+
+#include <cstdint>
 #include <climits>
 
-namespace boost { namespace spirit { namespace x3
+namespace boost::spirit::x3
 {
     template <typename T, boost::endian::order endian, std::size_t bits>
-    struct binary_lit_parser
-      : parser<binary_lit_parser<T, endian, bits> >
+    struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
     {
-        static bool const has_attribute = false;
-        typedef unused_type attribute_type;
+        using attribute_type = unused_type;
 
-        constexpr binary_lit_parser(T n_)
-          : n(n_) {}
+        static constexpr bool has_attribute = false;
 
-        template <typename Iterator, typename Context, typename Attribute>
-        bool parse(Iterator& first, Iterator const& last
-          , Context const& context, unused_type, Attribute& attr_param) const
+        template <typename U>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<U>, binary_lit_parser>) &&
+                std::is_constructible_v<T, U>
+        constexpr explicit binary_lit_parser(U n)
+            noexcept(std::is_nothrow_constructible_v<T, U>)
+            : n_(std::forward<U>(n))
+        {}
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, unused_type, Attribute& attr_param) const
+            // TODO: noexcept
         {
             x3::skip_over(first, last, context);
 
-            unsigned char const* bytes = n.data();
+            unsigned char const* bytes = n_.data();
 
-            Iterator it = first;
-            for (unsigned int i = 0; i < sizeof(n); ++i)
+            It it = first;
+            for (unsigned int i = 0; i < sizeof(n_); ++i)
             {
                 if (it == last || *bytes++ != static_cast<unsigned char>(*it++))
+                {
                     return false;
+                }
             }
 
             first = it;
-            x3::traits::move_to(n, attr_param);
+            x3::traits::move_to(n_, attr_param);
             return true;
         }
 
-        boost::endian::endian_arithmetic<endian, T, bits> n;
+    private:
+        boost::endian::endian_arithmetic<endian, T, bits> n_;
     };
 
-    ///////////////////////////////////////////////////////////////////////////
     template <typename T, boost::endian::order endian, std::size_t bits>
-    struct any_binary_parser : parser<any_binary_parser<T, endian, bits > >
+    struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
     {
+        using attribute_type = T;
 
-        typedef T attribute_type;
-        static bool const has_attribute =
-            !is_same<unused_type, attribute_type>::value;
+        static bool const has_attribute = !std::is_same_v<unused_type, T>;
 
-        template <typename Iterator, typename Context, typename Attribute>
-        bool parse(Iterator& first, Iterator const& last
-          , Context const& context, unused_type, Attribute& attr_param) const
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr_param) const
+            // TODO: noexcept
         {
             x3::skip_over(first, last, context);
 
             // Properly align the buffer for performance reasons
             alignas(T) unsigned char buf[sizeof(T)];
-            unsigned char * bytes = buf;
+            unsigned char* bytes = buf;
 
-            Iterator it = first;
+            It it = first;
             for (unsigned int i = 0; i < sizeof(T); ++i)
             {
-                if (it == last)
-                    return false;
+                if (it == last) return false;
                 *bytes++ = *it++;
             }
 
             first = it;
 
-            static_assert(bits % CHAR_BIT == 0,
-                          "Boost.Endian supports only multiples of CHAR_BIT");
+            static_assert(bits % CHAR_BIT == 0, "Boost.Endian supports only multiples of CHAR_BIT");
             x3::traits::move_to(
                 endian::endian_load<T, bits / CHAR_BIT, endian>(buf),
-                attr_param);
+                attr_param
+            );
             return true;
         }
 
-        constexpr binary_lit_parser<T, endian, bits> operator()(T n) const
+        [[nodiscard]] static constexpr binary_lit_parser<std::remove_cvref_t<T>, endian, bits>
+        operator()(T&& n)
+            noexcept(std::is_nothrow_constructible_v<binary_lit_parser<std::remove_cvref_t<T>, endian, bits>, T>)
         {
-            return {n};
+            return binary_lit_parser<std::remove_cvref_t<T>, endian, bits>{std::forward<T>(n)};
         }
     };
 
-#define BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(name, endiantype, attrtype, bits)                  \
-    typedef any_binary_parser< attrtype, boost::endian::order::endiantype, bits > name##type; \
-    constexpr name##type name = name##type();
+    inline namespace cpos
+    {
+    #define BOOST_SPIRIT_X3_BINARY_PARSER(name, endiantype, attrtype, bits) \
+        using name##type = any_binary_parser<attrtype, boost::endian::order::endiantype, bits>; \
+        inline constexpr name##type name{};
 
 
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(byte_, native, uint_least8_t, 8)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(word, native, uint_least16_t, 16)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(big_word, big, uint_least16_t, 16)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(little_word, little, uint_least16_t, 16)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(dword, native, uint_least32_t, 32)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(big_dword, big, uint_least32_t, 32)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(little_dword, little, uint_least32_t, 32)
-#ifdef BOOST_HAS_LONG_LONG
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(qword, native, uint_least64_t, 64)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(big_qword, big, uint_least64_t, 64)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(little_qword, little, uint_least64_t, 64)
-#endif
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(bin_float, native, float, sizeof(float) * CHAR_BIT)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(big_bin_float, big, float, sizeof(float) * CHAR_BIT)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(little_bin_float, little, float, sizeof(float) * CHAR_BIT)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(bin_double, native, double, sizeof(double) * CHAR_BIT)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(big_bin_double, big, double, sizeof(double) * CHAR_BIT)
-    BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE(little_bin_double, little, double, sizeof(double) * CHAR_BIT)
+        BOOST_SPIRIT_X3_BINARY_PARSER(byte_, native, uint_least8_t, 8)
+        BOOST_SPIRIT_X3_BINARY_PARSER(word, native, uint_least16_t, 16)
+        BOOST_SPIRIT_X3_BINARY_PARSER(big_word, big, uint_least16_t, 16)
+        BOOST_SPIRIT_X3_BINARY_PARSER(little_word, little, uint_least16_t, 16)
+        BOOST_SPIRIT_X3_BINARY_PARSER(dword, native, uint_least32_t, 32)
+        BOOST_SPIRIT_X3_BINARY_PARSER(big_dword, big, uint_least32_t, 32)
+        BOOST_SPIRIT_X3_BINARY_PARSER(little_dword, little, uint_least32_t, 32)
+    #ifdef BOOST_HAS_LONG_LONG
+        BOOST_SPIRIT_X3_BINARY_PARSER(qword, native, uint_least64_t, 64)
+        BOOST_SPIRIT_X3_BINARY_PARSER(big_qword, big, uint_least64_t, 64)
+        BOOST_SPIRIT_X3_BINARY_PARSER(little_qword, little, uint_least64_t, 64)
+    #endif
+        BOOST_SPIRIT_X3_BINARY_PARSER(bin_float, native, float, sizeof(float) * CHAR_BIT)
+        BOOST_SPIRIT_X3_BINARY_PARSER(big_bin_float, big, float, sizeof(float) * CHAR_BIT)
+        BOOST_SPIRIT_X3_BINARY_PARSER(little_bin_float, little, float, sizeof(float) * CHAR_BIT)
+        BOOST_SPIRIT_X3_BINARY_PARSER(bin_double, native, double, sizeof(double) * CHAR_BIT)
+        BOOST_SPIRIT_X3_BINARY_PARSER(big_bin_double, big, double, sizeof(double) * CHAR_BIT)
+        BOOST_SPIRIT_X3_BINARY_PARSER(little_bin_double, little, double, sizeof(double) * CHAR_BIT)
 
-#undef BOOST_SPIRIT_MAKE_BINARY_PRIMITIVE
+    #undef BOOST_SPIRIT_X3_BINARY_PARSER
+    } // cpos
 
-    ///////////////////////////////////////////////////////////////////////////
     template <typename T, std::size_t bits>
     struct get_info<any_binary_parser<T, endian::order::little, bits>>
     {
-        typedef std::string result_type;
-        std::string operator()(any_binary_parser<T, endian::order::little, bits> const&) const
+        using result_type = std::string;
+
+        [[nodiscard]] constexpr std::string
+        operator()(any_binary_parser<T, endian::order::little, bits> const&) const
         {
             return "little-endian binary";
         }
@@ -141,8 +157,10 @@ namespace boost { namespace spirit { namespace x3
     template <typename T, std::size_t bits>
     struct get_info<any_binary_parser<T, endian::order::big, bits>>
     {
-        typedef std::string result_type;
-        std::string operator()(any_binary_parser<T, endian::order::big, bits> const&) const
+        using result_type = std::string;
+
+        [[nodiscard]] constexpr std::string
+        operator()(any_binary_parser<T, endian::order::big, bits> const&) const
         {
             return "big-endian binary";
         }
@@ -151,8 +169,10 @@ namespace boost { namespace spirit { namespace x3
     template <typename T, std::size_t bits>
     struct get_info<binary_lit_parser<T, endian::order::little, bits>>
     {
-        typedef std::string result_type;
-        std::string operator()(binary_lit_parser<T, endian::order::little, bits> const&) const
+        using result_type = std::string;
+
+        [[nodiscard]] constexpr std::string
+        operator()(binary_lit_parser<T, endian::order::little, bits> const&) const
         {
             return "little-endian binary";
         }
@@ -161,13 +181,15 @@ namespace boost { namespace spirit { namespace x3
     template <typename T, std::size_t bits>
     struct get_info<binary_lit_parser<T, endian::order::big, bits>>
     {
-        typedef std::string result_type;
+        using result_type = std::string;
+
+        [[nodiscard]] constexpr
         std::string operator()(binary_lit_parser<T, endian::order::big, bits> const&) const
         {
             return "big-endian binary";
         }
     };
 
-}}}
+} // boost::spirit::x3
 
 #endif

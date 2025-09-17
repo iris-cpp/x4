@@ -36,21 +36,10 @@ struct f
     }
 };
 
-
-struct stationary
-{
-    explicit stationary(int i) : val{i} {}
-    stationary(stationary const&) = delete;
-    stationary& operator=(int i) { val = i; return *this; }
-
-    int val;
-};
-
-
 namespace check_stationary {
 
-boost::spirit::x3::rule<class a_r, stationary> const a;
-boost::spirit::x3::rule<class b_r, stationary> const b;
+boost::spirit::x3::rule<class a_r, spirit_test::stationary> const a;
+boost::spirit::x3::rule<class b_r, spirit_test::stationary> const b;
 
 auto const a_def = '{' >> boost::spirit::x3::int_ >> '}';
 auto const b_def = a;
@@ -95,20 +84,19 @@ BOOST_FUSION_ADAPT_STRUCT(recursive_tuple,
 // regression test for #461
 namespace check_recursive_tuple {
 
+using iterator_type = std::string_view::const_iterator;
+
 x3::rule<class grammar_r, recursive_tuple> const grammar;
 auto const grammar_def = x3::int_ >> ('{' >> grammar % ',' >> '}' | x3::eps);
 BOOST_SPIRIT_X3_DEFINE(grammar)
 
-BOOST_SPIRIT_X3_INSTANTIATE(decltype(grammar), char const*, x3::unused_type)
+BOOST_SPIRIT_X3_INSTANTIATE(decltype(grammar), iterator_type, x3::parse_context_for<iterator_type>)
 
 }
 
 
 int main()
 {
-    using spirit_test::test_attr;
-    using spirit_test::test;
-
     using namespace boost::spirit::x3::standard;
     using boost::spirit::x3::rule;
     using boost::spirit::x3::lit;
@@ -118,20 +106,20 @@ int main()
     // synth attribute value-init
     {
         std::string s;
-        typedef rule<class r, std::string> rule_type;
+        using rule_type = rule<class r, std::string>;
 
         auto rdef = rule_type()
             = alpha                 [f()]
             ;
 
-        BOOST_TEST(test_attr("abcdef", +rdef, s));
+        BOOST_TEST(parse("abcdef", +rdef, s));
         BOOST_TEST(s == "abcdef");
     }
 
     // synth attribute value-init
     {
         std::string s;
-        typedef rule<class r, std::string> rule_type;
+        using rule_type = rule<class r, std::string>;
 
         auto rdef = rule_type() =
             alpha[([](auto& ctx) {
@@ -139,7 +127,7 @@ int main()
             })]
             ;
 
-        BOOST_TEST(test_attr("abcdef", +rdef, s));
+        BOOST_TEST(parse("abcdef", +rdef, s));
         BOOST_TEST(s == "abcdef");
     }
 
@@ -151,26 +139,26 @@ int main()
                 "Attribute must not be synthesized"
             );
         })];
-        BOOST_TEST(test("", r));
+        BOOST_TEST(parse("", r));
     }
 
     // ensure no unneeded synthesization, copying and moving occurred
     {
-        stationary st { 0 };
-        BOOST_TEST(test_attr("{42}", check_stationary::b, st));
+        spirit_test::stationary st { 0 };
+        BOOST_TEST(parse("{42}", check_stationary::b, st));
         BOOST_TEST_EQ(st.val, 42);
     }
 
     {
         using namespace check_recursive;
         node_t v;
-        BOOST_TEST(test_attr("[4,2]", grammar, v));
+        BOOST_TEST(parse("[4,2]", grammar, v));
         BOOST_TEST((node_t{std::vector<node_t>{{4}, {2}}} == v));
     }
     {
         using namespace check_recursive_scoped;
         node_t v;
-        BOOST_TEST(test_attr("[4,2]", grammar, v));
+        BOOST_TEST(parse("[4,2]", grammar, v));
         BOOST_TEST((node_t{std::vector<node_t>{{4}, {2}}} == v));
     }
 

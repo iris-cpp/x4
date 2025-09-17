@@ -11,7 +11,7 @@
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/core/skip_over.hpp>
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 
 #include <iterator>
 

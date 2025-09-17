@@ -220,10 +220,13 @@ namespace boost::spirit::x3
                 // prefix, return no-match.
                 e_pos = first;
                 e_hit = p.parse_exp(first, last);
-                if (p.expect_dot && !e_hit)
+                if constexpr(p.expect_dot)
                 {
-                    first = save;
-                    return false;
+                    if (!e_hit)
+                    {
+                        first = save;
+                        return false;
+                    }
                 }
             }
 

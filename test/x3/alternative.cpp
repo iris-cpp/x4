@@ -6,6 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+#include "test.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>
@@ -15,7 +17,6 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include "test.hpp"
 
 struct di_ignore
 {
@@ -37,22 +38,8 @@ BOOST_FUSION_ADAPT_STRUCT(di_include,
 
 struct undefined {};
 
-
-struct stationary
-{
-    explicit stationary(int i) : val{i} {}
-    stationary(stationary const&) = delete;
-    stationary& operator=(int i) { val = i; return *this; }
-
-    int val;
-};
-
-
 int main()
 {
-    using spirit_test::test;
-    using spirit_test::test_attr;
-
     using boost::spirit::x3::standard::char_;
     using boost::spirit::x3::standard::lit;
     using boost::spirit::x3::attr;
@@ -62,53 +49,53 @@ int main()
     using boost::spirit::x3::omit;
     using boost::spirit::x3::eps;
 
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(char_ | char_);
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
     {
-        BOOST_TEST((test("a", char_ | char_)));
-        BOOST_TEST((test("x", lit('x') | lit('i'))));
-        BOOST_TEST((test("i", lit('x') | lit('i'))));
-        BOOST_TEST((!test("z", lit('x') | lit('o'))));
-        BOOST_TEST((test("rock", lit("rock") | lit("roll"))));
-        BOOST_TEST((test("roll", lit("rock") | lit("roll"))));
-        BOOST_TEST((test("rock", lit("rock") | int_)));
-        BOOST_TEST((test("12345", lit("rock") | int_)));
+        BOOST_TEST(parse("a", char_ | char_));
+        BOOST_TEST(parse("x", lit('x') | lit('i')));
+        BOOST_TEST(parse("i", lit('x') | lit('i')));
+        BOOST_TEST(!parse("z", lit('x') | lit('o')));
+        BOOST_TEST(parse("rock", lit("rock") | lit("roll")));
+        BOOST_TEST(parse("roll", lit("rock") | lit("roll")));
+        BOOST_TEST(parse("rock", lit("rock") | int_));
+        BOOST_TEST(parse("12345", lit("rock") | int_));
     }
 
     {
         using attr_type = boost::variant<undefined, int, char>;
         attr_type v;
 
-        BOOST_TEST((test_attr("12345", int_ | char_, v)));
+        BOOST_TEST(parse("12345", int_ | char_, v));
         BOOST_TEST(boost::get<int>(v) == 12345);
 
-        BOOST_TEST((test_attr("12345", lit("rock") | int_ | char_, v)));
+        BOOST_TEST(parse("12345", lit("rock") | int_ | char_, v));
         BOOST_TEST(boost::get<int>(v) == 12345);
 
         v = attr_type();
-        BOOST_TEST((test_attr("rock", lit("rock") | int_ | char_, v)));
+        BOOST_TEST(parse("rock", lit("rock") | int_ | char_, v));
         BOOST_TEST(v.which() == 0);
 
-        BOOST_TEST((test_attr("x", lit("rock") | int_ | char_, v)));
+        BOOST_TEST(parse("x", lit("rock") | int_ | char_, v));
         BOOST_TEST(boost::get<char>(v) == 'x');
     }
 
     {   // Make sure that we are using the actual supplied attribute types
         // from the variant and not the expected type.
         boost::variant<int, std::string> v;
-        BOOST_TEST((test_attr("12345", int_ | +char_, v)));
+        BOOST_TEST(parse("12345", int_ | +char_, v));
         BOOST_TEST(boost::get<int>(v) == 12345);
 
-        BOOST_TEST((test_attr("abc", int_ | +char_, v)));
+        BOOST_TEST(parse("abc", int_ | +char_, v));
         BOOST_TEST(boost::get<std::string>(v) == "abc");
 
-        BOOST_TEST((test_attr("12345", +char_ | int_, v)));
+        BOOST_TEST(parse("12345", +char_ | int_, v));
         BOOST_TEST(boost::get<std::string>(v) == "12345");
     }
 
     {
         unused_type x;
-        BOOST_TEST((test_attr("rock", lit("rock") | lit('x'), x)));
+        BOOST_TEST(parse("rock", lit("rock") | lit('x'), x));
     }
 
     {
@@ -119,7 +106,7 @@ int main()
         using boost::fusion::at_c;
 
         vector<char, char> v;
-        BOOST_TEST((test_attr("abc",
+        BOOST_TEST((parse("abc",
             char_ >> (omit[char_] | omit[char_]) >> char_, v)));
         BOOST_TEST((at_c<0>(v) == 'a'));
         BOOST_TEST((at_c<1>(v) == 'c'));
@@ -130,7 +117,7 @@ int main()
         // an alternate even if its "expected" attribute is unused type.
 
         std::string s;
-        BOOST_TEST((test_attr("...", *(char_('.') | char_(',')), s)));
+        BOOST_TEST(parse("...", *(char_('.') | char_(',')), s));
         BOOST_TEST(s == "...");
     }
 
@@ -156,30 +143,30 @@ int main()
         std::string s;
 
         // test having a variant<container, ...>
-        BOOST_TEST( (test_attr("a,b", (char_ % ',') | eps, s )) );
+        BOOST_TEST( (parse("a,b", (char_ % ',') | eps, s )) );
         BOOST_TEST(s == "ab");
     }
 
     {
         // testing a sequence taking a container as attribute
         std::string s;
-        BOOST_TEST( (test_attr("abc,a,b,c",
+        BOOST_TEST( (parse("abc,a,b,c",
             char_ >> char_ >> (char_ % ','), s )) );
         BOOST_TEST(s == "abcabc");
 
         // test having an optional<container> inside a sequence
         s.erase();
-        BOOST_TEST( (test_attr("ab",
+        BOOST_TEST( (parse("ab",
             char_ >> char_ >> -(char_ % ','), s )) );
         BOOST_TEST(s == "ab");
 
         // test having a variant<container, ...> inside a sequence
         s.erase();
-        BOOST_TEST( (test_attr("ab",
+        BOOST_TEST( (parse("ab",
             char_ >> char_ >> ((char_ % ',') | eps), s )) );
         BOOST_TEST(s == "ab");
         s.erase();
-        BOOST_TEST( (test_attr("abc",
+        BOOST_TEST( (parse("abc",
             char_ >> char_ >> ((char_ % ',') | eps), s )) );
         BOOST_TEST(s == "abc");
     }
@@ -209,11 +196,11 @@ int main()
     // single-element fusion vector tests
     {
         boost::fusion::vector<boost::variant<int, std::string>> fv;
-        BOOST_TEST((test_attr("12345", int_ | +char_, fv)));
+        BOOST_TEST(parse("12345", int_ | +char_, fv));
         BOOST_TEST(boost::get<int>(boost::fusion::at_c<0>(fv)) == 12345);
 
         boost::fusion::vector<boost::variant<int, std::string>> fvi;
-        BOOST_TEST((test_attr("12345", int_ | int_, fvi)));
+        BOOST_TEST(parse("12345", int_ | int_, fvi));
         BOOST_TEST(boost::get<int>(boost::fusion::at_c<0>(fvi)) == 12345);
     }
 
@@ -226,7 +213,7 @@ int main()
 
         boost::fusion::deque<boost::variant<long, char>, std::string> attr_;
 
-        BOOST_TEST(test_attr("long=ABC", pair, attr_));
+        BOOST_TEST(parse("long=ABC", pair, attr_));
         BOOST_TEST(boost::get<long>(&boost::fusion::front(attr_)) != nullptr);
         BOOST_TEST(boost::get<char>(&boost::fusion::front(attr_)) == nullptr);
     }
@@ -235,15 +222,15 @@ int main()
         // ensure no unneeded synthesization, copying and moving occurred
         auto p = '{' >> int_ >> '}';
 
-        stationary st { 0 };
-        BOOST_TEST(test_attr("{42}", p | eps | p, st));
+        spirit_test::stationary st { 0 };
+        BOOST_TEST(parse("{42}", p | eps | p, st));
         BOOST_TEST_EQ(st.val, 42);
     }
 
     {
         // attributeless parsers must not insert values
         std::vector<int> v;
-        BOOST_TEST(test_attr("1 2 3 - 5 - - 7 -", (int_ | '-') % ' ', v));
+        BOOST_TEST(parse("1 2 3 - 5 - - 7 -", (int_ | '-') % ' ', v));
         BOOST_TEST_EQ(v.size(), 5)
             && BOOST_TEST_EQ(v[0], 1)
             && BOOST_TEST_EQ(v[1], 2)
@@ -257,14 +244,14 @@ int main()
         // regressing test for #603
         struct X {};
         std::vector<boost::variant<std::string, int, X>> v;
-        BOOST_TEST(test_attr("xx42x9y", *(int_ | +char_('x') | 'y' >> attr(X{})), v));
+        BOOST_TEST(parse("xx42x9y", *(int_ | +char_('x') | 'y' >> attr(X{})), v));
         BOOST_TEST_EQ(v.size(), 5);
     }
 
     {
         // sequence parser in alternative into container
         std::string s;
-        BOOST_TEST(test_attr("abcbbcd",
+        BOOST_TEST(parse("abcbbcd",
             *(char_('a') >> *(*char_('b') >> char_('c')) | char_('d')), s));
         BOOST_TEST_EQ(s, "abcbbcd");
     }
@@ -278,9 +265,9 @@ int main()
         boost::variant<Y, X> x{X{}};
         v = x; // boost::variant supports that convertion
         auto const p = 'x' >> attr(x) | 'z' >> attr(Z{});
-        BOOST_TEST(test_attr("z", p, v));
+        BOOST_TEST(parse("z", p, v));
         BOOST_TEST(boost::get<Z>(&v) != nullptr);
-        BOOST_TEST(test_attr("x", p, v));
+        BOOST_TEST(parse("x", p, v));
         BOOST_TEST(boost::get<X>(&v) != nullptr);
     }
 
@@ -289,7 +276,7 @@ int main()
         using Foo = std::vector<boost::variant<Qaz, int>>;
         using Bar = std::vector<boost::variant<Foo, int>>;
         Bar x;
-        BOOST_TEST(test_attr("abaabb", +('a' >> attr(Foo{}) | 'b' >> attr(int{})), x));
+        BOOST_TEST(parse("abaabb", +('a' >> attr(Foo{}) | 'b' >> attr(int{})), x));
     }
 
     return boost::report_errors();

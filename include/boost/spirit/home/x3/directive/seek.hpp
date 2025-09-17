@@ -7,31 +7,40 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM)
+#ifndef BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
 #define BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
 
 #include <boost/spirit/home/x3/core/parser.hpp>
 #include <boost/spirit/home/x3/support/expectation.hpp>
 
-namespace boost { namespace spirit { namespace x3
+#include <iterator>
+#include <type_traits>
+#include <utility>
+
+namespace boost::spirit::x3
 {
-    template<typename Subject>
+    template <typename Subject>
     struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
     {
-        typedef unary_parser<Subject, seek_directive<Subject>> base_type;
-        static bool const is_pass_through_unary = true;
-        static bool const handles_container = Subject::handles_container;
+        using base_type = unary_parser<Subject, seek_directive<Subject>>;
 
-        constexpr seek_directive(Subject const& subject) :
-            base_type(subject) {}
+        static constexpr bool is_pass_through_unary = true;
+        static constexpr bool handles_container = Subject::handles_container;
 
-        template<typename Iterator, typename Context
-          , typename RContext, typename Attribute>
-        bool parse(
-            Iterator& first, Iterator const& last
-          , Context const& context, RContext& rcontext, Attribute& attr) const
+        template <typename SubjectT>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<SubjectT>, seek_directive>) &&
+                std::is_constructible_v<Subject, SubjectT>
+        constexpr seek_directive(SubjectT&& subject)
+            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            : base_type(std::forward<SubjectT>(subject))
+        {}
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
         {
-            for (Iterator current(first);; ++current)
+            for (It current(first); ; ++current)
             {
                 if (this->subject.parse(current, last, context, rcontext, attr))
                 {
@@ -39,31 +48,38 @@ namespace boost { namespace spirit { namespace x3
                     return true;
                 }
 
-            #if !BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-                if (has_expectation_failure(context))
+                if (x3::has_expectation_failure(context))
                 {
                     return false;
                 }
-            #endif
 
                 // fail only after subject fails & no input
-                if (current == last)
-                    return false;
+                if (current == last) return false;
             }
         }
     };
 
-    struct seek_gen
+    namespace detail
     {
-        template<typename Subject>
-        constexpr seek_directive<typename extension::as_parser<Subject>::value_type>
-        operator[](Subject const& subject) const
+        struct seek_gen
         {
-            return { as_parser(subject) };
-        }
-    };
+            template<typename Subject>
+            [[nodiscard]] constexpr seek_directive<as_parser_plain_t<Subject>>
+            operator[](Subject&& subject) const // TODO: MSVC does not support static operator[]
+                noexcept(is_parser_nothrow_constructible_v<seek_directive<as_parser_plain_t<Subject>>, Subject>)
+            {
+                return { as_parser(std::forward<Subject>(subject)) };
+            }
+        };
 
-    constexpr auto seek = seek_gen{};
-}}}
+    } // detail
+
+    inline namespace cpos
+    {
+        inline constexpr detail::seek_gen seek{};
+
+    } // cpos
+
+} // boost::spirit::x3
 
 #endif

@@ -5,7 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM)
+#ifndef BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
 #define BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
 
 #include <boost/spirit/home/x3/support/unused.hpp>
@@ -16,8 +16,6 @@
 
 namespace boost::spirit::x3
 {
-    struct no_case_tag {};
-
     template <typename Encoding>
     struct case_compare
     {
@@ -84,6 +82,9 @@ namespace boost::spirit::x3
 
     namespace detail
     {
+        struct no_case_tag_t {};
+        inline constexpr no_case_tag_t no_case_tag{};
+
         template <typename Encoding>
         [[nodiscard]] constexpr case_compare<Encoding> get_case_compare_impl(unused_type const&) noexcept
         {
@@ -91,19 +92,19 @@ namespace boost::spirit::x3
         }
 
         template <typename Encoding>
-        [[nodiscard]] constexpr no_case_compare<Encoding> get_case_compare_impl(no_case_tag const&) noexcept
+        [[nodiscard]] constexpr no_case_compare<Encoding> get_case_compare_impl(no_case_tag_t const&) noexcept
         {
             return {};
         }
+
     } // detail
 
     template <typename Encoding, typename Context>
-    [[nodiscard]] constexpr decltype(auto) get_case_compare(Context const& context) noexcept
+    [[nodiscard]] constexpr decltype(auto)
+    get_case_compare(Context const& context) noexcept
     {
-        return detail::get_case_compare_impl<Encoding>(x3::get<no_case_tag>(context));
+        return detail::get_case_compare_impl<Encoding>(x3::get<detail::no_case_tag_t>(context));
     }
-
-    auto const no_case_compare_ = no_case_tag{}; // TODO: this should be private
 
 } // boost::spirit::x3
 

@@ -41,18 +41,10 @@ namespace boost::spirit::x3
         {
             bool const r = this->subject.parse(first, last, context, rcontext, attr);
 
-            if (!r)
+            // only the first failure is needed
+            if (!r && !x3::has_expectation_failure(context))
             {
-            #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-                boost::throw_exception(
-                    expectation_failure<It>(
-                        first, x3::what(this->subject)));
-            #else
-                if (!x3::has_expectation_failure(context))
-                {
-                    x3::set_expectation_failure(first, this->subject, context);
-                }
-            #endif
+                x3::set_expectation_failure(first, this->subject, context);
             }
             return r;
         }
@@ -95,18 +87,10 @@ namespace boost::spirit::x3::detail
             bool const r = detail::parse_into_container(
                 parser.subject, first, last, context, rcontext, attr);
 
-            if (!r)
+            // only the first error is needed
+            if (!r && !x3::has_expectation_failure(context))
             {
-            #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-                boost::throw_exception(
-                    expectation_failure<It>(
-                        first, x3::what(parser.subject)));
-            #else
-                if (!x3::has_expectation_failure(context))
-                {
-                    x3::set_expectation_failure(first, parser.subject, context);
-                }
-            #endif
+                x3::set_expectation_failure(first, parser.subject, context);
             }
             return r;
         }

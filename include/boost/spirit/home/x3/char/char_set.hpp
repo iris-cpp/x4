@@ -13,7 +13,7 @@
 #include <boost/spirit/home/x3/char/detail/basic_chset.hpp>
 #include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 #include <boost/spirit/home/x3/support/utility/utf8.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 
 #include <ranges>
 #include <string_view>

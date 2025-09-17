@@ -8,7 +8,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#if !defined(BOOST_SPIRIT_X3_CONFIX_MAY_30_2014_1819PM)
+#ifndef BOOST_SPIRIT_X3_CONFIX_MAY_30_2014_1819PM
 #define BOOST_SPIRIT_X3_CONFIX_MAY_30_2014_1819PM
 
 #include <boost/spirit/home/x3/core/parser.hpp>
@@ -63,13 +63,11 @@ namespace boost::spirit::x3
                   this->subject.parse(first, last, context, rcontext, attr) &&
                   postfix_.parse(first, last, context, rcontext, unused))
             ) {
-            #if !BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
                 if (x3::has_expectation_failure(context))
                 {
                     // don't rollback iterator (mimicking exception-like behavior)
                     return false;
                 }
-            #endif
 
                 first = saved_first;
                 return false;

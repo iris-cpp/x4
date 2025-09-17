@@ -15,11 +15,8 @@
 #include <boost/spirit/home/x3/support/unused.hpp>
 #include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 
-#include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
-#include <boost/spirit/home/x3/char_encoding/ascii.hpp>
-#include <boost/spirit/home/x3/char_encoding/iso8859_1.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
 
@@ -293,14 +290,6 @@ namespace detail
                 return *this;
             }
 
-            [[maybe_unused, deprecated("Don't rely on overloaded comma operator. It's the leftover from the black magic in the 2000s.")]]
-            constexpr adder const&
-            operator,(std::basic_string_view<char_type> const s) const
-            {
-                sym.lookup->add(s.begin(), s.end(), T{});
-                return *this;
-            }
-
             symbols_parser_impl& sym;
         };
 
@@ -316,14 +305,6 @@ namespace detail
 
             [[maybe_unused]] constexpr remover const&
             operator()(std::basic_string_view<char_type> const s) const
-            {
-                sym.lookup->remove(s.begin(), s.end());
-                return *this;
-            }
-
-            [[maybe_unused, deprecated("Don't rely on overloaded comma operator. It's the leftover from the black magic in the 2000s.")]]
-            constexpr remover const&
-            operator,(std::basic_string_view<char_type> const s) const
             {
                 sym.lookup->remove(s.begin(), s.end());
                 return *this;
@@ -435,32 +416,6 @@ namespace detail
         using unique_symbols = x3::unique_symbols_parser<char_encoding::standard_wide, T>;
     } // standard_wide
 #endif
-
-    namespace [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]] ascii
-    {
-        template <typename T = unused_type>
-        using symbols [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-            = x3::shared_symbols_parser<char_encoding::ascii, T>;
-
-        template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::ascii, T>;
-
-        template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::ascii, T>;
-    } // ascii
-
-    namespace [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]] iso8859_1
-    {
-        template <typename T = unused_type>
-        using symbols [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-            = x3::shared_symbols_parser<char_encoding::iso8859_1, T>;
-
-        template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::iso8859_1, T>;
-
-        template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::iso8859_1, T>;
-    } // iso8859_1
 
 #ifdef BOOST_SPIRIT_X3_UNICODE
     namespace unicode {

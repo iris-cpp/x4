@@ -70,145 +70,133 @@ BOOST_SPIRIT_X3_DEFINE(string_rule)
 template <typename Container>
 void test_map_support()
 {
-    using spirit_test::test_attr;
-
     Container container;
     Container const compare {{"k1", "v1"}, {"k2", "v2"}};
     constexpr auto rule = pair_rule % x3::lit(',');
 
-    BOOST_TEST(test_attr("k1=v1,k2=v2,k2=v3", rule, container));
+    BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", rule, container));
     BOOST_TEST(container.size() == 2);
     BOOST_TEST(container == compare);
 
     // test sequences parsing into containers
     constexpr auto seq_rule = pair_rule >> ',' >> pair_rule >> ',' >> pair_rule;
     container.clear();
-    BOOST_TEST(test_attr("k1=v1,k2=v2,k2=v3", seq_rule, container));
+    BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", seq_rule, container));
 
     // test parsing container into container
     constexpr auto cic_rule = pair_rule >> +(',' >> pair_rule);
     container.clear();
-    BOOST_TEST(test_attr("k1=v1,k2=v2,k2=v3", cic_rule, container));
+    BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
 }
 
 template <typename Container>
 void test_multimap_support()
 {
-    using spirit_test::test_attr;
-
     Container container;
     Container const compare {{"k1", "v1"}, {"k2", "v2"}, {"k2", "v3"}};
     constexpr auto rule = pair_rule % x3::lit(',');
 
-    BOOST_TEST(test_attr("k1=v1,k2=v2,k2=v3", rule, container));
+    BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", rule, container));
     BOOST_TEST(container.size() == 3);
     BOOST_TEST(container == compare);
 
     // test sequences parsing into containers
     constexpr auto seq_rule = pair_rule >> ',' >> pair_rule >> ',' >> pair_rule;
     container.clear();
-    BOOST_TEST(test_attr("k1=v1,k2=v2,k2=v3", seq_rule, container));
+    BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", seq_rule, container));
 
     // test parsing container into container
     constexpr auto cic_rule = pair_rule >> +(',' >> pair_rule);
     container.clear();
-    BOOST_TEST(test_attr("k1=v1,k2=v2,k2=v3", cic_rule, container));
+    BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
 }
 
 template <typename Container>
 void test_sequence_support()
 {
-    using spirit_test::test_attr;
-
     Container container;
     Container const compare {"e1", "e2", "e2"};
     constexpr auto rule = string_rule % x3::lit(',');
 
-    BOOST_TEST(test_attr("e1,e2,e2", rule, container));
+    BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 3);
     BOOST_TEST(container == compare);
 
     // test sequences parsing into containers
     constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", seq_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", seq_rule, container));
 
     // test parsing container into container
     constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", cic_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
 template <typename Container>
 void test_set_support()
 {
-    using spirit_test::test_attr;
-
     Container container;
     Container const compare {"e1", "e2"};
     constexpr auto rule = string_rule % x3::lit(',');
 
-    BOOST_TEST(test_attr("e1,e2,e2", rule, container));
+    BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 2);
     BOOST_TEST(container == compare);
 
     // test sequences parsing into containers
     constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", seq_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", seq_rule, container));
 
     // test parsing container into container
     constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", cic_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
 template <typename Container>
 void test_multiset_support()
 {
-    using spirit_test::test_attr;
-
     Container container;
     Container const compare {"e1", "e2", "e2"};
     constexpr auto rule = string_rule % x3::lit(',');
 
-    BOOST_TEST(test_attr("e1,e2,e2", rule, container));
+    BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 3);
     BOOST_TEST(container == compare);
 
     // test sequences parsing into containers
     constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", seq_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", seq_rule, container));
 
     // test parsing container into container
     constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", cic_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
 template <typename Container>
 void test_string_support()
 {
-    using spirit_test::test_attr;
-
     Container container;
     Container const compare {"e1e2e2"};
     constexpr auto rule = string_rule % x3::lit(',');
 
-    BOOST_TEST(test_attr("e1,e2,e2", rule, container));
+    BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 6);
     BOOST_TEST(container == compare);
 
     // test sequences parsing into containers
     constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", seq_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", seq_rule, container));
 
     // test parsing container into container
     constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
     container.clear();
-    BOOST_TEST(test_attr("e1,e2,e2", cic_rule, container));
+    BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
 int main()

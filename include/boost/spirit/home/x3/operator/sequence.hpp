@@ -52,13 +52,11 @@ namespace boost::spirit::x3
                 return true;
             }
 
-        #if !BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
             if (x3::has_expectation_failure(context))
             {
                 // don't rollback iterator (mimicking exception-like behavior)
                 return false;
             }
-        #endif
 
             first = first_saved;
             return false;

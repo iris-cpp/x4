@@ -30,6 +30,8 @@ namespace boost::spirit::x3
     template <X3Subject Skipper>
     struct [[nodiscard]] unused_skipper
     {
+        constexpr unused_skipper(Skipper const&&) = delete; // dangling
+
         constexpr unused_skipper(Skipper const& skipper) noexcept
             : skipper(skipper)
         {}
@@ -91,11 +93,6 @@ namespace boost::spirit::x3
         )
             noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type, unused_type>)
         {
-        #if BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
-            (void)context;
-            while (skipper.parse(first, last, unused, unused, unused))
-                /* loop */;
-        #else
             if constexpr (std::is_same_v<expectation_failure_t<Context>, unused_type>)
             {
                 // The context given by parent was truly `unused_type`.
@@ -148,7 +145,6 @@ namespace boost::spirit::x3
                 while (skipper.parse(first, last, local_ctx, unused, unused))
                     /* loop */;
             }
-        #endif
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>

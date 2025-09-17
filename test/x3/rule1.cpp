@@ -16,23 +16,20 @@
 
 int main()
 {
-    using spirit_test::test_attr;
-    using spirit_test::test;
-
     using namespace boost::spirit::x3::standard;
     using boost::spirit::x3::rule;
     using boost::spirit::x3::lit;
     using boost::spirit::x3::int_;
     using boost::spirit::x3::unused_type;
     using boost::spirit::x3::phrase_parse;
-    using boost::spirit::x3::skip_flag;
+    using boost::spirit::x3::root_skipper_flag;
     using boost::spirit::x3::traits::has_attribute_v;
 
 #ifdef BOOST_SPIRIT_X3_NO_RTTI
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(rule<class r>{});
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(rule<class r>{});
 #endif
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"});
-    BOOST_SPIRIT_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"} = 'x');
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"});
+    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"} = 'x');
 
     // check attribute advertising
     static_assert( has_attribute_v<rule<class r, int>, /*Context=*/unused_type>);
@@ -40,7 +37,8 @@ int main()
     static_assert( has_attribute_v<decltype(rule<class r, int>{} = int_), /*Context=*/unused_type>);
     static_assert(!has_attribute_v<decltype(rule<class r     >{} = int_), /*Context=*/unused_type>);
 
-    { // basic tests
+    {
+        // basic tests
 
         auto a = lit('a');
         auto b = lit('b');
@@ -51,22 +49,23 @@ int main()
             auto start =
                 r = *(a | b | c);
 
-            BOOST_TEST(test("abcabcacb", start));
+            BOOST_TEST(parse("abcabcacb", start));
         }
 
         {
             auto start =
                 r = (a | b) >> (r | b);
 
-            BOOST_TEST(test("aaaabababaaabbb", start));
-            BOOST_TEST(test("aaaabababaaabba", start, false));
+            BOOST_TEST(parse("aaaabababaaabbb", start));
+            BOOST_TEST(parse("aaaabababaaabba", start).is_partial_match());
 
             // ignore the skipper!
-            BOOST_TEST(test("aaaabababaaabba", start, space, false));
+            BOOST_TEST(parse("aaaabababaaabba", start, space).is_partial_match());
         }
     }
 
-    { // basic tests w/ skipper
+    {
+        // basic tests w/ skipper
 
         auto a = lit('a');
         auto b = lit('b');
@@ -77,19 +76,20 @@ int main()
             auto start =
                 r = *(a | b | c);
 
-            BOOST_TEST(test(" a b c a b c a c b ", start, space));
+            BOOST_TEST(parse(" a b c a b c a c b ", start, space));
         }
 
         {
             auto start =
                 r = (a | b) >> (r | b);
 
-            BOOST_TEST(test(" a a a a b a b a b a a a b b b ", start, space));
-            BOOST_TEST(test(" a a a a b a b a b a a a b b a ", start, space, false));
+            BOOST_TEST(parse(" a a a a b a b a b a a a b b b ", start, space));
+            BOOST_TEST(parse(" a a a a b a b a b a a a b b a ", start, space).is_partial_match());
         }
     }
 
-    { // basic tests w/ skipper but no final post-skip
+    {
+        // basic tests w/ skipper but no final post-skip
 
         auto a = rule<class a_id>()
             = lit('a');
@@ -103,29 +103,20 @@ int main()
         {
             auto start = rule<class start_id>() = *(a | b) >> c;
 
-            char const *s1 = " a b a a b b a c ... "
-              , *const e1 = s1 + std::strlen(s1);
-            BOOST_TEST(phrase_parse(s1, e1, start, space, skip_flag::dont_post_skip)
-              && s1 == e1 - 5);
-
+            auto const res = parse(" a b a a b b a c ... ", start, space, root_skipper_flag::dont_post_skip);
+            BOOST_TEST(res.ok && res.remainder.size() == 5);
         }
 
         {
             rule<class start> start;
 
-            auto p =
-                start = (a | b) >> (start | c);
+            auto p = start = (a | b) >> (start | c);
+
+            BOOST_TEST(parse(" a a a a b a b a b a a a b b b c ", p, space, root_skipper_flag::do_post_skip));
+
             {
-                char const *s1 = " a a a a b a b a b a a a b b b c "
-                  , *const e1 = s1 + std::strlen(s1);
-                BOOST_TEST(phrase_parse(s1, e1, p, space, skip_flag::post_skip)
-                  && s1 == e1);
-            }
-            {
-                char const *s1 = " a a a a b a b a b a a a b b b c "
-                  , *const e1 = s1 + std::strlen(s1);
-                BOOST_TEST(phrase_parse(s1, e1, p, space, skip_flag::dont_post_skip)
-                  && s1 == e1 - 1);
+                auto const res = parse(" a a a a b a b a b a a a b b b c ", p, space, root_skipper_flag::dont_post_skip);
+                BOOST_TEST(res.ok && res.remainder.size() == 1);
             }
         }
     }

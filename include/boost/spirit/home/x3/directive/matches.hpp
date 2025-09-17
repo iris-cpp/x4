@@ -44,10 +44,7 @@ namespace boost::spirit::x3
             )
         {
             bool const matched = this->subject.parse(first, last, context, rcontext, unused);
-
-        #if !BOOST_SPIRIT_X3_THROW_EXPECTATION_FAILURE
             if (x3::has_expectation_failure(context)) return false;
-        #endif
 
             traits::move_to(matched, attr);
             return true;

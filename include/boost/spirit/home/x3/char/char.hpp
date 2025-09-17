@@ -12,9 +12,6 @@
 #include <boost/spirit/home/x3/char/literal_char.hpp>
 #include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 
-#include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
-#include <boost/spirit/home/x3/char_encoding/ascii.hpp> // deprecated
-#include <boost/spirit/home/x3/char_encoding/iso8859_1.hpp> // deprecated
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
 
 #ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
@@ -115,38 +112,6 @@ namespace boost::spirit::x3
 
     using unicode::helpers::lit;
 #endif
-
-    namespace ascii
-    {
-        [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]]
-        inline constexpr any_char<char_encoding::ascii> char_{};
-
-        [[nodiscard, deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]]
-        constexpr literal_char<char_encoding::ascii, unused_type>
-        lit(char ch) noexcept
-        {
-            return { ch };
-        }
-
-        constexpr void lit(traits::CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
-        constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
-    }
-
-    namespace iso8859_1
-    {
-        [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]]
-        inline constexpr any_char<char_encoding::iso8859_1> char_{};
-
-        [[nodiscard, deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]]
-        constexpr literal_char<char_encoding::iso8859_1, unused_type>
-        lit(char ch) noexcept
-        {
-            return { ch };
-        }
-
-        constexpr void lit(traits::CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
-        constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
-    }
 
     namespace extension
     {

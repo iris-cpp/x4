@@ -71,7 +71,7 @@ jobs:
           - name: MSVC
             toolset: msvc
             version: 2022
-            cxxflags: /EHsc /utf-8
+            cxxflags: /EHsc /utf-8 /permissive- /Zc:preprocessor
 
         spirit_component: ${{ fromJSON(needs.changes.outputs.spirit_component) }}
 
