@@ -10,7 +10,7 @@
 
 #include <boost/spirit/home/x3/string/tst.hpp>
 #include <boost/spirit/home/x3/string/tst_map.hpp>
-#include <boost/spirit/home/x3/support/no_case.hpp>
+#include <boost/spirit/home/x3/support/case_compare.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
 

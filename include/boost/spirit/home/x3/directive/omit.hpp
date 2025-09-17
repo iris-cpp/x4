@@ -62,7 +62,7 @@ namespace boost::spirit::x3
 
     inline namespace cpos
     {
-        inline constexpr detail::omit_gen omit{};
+        [[maybe_unused]] inline constexpr detail::omit_gen omit{};
     }
 } // boost::spirit::x3
 

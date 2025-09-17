@@ -321,7 +321,7 @@ namespace boost::spirit::x3
     {
         inline constexpr detail::parse_fn parse{};
 
-        [[deprecated("Use `parse(...)`. Spirit can now dispatch overloads correctly.")]]
+        [[maybe_unused, deprecated("Use `parse(...)`. Spirit can now dispatch overloads correctly.")]]
         inline constexpr detail::parse_fn phrase_parse{};
 
     } // cpos

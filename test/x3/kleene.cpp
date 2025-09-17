@@ -27,10 +27,9 @@ namespace boost::spirit::x3::traits
     template <>
     struct push_back_container<x_attr>
     {
-        [[nodiscard]] static constexpr bool call(x_attr& /*c*/, char /*val*/) noexcept
+        static constexpr void call(x_attr& /*c*/, char /*val*/) noexcept
         {
             // push back value type into container
-            return true;
         }
     };
 
@@ -87,7 +86,8 @@ int main()
             v[0] == 123 && v[1] == 456 && v[2] == 789);
     }
 
-    { // actions
+    {
+        // actions
         using boost::spirit::x3::_attr;
 
         std::string v;
@@ -97,7 +97,8 @@ int main()
             v[0] == 'b' && v[1] == 'b' && v[2] == 'b' &&  v[3] == 'b');
     }
 
-    { // more actions
+    {
+        // more actions
         using boost::spirit::x3::_attr;
 
         std::vector<int> v;
@@ -107,10 +108,11 @@ int main()
             v[0] == 123 && v[1] == 456 && v[2] == 789);
     }
 
-    { // attribute customization
+    {
+        // attribute customization
 
         x_attr x;
-        parse("abcde", *char_, x);
+        (void)parse("abcde", *char_, x);
     }
 
     { // test move only types

@@ -43,8 +43,8 @@ namespace x3 = boost::spirit::x3;
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
                 auto const& x = *res.expect_failure; \
-                auto const& which = x.which(); \
-                auto const& where = std::string_view(x.where(), res.remainder.end()); \
+                [[maybe_unused]] auto const& which = x.which(); \
+                [[maybe_unused]] auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
             } while (false); \
         } \
@@ -59,8 +59,8 @@ namespace x3 = boost::spirit::x3;
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
                 auto const& x = *res.expect_failure; \
-                auto const& which = x.which(); \
-                auto const& where = std::string_view(x.where(), res.remainder.end()); \
+                [[maybe_unused]] auto const& which = x.which(); \
+                [[maybe_unused]] auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
             } while (false); \
         } \
@@ -75,8 +75,8 @@ namespace x3 = boost::spirit::x3;
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
                 auto const& x = *res.expect_failure; \
-                auto const& which = x.which(); \
-                auto const& where = std::string_view(x.where(), res.remainder.end()); \
+                [[maybe_unused]] auto const& which = x.which(); \
+                [[maybe_unused]] auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
             } while (false); \
         } \

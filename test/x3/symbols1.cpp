@@ -74,30 +74,12 @@ int main()
         BOOST_TEST(!parse("Ruby", sym));
     }
 
-    { // comma syntax
-        shared_symbols<int> sym;
-        sym += "Joel", "Ruby", "Tenji", "Tutit", "Kim", "Joey";
-
-        BOOST_TEST(parse("Joel", sym));
-        BOOST_TEST(parse("Ruby", sym));
-        BOOST_TEST(parse("Tenji", sym));
-        BOOST_TEST(parse("Tutit", sym));
-        BOOST_TEST(parse("Kim", sym));
-        BOOST_TEST(parse("Joey", sym));
-        BOOST_TEST(!parse("XXX", sym));
-
-        sym -= "Joel", "Ruby";
-
-        BOOST_TEST(!parse("Joel", sym));
-        BOOST_TEST(!parse("Ruby", sym));
-    }
 
     { // no-case handling
         using namespace boost::spirit::x3::standard;
 
-        shared_symbols<int> sym;
         // NOTE: make sure all entries are in lower-case!!!
-        sym = "joel", "ruby", "tenji", "tutit", "kim", "joey";
+        shared_symbols<int> sym{"joel", "ruby", "tenji", "tutit", "kim", "joey"};
 
         BOOST_TEST(parse("joel", no_case[sym]));
         BOOST_TEST(parse("ruby", no_case[sym]));
@@ -117,7 +99,8 @@ int main()
         BOOST_TEST(parse("Joelyo", no_case[sym] >> "yo"));
     }
 
-    { // attributes
+    {
+         // attributes
         shared_symbols<int> sym;
 
         sym.add
@@ -151,7 +134,8 @@ int main()
         BOOST_TEST(i == 1);
     }
 
-    { // actions
+    {
+        // actions
         using boost::spirit::x3::_attr;
 
         shared_symbols<int> sym;

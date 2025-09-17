@@ -85,6 +85,8 @@ namespace boost::spirit::x3::detail
                 &tst_node::node_alloc,
                 &tst_node::lt, &tst_node::eq, &tst_node::gt
             >(*this, rhs);
+
+            return *this;
         }
 
         constexpr tst_node& operator=(tst_node&& rhs)

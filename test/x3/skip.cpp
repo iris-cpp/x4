@@ -21,6 +21,7 @@ int main()
     using boost::spirit::x3::standard::alpha;
     using boost::spirit::x3::lexeme;
     using boost::spirit::x3::skip;
+    using boost::spirit::x3::reskip;
     using boost::spirit::x3::lit;
 
     BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
@@ -38,13 +39,13 @@ int main()
 
     {
         // reskip
-        BOOST_TEST(parse("ab c d", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space));
-        BOOST_TEST(parse("abcd", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space));
-        BOOST_TEST(!(parse("a bcd", lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']], space)));
+        BOOST_TEST(parse("ab c d", lexeme[lit('a') >> 'b' >> reskip[lit('c') >> 'd']], space));
+        BOOST_TEST(parse("abcd", lexeme[lit('a') >> 'b' >> reskip[lit('c') >> 'd']], space));
+        BOOST_TEST(!(parse("a bcd", lexeme[lit('a') >> 'b' >> reskip[lit('c') >> 'd']], space)));
 
-        BOOST_TEST(parse("ab c d", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space));
-        BOOST_TEST(parse("abcd", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space));
-        BOOST_TEST(!(parse("a bcd", lexeme[lexeme[lit('a') >> 'b' >> skip[lit('c') >> 'd']]], space)));
+        BOOST_TEST(parse("ab c d", lexeme[lexeme[lit('a') >> 'b' >> reskip[lit('c') >> 'd']]], space));
+        BOOST_TEST(parse("abcd", lexeme[lexeme[lit('a') >> 'b' >> reskip[lit('c') >> 'd']]], space));
+        BOOST_TEST(!(parse("a bcd", lexeme[lexeme[lit('a') >> 'b' >> reskip[lit('c') >> 'd']]], space)));
     }
 
     return boost::report_errors();

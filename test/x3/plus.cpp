@@ -27,10 +27,9 @@ namespace boost::spirit::x3::traits
     template <>
     struct push_back_container<x_attr>
     {
-        [[nodiscard]] static constexpr bool call(x_attr& /*c*/, char /*val*/) noexcept
+        static constexpr void call(x_attr& /*c*/, char /*val*/) noexcept
         {
             // push back value type into container
-            return true;
         }
     };
 
@@ -116,7 +115,7 @@ int main()
     { // attribute customization
 
         x_attr x;
-        parse("abcde", +char_, x);
+        (void)parse("abcde", +char_, x);
     }
 
     // single-element fusion vector tests

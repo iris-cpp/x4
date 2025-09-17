@@ -293,14 +293,6 @@ namespace detail
                 return *this;
             }
 
-            [[maybe_unused, deprecated("Don't rely on overloaded comma operator. It's the leftover from the black magic in the 2000s.")]]
-            constexpr adder const&
-            operator,(std::basic_string_view<char_type> const s) const
-            {
-                sym.lookup->add(s.begin(), s.end(), T{});
-                return *this;
-            }
-
             symbols_parser_impl& sym;
         };
 
@@ -316,14 +308,6 @@ namespace detail
 
             [[maybe_unused]] constexpr remover const&
             operator()(std::basic_string_view<char_type> const s) const
-            {
-                sym.lookup->remove(s.begin(), s.end());
-                return *this;
-            }
-
-            [[maybe_unused, deprecated("Don't rely on overloaded comma operator. It's the leftover from the black magic in the 2000s.")]]
-            constexpr remover const&
-            operator,(std::basic_string_view<char_type> const s) const
             {
                 sym.lookup->remove(s.begin(), s.end());
                 return *this;
