@@ -12,15 +12,11 @@
 #include <boost/spirit/home/x3/char/char_class_tags.hpp>
 #include <boost/spirit/home/x3/char/detail/cast_char.hpp>
 
-#include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
-#include <boost/spirit/home/x3/char_encoding/ascii.hpp>
-#include <boost/spirit/home/x3/char_encoding/iso8859_1.hpp>
 
 namespace boost::spirit::x3
 {
-    ///////////////////////////////////////////////////////////////////////////
     template <typename Encoding>
     struct char_class_base
     {
@@ -96,9 +92,6 @@ namespace boost::spirit::x3
 #ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
     BOOST_SPIRIT_X3_CHAR_CLASSES(standard_wide)
 #endif
-
-    BOOST_SPIRIT_X3_CHAR_CLASSES(ascii)
-    BOOST_SPIRIT_X3_CHAR_CLASSES(iso8859_1)
 
 #undef BOOST_SPIRIT_X3_CHAR_CLASS
 #undef BOOST_SPIRIT_X3_CHAR_CLASSES

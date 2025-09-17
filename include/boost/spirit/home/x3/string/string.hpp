@@ -12,9 +12,6 @@
 #include <boost/spirit/home/x3/char/literal_char.hpp> // required for "c" -> 'c' optimization
 #include <boost/spirit/home/x3/support/traits/string_traits.hpp>
 
-#include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
-#include <boost/spirit/home/x3/char_encoding/ascii.hpp>
-#include <boost/spirit/home/x3/char_encoding/iso8859_1.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
 
 #ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
@@ -165,80 +162,6 @@ namespace boost::spirit::x3
     using unicode::helpers::string;
     using unicode::helpers::lit;
 #endif
-
-    namespace [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]] ascii
-    {
-        template <traits::CppStringLike<char> T>
-        [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::ascii>
-        string(T&& string_like)
-            noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::ascii>, T>)
-        {
-            return {std::forward<T>(string_like)};
-        }
-
-        // Optimize `literal_string{'c'}` into `literal_char{'c'}`
-        [[nodiscard]] constexpr literal_char<char_encoding::ascii, std::basic_string<char>>
-        string(char ch) noexcept
-        {
-            return { ch };
-        }
-
-        // Optimize `literal_string{"c"}` into `literal_char{'c'}`
-        [[nodiscard]] constexpr literal_char<char_encoding::ascii, std::basic_string<char>>
-        string(traits::X3VagueArrayOf2Chars<char> auto const& ch) noexcept
-        {
-            return { ch[0] };
-        }
-
-        template <traits::CppStringLike<char> T>
-        [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::ascii, unused_type>
-        lit(T&& string_like)
-            noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::ascii, unused_type>, T>)
-        {
-            return {std::forward<T>(string_like)};
-        }
-
-        template <typename T>
-            requires traits::CharIncompatibleWith<T, char> || traits::StringLikeIncompatibleWith<T, char>
-        constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
-    } // ascii
-
-    namespace [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]] iso8859_1
-    {
-        template <traits::CppStringLike<char> T>
-        [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::iso8859_1>
-        string(T&& string_like)
-            noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::iso8859_1>, T>)
-        {
-            return {std::forward<T>(string_like)};
-        }
-
-        // Optimize `literal_string{'c'}` into `literal_char{'c'}`
-        [[nodiscard]] constexpr literal_char<char_encoding::iso8859_1, std::basic_string<char>>
-        string(char ch) noexcept
-        {
-            return { ch };
-        }
-
-        // Optimize `literal_string{"c"}` into `literal_char{'c'}`
-        [[nodiscard]] constexpr literal_char<char_encoding::iso8859_1, std::basic_string<char>>
-        string(traits::X3VagueArrayOf2Chars<char> auto const& ch) noexcept
-        {
-            return { ch[0] };
-        }
-
-        template <traits::CppStringLike<char> T>
-        [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::iso8859_1, unused_type>
-        lit(T&& string_like)
-            noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::iso8859_1, unused_type>, T>)
-        {
-            return {std::forward<T>(string_like)};
-        }
-
-        template <typename T>
-            requires traits::CharIncompatibleWith<T, char> || traits::StringLikeIncompatibleWith<T, char>
-        constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
-    } // iso8859_1
 
     namespace extension
     {

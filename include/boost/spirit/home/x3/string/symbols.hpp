@@ -17,9 +17,6 @@
 #include <boost/spirit/home/x3/support/traits/move_to.hpp>
 #include <boost/spirit/home/x3/support/case_compare.hpp>
 
-#include <boost/spirit/home/x3/char_encoding/detail/encoding_warning.hpp>
-#include <boost/spirit/home/x3/char_encoding/ascii.hpp>
-#include <boost/spirit/home/x3/char_encoding/iso8859_1.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard.hpp>
 #include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
 
@@ -419,32 +416,6 @@ namespace detail
         using unique_symbols = x3::unique_symbols_parser<char_encoding::standard_wide, T>;
     } // standard_wide
 #endif
-
-    namespace [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]] ascii
-    {
-        template <typename T = unused_type>
-        using symbols [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-            = x3::shared_symbols_parser<char_encoding::ascii, T>;
-
-        template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::ascii, T>;
-
-        template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::ascii, T>;
-    } // ascii
-
-    namespace [[deprecated(BOOST_SPIRIT_X3_WRONG_ENCODING_ASSUMPTION_WARNING)]] iso8859_1
-    {
-        template <typename T = unused_type>
-        using symbols [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-            = x3::shared_symbols_parser<char_encoding::iso8859_1, T>;
-
-        template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::iso8859_1, T>;
-
-        template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::iso8859_1, T>;
-    } // iso8859_1
 
 #ifdef BOOST_SPIRIT_X3_UNICODE
     namespace unicode {
