@@ -10,7 +10,7 @@
 
 #include <boost/spirit/x4/core/config.hpp>
 #include <boost/spirit/x4/string/detail/tst_node.hpp>
-#include <boost/spirit/x4/support/allocator.hpp>
+#include <boost/spirit/x4/allocator.hpp>
 
 #include <iterator>
 #include <memory>
@@ -49,13 +49,13 @@ namespace boost::spirit::x3
 
         constexpr ~tst() noexcept
         {
-            detail::allocator_ops<tst>::template destroy_deallocate<&tst::node_alloc_, &tst::root_>(*this);
+            allocator_ops<tst>::template destroy_deallocate<&tst::node_alloc_, &tst::root_>(*this);
         }
 
         constexpr tst(tst const& other)
             : alloc_(std::allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc_))
             , node_alloc_(std::allocator_traits<node_allocator_type>::select_on_container_copy_construction(other.node_alloc_))
-            , root_(detail::allocator_ops<tst>::template copy_construct<&tst::node_alloc_, &tst::root_>(*this, other))
+            , root_(allocator_ops<tst>::template copy_construct<&tst::node_alloc_, &tst::root_>(*this, other))
         {
         }
 
@@ -69,17 +69,17 @@ namespace boost::spirit::x3
         constexpr tst& operator=(tst const& other)
         {
             if (this == std::addressof(other)) return *this;
-            detail::allocator_ops<tst>::template copy_assign<&tst::node_alloc_, &tst::root_>(*this, other);
-            detail::allocator_ops<tst>::template copy_assign<&tst::alloc_>(*this, other);
+            allocator_ops<tst>::template copy_assign<&tst::node_alloc_, &tst::root_>(*this, other);
+            allocator_ops<tst>::template copy_assign<&tst::alloc_>(*this, other);
             return *this;
         }
 
         constexpr tst& operator=(tst&& other)
-            noexcept(detail::allocator_ops<tst>::template move_assign_noexcept<allocator_type, node_allocator_type>)
+            noexcept(allocator_ops<tst>::template move_assign_noexcept<allocator_type, node_allocator_type>)
         {
             if (this == std::addressof(other)) return *this;
-            detail::allocator_ops<tst>::template move_assign<&tst::node_alloc_, &tst::root_>(*this, std::move(other));
-            detail::allocator_ops<tst>::template move_assign<&tst::alloc_>(*this, std::move(other));
+            allocator_ops<tst>::template move_assign<&tst::node_alloc_, &tst::root_>(*this, std::move(other));
+            allocator_ops<tst>::template move_assign<&tst::alloc_>(*this, std::move(other));
             return *this;
         }
 
@@ -122,7 +122,7 @@ namespace boost::spirit::x3
             node::for_each(root_, {}, std::forward<F>(f));
         }
 
-        friend struct detail::allocator_ops<tst>;
+        friend struct allocator_ops<tst>;
 
     private:
         template <std::forward_iterator Iterator, typename Val>

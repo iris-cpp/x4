@@ -13,7 +13,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x3::detail {
+namespace boost::spirit::x3 {
 
 template <typename Klass>
 struct allocator_ops
@@ -247,6 +247,6 @@ private:
     }
 };
 
-} // boost::spirit::x3::detail
+} // boost::spirit::x3
 
 #endif

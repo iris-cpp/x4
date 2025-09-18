@@ -9,7 +9,7 @@
 #define BOOST_SPIRIT_X3_TST_MARCH_09_2007_0905AM
 
 #include <boost/spirit/x4/core/config.hpp>
-#include <boost/spirit/x4/support/allocator.hpp>
+#include <boost/spirit/x4/allocator.hpp>
 
 #include <iterator>
 #include <memory>
