@@ -15,6 +15,7 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4.hpp>
+#include <boost/spirit/x4/symbols.hpp>
 #include <boost/spirit/x4/binary.hpp>
 #include <boost/spirit/x4/directive/with.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>

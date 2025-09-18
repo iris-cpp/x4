@@ -10,6 +10,5 @@
 
 #include <boost/spirit/x4/string/literal_string.hpp>
 #include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/string/symbols.hpp>
 
 #endif

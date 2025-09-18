@@ -9,6 +9,7 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4.hpp>
+#include <boost/spirit/x4/symbols.hpp>
 
 #include <iostream>
 

@@ -13,6 +13,7 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4.hpp>
+#include <boost/spirit/x4/symbols.hpp>
 #include <boost/spirit/x4/char_encoding/unicode.hpp>
 #include <boost/fusion/include/at.hpp>
 #include <boost/fusion/include/vector.hpp>
