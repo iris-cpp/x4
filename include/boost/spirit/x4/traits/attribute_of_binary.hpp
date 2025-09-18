@@ -8,7 +8,7 @@
 #ifndef BOOST_SPIRIT_X3_SUPPORT_TRAITS_ATTRIBUTE_OF_BINARY
 #define BOOST_SPIRIT_X3_SUPPORT_TRAITS_ATTRIBUTE_OF_BINARY
 
-#include <boost/spirit/x4/support/traits/attribute_of.hpp>
+#include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/support/unused.hpp>
 
 #include <utility>

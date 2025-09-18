@@ -8,7 +8,7 @@
 #define BOOST_SPIRIT_X3_CORE_PARSE_RESULT_HPP
 
 #include <boost/spirit/x4/support/expectation.hpp>
-#include <boost/spirit/x4/support/traits/string_traits.hpp>
+#include <boost/spirit/x4/traits/string_traits.hpp>
 
 #include <optional>
 #include <iterator>

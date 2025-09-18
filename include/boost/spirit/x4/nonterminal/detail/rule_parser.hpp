@@ -13,7 +13,7 @@
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/directive/expect.hpp>
 #include <boost/spirit/x4/support/expectation.hpp>
-#include <boost/spirit/x4/support/traits/transform_attribute.hpp>
+#include <boost/spirit/x4/traits/transform_attribute.hpp>
 
 #if defined(BOOST_SPIRIT_X3_DEBUG)
 #include <boost/spirit/x4/nonterminal/simple_trace.hpp>

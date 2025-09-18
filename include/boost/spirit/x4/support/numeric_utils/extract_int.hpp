@@ -9,7 +9,7 @@
 #ifndef BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
 #define BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
 
-#include <boost/spirit/x4/support/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/support/numeric_utils/detail/extract_int_impl.hpp>
 
 #include <iterator>

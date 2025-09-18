@@ -8,10 +8,10 @@
 #ifndef BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 #define BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 
-#include <boost/spirit/x4/support/traits/is_variant.hpp>
-#include <boost/spirit/x4/support/traits/is_range.hpp>
-#include <boost/spirit/x4/support/traits/container_traits.hpp>
-#include <boost/spirit/x4/support/traits/optional_traits.hpp>
+#include <boost/spirit/x4/traits/is_variant.hpp>
+#include <boost/spirit/x4/traits/is_range.hpp>
+#include <boost/spirit/x4/traits/container_traits.hpp>
+#include <boost/spirit/x4/traits/optional_traits.hpp>
 
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/support/category_of.hpp>

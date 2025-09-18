@@ -11,7 +11,7 @@
 #define BOOST_SPIRIT_HOME_X3_EXTENSIONS_MATCHES_HPP
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/support/expectation.hpp>
 #include <boost/spirit/x4/support/unused.hpp>
 

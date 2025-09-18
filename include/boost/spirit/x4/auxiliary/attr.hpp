@@ -12,9 +12,9 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/traits/container_traits.hpp>
-#include <boost/spirit/x4/support/traits/move_to.hpp>
-#include <boost/spirit/x4/support/traits/string_traits.hpp>
+#include <boost/spirit/x4/traits/container_traits.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/string_traits.hpp>
 
 #include <string>
 #include <iterator>

@@ -13,10 +13,10 @@
 #define BOOST_SPIRIT_X3_DETAIL_EXTRACT_INT_APRIL_17_2006_0816AM
 
 #include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/traits/attribute_type.hpp>
-#include <boost/spirit/x4/support/traits/move_to.hpp>
-#include <boost/spirit/x4/support/traits/numeric_traits.hpp>
-#include <boost/spirit/x4/support/traits/char_encoding_traits.hpp>
+#include <boost/spirit/x4/traits/attribute_type.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/numeric_traits.hpp>
+#include <boost/spirit/x4/traits/char_encoding_traits.hpp>
 
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/iteration/local.hpp>

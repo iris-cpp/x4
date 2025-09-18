@@ -10,8 +10,8 @@
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/traits/move_to.hpp>
-#include <boost/spirit/x4/support/traits/pseudo_attribute.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/pseudo_attribute.hpp>
 
 #include <ranges>
 #include <iterator>

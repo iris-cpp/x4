@@ -8,13 +8,13 @@
 #ifndef BOOST_SPIRIT_X3_PARSE_INTO_CONTAINER_JAN_15_2013_0957PM
 #define BOOST_SPIRIT_X3_PARSE_INTO_CONTAINER_JAN_15_2013_0957PM
 
-#include <boost/spirit/x4/support/traits/container_traits.hpp>
-#include <boost/spirit/x4/support/traits/attribute_of.hpp>
-#include <boost/spirit/x4/support/traits/pseudo_attribute.hpp>
-#include <boost/spirit/x4/support/traits/handles_container.hpp>
-#include <boost/spirit/x4/support/traits/has_attribute.hpp>
-#include <boost/spirit/x4/support/traits/is_substitute.hpp>
-#include <boost/spirit/x4/support/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/container_traits.hpp>
+#include <boost/spirit/x4/traits/attribute_of.hpp>
+#include <boost/spirit/x4/traits/pseudo_attribute.hpp>
+#include <boost/spirit/x4/traits/handles_container.hpp>
+#include <boost/spirit/x4/traits/has_attribute.hpp>
+#include <boost/spirit/x4/traits/is_substitute.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 
 #include <boost/fusion/include/at_key.hpp>

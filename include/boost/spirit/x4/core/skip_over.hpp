@@ -12,7 +12,7 @@
 #include <boost/spirit/x4/support/expectation.hpp>
 #include <boost/spirit/x4/support/unused.hpp>
 #include <boost/spirit/x4/support/context.hpp>
-#include <boost/spirit/x4/support/traits/attribute_category.hpp>
+#include <boost/spirit/x4/traits/attribute_category.hpp>
 
 #include <boost/spirit/x4/core/parser.hpp>
 

@@ -8,9 +8,9 @@
 #ifndef BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM
 #define BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM
 
-#include <boost/spirit/x4/support/traits/container_traits.hpp>
-#include <boost/spirit/x4/support/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/support/traits/optional_traits.hpp>
+#include <boost/spirit/x4/traits/container_traits.hpp>
+#include <boost/spirit/x4/traits/tuple_traits.hpp>
+#include <boost/spirit/x4/traits/optional_traits.hpp>
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/map.hpp>
 #include <boost/fusion/include/value_at_key.hpp>

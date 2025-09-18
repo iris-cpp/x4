@@ -12,8 +12,8 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
-#include <boost/spirit/x4/support/traits/container_traits.hpp>
-#include <boost/spirit/x4/support/traits/attribute_of.hpp>
+#include <boost/spirit/x4/traits/container_traits.hpp>
+#include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/support/unused.hpp>
 #include <boost/spirit/x4/support/expectation.hpp>
 

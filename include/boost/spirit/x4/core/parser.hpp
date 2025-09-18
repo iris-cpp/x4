@@ -11,7 +11,7 @@
 
 #include <boost/spirit/x4/support/unused.hpp>
 #include <boost/spirit/x4/support/context.hpp>
-#include <boost/spirit/x4/support/traits/has_attribute.hpp>
+#include <boost/spirit/x4/traits/has_attribute.hpp>
 
 #include <iterator>
 #include <string>

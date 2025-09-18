@@ -9,9 +9,9 @@
 #ifndef BOOST_SPIRIT_X3_MOVE_TO_JAN_17_2013_0859PM
 #define BOOST_SPIRIT_X3_MOVE_TO_JAN_17_2013_0859PM
 
-#include <boost/spirit/x4/support/traits/attribute_category.hpp>
-#include <boost/spirit/x4/support/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/support/traits/variant_has_substitute.hpp>
+#include <boost/spirit/x4/traits/attribute_category.hpp>
+#include <boost/spirit/x4/traits/tuple_traits.hpp>
+#include <boost/spirit/x4/traits/variant_has_substitute.hpp>
 
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/front.hpp>

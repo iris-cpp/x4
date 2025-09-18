@@ -8,7 +8,7 @@
 #ifndef BOOST_SPIRIT_X3_VARIANT_FIND_SUBSTITUTE_APR_18_2014_930AM
 #define BOOST_SPIRIT_X3_VARIANT_FIND_SUBSTITUTE_APR_18_2014_930AM
 
-#include <boost/spirit/x4/support/traits/is_substitute.hpp>
+#include <boost/spirit/x4/traits/is_substitute.hpp>
 #include <boost/mpl/find.hpp> // TODO: remove this
 
 namespace boost::spirit::x3::traits

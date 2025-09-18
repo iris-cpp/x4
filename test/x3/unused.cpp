@@ -10,7 +10,7 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/traits/transform_attribute.hpp>
+#include <boost/spirit/x4/traits/transform_attribute.hpp>
 #include <boost/spirit/x4/operator/kleene.hpp>
 #include <boost/spirit/x4/operator/plus.hpp>
 #include <boost/spirit/x4/operator/list.hpp>

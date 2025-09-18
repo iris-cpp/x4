@@ -11,7 +11,7 @@
 
 #include <boost/spirit/x4/core/parse.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/traits/move_to.hpp>
+#include <boost/spirit/x4/traits/move_to.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 

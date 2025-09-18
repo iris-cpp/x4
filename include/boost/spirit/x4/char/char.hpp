@@ -10,7 +10,7 @@
 
 #include <boost/spirit/x4/char/any_char.hpp>
 #include <boost/spirit/x4/char/literal_char.hpp>
-#include <boost/spirit/x4/support/traits/string_traits.hpp>
+#include <boost/spirit/x4/traits/string_traits.hpp>
 
 #include <boost/spirit/x4/char_encoding/standard.hpp>
 

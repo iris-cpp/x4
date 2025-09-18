@@ -8,7 +8,7 @@
 #ifndef BOOST_SPIRIT_X3_VARIANT_HAS_SUBSTITUTE_APR_18_2014_925AM
 #define BOOST_SPIRIT_X3_VARIANT_HAS_SUBSTITUTE_APR_18_2014_925AM
 
-#include <boost/spirit/x4/support/traits/is_substitute.hpp>
+#include <boost/spirit/x4/traits/is_substitute.hpp>
 #include <boost/mpl/find.hpp> // TODO: remove this
 
 #include <type_traits>

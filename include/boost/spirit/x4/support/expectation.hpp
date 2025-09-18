@@ -11,7 +11,7 @@
 #include <boost/spirit/x4/core/parser.hpp> // for `x3::what`
 #include <boost/spirit/x4/support/unused.hpp>
 #include <boost/spirit/x4/support/context.hpp>
-#include <boost/spirit/x4/support/traits/optional_traits.hpp>
+#include <boost/spirit/x4/traits/optional_traits.hpp>
 
 #include <iterator>
 #include <string>
