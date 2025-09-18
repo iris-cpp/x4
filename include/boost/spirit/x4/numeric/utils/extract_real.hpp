@@ -10,7 +10,7 @@
 #define BOOST_SPIRIT_X3_EXTRACT_REAL_APRIL_18_2006_0901AM
 
 #include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/numeric_utils/pow10.hpp>
+#include <boost/spirit/x4/numeric/utils/pow10.hpp>
 #include <boost/spirit/x4/traits/move_to.hpp>
 
 #include <iterator>

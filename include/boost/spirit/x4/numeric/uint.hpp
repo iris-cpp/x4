@@ -11,7 +11,7 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
-#include <boost/spirit/x4/support/numeric_utils/extract_int.hpp>
+#include <boost/spirit/x4/numeric/utils/extract_int.hpp>
 
 #include <iterator>
 #include <cstdint>

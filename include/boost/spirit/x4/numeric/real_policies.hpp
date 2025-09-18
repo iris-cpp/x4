@@ -10,7 +10,7 @@
 #define BOOST_SPIRIT_X3_REAL_POLICIES_APRIL_17_2006_1158PM
 
 #include <boost/spirit/x4/string/detail/string_parse.hpp>
-#include <boost/spirit/x4/support/numeric_utils/extract_int.hpp>
+#include <boost/spirit/x4/numeric/utils/extract_int.hpp>
 
 #include <string_view>
 #include <iterator>
