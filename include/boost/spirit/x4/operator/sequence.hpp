@@ -9,10 +9,12 @@
 #ifndef BOOST_SPIRIT_X3_SEQUENCE_JAN_06_2013_1015AM
 #define BOOST_SPIRIT_X3_SEQUENCE_JAN_06_2013_1015AM
 
-#include <boost/spirit/x4/traits/attribute_of_binary.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/operator/detail/sequence.hpp>
+#include <boost/spirit/x4/core/detail/parse_sequence.hpp>
+
+#include <boost/spirit/x4/traits/attribute_of_binary.hpp>
+
 #include <boost/spirit/x4/directive/expect.hpp>
 
 #include <boost/fusion/include/deque_fwd.hpp> // TODO: remove this
