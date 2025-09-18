@@ -5,7 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM)
+#ifndef BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
 #define BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
 
 #include <boost/spirit/x4/support/traits/attribute_of.hpp>

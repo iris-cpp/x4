@@ -18,17 +18,17 @@
 #include <type_traits>
 
 //  The stream to use for debug output
-#if !defined(BOOST_SPIRIT_X3_DEBUG_OUT)
+#ifndef BOOST_SPIRIT_X3_DEBUG_OUT
 #define BOOST_SPIRIT_X3_DEBUG_OUT std::cerr
 #endif
 
 //  number of tokens to print while debugging
-#if !defined(BOOST_SPIRIT_X3_DEBUG_PRINT_SOME)
+#ifndef BOOST_SPIRIT_X3_DEBUG_PRINT_SOME
 #define BOOST_SPIRIT_X3_DEBUG_PRINT_SOME 20
 #endif
 
 //  number of spaces to indent
-#if !defined(BOOST_SPIRIT_X3_DEBUG_INDENT)
+#ifndef BOOST_SPIRIT_X3_DEBUG_INDENT
 #define BOOST_SPIRIT_X3_DEBUG_INDENT 2
 #endif
 

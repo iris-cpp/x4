@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-#if !defined(BOOST_SPIRIT_X3_NO_RTTI)
+#ifndef BOOST_SPIRIT_X3_NO_RTTI
 #include <typeinfo>
 #endif
 
@@ -74,7 +74,7 @@ namespace boost::spirit::x3
         static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<Attribute>>;
         static constexpr bool force_attribute = ForceAttribute;
 
-#if !defined(BOOST_SPIRIT_X3_NO_RTTI)
+#ifndef BOOST_SPIRIT_X3_NO_RTTI
         rule() : name(typeid(rule).name()) {}
 #else
         constexpr rule() noexcept : name("unnamed") {}

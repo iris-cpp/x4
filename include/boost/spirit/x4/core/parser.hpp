@@ -6,7 +6,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM)
+#ifndef BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM
 #define BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM
 
 #include <boost/spirit/x4/support/unused.hpp>
@@ -19,7 +19,7 @@
 #include <concepts>
 #include <utility>
 
-#if !defined(BOOST_SPIRIT_X3_NO_RTTI)
+#ifndef BOOST_SPIRIT_X3_NO_RTTI
 #include <typeinfo>
 #endif
 

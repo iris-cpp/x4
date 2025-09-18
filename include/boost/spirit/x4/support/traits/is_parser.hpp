@@ -6,7 +6,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#if !defined(BOOST_SPIRIT_X3_IS_PARSER_MAY_20_2013_0235PM)
+#ifndef BOOST_SPIRIT_X3_IS_PARSER_MAY_20_2013_0235PM
 #define BOOST_SPIRIT_X3_IS_PARSER_MAY_20_2013_0235PM
 
 #include <boost/spirit/x4/core/parser.hpp>
