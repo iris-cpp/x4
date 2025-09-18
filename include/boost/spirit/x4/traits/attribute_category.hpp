@@ -8,7 +8,7 @@
 #ifndef BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 #define BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 
-#include <boost/spirit/x4/traits/is_range.hpp>
+#include <boost/spirit/x4/traits/subrange_traits.hpp>
 #include <boost/spirit/x4/traits/variant_traits.hpp>
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>
@@ -34,7 +34,7 @@ namespace boost::spirit::x3::traits
     struct associative_attribute {};
     struct variant_attribute {};
     struct optional_attribute {};
-    struct range_attribute {};
+    struct subrange_attribute {};
 
     template <typename T, typename Enable = void>
     struct attribute_category
@@ -114,10 +114,10 @@ namespace boost::spirit::x3::traits
     };
 
     template <typename T>
-        requires is_range_v<std::remove_cvref_t<T>>
+        requires is_subrange_v<std::remove_cvref_t<T>>
     struct attribute_category<T>
     {
-        using type = range_attribute;
+        using type = subrange_attribute;
     };
 
     template <typename T>
