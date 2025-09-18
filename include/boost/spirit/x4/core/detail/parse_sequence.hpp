@@ -12,9 +12,9 @@
 
 #include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/attribute_category.hpp>
-#include <boost/spirit/x4/traits/is_substitute.hpp>
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
+#include <boost/spirit/x4/traits/substitution.hpp>
 
 #include <boost/fusion/include/begin.hpp>
 #include <boost/fusion/include/end.hpp>

@@ -10,7 +10,7 @@
 
 #include <boost/spirit/x4/core/unused.hpp>
 
-#include <boost/spirit/x4/traits/is_substitute.hpp>
+#include <boost/spirit/x4/traits/substitution.hpp>
 
 #include <boost/variant/variant_fwd.hpp> // TODO: remove this
 

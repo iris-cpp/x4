@@ -14,7 +14,7 @@
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/handles_container.hpp>
-#include <boost/spirit/x4/traits/is_substitute.hpp>
+#include <boost/spirit/x4/traits/substitution.hpp>
 
 #include <boost/fusion/include/at_key.hpp>
 #include <boost/fusion/include/front.hpp>
