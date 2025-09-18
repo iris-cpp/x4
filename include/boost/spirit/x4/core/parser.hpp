@@ -466,9 +466,11 @@ namespace boost::spirit::x4
 
 
     // The runtime type info that can be obtained via `x4::what(p)`.
-    template <X4Subject Subject>
+    template <typename Subject>
     struct get_info
     {
+        static_assert(X4Subject<Subject>);
+
         [[nodiscard]] static constexpr std::string operator()(Subject const& subject)
         {
             if constexpr (requires {
