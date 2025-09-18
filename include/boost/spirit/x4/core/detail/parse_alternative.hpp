@@ -11,9 +11,8 @@
 #include <boost/spirit/x4/core/move_to.hpp>
 
 #include <boost/spirit/x4/traits/attribute.hpp>
-#include <boost/spirit/x4/traits/is_variant.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/traits/variant_find_substitute.hpp>
+#include <boost/spirit/x4/traits/variant_traits.hpp>
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>

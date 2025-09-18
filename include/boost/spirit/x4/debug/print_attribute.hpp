@@ -12,7 +12,7 @@
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/for_each.hpp>
 #include <boost/spirit/x4/traits/attribute_category.hpp>
-#include <boost/spirit/x4/traits/is_variant.hpp>
+#include <boost/spirit/x4/traits/variant_traits.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/variant/apply_visitor.hpp> // TODO: remove this

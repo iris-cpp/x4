@@ -11,7 +11,7 @@
 
 #include <boost/spirit/x4/traits/attribute_category.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/traits/variant_has_substitute.hpp>
+#include <boost/spirit/x4/traits/variant_traits.hpp>
 
 #include <boost/fusion/include/front.hpp>
 #include <boost/fusion/include/move.hpp>

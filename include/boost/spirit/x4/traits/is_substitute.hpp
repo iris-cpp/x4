@@ -11,10 +11,12 @@
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>
+
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/map.hpp>
 #include <boost/fusion/include/value_at_key.hpp>
 #include <boost/fusion/adapted/mpl.hpp>
+
 #include <boost/mpl/placeholders.hpp>
 #include <boost/mpl/equal.hpp>
 #include <boost/mpl/apply.hpp>
@@ -28,6 +30,9 @@
 
 namespace boost::spirit::x3::traits
 {
+    template <typename T>
+    struct is_variant;
+
     // Find out if T can be a (strong) substitute for Attribute
     template <typename T, typename Attribute, typename Enable = void>
     struct is_substitute;
@@ -68,7 +73,7 @@ namespace boost::spirit::x3::traits
         {};
 
         template <typename T, typename Attribute>
-            requires is_variant_v<std::remove_const_t<Attribute>>
+            requires is_variant<std::remove_const_t<Attribute>>::value
         struct is_substitute_impl<T, Attribute>
             : variant_has_substitute<Attribute, T>
         {};
@@ -120,7 +125,7 @@ namespace boost::spirit::x3::traits
     struct is_substitute<T, Attribute>
     {
         // Checking that "p_key >> p_value" parser can
-        // store it's result in fusion::map attribute
+        // store its result in fusion::map attribute
         using p_key = typename mpl::at_c<T, 0>::type;
         using p_value = typename mpl::at_c<T, 1>::type;
 
@@ -146,7 +151,7 @@ namespace boost::spirit::x3::traits
         {};
 
         static constexpr bool value = std::conditional_t<
-            is_variant_v<p_key>,
+            is_variant<p_key>::value,
             variant_kv<p_key>,
             detail::has_fusion_kv_in_map<p_key, p_value, Attribute>
         >::value;
