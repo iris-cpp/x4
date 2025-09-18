@@ -14,7 +14,7 @@
 #include <boost/spirit/x4/auxiliary.hpp>
 #include <boost/spirit/x4/char.hpp>
 #include <boost/spirit/x4/directive.hpp>
-#include <boost/spirit/x4/nonterminal.hpp>
+#include <boost/spirit/x4/rule.hpp>
 #include <boost/spirit/x4/numeric.hpp>
 #include <boost/spirit/x4/operator.hpp>
 #include <boost/spirit/x4/string.hpp>

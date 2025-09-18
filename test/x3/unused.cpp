@@ -14,9 +14,9 @@
 #include <boost/spirit/x4/operator/kleene.hpp>
 #include <boost/spirit/x4/operator/plus.hpp>
 #include <boost/spirit/x4/operator/list.hpp>
-#include <boost/spirit/x4/nonterminal/rule.hpp>
 #include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4.hpp>
+#include <boost/spirit/x4/rule.hpp>
+#include <boost/spirit/x4.hpp> // TODO
 
 #include <iostream>
 #include <type_traits>
