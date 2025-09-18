@@ -8,7 +8,9 @@
 #ifndef BOOST_SPIRIT_X3_PARSE_APRIL_16_2006_0442PM
 #define BOOST_SPIRIT_X3_PARSE_APRIL_16_2006_0442PM
 
+#include <boost/spirit/x4/core/config.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
+#include <boost/spirit/x4/core/action.hpp>
 #include <boost/spirit/x4/core/parse_result.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/context.hpp>

@@ -10,7 +10,6 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4/char.hpp>
-#include <boost/spirit/x4/core.hpp>
 #include <boost/spirit/x4/numeric.hpp>
 #include <boost/spirit/x4/operator.hpp>
 #include <boost/spirit/x4/string.hpp>
