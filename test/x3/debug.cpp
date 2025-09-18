@@ -10,7 +10,7 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4.hpp>
-#include <boost/spirit/x4/support/utility/error_reporting.hpp>
+#include <boost/spirit/x4/debug/error_reporting.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/fusion/include/vector.hpp>

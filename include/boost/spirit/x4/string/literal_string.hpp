@@ -15,7 +15,7 @@
 
 #include <boost/spirit/x4/support/unused.hpp>
 #include <boost/spirit/x4/support/case_compare.hpp>
-#include <boost/spirit/x4/support/utility/utf8.hpp>
+#include <boost/spirit/x4/string/utf8.hpp>
 
 #include <string>
 #include <string_view>

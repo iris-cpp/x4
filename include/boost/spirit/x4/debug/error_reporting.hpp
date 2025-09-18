@@ -8,8 +8,8 @@
 #ifndef BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM
 #define BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM
 
-#include <boost/spirit/x4/support/ast/position_tagged.hpp>
-#include <boost/spirit/x4/support/utility/utf8.hpp>
+#include <boost/spirit/x4/ast/position_tagged.hpp>
+#include <boost/spirit/x4/string/utf8.hpp>
 
 #include <string>
 #include <iterator>

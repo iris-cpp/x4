@@ -16,7 +16,7 @@
 #include <boost/spirit/x4/traits/transform_attribute.hpp>
 
 #if defined(BOOST_SPIRIT_X3_DEBUG)
-#include <boost/spirit/x4/nonterminal/simple_trace.hpp>
+#include <boost/spirit/x4/debug/simple_trace.hpp>
 #endif
 
 #include <iterator>

@@ -12,7 +12,7 @@
 #include <boost/spirit/x4/support/unused.hpp>
 #include <boost/spirit/x4/traits/print_token.hpp>
 #include <boost/spirit/x4/traits/print_attribute.hpp>
-#include <boost/spirit/x4/nonterminal/debug_handler_state.hpp>
+#include <boost/spirit/x4/debug/debug_handler_state.hpp>
 
 #include <iostream>
 #include <type_traits>

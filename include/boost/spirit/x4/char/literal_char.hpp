@@ -9,7 +9,7 @@
 #define BOOST_SPIRIT_X3_LITERAL_CHAR_APRIL_16_2006_1051AM
 
 #include <boost/spirit/x4/char/char_parser.hpp>
-#include <boost/spirit/x4/support/utility/utf8.hpp>
+#include <boost/spirit/x4/string/utf8.hpp>
 
 #include <type_traits>
 #include <concepts>

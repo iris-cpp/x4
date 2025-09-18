@@ -9,8 +9,8 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4.hpp>
-#include <boost/spirit/x4/support/utility/annotate_on_success.hpp>
-#include <boost/spirit/x4/support/utility/error_reporting.hpp>
+#include <boost/spirit/x4/debug/annotate_on_success.hpp>
+#include <boost/spirit/x4/debug/error_reporting.hpp>
 
 #include <iterator>
 #include <string>
