@@ -10,8 +10,7 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
-#include <boost/spirit/x4/string/case_compare.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 
 #include <iterator>
 
@@ -28,7 +27,7 @@ namespace boost::spirit::x3
             x3::skip_over(first, last, context);
             if (first != last && this->derived().test(*first, context))
             {
-                x3::traits::move_to(std::iter_value_t<It>{*first}, attr);
+                x3::move_to(std::iter_value_t<It>{*first}, attr);
                 ++first;
                 return true;
             }

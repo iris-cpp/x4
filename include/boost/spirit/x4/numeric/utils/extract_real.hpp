@@ -10,8 +10,9 @@
 #define BOOST_SPIRIT_X3_EXTRACT_REAL_APRIL_18_2006_0901AM
 
 #include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
+
 #include <boost/spirit/x4/numeric/utils/pow10.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -160,7 +161,7 @@ namespace boost::spirit::x3
                     p.parse_inf(first, last, n))
                 {
                     // If we got a negative sign, negate the number
-                    traits::move_to(extension::negate(neg, n), attr);
+                    x3::move_to(extension::negate(neg, n), attr);
                     return true;    // got a NaN or Inf, return early
                 }
 
@@ -261,7 +262,7 @@ namespace boost::spirit::x3
             }
 
             // If we got a negative sign, negate the number
-            traits::move_to(extension::negate(neg, n), attr);
+            x3::move_to(extension::negate(neg, n), attr);
 
             // Success!!!
             return true;

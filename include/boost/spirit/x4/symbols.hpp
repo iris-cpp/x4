@@ -12,9 +12,9 @@
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 
 #include <boost/spirit/x4/traits/string_traits.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
 
 #include <boost/spirit/x4/string/tst.hpp>
 #include <boost/spirit/x4/string/case_compare.hpp>
@@ -253,14 +253,14 @@ namespace detail
         parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr) const
             noexcept(
                 noexcept(x3::skip_over(first, last, context)) &&
-                noexcept(x3::traits::move_to(std::declval<value_type const&>(), attr))
+                noexcept(x3::move_to(std::declval<value_type const&>(), attr))
             )
         {
             x3::skip_over(first, last, context);
 
             if (value_type const* val_ptr = lookup->find(first, last, x3::get_case_compare<Encoding>(context)))
             {
-                x3::traits::move_to(*val_ptr, attr);
+                x3::move_to(*val_ptr, attr);
                 return true;
             }
             return false;

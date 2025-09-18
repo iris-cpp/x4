@@ -8,14 +8,15 @@
 #ifndef BOOST_SPIRIT_X3_PARSE_INTO_CONTAINER_JAN_15_2013_0957PM
 #define BOOST_SPIRIT_X3_PARSE_INTO_CONTAINER_JAN_15_2013_0957PM
 
+#include <boost/spirit/x4/core/move_to.hpp>
+#include <boost/spirit/x4/core/parser.hpp>
+
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/traits/pseudo_attribute.hpp>
 #include <boost/spirit/x4/traits/handles_container.hpp>
 #include <boost/spirit/x4/traits/has_attribute.hpp>
 #include <boost/spirit/x4/traits/is_substitute.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
-#include <boost/spirit/x4/core/parser.hpp>
 
 #include <boost/fusion/include/at_key.hpp>
 #include <boost/fusion/include/front.hpp>
@@ -42,10 +43,10 @@ namespace boost::spirit::x3::detail
     {
         template <typename Value, typename Attribute>
         static constexpr void call(Key const&, Value&& value, Attribute& attr)
-            noexcept(noexcept(traits::move_to(std::move(value), fusion::at_key<Key>(attr))))
+            noexcept(noexcept(x3::move_to(std::move(value), fusion::at_key<Key>(attr))))
         {
             static_assert(std::is_rvalue_reference_v<Value&&>);
-            traits::move_to(std::move(value), fusion::at_key<Key>(attr));
+            x3::move_to(std::move(value), fusion::at_key<Key>(attr));
         }
     };
 

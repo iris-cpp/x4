@@ -13,7 +13,7 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 
 #include <boost/endian/conversion.hpp>
 #include <boost/endian/arithmetic.hpp>
@@ -62,7 +62,7 @@ namespace boost::spirit::x3
             }
 
             first = it;
-            x3::traits::move_to(n_, attr_param);
+            x3::move_to(n_, attr_param);
             return true;
         }
 
@@ -98,7 +98,7 @@ namespace boost::spirit::x3
             first = it;
 
             static_assert(bits % CHAR_BIT == 0, "Boost.Endian supports only multiples of CHAR_BIT");
-            x3::traits::move_to(
+            x3::move_to(
                 endian::endian_load<T, bits / CHAR_BIT, endian>(buf),
                 attr_param
             );

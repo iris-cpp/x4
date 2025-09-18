@@ -8,11 +8,12 @@
 #ifndef BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
 #define BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
 
+#include <boost/spirit/x4/core/move_to.hpp>
+
 #include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/traits/pseudo_attribute.hpp>
 #include <boost/spirit/x4/traits/is_variant.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/traits/variant_has_substitute.hpp>
 #include <boost/spirit/x4/traits/variant_find_substitute.hpp>
 
@@ -195,7 +196,7 @@ namespace boost::spirit::x3::detail
             Parser, It, Se, Context, RContext,
             std::remove_reference_t<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>
         > &&
-        noexcept(traits::move_to(
+        noexcept(x3::move_to(
             std::declval<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type&&>(),
             attribute
         ))
@@ -207,7 +208,7 @@ namespace boost::spirit::x3::detail
 
         if (p.parse(first, last, context, rcontext, attr_))
         {
-            traits::move_to(std::move(attr_), attribute);
+            x3::move_to(std::move(attr_), attribute);
             return true;
         }
         return false;

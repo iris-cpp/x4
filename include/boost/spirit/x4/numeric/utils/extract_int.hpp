@@ -13,8 +13,8 @@
 #define BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
 
 #include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/traits/attribute_type.hpp>
 #include <boost/spirit/x4/traits/numeric_traits.hpp>
 #include <boost/spirit/x4/traits/char_encoding_traits.hpp>
@@ -303,7 +303,7 @@ namespace boost::spirit::x3::detail
 
             if (count + leading_zeros >= MinDigits)
             {
-                traits::move_to(std::move(val), attr);
+                x3::move_to(std::move(val), attr);
                 first = it;
                 return true;
             }
@@ -402,7 +402,7 @@ namespace boost::spirit::x3::detail
             if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val))
             {
                 if (count == 0) return false; // must have at least one digit
-                traits::move_to(std::move(val), attr);
+                x3::move_to(std::move(val), attr);
                 first = it;
                 return true;
             }
@@ -414,7 +414,7 @@ namespace boost::spirit::x3::detail
                 BOOST_PP_REPEAT(BOOST_SPIRIT_X3_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP, _)
             }
 
-            traits::move_to(std::move(val), attr);
+            x3::move_to(std::move(val), attr);
             first = it;
             return true;
         }
@@ -516,14 +516,14 @@ namespace boost::spirit::x3
             noexcept(
                 std::is_nothrow_default_constructible_v<T> &&
                 noexcept(extract_uint::call(first, last, std::declval<T&>())) &&
-                noexcept(traits::move_to(std::declval<T&&>(), attr))
+                noexcept(x3::move_to(std::declval<T&&>(), attr))
             )
         {
             // this case is called when Attribute is not T
             T tmp_attr; // default initialize
             if (extract_uint::call(first, last, tmp_attr))
             {
-                traits::move_to(std::move(tmp_attr), attr);
+                x3::move_to(std::move(tmp_attr), attr);
                 return true;
             }
             return false;
@@ -580,14 +580,14 @@ namespace boost::spirit::x3
             noexcept(
                 std::is_nothrow_default_constructible_v<T> &&
                 noexcept(extract_int::call(first, last, std::declval<T&>())) &&
-                noexcept(traits::move_to(std::declval<T&&>(), attr))
+                noexcept(x3::move_to(std::declval<T&&>(), attr))
             )
         {
             // this case is called when Attribute is not T
             T tmp_attr; // default initialize
             if (extract_int::call(first, last, tmp_attr))
             {
-                traits::move_to(std::move(tmp_attr), attr);
+                x3::move_to(std::move(tmp_attr), attr);
                 return true;
             }
             return false;

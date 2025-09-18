@@ -27,7 +27,7 @@ struct backwards_bool_policies : boost::spirit::x3::bool_policies<>
         namespace x3 = boost::spirit::x3;
         if (x3::detail::string_parse("eurt"sv, first, last, x3::unused, case_compare))
         {
-            x3::traits::move_to(false, attr);   // result is false
+            x3::move_to(false, attr);   // result is false
             return true;
         }
         return false;

@@ -9,7 +9,7 @@
 #ifndef BOOST_SPIRIT_X3_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
 #define BOOST_SPIRIT_X3_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
 
-#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 
 #include <type_traits>
@@ -36,9 +36,9 @@ namespace boost::spirit::x3::traits
 
         template <typename TransformedT>
         static constexpr void post(Exposed& val, TransformedT&& attribute)
-            noexcept(noexcept(traits::move_to(std::forward<TransformedT>(attribute), val)))
+            noexcept(noexcept(x3::move_to(std::forward<TransformedT>(attribute), val)))
         {
-            traits::move_to(std::forward<TransformedT>(attribute), val);
+            x3::move_to(std::forward<TransformedT>(attribute), val);
         }
     };
 

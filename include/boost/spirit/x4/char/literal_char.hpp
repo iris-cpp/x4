@@ -10,6 +10,7 @@
 
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/string/utf8.hpp>
+#include <boost/spirit/x4/string/case_compare.hpp>
 
 #include <type_traits>
 #include <concepts>

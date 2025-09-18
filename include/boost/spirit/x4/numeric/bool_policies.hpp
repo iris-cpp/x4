@@ -9,8 +9,9 @@
 #ifndef BOOST_SPIRIT_X3_BOOL_POLICIES_SEP_29_2009_0710AM
 #define BOOST_SPIRIT_X3_BOOL_POLICIES_SEP_29_2009_0710AM
 
+#include <boost/spirit/x4/core/move_to.hpp>
+
 #include <boost/spirit/x4/string/detail/string_parse.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
 
 #include <string_view>
 #include <iterator>
@@ -29,7 +30,7 @@ namespace boost::spirit::x3
             using namespace std::string_view_literals;
             if (detail::string_parse("true"sv, first, last, unused, case_compare))
             {
-                traits::move_to(T(true), attr_);    // result is true
+                x3::move_to(T(true), attr_);    // result is true
                 return true;
             }
             return false;
@@ -43,7 +44,7 @@ namespace boost::spirit::x3
             using namespace std::string_view_literals;
             if (detail::string_parse("false"sv, first, last, unused, case_compare))
             {
-                traits::move_to(T(false), attr_);   // result is false
+                x3::move_to(T(false), attr_);   // result is false
                 return true;
             }
             return false;

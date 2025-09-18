@@ -10,7 +10,8 @@
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
+
 #include <boost/spirit/x4/traits/pseudo_attribute.hpp>
 
 #include <ranges>
@@ -52,7 +53,7 @@ namespace boost::spirit::x3
             It local_it = first;
             if (this->subject.parse(local_it, last, context, rcontext, unused))
             {
-                traits::move_to(first, local_it, attr);
+                x3::move_to(first, local_it, attr);
                 first = local_it;
                 return true;
             }

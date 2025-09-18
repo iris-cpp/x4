@@ -11,7 +11,7 @@
 #define BOOST_SPIRIT_HOME_X3_EXTENSIONS_MATCHES_HPP
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 
@@ -40,13 +40,13 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
             noexcept(
                 is_nothrow_parsable_v<Subject, It, Se, Context, RContext, unused_type> &&
-                noexcept(traits::move_to(std::declval<bool const&>(), attr))
+                noexcept(x3::move_to(std::declval<bool const&>(), attr))
             )
         {
             bool const matched = this->subject.parse(first, last, context, rcontext, unused);
             if (x3::has_expectation_failure(context)) return false;
 
-            traits::move_to(matched, attr);
+            x3::move_to(matched, attr);
             return true;
         }
     };

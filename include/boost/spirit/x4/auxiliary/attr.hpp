@@ -12,8 +12,9 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
+
 #include <boost/spirit/x4/traits/container_traits.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/traits/string_traits.hpp>
 
 #include <string>
@@ -44,10 +45,10 @@ namespace boost::spirit::x3
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool
         parse(It&, Se const&, Context const&, RContext const&, Attribute& attr_) const
-            noexcept(noexcept(traits::move_to(std::as_const(value_), attr_)))
+            noexcept(noexcept(x3::move_to(std::as_const(value_), attr_)))
         {
             // Always copy (need reuse in repetitive invocations)
-            traits::move_to(std::as_const(value_), attr_);
+            x3::move_to(std::as_const(value_), attr_);
             return true;
         }
 

@@ -59,14 +59,14 @@ namespace boost::spirit::x3
         ) const noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(this->parse(first, last, context, unused, std::declval<T&>())) &&
-            noexcept(traits::move_to(std::declval<T&&>(), attr_param))
+            noexcept(x3::move_to(std::declval<T&&>(), attr_param))
         )
         {
             // this case is called when Attribute is not T
             T attr_;
             if (this->parse(first, last, context, unused, attr_))
             {
-                traits::move_to(std::move(attr_), attr_param);
+                x3::move_to(std::move(attr_), attr_param);
                 return true;
             }
             return false;

@@ -10,7 +10,7 @@
 #define BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/traits/move_to.hpp>
+#include <boost/spirit/x4/core/move_to.hpp>
 
 #include <boost/spirit/x4/parse.hpp>
 
@@ -161,7 +161,7 @@ namespace spirit_test
         {
             if (iter != last && *iter == 's') {
                 ++iter;
-                boost::spirit::x3::traits::move_to(attribute_type{}, attr);
+                boost::spirit::x3::move_to(attribute_type{}, attr);
                 return true;
             }
             return false;

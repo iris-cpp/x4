@@ -57,7 +57,7 @@ namespace boost::spirit::x3
             T attr_;
             if (bool_parser::parse(first, last, context, unused, attr_))
             {
-                traits::move_to(std::move(attr_), attr_param);
+                x3::move_to(std::move(attr_), attr_param);
                 return true;
             }
             return false;
@@ -114,7 +114,7 @@ namespace boost::spirit::x3
             T attr_;
             if (literal_bool_parser::parse(first, last, context, rcontext, attr_))
             {
-                traits::move_to(std::move(attr_), attr_param);
+                x3::move_to(std::move(attr_), attr_param);
                 return true;
             }
             return false;
