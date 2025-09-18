@@ -8,13 +8,13 @@
 #ifndef BOOST_SPIRIT_X3_SEQUENCE_DETAIL_JAN_06_2013_1015AM
 #define BOOST_SPIRIT_X3_SEQUENCE_DETAIL_JAN_06_2013_1015AM
 
-#include <boost/spirit/x4/traits/attribute_of.hpp>
+#include <boost/spirit/x4/core/detail/parse_into_container.hpp>
+
+#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/attribute_category.hpp>
-#include <boost/spirit/x4/traits/has_attribute.hpp>
 #include <boost/spirit/x4/traits/is_substitute.hpp>
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/core/detail/parse_into_container.hpp>
 
 #include <boost/fusion/include/begin.hpp>
 #include <boost/fusion/include/end.hpp>

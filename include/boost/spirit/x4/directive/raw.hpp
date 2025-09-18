@@ -12,7 +12,7 @@
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/pseudo_attribute.hpp>
+#include <boost/spirit/x4/traits/attribute.hpp>
 
 #include <ranges>
 #include <iterator>

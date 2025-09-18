@@ -13,7 +13,7 @@
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_alternative.hpp>
 
-#include <boost/spirit/x4/traits/attribute_of_binary.hpp>
+#include <boost/spirit/x4/traits/attribute.hpp>
 
 #include <boost/variant/variant.hpp> // TODO: remove this
 

@@ -9,10 +9,10 @@
 #ifndef BOOST_SPIRIT_X3_DIFFERENCE_FEBRUARY_11_2007_1250PM
 #define BOOST_SPIRIT_X3_DIFFERENCE_FEBRUARY_11_2007_1250PM
 
-#include <boost/spirit/x4/traits/attribute_of.hpp>
-#include <boost/spirit/x4/traits/has_attribute.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
+
+#include <boost/spirit/x4/traits/attribute.hpp>
 
 #include <iterator>
 #include <type_traits>

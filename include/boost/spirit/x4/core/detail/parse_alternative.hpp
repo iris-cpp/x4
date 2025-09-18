@@ -10,11 +10,9 @@
 
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/attribute_of.hpp>
-#include <boost/spirit/x4/traits/pseudo_attribute.hpp>
+#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/is_variant.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
-#include <boost/spirit/x4/traits/variant_has_substitute.hpp>
 #include <boost/spirit/x4/traits/variant_find_substitute.hpp>
 
 #include <boost/spirit/x4/core/parser.hpp>

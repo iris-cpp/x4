@@ -15,7 +15,7 @@
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/attribute_type.hpp>
+#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/numeric_traits.hpp>
 #include <boost/spirit/x4/traits/char_encoding_traits.hpp>
 

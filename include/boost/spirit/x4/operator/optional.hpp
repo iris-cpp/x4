@@ -15,7 +15,7 @@
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/attribute_of.hpp>
+#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>
 #include <boost/spirit/x4/traits/attribute_category.hpp>
 

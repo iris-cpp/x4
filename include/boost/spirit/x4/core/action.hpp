@@ -11,7 +11,7 @@
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/action_context.hpp>
 
-#include <boost/spirit/x4/traits/attribute_of.hpp>
+#include <boost/spirit/x4/traits/attribute.hpp>
 
 #include <ranges>
 #include <iterator>
