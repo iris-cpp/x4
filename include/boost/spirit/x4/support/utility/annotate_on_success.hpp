@@ -5,13 +5,11 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3__ANNOTATE_ON_SUCCESS_HPP
-#define BOOST_SPIRIT_X3__ANNOTATE_ON_SUCCESS_HPP
+#ifndef BOOST_SPIRIT_X3_ANNOTATE_ON_SUCCESS_HPP
+#define BOOST_SPIRIT_X3_ANNOTATE_ON_SUCCESS_HPP
 
 #include <boost/spirit/x4/support/context.hpp>
 #include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/ast/variant.hpp>
-#include <boost/spirit/x4/support/utility/lambda_visitor.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -57,22 +55,6 @@ namespace boost::spirit::x3
             }
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename... Types, typename Context>
-        constexpr void
-        on_success(It const& first, Se const& last, x3::variant<Types...>& ast, Context const& context)
-        {
-            ast.apply_visitor(x3::make_lambda_visitor<void>([&](auto& node)
-            {
-                this->on_success(first, last, node, context);
-            }));
-        }
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename T, typename Context>
-        constexpr void
-        on_success(It const& first, Se const& last, forward_ast<T>& ast, Context const& context)
-        {
-            this->on_success(first, last, ast.get(), context);
-        }
     };
 } // boost::spirit::x3
 
