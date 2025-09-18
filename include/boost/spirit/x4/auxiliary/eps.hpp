@@ -4,14 +4,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_EPS_MARCH_23_2007_0454PM
-#define BOOST_SPIRIT_X3_EPS_MARCH_23_2007_0454PM
+#ifndef BOOST_SPIRIT_X4_EPS_MARCH_23_2007_0454PM
+#define BOOST_SPIRIT_X4_EPS_MARCH_23_2007_0454PM
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 
-namespace boost { namespace spirit { namespace x3
+namespace boost { namespace spirit { namespace x4
 {
     struct rule_context_tag;
 
@@ -27,7 +27,7 @@ namespace boost { namespace spirit { namespace x3
         bool parse(Iterator& first, Iterator const& last
           , Context const& context, unused_type, Attribute&) const
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             return predicate;
         }
 
@@ -47,8 +47,8 @@ namespace boost { namespace spirit { namespace x3
         bool parse(Iterator& first, Iterator const& last
           , Context const& context, unused_type, Attribute& /* attr */) const
         {
-            x3::skip_over(first, last, context);
-            return f(x3::get<rule_context_tag>(context));
+            x4::skip_over(first, last, context);
+            return f(x4::get<rule_context_tag>(context));
         }
 
         F f;
@@ -64,7 +64,7 @@ namespace boost { namespace spirit { namespace x3
         bool parse(Iterator& first, Iterator const& last
           , Context const& context, RuleContext&, Attribute&) const
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             return true;
         }
 

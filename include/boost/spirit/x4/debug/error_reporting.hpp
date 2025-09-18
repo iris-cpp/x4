@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM
-#define BOOST_SPIRIT_X3_ERROR_REPORTING_MAY_19_2014_00405PM
+#ifndef BOOST_SPIRIT_X4_ERROR_REPORTING_MAY_19_2014_00405PM
+#define BOOST_SPIRIT_X4_ERROR_REPORTING_MAY_19_2014_00405PM
 
 #include <boost/spirit/x4/ast/position_tagged.hpp>
 #include <boost/spirit/x4/string/utf8.hpp>
@@ -17,7 +17,7 @@
 
 // Clang-style error handling utilities
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // tag used to get our error handler from the context
     struct error_handler_tag;
@@ -107,7 +107,7 @@ namespace boost::spirit::x3
         }
         typedef typename std::iterator_traits<It>::value_type char_type;
         std::basic_string<char_type> line{start, end};
-        err_out << x3::to_utf8(line) << '\n';
+        err_out << x4::to_utf8(line) << '\n';
     }
 
     template <std::forward_iterator It>
@@ -195,6 +195,6 @@ namespace boost::spirit::x3
         err_out << " <<-- Here" << '\n';
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

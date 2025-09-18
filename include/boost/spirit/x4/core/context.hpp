@@ -5,19 +5,19 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CONTEXT_JAN_4_2012_1215PM
-#define BOOST_SPIRIT_X3_CONTEXT_JAN_4_2012_1215PM
+#ifndef BOOST_SPIRIT_X4_CONTEXT_JAN_4_2012_1215PM
+#define BOOST_SPIRIT_X4_CONTEXT_JAN_4_2012_1215PM
 
 #include <boost/spirit/x4/core/unused.hpp>
 
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // For backward compatibility, we can't introduce a new
     // vocabulary type because many codebase does partial
-    // specialization on `x3::context`. Instead, provide
+    // specialization on `x4::context`. Instead, provide
     // yet another layer of partial specialization to
     // provide owning context.
     template <typename T>
@@ -144,7 +144,7 @@ namespace boost::spirit::x3
     [[nodiscard]] constexpr auto
     make_unique_context(T& val, Next const& next) noexcept
     {
-        return detail::make_unique_context<ID>(val, next, x3::get<ID>(next));
+        return detail::make_unique_context<ID>(val, next, x4::get<ID>(next));
     }
 
     // Replaces the contained reference of the leftmost context
@@ -156,7 +156,7 @@ namespace boost::spirit::x3
     // infinite instantiation in recursive grammars.
     //
     // The most notable example of a parser that requires this
-    // operation is `x3::locals`. Without this helper, it would
+    // operation is `x4::locals`. Without this helper, it would
     // inevitably trigger infinite instantiation when binding
     // a local variable instance to the context.
     template <typename ID_To_Replace, typename ID, typename T, typename Next, typename NewVal>
@@ -200,14 +200,14 @@ namespace boost::spirit::x3
             else
             {
                 // No match. Continue the replacement recursively.
-                using NewNext = decltype(x3::replace_context<ID_To_Replace>(ctx.next, new_val));
+                using NewNext = decltype(x4::replace_context<ID_To_Replace>(ctx.next, new_val));
                 return context<ID, T, owning_context_tag<NewNext>>{
-                    ctx.val, x3::replace_context<ID_To_Replace>(ctx.next, new_val)
+                    ctx.val, x4::replace_context<ID_To_Replace>(ctx.next, new_val)
                 };
             }
         }
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

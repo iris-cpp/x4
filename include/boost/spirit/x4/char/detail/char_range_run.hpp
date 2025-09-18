@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_DETAIL_CHAR_RANGE_RUN_HPP
-#define BOOST_SPIRIT_X3_CHAR_DETAIL_CHAR_RANGE_RUN_HPP
+#ifndef BOOST_SPIRIT_X4_CHAR_DETAIL_CHAR_RANGE_RUN_HPP
+#define BOOST_SPIRIT_X4_CHAR_DETAIL_CHAR_RANGE_RUN_HPP
 
 #include <boost/spirit/x4/char/detail/char_range.hpp>
 #include <boost/spirit/x4/char/detail/char_range_functions.hpp>
@@ -19,7 +19,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     // An implementation of a sparse bit (boolean) set. The set uses
     // a sorted vector of disjoint ranges. This class implements the
@@ -188,6 +188,6 @@ namespace boost::spirit::x3::detail
     private:
         storage_type run_;
     };
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

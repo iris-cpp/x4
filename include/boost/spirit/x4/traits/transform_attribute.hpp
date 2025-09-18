@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
-#define BOOST_SPIRIT_X3_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
+#ifndef BOOST_SPIRIT_X4_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
+#define BOOST_SPIRIT_X4_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
 
 #include <boost/spirit/x4/core/move_to.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -16,7 +16,7 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Transformed, typename Exposed>
     struct transform_attribute
@@ -36,9 +36,9 @@ namespace boost::spirit::x3::traits
 
         template <typename TransformedT>
         static constexpr void post(Exposed& val, TransformedT&& attribute)
-            noexcept(noexcept(x3::move_to(std::forward<TransformedT>(attribute), val)))
+            noexcept(noexcept(x4::move_to(std::forward<TransformedT>(attribute), val)))
         {
-            x3::move_to(std::forward<TransformedT>(attribute), val);
+            x4::move_to(std::forward<TransformedT>(attribute), val);
         }
     };
 
@@ -113,6 +113,6 @@ namespace boost::spirit::x3::traits
     };
 
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
-#define BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
+#ifndef BOOST_SPIRIT_X4_SEEK_APRIL_13_2014_1920PM
+#define BOOST_SPIRIT_X4_SEEK_APRIL_13_2014_1920PM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject>
     struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
@@ -48,7 +48,7 @@ namespace boost::spirit::x3
                     return true;
                 }
 
-                if (x3::has_expectation_failure(context))
+                if (x4::has_expectation_failure(context))
                 {
                     return false;
                 }
@@ -80,6 +80,6 @@ namespace boost::spirit::x3
 
     } // cpos
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

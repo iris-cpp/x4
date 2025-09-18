@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_KLEENE_JANUARY_07_2007_0818AM
-#define BOOST_SPIRIT_X3_KLEENE_JANUARY_07_2007_0818AM
+#ifndef BOOST_SPIRIT_X4_KLEENE_JANUARY_07_2007_0818AM
+#define BOOST_SPIRIT_X4_KLEENE_JANUARY_07_2007_0818AM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject>
     struct kleene : unary_parser<Subject, kleene<Subject>>
@@ -42,30 +42,30 @@ namespace boost::spirit::x3
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr))))
+            noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, rcontext, x4::assume_container(attr))))
         {
-            while (detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr)))
+            while (detail::parse_into_container(this->subject, first, last, context, rcontext, x4::assume_container(attr)))
                 /* loop */;
 
-            return !x3::has_expectation_failure(context);
+            return !x4::has_expectation_failure(context);
         }
     };
 
-    template <X3Subject Subject>
+    template <X4Subject Subject>
     [[nodiscard]] constexpr kleene<as_parser_plain_t<Subject>>
     operator*(Subject&& subject)
         noexcept(is_parser_nothrow_constructible_v<kleene<as_parser_plain_t<Subject>>, Subject>)
     {
         return { as_parser(std::forward<Subject>(subject)) };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Subject, typename Context>
-    struct attribute_of<x3::kleene<Subject>, Context>
+    struct attribute_of<x4::kleene<Subject>, Context>
         : build_container<attribute_of_t<Subject, Context>> {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SKIP_JANUARY_26_2008_0422PM
-#define BOOST_SPIRIT_X3_SKIP_JANUARY_26_2008_0422PM
+#ifndef BOOST_SPIRIT_X4_SKIP_JANUARY_26_2008_0422PM
+#define BOOST_SPIRIT_X4_SKIP_JANUARY_26_2008_0422PM
 
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject>
     struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
@@ -49,9 +49,9 @@ namespace boost::spirit::x3
 
     private:
         template <typename Context>
-        using context_t = x3::context<
+        using context_t = x4::context<
             skipper_tag,
-            decltype(detail::get_unused_skipper(x3::get<skipper_tag>(std::declval<Context const&>()))),
+            decltype(detail::get_unused_skipper(x4::get<skipper_tag>(std::declval<Context const&>()))),
             Context
         >;
 
@@ -64,14 +64,14 @@ namespace boost::spirit::x3
         {
             static_assert(Parsable<Subject, It, Se, context_t<Context>, RContext, Attribute>);
 
-            auto const& skipper = detail::get_unused_skipper(x3::get<skipper_tag>(context));
+            auto const& skipper = detail::get_unused_skipper(x4::get<skipper_tag>(context));
 
-            auto const local_ctx = x3::make_context<skipper_tag>(skipper, context);
+            auto const local_ctx = x4::make_context<skipper_tag>(skipper, context);
             bool const r = this->subject.parse(first, last, local_ctx, rcontext, attr);
 
-            if (x3::has_expectation_failure(local_ctx))
+            if (x4::has_expectation_failure(local_ctx))
             {
-                x3::set_expectation_failure(x3::get_expectation_failure(local_ctx), context);
+                x4::set_expectation_failure(x4::get_expectation_failure(local_ctx), context);
             }
 
             return r;
@@ -96,9 +96,9 @@ namespace boost::spirit::x3
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, unused_type const&, RContext& rcontext, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, x3::context<skipper_tag, Skipper>, RContext, Attribute>)
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, x4::context<skipper_tag, Skipper>, RContext, Attribute>)
         {
-            static_assert(Parsable<Subject, It, Se, x3::context<skipper_tag, Skipper>, RContext, Attribute>);
+            static_assert(Parsable<Subject, It, Se, x4::context<skipper_tag, Skipper>, RContext, Attribute>);
 
             // It is perfectly fine to omit the expectation_failure context
             // even in non-throwing mode if and only if the skipper itself
@@ -118,9 +118,9 @@ namespace boost::spirit::x3
             //
             // Anyways, we don't need to repack the expectation context
             // into our brand new skipper context, in contrast to the
-            // repacking process done in `x3::skip_over`.
+            // repacking process done in `x4::skip_over`.
             return this->subject.parse(
-                first, last, x3::make_context<skipper_tag>(skipper_), rcontext, attr
+                first, last, x4::make_context<skipper_tag>(skipper_), rcontext, attr
             );
         }
 
@@ -129,23 +129,23 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
             // never noexcept (requires expectation failure modification)
         {
-            static_assert(Parsable<Subject, It, Se, x3::context<skipper_tag, Context>, RContext, Attribute>);
+            static_assert(Parsable<Subject, It, Se, x4::context<skipper_tag, Context>, RContext, Attribute>);
 
             static_assert(
                 !std::is_same_v<expectation_failure_t<Context>, unused_type>,
-                "Context type was not specified for x3::expectation_failure_tag. "
-                "You probably forgot: `x3::with<x3::expectation_failure_tag>(failure)[p]`. "
+                "Context type was not specified for x4::expectation_failure_tag. "
+                "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
                 "Note that you must also bind the context to your skipper."
             );
 
             // This logic is heavily related to the instantiation chain;
-            // see `x3::skip_over` for details.
-            auto const local_ctx = x3::make_context<skipper_tag>(skipper_, context);
+            // see `x4::skip_over` for details.
+            auto const local_ctx = x4::make_context<skipper_tag>(skipper_, context);
             bool const r = this->subject.parse(first, last, local_ctx, rcontext, attr);
 
-            if (x3::has_expectation_failure(local_ctx))
+            if (x4::has_expectation_failure(local_ctx))
             {
-                x3::set_expectation_failure(x3::get_expectation_failure(local_ctx), context);
+                x4::set_expectation_failure(x4::get_expectation_failure(local_ctx), context);
             }
             return r;
         }
@@ -156,7 +156,7 @@ namespace boost::spirit::x3
 
     namespace detail
     {
-        template <X3Subject Skipper>
+        template <X4Subject Skipper>
         struct skip_gen_impl
         {
             // Unreference rvalue reference, but hold lvalue reference as-is
@@ -173,7 +173,7 @@ namespace boost::spirit::x3
                 : skipper_(std::forward<SkipperT>(skipper))
             {}
 
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr skip_directive<as_parser_plain_t<Subject>, std::remove_cvref_t<Skipper>>
             operator[](Subject&& subject) const
                 noexcept(
@@ -194,7 +194,7 @@ namespace boost::spirit::x3
 
         struct skip_gen
         {
-            template <X3Subject Skipper>
+            template <X4Subject Skipper>
             [[nodiscard]]
             static constexpr skip_gen_impl<as_parser_t<Skipper>>
             operator()(Skipper&& skipper)
@@ -207,7 +207,7 @@ namespace boost::spirit::x3
             }
 
             template <typename Subject>
-            [[nodiscard, deprecated("Use `x3::reskip[p]`.")]]
+            [[nodiscard, deprecated("Use `x4::reskip[p]`.")]]
             /* static */ constexpr reskip_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode
                 noexcept(is_parser_nothrow_constructible_v<reskip_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -218,7 +218,7 @@ namespace boost::spirit::x3
 
         struct reskip_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]]
             /* static */ constexpr reskip_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode
@@ -234,6 +234,6 @@ namespace boost::spirit::x3
         inline constexpr detail::skip_gen skip{};
         inline constexpr detail::reskip_gen reskip{};
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

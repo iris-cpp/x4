@@ -20,7 +20,7 @@
 
 namespace
 {
-    namespace x3 = boost::spirit::x3;
+    namespace x4 = boost::spirit::x4;
 
     template <typename TST, typename Char>
     void add(TST& tst, Char const* s, int data)
@@ -74,10 +74,10 @@ namespace
 
 }
 
-x3::case_compare<x3::char_encoding::standard> ncomp;
-x3::case_compare<x3::char_encoding::standard_wide> wcomp;
-x3::no_case_compare<x3::char_encoding::standard> nc_ncomp;
-x3::no_case_compare<x3::char_encoding::standard_wide> nc_wcomp;
+x4::case_compare<x4::char_encoding::standard> ncomp;
+x4::case_compare<x4::char_encoding::standard_wide> wcomp;
+x4::no_case_compare<x4::char_encoding::standard> nc_ncomp;
+x4::no_case_compare<x4::char_encoding::standard_wide> nc_wcomp;
 
 template <typename Lookup, typename WideLookup>
 void tests()
@@ -333,7 +333,7 @@ void tests()
 
 int main()
 {
-    using x3::tst;
+    using x4::tst;
 
     tests<tst<char, int>, tst<wchar_t, int> >();
 

@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_DIRECTIVE_RAW_HPP
-#define BOOST_SPIRIT_X3_DIRECTIVE_RAW_HPP
+#ifndef BOOST_SPIRIT_X4_DIRECTIVE_RAW_HPP
+#define BOOST_SPIRIT_X4_DIRECTIVE_RAW_HPP
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // Pseudo attribute type indicating that the parser wants the
     // iterator range pointing to the [first, last) matching characters from
@@ -49,11 +49,11 @@ namespace boost::spirit::x3
         {
             static_assert(Parsable<Subject, It, Se, Context, RContext, unused_type>);
 
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             It local_it = first;
             if (this->subject.parse(local_it, last, context, rcontext, unused))
             {
-                x3::move_to(first, local_it, attr);
+                x4::move_to(first, local_it, attr);
                 first = local_it;
                 return true;
             }
@@ -73,7 +73,7 @@ namespace boost::spirit::x3
     {
         struct raw_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr raw_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const
                 noexcept(is_parser_nothrow_constructible_v<raw_directive<as_parser_plain_t<Subject>>, as_parser_t<Subject>>)
@@ -102,6 +102,6 @@ namespace boost::spirit::x3
             }
         };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

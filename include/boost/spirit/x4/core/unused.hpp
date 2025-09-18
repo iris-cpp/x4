@@ -6,14 +6,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_UNUSED_APRIL_16_2006_0616PM
-#define BOOST_SPIRIT_X3_UNUSED_APRIL_16_2006_0616PM
+#ifndef BOOST_SPIRIT_X4_UNUSED_APRIL_16_2006_0616PM
+#define BOOST_SPIRIT_X4_UNUSED_APRIL_16_2006_0616PM
 
 #include <iosfwd> // TODO: remove this, iosfwd is heavier than most people might think
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     struct unused_type
     {
@@ -65,6 +65,6 @@ namespace boost::spirit::x3
         return unused_container;
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

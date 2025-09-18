@@ -5,7 +5,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#define BOOST_SPIRIT_X3_DEBUG
+#define BOOST_SPIRIT_X4_DEBUG
 
 #include "test.hpp"
 
@@ -23,7 +23,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 struct my_error_handler
 {
@@ -62,9 +62,9 @@ struct my_attribute
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using x3::rule;
-    using x3::int_;
+    using namespace boost::spirit::x4::standard;
+    using x4::rule;
+    using x4::int_;
 
     { // basic tests
 
@@ -125,7 +125,7 @@ int main()
         auto r_def = '(' > int_ > ',' > int_ > ')';
         my_error_handler error_handler;
 
-        auto parser = x3::with<x3::error_handler_tag>(error_handler)[r_def];
+        auto parser = x4::with<x4::error_handler_tag>(error_handler)[r_def];
 
         BOOST_TEST( parse("(123,456)", parser));
         BOOST_TEST(!parse("(abc,def)", parser));
@@ -135,7 +135,7 @@ int main()
     }
 
     {
-        x3::shared_symbols<my_attribute> a{{{ "a", my_attribute{} }}};
+        x4::shared_symbols<my_attribute> a{{{ "a", my_attribute{} }}};
 
         auto b = rule<struct b_id, my_attribute>("b") = a;
 

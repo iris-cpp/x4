@@ -15,8 +15,8 @@
 
 int main()
 {
-    using boost::spirit::x3::shared_symbols;
-    using boost::spirit::x3::rule;
+    using boost::spirit::x4::shared_symbols;
+    using boost::spirit::x4::rule;
 
     {
         // construction from symbol array

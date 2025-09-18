@@ -88,7 +88,7 @@ public:
 
 }
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 template <typename T, int Base, int MaxDigits>
 void test_overflow_handling(char const* begin, char const* end, int i)
@@ -104,7 +104,7 @@ void test_overflow_handling(char const* begin, char const* end, int i)
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
     char const* it = begin;
-    bool r = x3::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
+    bool r = x4::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
     if (T::min <= i && i <= T::max) {
         BOOST_TEST(r);
         BOOST_TEST(it == end);
@@ -128,7 +128,7 @@ void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int 
     auto len = end - it;
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
-    bool r = x3::extract_int<T, Base, 1, 1>::call(it, end, x);
+    bool r = x4::extract_int<T, Base, 1, 1>::call(it, end, x);
     BOOST_TEST(r);
     if (-Base < i && i < Base) {
         BOOST_TEST(it == end);

@@ -14,9 +14,9 @@
 
 int main()
 {
-    using boost::spirit::x3::int_;
+    using boost::spirit::x4::int_;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(!int_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(!int_);
 
     {
         BOOST_TEST(!parse("1234", !int_));

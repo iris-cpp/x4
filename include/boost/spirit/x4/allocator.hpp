@@ -4,8 +4,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SUPPORT_ALLOCATOR_HPP
-#define BOOST_SPIRIT_X3_SUPPORT_ALLOCATOR_HPP
+#ifndef BOOST_SPIRIT_X4_SUPPORT_ALLOCATOR_HPP
+#define BOOST_SPIRIT_X4_SUPPORT_ALLOCATOR_HPP
 
 #include <memory>
 #include <type_traits>
@@ -13,7 +13,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x3 {
+namespace boost::spirit::x4 {
 
 template <typename Klass>
 struct allocator_ops
@@ -247,6 +247,6 @@ private:
     }
 };
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

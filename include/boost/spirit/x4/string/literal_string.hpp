@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_LITERAL_STRING_APR_18_2006_1125PM
-#define BOOST_SPIRIT_X3_LITERAL_STRING_APR_18_2006_1125PM
+#ifndef BOOST_SPIRIT_X4_LITERAL_STRING_APR_18_2006_1125PM
+#define BOOST_SPIRIT_X4_LITERAL_STRING_APR_18_2006_1125PM
 
 #include <boost/spirit/x4/string/detail/string_parse.hpp>
 
@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename String, typename Encoding, typename Attribute = std::basic_string<typename Encoding::char_type>>
     struct literal_string : parser<literal_string<String, Encoding, Attribute>>
@@ -52,8 +52,8 @@ namespace boost::spirit::x3
             Context const& context, unused_type, Attribute_& attr
         ) const
         {
-            x3::skip_over(first, last, context);
-            return detail::string_parse(str, first, last, attr, x3::get_case_compare<encoding>(context));
+            x4::skip_over(first, last, context);
+            return detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context));
         }
 
         String str;
@@ -65,9 +65,9 @@ namespace boost::spirit::x3
         using result_type = std::string;
         [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attribute> const& p) const
         {
-            return '"' + x3::to_utf8(p.str) + '"';
+            return '"' + x4::to_utf8(p.str) + '"';
         }
     };
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

@@ -16,18 +16,18 @@
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::repeat;
-    using boost::spirit::x3::repeat_inf;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::lexeme;
-    using boost::spirit::x3::char_;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::repeat;
+    using boost::spirit::x4::repeat_inf;
+    using boost::spirit::x4::omit;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::lexeme;
+    using boost::spirit::x4::char_;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(*x3::lit('x'));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(repeat(3)['x']);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(repeat(3, 5)['x']);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(repeat(3, repeat_inf)['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(*x4::lit('x'));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(repeat(3)['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(repeat(3, 5)['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(repeat(3, repeat_inf)['x']);
 
     {
         BOOST_TEST(parse("aaaaaaaa", *char_));

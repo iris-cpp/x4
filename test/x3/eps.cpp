@@ -13,11 +13,11 @@
 
 int main()
 {
-    using boost::spirit::x3::eps;
-    using boost::spirit::x3::unused_type;
+    using boost::spirit::x4::eps;
+    using boost::spirit::x4::unused_type;
 
     {
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eps);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps);
         BOOST_TEST(parse("", eps));
         BOOST_TEST(parse("xxx", eps).is_partial_match());
         //~ BOOST_TEST(!parse("", !eps)); // not predicate $$$ Implement me! $$$
@@ -25,7 +25,7 @@ int main()
 
     {   // test non-lazy semantic predicate
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eps(true));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps(true));
         BOOST_TEST(parse("", eps(true)));
         BOOST_TEST(!parse("", eps(false)));
         BOOST_TEST(parse("", !eps(false)));
@@ -37,7 +37,7 @@ int main()
         auto false_ = [](unused_type) { return false; };
 
         // cannot use lambda in constant expression before C++17
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eps(std::true_type{}));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps(std::true_type{}));
         BOOST_TEST(parse("", eps(true_)));
         BOOST_TEST(!parse("", eps(false_)));
         BOOST_TEST(parse("", !eps(false_)));

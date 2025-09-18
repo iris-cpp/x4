@@ -15,10 +15,10 @@
 
 int main()
 {
-    using boost::spirit::x3::matches;
-    using boost::spirit::x3::char_;
+    using boost::spirit::x4::matches;
+    using boost::spirit::x4::char_;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(matches['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(matches['x']);
 
     {
         BOOST_TEST(parse("x", matches[char_]));

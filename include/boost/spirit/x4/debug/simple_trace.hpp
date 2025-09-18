@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SIMPLE_TRACE_DECEMBER_06_2008_1102AM
-#define BOOST_SPIRIT_X3_SIMPLE_TRACE_DECEMBER_06_2008_1102AM
+#ifndef BOOST_SPIRIT_X4_SIMPLE_TRACE_DECEMBER_06_2008_1102AM
+#define BOOST_SPIRIT_X4_SIMPLE_TRACE_DECEMBER_06_2008_1102AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 
@@ -19,21 +19,21 @@
 #include <type_traits>
 
 //  The stream to use for debug output
-#ifndef BOOST_SPIRIT_X3_DEBUG_OUT
-#define BOOST_SPIRIT_X3_DEBUG_OUT std::cerr
+#ifndef BOOST_SPIRIT_X4_DEBUG_OUT
+#define BOOST_SPIRIT_X4_DEBUG_OUT std::cerr
 #endif
 
 //  number of tokens to print while debugging
-#ifndef BOOST_SPIRIT_X3_DEBUG_PRINT_SOME
-#define BOOST_SPIRIT_X3_DEBUG_PRINT_SOME 20
+#ifndef BOOST_SPIRIT_X4_DEBUG_PRINT_SOME
+#define BOOST_SPIRIT_X4_DEBUG_PRINT_SOME 20
 #endif
 
 //  number of spaces to indent
-#ifndef BOOST_SPIRIT_X3_DEBUG_INDENT
-#define BOOST_SPIRIT_X3_DEBUG_INDENT 2
+#ifndef BOOST_SPIRIT_X4_DEBUG_INDENT
+#define BOOST_SPIRIT_X4_DEBUG_INDENT 2
 #endif
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     namespace detail
     {
@@ -41,7 +41,7 @@ namespace boost::spirit::x3
         inline void token_printer(std::ostream& o, Char c)
         {
             // allow customization of the token printer routine
-            x3::traits::print_token(o, c);
+            x4::traits::print_token(o, c);
         }
     }
 
@@ -128,17 +128,17 @@ namespace boost::spirit::x3
     namespace detail
     {
         typedef simple_trace<
-            BOOST_SPIRIT_X3_DEBUG_INDENT, BOOST_SPIRIT_X3_DEBUG_PRINT_SOME>
+            BOOST_SPIRIT_X4_DEBUG_INDENT, BOOST_SPIRIT_X4_DEBUG_PRINT_SOME>
         simple_trace_type;
 
         inline simple_trace_type&
         get_simple_trace()
         {
-            static simple_trace_type tracer(BOOST_SPIRIT_X3_DEBUG_OUT);
+            static simple_trace_type tracer(BOOST_SPIRIT_X4_DEBUG_OUT);
             return tracer;
         }
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

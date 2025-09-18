@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_ENCODING_STANDARD_WIDE_HPP
-#define BOOST_SPIRIT_X3_CHAR_ENCODING_STANDARD_WIDE_HPP
+#ifndef BOOST_SPIRIT_X4_CHAR_ENCODING_STANDARD_WIDE_HPP
+#define BOOST_SPIRIT_X4_CHAR_ENCODING_STANDARD_WIDE_HPP
 
 #include <string>
 #include <type_traits>
@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <cwctype>
 
-namespace boost::spirit::x3::char_encoding
+namespace boost::spirit::x4::char_encoding
 {
     // Test characters for specified conditions (using std wchar_t functions)
 
@@ -155,6 +155,6 @@ namespace boost::spirit::x3::char_encoding
             return static_cast<std::make_unsigned_t<wchar_t>>(ch);
         }
     };
-} // boost::spirit::x3::char_encoding
+} // boost::spirit::x4::char_encoding
 
 #endif

@@ -24,8 +24,8 @@
 # pragma warning(disable: 4709) // comma operator within array index expression
 #endif
 
-using boost::spirit::x3::_val;
-namespace x3 = boost::spirit::x3;
+using boost::spirit::x4::_val;
+namespace x4 = boost::spirit::x4;
 
 struct f
 {
@@ -38,14 +38,14 @@ struct f
 
 namespace check_stationary {
 
-boost::spirit::x3::rule<class a_r, spirit_test::stationary> const a;
-boost::spirit::x3::rule<class b_r, spirit_test::stationary> const b;
+boost::spirit::x4::rule<class a_r, spirit_test::stationary> const a;
+boost::spirit::x4::rule<class b_r, spirit_test::stationary> const b;
 
-auto const a_def = '{' >> boost::spirit::x3::int_ >> '}';
+auto const a_def = '{' >> boost::spirit::x4::int_ >> '}';
 auto const b_def = a;
 
-BOOST_SPIRIT_X3_DEFINE(a)
-BOOST_SPIRIT_X3_DEFINE(b)
+BOOST_SPIRIT_X4_DEFINE(a)
+BOOST_SPIRIT_X4_DEFINE(b)
 
 }
 
@@ -56,11 +56,11 @@ using node_t = boost::make_recursive_variant<
                    std::vector<boost::recursive_variant_>
                >::type;
 
-boost::spirit::x3::rule<class grammar_r, node_t> const grammar;
+boost::spirit::x4::rule<class grammar_r, node_t> const grammar;
 
-auto const grammar_def = '[' >> grammar % ',' >> ']' | boost::spirit::x3::int_;
+auto const grammar_def = '[' >> grammar % ',' >> ']' | boost::spirit::x4::int_;
 
-BOOST_SPIRIT_X3_DEFINE(grammar)
+BOOST_SPIRIT_X4_DEFINE(grammar)
 
 }
 
@@ -68,8 +68,8 @@ namespace check_recursive_scoped {
 
 using check_recursive::node_t;
 
-x3::rule<class intvec_r, node_t> const intvec;
-auto const grammar = intvec = '[' >> intvec % ',' >> ']' | x3::int_;
+x4::rule<class intvec_r, node_t> const intvec;
+auto const grammar = intvec = '[' >> intvec % ',' >> ']' | x4::int_;
 
 }
 
@@ -86,22 +86,22 @@ namespace check_recursive_tuple {
 
 using iterator_type = std::string_view::const_iterator;
 
-x3::rule<class grammar_r, recursive_tuple> const grammar;
-auto const grammar_def = x3::int_ >> ('{' >> grammar % ',' >> '}' | x3::eps);
-BOOST_SPIRIT_X3_DEFINE(grammar)
+x4::rule<class grammar_r, recursive_tuple> const grammar;
+auto const grammar_def = x4::int_ >> ('{' >> grammar % ',' >> '}' | x4::eps);
+BOOST_SPIRIT_X4_DEFINE(grammar)
 
-BOOST_SPIRIT_X3_INSTANTIATE(decltype(grammar), iterator_type, x3::parse_context_for<iterator_type>)
+BOOST_SPIRIT_X4_INSTANTIATE(decltype(grammar), iterator_type, x4::parse_context_for<iterator_type>)
 
 }
 
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::lit;
-    using boost::spirit::x3::eps;
-    using boost::spirit::x3::unused_type;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::rule;
+    using boost::spirit::x4::lit;
+    using boost::spirit::x4::eps;
+    using boost::spirit::x4::unused_type;
 
     // synth attribute value-init
     {
@@ -133,7 +133,7 @@ int main()
 
     {
         auto r = rule<class r_id, int>{} = eps[([] (auto& ctx) {
-            using boost::spirit::x3::_val;
+            using boost::spirit::x4::_val;
             static_assert(
                 std::is_same_v<std::decay_t<decltype(_val(ctx))>, unused_type>,
                 "Attribute must not be synthesized"

@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_NO_SKIP_JAN_16_2010_0802PM
-#define BOOST_SPIRIT_X3_NO_SKIP_JAN_16_2010_0802PM
+#ifndef BOOST_SPIRIT_X4_NO_SKIP_JAN_16_2010_0802PM
+#define BOOST_SPIRIT_X4_NO_SKIP_JAN_16_2010_0802PM
 
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // Same as `lexeme[...]`, but does not pre-skip
     template <typename Subject>
@@ -41,10 +41,10 @@ namespace boost::spirit::x3
 
     private:
         template <typename Context>
-        using unused_skipper_context_t = x3::context<
+        using unused_skipper_context_t = x4::context<
             skipper_tag,
             unused_skipper<
-                std::remove_reference_t<decltype(x3::get<skipper_tag>(std::declval<Context const&>()))>
+                std::remove_reference_t<decltype(x4::get<skipper_tag>(std::declval<Context const&>()))>
             >,
             Context
         >;
@@ -61,14 +61,14 @@ namespace boost::spirit::x3
                 Attribute
             >)
         {
-            auto const& skipper = x3::get<skipper_tag>(context);
+            auto const& skipper = x4::get<skipper_tag>(context);
 
             unused_skipper<std::remove_reference_t<decltype(skipper)>>
             unused_skipper(skipper);
 
             return this->subject.parse(
                 first, last,
-                x3::make_context<skipper_tag>(unused_skipper, context),
+                x4::make_context<skipper_tag>(unused_skipper, context),
                 rcontext,
                 attr
             );
@@ -88,7 +88,7 @@ namespace boost::spirit::x3
     {
         struct no_skip_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr no_skip_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const // TODO: MSVC can't handle static operator[]
                 noexcept(is_parser_nothrow_constructible_v<no_skip_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -105,6 +105,6 @@ namespace boost::spirit::x3
 
     } // cpos
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

@@ -6,14 +6,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#ifndef BOOST_SPIRIT_X3_POSITION_TAGGED_MAY_01_2014_0321PM
-#define BOOST_SPIRIT_X3_POSITION_TAGGED_MAY_01_2014_0321PM
+#ifndef BOOST_SPIRIT_X4_POSITION_TAGGED_MAY_01_2014_0321PM
+#define BOOST_SPIRIT_X4_POSITION_TAGGED_MAY_01_2014_0321PM
 
 #include <ranges>
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     struct position_tagged
     {
@@ -92,6 +92,6 @@ namespace boost::spirit::x3
         iterator_type last_;
     };
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

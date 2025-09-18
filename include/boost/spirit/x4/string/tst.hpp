@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_TST_JUNE_03_2007_1031AM
-#define BOOST_SPIRIT_X3_TST_JUNE_03_2007_1031AM
+#ifndef BOOST_SPIRIT_X4_TST_JUNE_03_2007_1031AM
+#define BOOST_SPIRIT_X4_TST_JUNE_03_2007_1031AM
 
 #include <boost/spirit/x4/core/config.hpp>
 #include <boost/spirit/x4/string/detail/tst_node.hpp>
@@ -20,7 +20,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     struct tst_pass_through
     {
@@ -208,8 +208,8 @@ namespace boost::spirit::x3
             }
         }
 
-        BOOST_SPIRIT_X3_NO_UNIQUE_ADDRESS Alloc alloc_;
-        BOOST_SPIRIT_X3_NO_UNIQUE_ADDRESS node_allocator_type node_alloc_;
+        BOOST_SPIRIT_X4_NO_UNIQUE_ADDRESS Alloc alloc_;
+        BOOST_SPIRIT_X4_NO_UNIQUE_ADDRESS node_allocator_type node_alloc_;
         node* root_ = nullptr;
     };
 }

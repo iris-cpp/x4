@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ALTERNATIVE_JAN_07_2013_1131AM
-#define BOOST_SPIRIT_X3_ALTERNATIVE_JAN_07_2013_1131AM
+#ifndef BOOST_SPIRIT_X4_ALTERNATIVE_JAN_07_2013_1131AM
+#define BOOST_SPIRIT_X4_ALTERNATIVE_JAN_07_2013_1131AM
 
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -21,7 +21,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Left, typename Right>
     struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
@@ -44,7 +44,7 @@ namespace boost::spirit::x3
             )
         {
             return this->left.parse(first, last, context, rcontext, unused)
-                || (!x3::has_expectation_failure(context)
+                || (!x4::has_expectation_failure(context)
                     && this->right.parse(first, last, context, rcontext, unused));
         }
 
@@ -57,12 +57,12 @@ namespace boost::spirit::x3
             )
         {
             return detail::parse_alternative(this->left, first, last, context, rcontext, attr)
-                || (!x3::has_expectation_failure(context)
+                || (!x4::has_expectation_failure(context)
                     && detail::parse_alternative(this->right, first, last, context, rcontext, attr));
         }
     };
 
-    template <X3Subject Left, X3Subject Right>
+    template <X4Subject Left, X4Subject Right>
     [[nodiscard]] constexpr alternative<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
     operator|(Left&& left, Right&& right)
         noexcept(
@@ -77,14 +77,14 @@ namespace boost::spirit::x3
     {
         return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Left, typename Right, typename Context>
-    struct attribute_of<x3::alternative<Left, Right>, Context>
-        : x3::detail::attribute_of_binary<boost::variant, x3::alternative, Left, Right, Context>
+    struct attribute_of<x4::alternative<Left, Right>, Context>
+        : x4::detail::attribute_of_binary<boost::variant, x4::alternative, Left, Right, Context>
     {};
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

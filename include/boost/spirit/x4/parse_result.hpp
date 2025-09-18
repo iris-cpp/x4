@@ -4,8 +4,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CORE_PARSE_RESULT_HPP
-#define BOOST_SPIRIT_X3_CORE_PARSE_RESULT_HPP
+#ifndef BOOST_SPIRIT_X4_CORE_PARSE_RESULT_HPP
+#define BOOST_SPIRIT_X4_CORE_PARSE_RESULT_HPP
 
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/traits/string_traits.hpp>
@@ -16,7 +16,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se = It>
     struct [[nodiscard]] parse_result
@@ -28,7 +28,7 @@ namespace boost::spirit::x3
         // values of the `.parse()` functions of all underlying parsers.
         bool ok = false;
 
-        // Represents the failure of `x3::expect[p]` and `a > b`.
+        // Represents the failure of `x4::expect[p]` and `a > b`.
         // Has value if and only if `ok` is `false` and any of
         // the underlying parsers have encountered expectation
         // failure.
@@ -130,6 +130,6 @@ namespace boost::spirit::x3
     template <std::ranges::forward_range R>
     using parse_result_for = typename detail::parse_result_for_impl<R>::type;
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

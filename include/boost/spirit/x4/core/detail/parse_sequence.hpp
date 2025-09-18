@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SEQUENCE_DETAIL_JAN_06_2013_1015AM
-#define BOOST_SPIRIT_X3_SEQUENCE_DETAIL_JAN_06_2013_1015AM
+#ifndef BOOST_SPIRIT_X4_SEQUENCE_DETAIL_JAN_06_2013_1015AM
+#define BOOST_SPIRIT_X4_SEQUENCE_DETAIL_JAN_06_2013_1015AM
 
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
 
@@ -29,13 +29,13 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Left, typename Right>
     struct sequence;
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     template <typename Parser, typename Context, typename Enable = void>
     struct sequence_size
@@ -457,7 +457,7 @@ namespace boost::spirit::x3::detail
                 std::is_same_v<std::remove_const_t<Attribute>, unused_container_type>
             )
             {
-                return detail::parse_sequence(parser, first, last, context, rcontext, x3::assume_container(attr));
+                return detail::parse_sequence(parser, first, last, context, rcontext, x4::assume_container(attr));
             }
             else
             {
@@ -476,6 +476,6 @@ namespace boost::spirit::x3::detail
         }
     };
 
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

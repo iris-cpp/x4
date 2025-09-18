@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_IS_VARIANT_JAN_10_2012_0823AM
-#define BOOST_SPIRIT_X3_IS_VARIANT_JAN_10_2012_0823AM
+#ifndef BOOST_SPIRIT_X4_IS_VARIANT_JAN_10_2012_0823AM
+#define BOOST_SPIRIT_X4_IS_VARIANT_JAN_10_2012_0823AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 
@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     // TODO: define a legit concept for determining variant-like types
 
@@ -127,6 +127,6 @@ namespace boost::spirit::x3::traits
     template <typename T>
     struct variant_has_substitute<unused_type const, T> : std::true_type {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

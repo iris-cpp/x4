@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_AND_PREDICATE_MARCH_23_2007_0617PM
-#define BOOST_SPIRIT_X3_AND_PREDICATE_MARCH_23_2007_0617PM
+#ifndef BOOST_SPIRIT_X4_AND_PREDICATE_MARCH_23_2007_0617PM
+#define BOOST_SPIRIT_X4_AND_PREDICATE_MARCH_23_2007_0617PM
 
 #include <boost/spirit/x4/core/parser.hpp>
 
@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject>
     struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
@@ -46,13 +46,13 @@ namespace boost::spirit::x3
         }
     };
 
-    template <X3Subject Subject>
+    template <X4Subject Subject>
     [[nodiscard]] constexpr and_predicate<as_parser_plain_t<Subject>>
     operator&(Subject&& subject)
         noexcept(is_parser_nothrow_constructible_v<and_predicate<as_parser_plain_t<Subject>>, Subject>)
     {
         return { as_parser(std::forward<Subject>(subject)) };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

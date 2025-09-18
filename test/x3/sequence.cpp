@@ -20,23 +20,23 @@
 
 int main()
 {
-    namespace x3 = boost::spirit::x3;
-    namespace traits = x3::traits;
+    namespace x4 = boost::spirit::x4;
+    namespace traits = x4::traits;
 
-    using x3::unused_type;
+    using x4::unused_type;
 
-    using x3::standard::char_;
-    using x3::standard::space;
-    using x3::standard::string;
-    using x3::standard::lit;
-    using x3::standard::alnum;
-    using x3::attr;
-    using x3::omit;
-    using x3::unused;
-    using x3::int_;
-    using x3::float_;
-    using x3::no_case;
-    using x3::rule;
+    using x4::standard::char_;
+    using x4::standard::space;
+    using x4::standard::string;
+    using x4::standard::lit;
+    using x4::standard::alnum;
+    using x4::attr;
+    using x4::omit;
+    using x4::unused;
+    using x4::int_;
+    using x4::float_;
+    using x4::no_case;
+    using x4::rule;
 
     using traits::attribute_of_t;
 
@@ -44,7 +44,7 @@ int main()
     using boost::fusion::deque;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ >> char_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ >> char_);
 
     {
         BOOST_TEST(parse("aa", char_ >> char_));
@@ -184,7 +184,7 @@ int main()
     }
 
     { // check attribute is passed through unary to another sequence
-        using boost::spirit::x3::eps;
+        using boost::spirit::x4::eps;
         std::string s;
         BOOST_TEST(parse("ab", eps >> no_case[char_ >> char_], s));
         BOOST_TEST("ab" == s);
@@ -240,7 +240,7 @@ int main()
 
     { // alternative forms of attributes. Allow sequences to take in
       // stl containers.
-        //~ using boost::spirit::x3::hold;
+        //~ using boost::spirit::x4::hold;
 
         std::vector<char> v;
         BOOST_TEST(parse("abc", char_ >> *(char_ >> char_), v));
@@ -292,7 +292,7 @@ int main()
         s.clear();
 
         // $$$ hold not yet implemented $$$
-        //~ using boost::spirit::x3::hold;
+        //~ using boost::spirit::x4::hold;
 
         //~ rule<char const*, std::string()> word = +char_("abc");
         //~ BOOST_TEST(parse("ab.bc.ca", *hold[word >> string(".")] >> word, s));
@@ -491,7 +491,7 @@ int main()
 
     {
         // test move only types
-        using boost::spirit::x3::eps;
+        using boost::spirit::x4::eps;
         std::vector<spirit_test::move_only> v;
 
         using T = std::vector<spirit_test::move_only>;

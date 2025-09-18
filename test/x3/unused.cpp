@@ -24,14 +24,14 @@
 
 int main()
 {
-    namespace x3 = boost::spirit::x3;
-    namespace traits = x3::traits;
+    namespace x4 = boost::spirit::x4;
+    namespace traits = x4::traits;
     using traits::Transformable;
     using traits::transform_attribute;
-    using x3::unused_type;
-    using x3::unused;
-    using x3::unused_container_type;
-    using x3::unused_container;
+    using x4::unused_type;
+    using x4::unused;
+    using x4::unused_container_type;
+    using x4::unused_container;
 
     static_assert(std::is_trivially_copyable_v<unused_type>);
     static_assert(std::is_trivially_default_constructible_v<unused_type>);
@@ -57,18 +57,18 @@ int main()
     static_assert(std::is_same_v<decltype(unused_mut = unused_mut), unused_type&>);
 
     {
-        constexpr auto test_use = [](boost::spirit::x3::unused_type) { return true; };
+        constexpr auto test_use = [](boost::spirit::x4::unused_type) { return true; };
         // static_assert(test_use(0));
         static_assert(test_use(unused));
         (void)test_use(unused_mut);
         static_assert(test_use(unused_type{}));
     }
 
-    static_assert(x3::X3Attribute<unused_type>);
-    static_assert(x3::X3Attribute<unused_type const>);
+    static_assert(x4::X4Attribute<unused_type>);
+    static_assert(x4::X4Attribute<unused_type const>);
 
-    static_assert(x3::X3Attribute<unused_container_type>);
-    static_assert(x3::X3Attribute<unused_container_type const>);
+    static_assert(x4::X4Attribute<unused_container_type>);
+    static_assert(x4::X4Attribute<unused_container_type const>);
 
     std::cout << unused;
     std::cout << unused_mut;

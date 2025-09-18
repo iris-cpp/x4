@@ -8,7 +8,7 @@
 =============================================================================*/
 
 #define BOOST_SPIRIT_UNICODE
-#define BOOST_SPIRIT_X3_UNICODE
+#define BOOST_SPIRIT_X4_UNICODE
 
 #include "test.hpp"
 
@@ -19,22 +19,22 @@
 
 int main()
 {
-    using boost::spirit::x3::unused_type;
+    using boost::spirit::x4::unused_type;
 
     {
-        using namespace boost::spirit::x3::standard;
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(upper);
+        using namespace boost::spirit::x4::standard;
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alpha);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(digit);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(graph);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lower);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(print);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(punct);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(space);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(blank);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(upper);
         BOOST_TEST(parse("1", alnum));
         BOOST_TEST(!parse(" ", alnum));
         BOOST_TEST(!parse("1", alpha));
@@ -61,19 +61,19 @@ int main()
     }
 
     {
-        using namespace boost::spirit::x3::standard_wide;
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(upper);
+        using namespace boost::spirit::x4::standard_wide;
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alpha);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(digit);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(graph);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lower);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(print);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(punct);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(space);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(blank);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(upper);
         BOOST_TEST(parse(L"1", alnum));
         BOOST_TEST(!parse(L" ", alnum));
         BOOST_TEST(!parse(L"1", alpha));
@@ -99,19 +99,19 @@ int main()
     }
 
     {
-        using namespace boost::spirit::x3::unicode;
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(upper);
+        using namespace boost::spirit::x4::unicode;
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alpha);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(digit);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(graph);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lower);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(print);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(punct);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(space);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(blank);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(upper);
         BOOST_TEST(parse(U"1", alnum));
         BOOST_TEST(!parse(U" ", alnum));
         BOOST_TEST(!parse(U"1", alpha));
@@ -144,7 +144,7 @@ int main()
     }
 
     {   // test invalid unicode literals
-        using namespace boost::spirit::x3::unicode;
+        using namespace boost::spirit::x4::unicode;
 
         auto const invalid_unicode = char32_t{0x7FFFFFFF};
         auto const input           = std::u32string_view(&invalid_unicode, 1);
@@ -159,9 +159,9 @@ int main()
     }
 
     {   // test attribute extraction
-        using boost::spirit::x3::traits::attribute_of_t;
-        using boost::spirit::x3::standard::alpha;
-        using boost::spirit::x3::standard::alpha_type;
+        using boost::spirit::x4::traits::attribute_of_t;
+        using boost::spirit::x4::standard::alpha;
+        using boost::spirit::x4::standard::alpha_type;
 
         static_assert(std::is_same_v<attribute_of_t<alpha_type, unused_type>, char>);
 
@@ -171,16 +171,16 @@ int main()
     }
 
     {   // test attribute extraction
-        using boost::spirit::x3::standard::alpha;
-        using boost::spirit::x3::standard::space;
+        using boost::spirit::x4::standard::alpha;
+        using boost::spirit::x4::standard::space;
         char attr = 0;
         BOOST_TEST(parse("     a", alpha, attr, space));
         BOOST_TEST(attr == 'a');
     }
 
     {   // test action
-        using namespace boost::spirit::x3::standard;
-        using boost::spirit::x3::_attr;
+        using namespace boost::spirit::x4::standard;
+        using boost::spirit::x4::_attr;
         char ch = '\0';
         auto f = [&](auto& ctx){ ch = _attr(ctx); };
 

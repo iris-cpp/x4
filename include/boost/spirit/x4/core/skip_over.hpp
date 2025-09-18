@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SKIP_APRIL_16_2006_0625PM
-#define BOOST_SPIRIT_X3_SKIP_APRIL_16_2006_0625PM
+#ifndef BOOST_SPIRIT_X4_SKIP_APRIL_16_2006_0625PM
+#define BOOST_SPIRIT_X4_SKIP_APRIL_16_2006_0625PM
 
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -19,7 +19,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // Tag used to find the skipper from the context
     struct skipper_tag;
@@ -27,7 +27,7 @@ namespace boost::spirit::x3
     // Move the /first/ iterator to the first non-matching position
     // given a skip-parser. The function is a no-op if unused_type or
     // unused_skipper is passed as the skip-parser.
-    template <X3Subject Skipper>
+    template <X4Subject Skipper>
     struct [[nodiscard]] unused_skipper
     {
         constexpr unused_skipper(Skipper const&&) = delete; // dangling
@@ -40,14 +40,14 @@ namespace boost::spirit::x3
     };
 
     template <typename Context>
-    using unused_skipper_t = unused_skipper<std::remove_cvref_t<decltype(x3::get<skipper_tag>(std::declval<Context>()))>>;
+    using unused_skipper_t = unused_skipper<std::remove_cvref_t<decltype(x4::get<skipper_tag>(std::declval<Context>()))>>;
 
     namespace detail
     {
         template <typename Skipper>
         struct is_unused_skipper : std::false_type
         {
-            static_assert(X3Subject<Skipper>);
+            static_assert(X4Subject<Skipper>);
         };
 
         template <typename Skipper>
@@ -60,7 +60,7 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr Skipper const&
         get_unused_skipper(Skipper const& skipper) noexcept
         {
-            static_assert(X3Subject<Skipper>);
+            static_assert(X4Subject<Skipper>);
             return skipper;
         }
 
@@ -68,7 +68,7 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr Skipper const&
         get_unused_skipper(unused_skipper<Skipper> const& unused_skipper) noexcept
         {
-            static_assert(X3Subject<Skipper>);
+            static_assert(X4Subject<Skipper>);
             return unused_skipper.skipper;
         }
 
@@ -82,12 +82,12 @@ namespace boost::spirit::x3
             requires (!std::is_same_v<expectation_failure_t<Context>, unused_type>)
         struct skip_over_context<Context>
         {
-            using type = std::remove_cvref_t<decltype(x3::make_context<expectation_failure_tag>(
-                x3::get<expectation_failure_tag>(std::declval<Context const&>())
+            using type = std::remove_cvref_t<decltype(x4::make_context<expectation_failure_tag>(
+                x4::get<expectation_failure_tag>(std::declval<Context const&>())
             ))>;
         };
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X3Subject Skipper>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Subject Skipper>
         constexpr void skip_over(
             It& first, Se const& last, Context& context, Skipper const& skipper
         )
@@ -97,12 +97,12 @@ namespace boost::spirit::x3
             {
                 // The context given by parent was truly `unused_type`.
                 // There exists only one such case in core; that is
-                // `x3::phrase_parse(...)` which creates a fresh context
+                // `x4::phrase_parse(...)` which creates a fresh context
                 // for the (post)skipper.
                 //
                 // In that case, it is perfectly fine to pass `unused`
                 // because the skipper should have been wrapped
-                // like `x3::with<x3::expectation_failure_tag>(failure)[skipper]`.
+                // like `x4::with<x4::expectation_failure_tag>(failure)[skipper]`.
                 // (Note that we have plenty of static_asserts in other
                 // locations to detect the absence of the context.)
                 //
@@ -128,7 +128,7 @@ namespace boost::spirit::x3
                 // However, we need to do a quite different thing when the
                 // non-throwing expectation_failure mode is enabled.
                 //
-                // Since the reference bound to `x3::expectation_failure_tag` is
+                // Since the reference bound to `x4::expectation_failure_tag` is
                 // provided by the user in the first place, if we do forget it
                 // then it will be impossible to resurrect the value afterwards.
                 // It will also be problematic for `skip_over` itself because the
@@ -139,8 +139,8 @@ namespace boost::spirit::x3
                 // For this reason we're going to cherry-pick the reference
                 // and repack it into a brand new context.
 
-                auto const local_ctx = x3::make_context<expectation_failure_tag>(
-                    x3::get<expectation_failure_tag>(context));
+                auto const local_ctx = x4::make_context<expectation_failure_tag>(
+                    x4::get<expectation_failure_tag>(context));
 
                 while (skipper.parse(first, last, local_ctx, unused, unused))
                     /* loop */;
@@ -161,7 +161,7 @@ namespace boost::spirit::x3
     template <typename Context>
     struct has_skipper
       : std::bool_constant<!detail::is_unused_skipper<
-            std::remove_cvref_t<decltype(x3::get<skipper_tag>(std::declval<Context>()))>
+            std::remove_cvref_t<decltype(x4::get<skipper_tag>(std::declval<Context>()))>
         >::value>
     {};
 
@@ -170,10 +170,10 @@ namespace boost::spirit::x3
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
     constexpr void skip_over(It& first, Se const& last, Context& context)
-        noexcept(noexcept(detail::skip_over(first, last, context, x3::get<skipper_tag>(context))))
+        noexcept(noexcept(detail::skip_over(first, last, context, x4::get<skipper_tag>(context))))
     {
-        detail::skip_over(first, last, context, x3::get<skipper_tag>(context));
+        detail::skip_over(first, last, context, x4::get<skipper_tag>(context));
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

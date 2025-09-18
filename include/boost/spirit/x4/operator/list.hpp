@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_LIST_MARCH_24_2007_1031AM
-#define BOOST_SPIRIT_X3_LIST_MARCH_24_2007_1031AM
+#ifndef BOOST_SPIRIT_X4_LIST_MARCH_24_2007_1031AM
+#define BOOST_SPIRIT_X4_LIST_MARCH_24_2007_1031AM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Left, typename Right>
     struct list : binary_parser<Left, Right, list<Left, Right>>
@@ -42,13 +42,13 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
             noexcept(
-                noexcept(detail::parse_into_container(this->left, first, last, context, rcontext, x3::assume_container(attr))) &&
+                noexcept(detail::parse_into_container(this->left, first, last, context, rcontext, x4::assume_container(attr))) &&
                 std::is_nothrow_copy_assignable_v<It> &&
                 is_nothrow_parsable_v<Right, It, Se, Context, RContext, unused_type>
             )
         {
             // In order to succeed we need to match at least one element
-            if (!detail::parse_into_container(this->left, first, last, context, rcontext, x3::assume_container(attr)))
+            if (!detail::parse_into_container(this->left, first, last, context, rcontext, x4::assume_container(attr)))
             {
                 return false;
             }
@@ -56,18 +56,18 @@ namespace boost::spirit::x3
             It last_parse_it = first;
             while (
                 this->right.parse(last_parse_it, last, context, rcontext, unused) &&
-                detail::parse_into_container(this->left, last_parse_it, last, context, rcontext, x3::assume_container(attr))
+                detail::parse_into_container(this->left, last_parse_it, last, context, rcontext, x4::assume_container(attr))
             )
             {
                 // TODO: can we reduce this copy assignment?
                 first = last_parse_it;
             }
 
-            return !x3::has_expectation_failure(context);
+            return !x4::has_expectation_failure(context);
         }
     };
 
-    template <X3Subject Left, X3Subject Right>
+    template <X4Subject Left, X4Subject Right>
     [[nodiscard]] constexpr list<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
     operator%(Left&& left, Right&& right)
         noexcept(
@@ -82,19 +82,19 @@ namespace boost::spirit::x3
     {
         return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Left, typename Right, typename Context>
-    struct attribute_of<x3::list<Left, Right>, Context>
+    struct attribute_of<x4::list<Left, Right>, Context>
         : traits::build_container<attribute_of_t<Left, Context>>
     {};
 
     template <typename Left, typename Right, typename Context>
-    struct has_attribute<x3::list<Left, Right>, Context>
+    struct has_attribute<x4::list<Left, Right>, Context>
         : has_attribute<Left, Context>
     {};
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

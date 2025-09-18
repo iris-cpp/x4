@@ -4,8 +4,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_FEBRUARY_02_2007_0921AM
-#define BOOST_SPIRIT_X3_CHAR_FEBRUARY_02_2007_0921AM
+#ifndef BOOST_SPIRIT_X4_CHAR_FEBRUARY_02_2007_0921AM
+#define BOOST_SPIRIT_X4_CHAR_FEBRUARY_02_2007_0921AM
 
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/char/negated_char_parser.hpp>
@@ -13,7 +13,7 @@
 #include <boost/spirit/x4/char/char_class.hpp>
 #include <boost/spirit/x4/char/char_set.hpp>
 
-#if defined(BOOST_SPIRIT_X3_UNICODE)
+#if defined(BOOST_SPIRIT_X4_UNICODE)
 #include <boost/spirit/x4/char/unicode.hpp>
 #endif
 

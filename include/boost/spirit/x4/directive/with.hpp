@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_DIRECTIVE_WITH_HPP
-#define BOOST_SPIRIT_X3_DIRECTIVE_WITH_HPP
+#ifndef BOOST_SPIRIT_X4_DIRECTIVE_WITH_HPP
+#define BOOST_SPIRIT_X4_DIRECTIVE_WITH_HPP
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject, typename ID, typename T>
     struct with_directive;
@@ -90,12 +90,12 @@ namespace boost::spirit::x3
     {
         static_assert(
             !std::is_rvalue_reference_v<T>,
-            "`x3::with`: rvalue reference is prohibited to prevent dangling reference"
+            "`x4::with`: rvalue reference is prohibited to prevent dangling reference"
         );
 
         static_assert(
             std::is_lvalue_reference_v<T> || std::is_move_constructible_v<T>,
-            "Passing an rvalue to `x3::with` requires the type to be move-constructible "
+            "Passing an rvalue to `x4::with` requires the type to be move-constructible "
             "so it can be stored by value."
         );
 
@@ -115,8 +115,8 @@ namespace boost::spirit::x3
         {}
 
         // The internal context type. This can be used to determine the composed
-        // context type used in `x3::parse`/`x3::phrase_parse`. It is required for
-        // the argument of `BOOST_SPIRIT_X3_INSTANTIATE`.
+        // context type used in `x4::parse`/`x4::phrase_parse`. It is required for
+        // the argument of `BOOST_SPIRIT_X4_INSTANTIATE`.
         template <typename Context>
         using context_t = context<ID, std::remove_reference_t<T>, Context>;
 
@@ -128,7 +128,7 @@ namespace boost::spirit::x3
             static_assert(Parsable<Subject, It, Se, context_t<Context>, RContext, Attribute>);
             return this->subject.parse(
                 first, last,
-                x3::make_context<ID>(this->val_, context),
+                x4::make_context<ID>(this->val_, context),
                 rcontext, attr
             );
         }
@@ -145,7 +145,7 @@ namespace boost::spirit::x3
             static_assert(!std::is_rvalue_reference_v<T>);
             T val;
 
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr with_directive<as_parser_plain_t<Subject>, ID, T>
             operator[](Subject&& subject) &&
                 noexcept(
@@ -161,7 +161,7 @@ namespace boost::spirit::x3
                 return { as_parser(std::forward<Subject>(subject)), std::forward<T>(val) };
             }
 
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr with_directive<as_parser_plain_t<Subject>, ID, T>
             operator[](Subject&& subject) const&
                 noexcept(
@@ -175,9 +175,9 @@ namespace boost::spirit::x3
             {
                 static_assert(
                     std::is_lvalue_reference_v<T> || std::is_copy_constructible_v<T>,
-                    "When you have passed an rvalue to `x3::with` and saved the functor "
+                    "When you have passed an rvalue to `x4::with` and saved the functor "
                     "as a local variable, it requires the held type to be copy-constructible. "
-                    "If your type is move only, then apply `std::move` to your `x3::with<ID>(val)` "
+                    "If your type is move only, then apply `std::move` to your `x4::with<ID>(val)` "
                     "instance."
                 );
                 return { as_parser(std::forward<Subject>(subject)), val };
@@ -206,6 +206,6 @@ namespace boost::spirit::x3
         template <typename ID>
         inline constexpr detail::with_fn<ID> with{};
     } // cpos
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

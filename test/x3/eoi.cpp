@@ -13,10 +13,10 @@
 
 int main()
 {
-    namespace x3 = boost::spirit::x3;
-    using x3::eoi;
+    namespace x4 = boost::spirit::x4;
+    using x4::eoi;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eoi);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eoi);
 
     {
         BOOST_TEST(parse("", eoi));
@@ -24,7 +24,7 @@ int main()
     }
 
     {
-        BOOST_TEST(x3::what(eoi) == "eoi");
+        BOOST_TEST(x4::what(eoi) == "eoi");
     }
 
     return boost::report_errors();

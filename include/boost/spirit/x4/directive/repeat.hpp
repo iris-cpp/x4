@@ -8,8 +8,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_DIRECTIVE_REPEAT_HPP
-#define BOOST_SPIRIT_X3_DIRECTIVE_REPEAT_HPP
+#ifndef BOOST_SPIRIT_X4_DIRECTIVE_REPEAT_HPP
+#define BOOST_SPIRIT_X4_DIRECTIVE_REPEAT_HPP
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/operator/kleene.hpp>
@@ -20,7 +20,7 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     template <std::integral T>
     struct exact_count // handles repeat(exact)[p]
@@ -52,9 +52,9 @@ namespace boost::spirit::x3::detail
 
         T min_value;
     };
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     namespace detail
     {
@@ -90,7 +90,7 @@ namespace boost::spirit::x3
             typename Bounds::value_type i{};
             for (; !bounds_.got_min(i); ++i)
             {
-                if (!detail::parse_into_container(this->subject, local_it, last, context, rcontext, x3::assume_container(attr)))
+                if (!detail::parse_into_container(this->subject, local_it, last, context, rcontext, x4::assume_container(attr)))
                 {
                     return false;
                 }
@@ -100,13 +100,13 @@ namespace boost::spirit::x3
             // parse some more up to the maximum specified
             for (; !bounds_.got_max(i); ++i)
             {
-                if (!detail::parse_into_container(this->subject, first, last, context, rcontext, x3::assume_container(attr)))
+                if (!detail::parse_into_container(this->subject, first, last, context, rcontext, x4::assume_container(attr)))
                 {
                     break;
                 }
             }
 
-            return !x3::has_expectation_failure(context);
+            return !x4::has_expectation_failure(context);
         }
 
     private:
@@ -125,7 +125,7 @@ namespace boost::spirit::x3
     inline namespace cpos
     {
         // Infinite loop tag type
-        [[deprecated("Use `x3::repeat_inf`")]]
+        [[deprecated("Use `x4::repeat_inf`")]]
         inline constexpr detail::repeat_inf_type inf{};
 
         // Infinite loop tag type
@@ -136,7 +136,7 @@ namespace boost::spirit::x3
     {
         struct repeat_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard, deprecated("`repeat[p]` has the exact same meaning as `*p`. Use `*p` instead.")]]
             constexpr auto operator[](Subject&& subject) const
                 noexcept(noexcept(*as_parser(std::forward<Subject>(subject))))
@@ -147,7 +147,7 @@ namespace boost::spirit::x3
             template <RepeatBounds Bounds>
             struct [[nodiscard]] repeat_gen_impl
             {
-                template <X3Subject Subject>
+                template <X4Subject Subject>
                 [[nodiscard]] constexpr repeat_directive<as_parser_plain_t<Subject>, Bounds>
                 operator[](Subject&& subject) const
                     noexcept(
@@ -193,14 +193,14 @@ namespace boost::spirit::x3
         inline constexpr detail::repeat_gen repeat{};
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Subject, typename Bounds, typename Context>
-    struct attribute_of<x3::repeat_directive<Subject, Bounds>, Context>
+    struct attribute_of<x4::repeat_directive<Subject, Bounds>, Context>
         : build_container<attribute_of_t<Subject, Context>>
     {};
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

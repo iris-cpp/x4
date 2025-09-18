@@ -31,7 +31,7 @@
 #include <utility>
 #include <type_traits>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 #define TEST_SUCCESS_IMPL(tester, input, parser, ...) \
     BOOST_TEST_NO_THROW({ \
@@ -128,43 +128,43 @@ int main()
 {
     using namespace std::string_view_literals;
 
-    using x3::standard::alpha;
-    using x3::standard::digit;
-    using x3::standard::space;
-    using x3::standard::blank;
-    using x3::standard::char_;
-    using x3::standard::string;
-    using x3::standard::lit;
+    using x4::standard::alpha;
+    using x4::standard::digit;
+    using x4::standard::space;
+    using x4::standard::blank;
+    using x4::standard::char_;
+    using x4::standard::string;
+    using x4::standard::lit;
 
-    // using x3::lit;
-    using x3::expect;
-    using x3::lexeme;
-    using x3::no_case;
-    using x3::no_skip;
-    using x3::omit;
-    using x3::raw;
-    using x3::skip;
-    using x3::reskip;
-    using x3::seek;
-    using x3::repeat;
-    using x3::matches;
-    using x3::eps;
-    using x3::eoi;
-    using x3::eol;
-    //using x3::attr;
-    using x3::dword;
-    using x3::int_;
-    using x3::shared_symbols;
-    using x3::confix;
-    using x3::with;
-    using x3::expectation_failure;
-    using x3::expectation_failure_tag;
+    // using x4::lit;
+    using x4::expect;
+    using x4::lexeme;
+    using x4::no_case;
+    using x4::no_skip;
+    using x4::omit;
+    using x4::raw;
+    using x4::skip;
+    using x4::reskip;
+    using x4::seek;
+    using x4::repeat;
+    using x4::matches;
+    using x4::eps;
+    using x4::eoi;
+    using x4::eol;
+    //using x4::attr;
+    using x4::dword;
+    using x4::int_;
+    using x4::shared_symbols;
+    using x4::confix;
+    using x4::with;
+    using x4::expectation_failure;
+    using x4::expectation_failure_tag;
 
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(expect['x']);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ > char_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(expect['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ > char_);
 
     {
         TEST_SUCCESS_PASS("aa", char_ >> expect[char_]);
@@ -194,7 +194,7 @@ int main()
     }
 
     {
-    #ifndef BOOST_SPIRIT_X3_NO_RTTI
+    #ifndef BOOST_SPIRIT_X4_NO_RTTI
         TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
             BOOST_TEST(x.which().find("sequence") != std::string::npos);
@@ -280,7 +280,7 @@ int main()
     // ********* Developers note **********
     //
     // As of now (see `git blame`), get_info<T> is still not
-    // specialized for many of the X3 parsers so that the
+    // specialized for many of the X4 parsers so that the
     // value of `expectation_failure<...>::which()` will be
     // implementation-defined demangled string.
     // Therefore it's essentially impossible to test them
@@ -289,7 +289,7 @@ int main()
     // Some specific situations are already been reported
     // (e.g. https://github.com/boostorg/spirit/issues/777)
     // but we really need to implement all specializations for
-    // X3's predefined parsers, not just the one reported above.
+    // X4's predefined parsers, not just the one reported above.
     //
 
 
@@ -303,7 +303,7 @@ int main()
         TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', +lit('.'));
         TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', lit('.') >> '.');
 
-        // if this test fails, there might be a problem in x3::skip_over
+        // if this test fails, there might be a problem in x4::skip_over
         TEST_FAILURE     ("a..b", lit('a') >> 'b', lit('.') >> expect[lit('z')], {
             BOOST_TEST(which == "'z'"sv);
             BOOST_TEST(where == ".b"sv);
@@ -320,14 +320,14 @@ int main()
         TEST_SUCCESS_PASS("a..b", skip(+lit('.'))[lit('a') >> 'b']);
         TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
 
-        // if this test fails, there might be a problem in x3::skip_over and/or x3::skip_directive
+        // if this test fails, there might be a problem in x4::skip_over and/or x4::skip_directive
         TEST_FAILURE     ("a..b", skip(lit('.') >> expect[lit('z')])[lit('a') >> 'b'], {
             BOOST_TEST(which == "'z'"sv);
             BOOST_TEST(where == ".b"sv);
         });
     }
 
-    // sanity check; test `post_skip` in `x3::phrase_parse(...)`
+    // sanity check; test `post_skip` in `x4::phrase_parse(...)`
     {
         TEST_SUCCESS_PASS("a..b..", lit('a') >> 'b', lit('.') >> '.');
         TEST_SUCCESS_FAIL("a..b..", lit('a') >> 'z', lit('.') >> '.');
@@ -336,7 +336,7 @@ int main()
         // should fail in `post_skip`
         TEST_SUCCESS_FAIL("a..b.z", lit('a') >> 'b', lit('.') >> '.');
 
-        // if this test fails, x3::skip_over is BUGGED when `post_skip` is run
+        // if this test fails, x4::skip_over is BUGGED when `post_skip` is run
         TEST_FAILURE("a..b.z", lit('a') >> 'b', lit('.') > '.', {
             BOOST_TEST(which == "'.'"sv);
             BOOST_TEST(where == "z"sv);
@@ -375,7 +375,7 @@ int main()
         });
 
         int n = 0;
-        TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x3::attr(12) > eoi, n);
+        TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::attr(12) > eoi, n);
         BOOST_TEST(n == 12);
     }
 

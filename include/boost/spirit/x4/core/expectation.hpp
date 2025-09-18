@@ -5,10 +5,10 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SUPPORT_EXPECTATION_HPP
-#define BOOST_SPIRIT_X3_SUPPORT_EXPECTATION_HPP
+#ifndef BOOST_SPIRIT_X4_SUPPORT_EXPECTATION_HPP
+#define BOOST_SPIRIT_X4_SUPPORT_EXPECTATION_HPP
 
-#include <boost/spirit/x4/core/parser.hpp> // for `x3::what`
+#include <boost/spirit/x4/core/parser.hpp> // for `x4::what`
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>
@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     struct expectation_failure_tag;
 
@@ -47,7 +47,7 @@ namespace boost::spirit::x3
 
     template <typename Context>
     using expectation_failure_t = std::remove_cv_t<std::remove_reference_t<
-        decltype(x3::get<expectation_failure_tag>(std::declval<Context>()))>>;
+        decltype(x4::get<expectation_failure_tag>(std::declval<Context>()))>>;
 
     template <std::forward_iterator It>
     using expectation_failure_optional =
@@ -56,7 +56,7 @@ namespace boost::spirit::x3
     template <typename Context>
     constexpr bool has_expectation_failure_context = !std::is_same_v<expectation_failure_t<Context>, unused_type>;
 
-    // x3::where(x), x3::which(x)
+    // x4::where(x), x4::which(x)
     // Convenient accessors for absorbing the variation of
     // optional/reference_wrapper interfaces.
 
@@ -169,11 +169,11 @@ namespace boost::spirit::x3
         using T = expectation_failure_t<Context>;
         static_assert(
             !std::is_same_v<unused_type, T>,
-            "Context type was not specified for x3::expectation_failure_tag. "
-            "You probably forgot: `x3::with<x3::expectation_failure_tag>(failure)[p]`. "
+            "Context type was not specified for x4::expectation_failure_tag. "
+            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
             "Note that you must also bind the context to your skipper."
         );
-        return detail::has_expectation_failure_impl(x3::get<expectation_failure_tag>(context));
+        return detail::has_expectation_failure_impl(x4::get<expectation_failure_tag>(context));
     }
 
     //
@@ -190,8 +190,8 @@ namespace boost::spirit::x3
         using T = expectation_failure_t<Context>;
         static_assert(
             !std::is_same_v<unused_type, T>,
-            "Context type was not specified for x3::expectation_failure_tag. "
-            "You probably forgot: `x3::with<x3::expectation_failure_tag>(failure)[p]`. "
+            "Context type was not specified for x4::expectation_failure_tag. "
+            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
             "Note that you must also bind the context to your skipper."
         );
 
@@ -200,15 +200,15 @@ namespace boost::spirit::x3
             (void)where;
             (void)subject;
             detail::set_expectation_failure_impl(
-                x3::get<expectation_failure_tag>(context),
+                x4::get<expectation_failure_tag>(context),
                 true
             );
         }
         else
         {
             detail::set_expectation_failure_impl(
-                x3::get<expectation_failure_tag>(context),
-                expectation_failure<It>(where, x3::what(subject))
+                x4::get<expectation_failure_tag>(context),
+                expectation_failure<It>(where, x4::what(subject))
             );
         }
     }
@@ -230,7 +230,7 @@ namespace boost::spirit::x3
     //
     //   (b) When you truly need a nested exception.
     //       That is, you're trying to preserve a nested exception structure
-    //       raised by nested directive: e.g. `x3::expect[x3::expect[p]]`.
+    //       raised by nested directive: e.g. `x4::expect[x4::expect[p]]`.
     //       Note that all builtin primitives just save the first error,
     //       so this structure does not exist in core (as of now).
     //
@@ -242,8 +242,8 @@ namespace boost::spirit::x3
         using T = expectation_failure_t<Context>;
         static_assert(
             !std::is_same_v<T, unused_type>,
-            "Context type was not specified for x3::expectation_failure_tag. "
-            "You probably forgot: `x3::with<x3::expectation_failure_tag>(failure)[p]`. "
+            "Context type was not specified for x4::expectation_failure_tag. "
+            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
             "Note that you must also bind the context to your skipper."
         );
 
@@ -252,7 +252,7 @@ namespace boost::spirit::x3
             "previous/current expectation failure types should be compatible"
         );
 
-        detail::set_expectation_failure_impl(x3::get<expectation_failure_tag>(context), existing_failure);
+        detail::set_expectation_failure_impl(x4::get<expectation_failure_tag>(context), existing_failure);
     }
 
     template <typename Context>
@@ -262,12 +262,12 @@ namespace boost::spirit::x3
         using T = expectation_failure_t<Context>;
         static_assert(
             !std::is_same_v<T, unused_type>,
-            "Context type was not specified for x3::expectation_failure_tag. "
-            "You probably forgot: `x3::with<x3::expectation_failure_tag>(failure)[p]`. "
+            "Context type was not specified for x4::expectation_failure_tag. "
+            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
             "Note that you must also bind the context to your skipper."
         );
 
-        return x3::get<expectation_failure_tag>(context);
+        return x4::get<expectation_failure_tag>(context);
     }
 
     template <typename Context>
@@ -276,13 +276,13 @@ namespace boost::spirit::x3
         using T = expectation_failure_t<Context>;
         static_assert(
             !std::is_same_v<T, unused_type>,
-            "Context type was not specified for x3::expectation_failure_tag. "
-            "You probably forgot: `x3::with<x3::expectation_failure_tag>(failure)[p]`. "
+            "Context type was not specified for x4::expectation_failure_tag. "
+            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
             "Note that you must also bind the context to your skipper."
         );
-        detail::clear_expectation_failure_impl(x3::get<expectation_failure_tag>(context));
+        detail::clear_expectation_failure_impl(x4::get<expectation_failure_tag>(context));
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

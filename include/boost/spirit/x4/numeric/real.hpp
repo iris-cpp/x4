@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_REAL_APRIL_18_2006_0850AM
-#define BOOST_SPIRIT_X3_REAL_APRIL_18_2006_0850AM
+#ifndef BOOST_SPIRIT_X4_REAL_APRIL_18_2006_0850AM
+#define BOOST_SPIRIT_X4_REAL_APRIL_18_2006_0850AM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename T, typename RealPolicies = real_policies<T>>
     struct real_parser : parser<real_parser<T, RealPolicies>>
@@ -44,11 +44,11 @@ namespace boost::spirit::x3
             It& first, Se const& last,
             Context const& context, RContext const&, T& attr_
         ) const noexcept(
-            noexcept(x3::skip_over(first, last, context)) &&
+            noexcept(x4::skip_over(first, last, context)) &&
             noexcept(extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
         )
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             return extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
         }
 
@@ -59,14 +59,14 @@ namespace boost::spirit::x3
         ) const noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(this->parse(first, last, context, unused, std::declval<T&>())) &&
-            noexcept(x3::move_to(std::declval<T&&>(), attr_param))
+            noexcept(x4::move_to(std::declval<T&&>(), attr_param))
         )
         {
             // this case is called when Attribute is not T
             T attr_;
             if (this->parse(first, last, context, unused, attr_))
             {
-                x3::move_to(std::move(attr_), attr_param);
+                x4::move_to(std::move(attr_), attr_param);
                 return true;
             }
             return false;
@@ -87,6 +87,6 @@ namespace boost::spirit::x3
         using long_double_type = real_parser<long double>;
         inline constexpr long_double_type long_double{};
     } // cpos
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

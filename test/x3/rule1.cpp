@@ -16,20 +16,20 @@
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::lit;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::unused_type;
-    using boost::spirit::x3::phrase_parse;
-    using boost::spirit::x3::root_skipper_flag;
-    using boost::spirit::x3::traits::has_attribute_v;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::rule;
+    using boost::spirit::x4::lit;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::unused_type;
+    using boost::spirit::x4::phrase_parse;
+    using boost::spirit::x4::root_skipper_flag;
+    using boost::spirit::x4::traits::has_attribute_v;
 
-#ifdef BOOST_SPIRIT_X3_NO_RTTI
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(rule<class r>{});
+#ifdef BOOST_SPIRIT_X4_NO_RTTI
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r>{});
 #endif
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"});
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"} = 'x');
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"});
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r>{"r"} = 'x');
 
     // check attribute advertising
     static_assert( has_attribute_v<rule<class r, int>, /*Context=*/unused_type>);

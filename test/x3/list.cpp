@@ -20,9 +20,9 @@ using namespace spirit_test;
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
+    using namespace boost::spirit::x4::standard;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ % ',');
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ % ',');
 
     {
         BOOST_TEST(parse("a,b,c,d,e,f,g,h", char_ % ','));
@@ -56,15 +56,15 @@ int main()
     }
 
     { // regression test for has_attribute
-        using boost::spirit::x3::int_;
-        using boost::spirit::x3::omit;
+        using boost::spirit::x4::int_;
+        using boost::spirit::x4::omit;
 
         int i;
         BOOST_TEST(parse("1:2,3", int_ >> ':' >> omit[int_] % ',', i)) && BOOST_TEST_EQ(i, 1);
     }
 
     {
-        using boost::spirit::x3::int_;
+        using boost::spirit::x4::int_;
 
         std::vector<int> v;
         BOOST_TEST(parse("1,2", int_ % ',', v));
@@ -72,7 +72,7 @@ int main()
     }
 
     {
-        using boost::spirit::x3::int_;
+        using boost::spirit::x4::int_;
 
         std::vector<int> v;
         BOOST_TEST(parse("(1,2)", '(' >> int_ % ',' >> ')', v));
@@ -96,7 +96,7 @@ int main()
     }
 
     { // actions
-        using boost::spirit::x3::_attr;
+        using boost::spirit::x4::_attr;
 
         std::string s;
         auto f = [&](auto& ctx){ s = std::string(_attr(ctx).begin(), _attr(ctx).end()); };

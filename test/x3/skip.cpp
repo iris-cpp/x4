@@ -15,16 +15,16 @@
 
 int main()
 {
-    using boost::spirit::x3::standard::space;
-    using boost::spirit::x3::standard::space_type;
-    using boost::spirit::x3::standard::char_;
-    using boost::spirit::x3::standard::alpha;
-    using boost::spirit::x3::lexeme;
-    using boost::spirit::x3::skip;
-    using boost::spirit::x3::reskip;
-    using boost::spirit::x3::lit;
+    using boost::spirit::x4::standard::space;
+    using boost::spirit::x4::standard::space_type;
+    using boost::spirit::x4::standard::char_;
+    using boost::spirit::x4::standard::alpha;
+    using boost::spirit::x4::lexeme;
+    using boost::spirit::x4::skip;
+    using boost::spirit::x4::reskip;
+    using boost::spirit::x4::lit;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
 
     {
         BOOST_TEST(parse("a b c d", skip(space)[*char_]));

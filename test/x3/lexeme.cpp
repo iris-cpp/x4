@@ -14,13 +14,13 @@
 
 int main()
 {
-    using boost::spirit::x3::standard::space;
-    using boost::spirit::x3::standard::space_type;
-    using boost::spirit::x3::standard::digit;
-    using boost::spirit::x3::lexeme;
-    using boost::spirit::x3::rule;
+    using boost::spirit::x4::standard::space;
+    using boost::spirit::x4::standard::space_type;
+    using boost::spirit::x4::standard::digit;
+    using boost::spirit::x4::lexeme;
+    using boost::spirit::x4::rule;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
 
     {
         BOOST_TEST(parse(" 1 2 3 4 5", +digit, space));

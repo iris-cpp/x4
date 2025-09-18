@@ -16,7 +16,7 @@
 
 struct x_attr {};
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <>
     struct container_value<x_attr>
@@ -33,23 +33,23 @@ namespace boost::spirit::x3::traits
         }
     };
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 int main()
 {
-    using boost::spirit::x3::char_;
-    using boost::spirit::x3::alpha;
-    using boost::spirit::x3::upper;
-    using boost::spirit::x3::space;
-    using boost::spirit::x3::digit;
-    //~ using boost::spirit::x3::no_case;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::lit;
-    //~ using boost::spirit::x3::_1;
-    using boost::spirit::x3::lexeme;
+    using boost::spirit::x4::char_;
+    using boost::spirit::x4::alpha;
+    using boost::spirit::x4::upper;
+    using boost::spirit::x4::space;
+    using boost::spirit::x4::digit;
+    //~ using boost::spirit::x4::no_case;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::omit;
+    using boost::spirit::x4::lit;
+    //~ using boost::spirit::x4::_1;
+    using boost::spirit::x4::lexeme;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(+char_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(+char_);
 
     {
         BOOST_TEST(parse("aaaaaaaa", +char_));

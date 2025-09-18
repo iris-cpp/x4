@@ -16,12 +16,12 @@
 #include <iostream>
 #include <type_traits>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 struct check_no_rule_injection_parser
-    : x3::parser<check_no_rule_injection_parser>
+    : x4::parser<check_no_rule_injection_parser>
 {
-    using attribute_type = x3::unused_type;
+    using attribute_type = x4::unused_type;
 
     static constexpr bool has_attribute = false;
 
@@ -32,18 +32,18 @@ struct check_no_rule_injection_parser
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, RContext const&, Attribute&) const
     {
-        static_assert(std::is_same_v<Context, x3::parse_context_for<std::string_view>>, "no rule definition injection should occur");
+        static_assert(std::is_same_v<Context, x4::parse_context_for<std::string_view>>, "no rule definition injection should occur");
         return true;
     }
 } const check_no_rule_injection{};
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::lit;
-    using boost::spirit::x3::unused_type;
-    using boost::spirit::x3::_attr;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::rule;
+    using boost::spirit::x4::lit;
+    using boost::spirit::x4::unused_type;
+    using boost::spirit::x4::_attr;
 
     { // context tests
 

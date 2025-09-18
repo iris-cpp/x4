@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_REAL_POLICIES_APRIL_17_2006_1158PM
-#define BOOST_SPIRIT_X3_REAL_POLICIES_APRIL_17_2006_1158PM
+#ifndef BOOST_SPIRIT_X4_REAL_POLICIES_APRIL_17_2006_1158PM
+#define BOOST_SPIRIT_X4_REAL_POLICIES_APRIL_17_2006_1158PM
 
 #include <boost/spirit/x4/string/detail/string_parse.hpp>
 #include <boost/spirit/x4/numeric/utils/extract_int.hpp>
@@ -16,7 +16,7 @@
 #include <iterator>
 #include <limits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     //  Default (unsigned) real number policies
     template <typename T>
@@ -171,6 +171,6 @@ namespace boost::spirit::x3
     {
         static constexpr bool expect_dot = true;
     };
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

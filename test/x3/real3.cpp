@@ -14,15 +14,15 @@ int main()
 {
     // strict real number tests
     {
-        using boost::spirit::x3::real_parser;
-        using boost::spirit::x3::strict_ureal_policies;
-        using boost::spirit::x3::strict_real_policies;
+        using boost::spirit::x4::real_parser;
+        using boost::spirit::x4::strict_ureal_policies;
+        using boost::spirit::x4::strict_real_policies;
 
         constexpr real_parser<double, strict_ureal_policies<double>> strict_udouble;
         constexpr real_parser<double, strict_real_policies<double>> strict_double;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(strict_udouble);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(strict_double);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(strict_udouble);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(strict_double);
 
         BOOST_TEST(!parse("1234", strict_udouble));
         {
@@ -58,8 +58,8 @@ int main()
             constexpr real_parser<double, no_trailing_dot_policy<double>> notrdot_real;
             constexpr real_parser<double, no_leading_dot_policy<double>> nolddot_real;
 
-            BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(notrdot_real);
-            BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(nolddot_real);
+            BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(notrdot_real);
+            BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(nolddot_real);
 
             BOOST_TEST(!parse("1234.", notrdot_real)); // Bad trailing dot
             BOOST_TEST(!parse(".1234", nolddot_real)); // Bad leading dot
@@ -68,10 +68,10 @@ int main()
 
     // Special thousands separated numbers
     {
-        using boost::spirit::x3::real_parser;
+        using boost::spirit::x4::real_parser;
         constexpr real_parser<double, ts_real_policies<double>> ts_real;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(ts_real);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(ts_real);
 
         BOOST_TEST(parse("123.01", ts_real));
         {

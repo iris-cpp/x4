@@ -15,7 +15,7 @@
 #include <utility>
 #include <type_traits>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 struct my_tag;
 
@@ -24,26 +24,26 @@ struct my_rule_class
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
     void on_error(It const&, Se const&, Exception const&, Context const& context)
     {
-        ++x3::get<my_tag>(context);
+        ++x4::get<my_tag>(context);
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
     void on_success(It const&, Se const&, Attribute&, Context const& context)
     {
-        ++x3::get<my_tag>(context);
+        ++x4::get<my_tag>(context);
     }
 };
 
 namespace
 {
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::with;
-    using boost::spirit::x3::_pass;
+    using boost::spirit::x4::rule;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::with;
+    using boost::spirit::x4::_pass;
 
     template<class T>
     constexpr auto value_equals = int_[([](auto& ctx) {
-        auto&& with_val = x3::get<my_tag>(ctx);
+        auto&& with_val = x4::get<my_tag>(ctx);
         static_assert(std::same_as<decltype(with_val), T>);
         _pass(ctx) = with_val == _attr(ctx);
     })];
@@ -52,11 +52,11 @@ namespace
 
 int main()
 {
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
 
     {
         constexpr int i = 0;
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
     }
 
     // check various value categories
@@ -142,7 +142,7 @@ int main()
         // injecting non-const lvalue into the context
         int val = 0;
         auto const r  = int_[([](auto& ctx){
-            x3::get<my_tag>(ctx) += x3::_attr(ctx);
+            x4::get<my_tag>(ctx) += x4::_attr(ctx);
         })];
         BOOST_TEST(parse("123,456", with<my_tag>(val)[r % ',']));
         BOOST_TEST(579 == val);
@@ -151,11 +151,11 @@ int main()
     {
         // injecting rvalue into the context
         auto const r1 = int_[([](auto& ctx){
-            x3::get<my_tag>(ctx) += x3::_attr(ctx);
+            x4::get<my_tag>(ctx) += x4::_attr(ctx);
         })];
         auto const r2 = rule<struct my_rvalue_rule_class, int>() =
-            x3::lit('(') >> (r1 % ',') >> x3::lit(')')[([](auto& ctx){
-                x3::_val(ctx) = x3::get<my_tag>(ctx);
+            x4::lit('(') >> (r1 % ',') >> x4::lit(')')[([](auto& ctx){
+                x4::_val(ctx) = x4::get<my_tag>(ctx);
             })];
         int attr = 0;
         BOOST_TEST(parse("(1,2,3)", with<my_tag>(100)[r2], attr));
@@ -174,24 +174,24 @@ int main()
         };
 
         auto f = [](auto& ctx){
-            x3::_val(ctx) = x3::_attr(ctx) + functor()(x3::get<my_tag>(ctx));
+            x4::_val(ctx) = x4::_attr(ctx) + functor()(x4::get<my_tag>(ctx));
         };
         auto const r = rule<struct my_rule_class2, int>() = int_[f];
 
         int attr = 0;
         int const cval = 10;
         BOOST_TEST(parse("5", with<my_tag>(cval)[r], attr));
-        BOOST_TEST(15 == attr); // x3::get returns const ref to cval
+        BOOST_TEST(15 == attr); // x4::get returns const ref to cval
 
         attr = 0;
         int val = 10;
         BOOST_TEST(parse("5", with<my_tag>(val)[r], attr));
-        BOOST_TEST(105 == attr); // x3::get returns ref to val
+        BOOST_TEST(105 == attr); // x4::get returns ref to val
 
         attr = 0;
 
         BOOST_TEST(parse("5", with<my_tag>(10)[r], attr));
-        // x3::get returns ref to member variable of with_directive
+        // x4::get returns ref to member variable of with_directive
         BOOST_TEST(105 == attr);
     }
 

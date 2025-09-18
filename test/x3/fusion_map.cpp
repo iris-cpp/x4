@@ -33,10 +33,10 @@ BOOST_FUSION_ADAPT_ASSOC_STRUCT(
 
 int main()
 {
-    using boost::spirit::x3::lit;
-    using boost::spirit::x3::attr;
-    using boost::spirit::x3::char_;
-    using boost::spirit::x3::eps;
+    using boost::spirit::x4::lit;
+    using boost::spirit::x4::attr;
+    using boost::spirit::x4::char_;
+    using boost::spirit::x4::eps;
     namespace fusion = boost::fusion;
 
     {

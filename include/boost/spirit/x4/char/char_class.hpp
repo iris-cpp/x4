@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_CLASS_APRIL_16_2006_1051AM
-#define BOOST_SPIRIT_X3_CHAR_CLASS_APRIL_16_2006_1051AM
+#ifndef BOOST_SPIRIT_X4_CHAR_CLASS_APRIL_16_2006_1051AM
+#define BOOST_SPIRIT_X4_CHAR_CLASS_APRIL_16_2006_1051AM
 
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/char/char_class_tags.hpp>
@@ -15,14 +15,14 @@
 #include <boost/spirit/x4/char_encoding/standard.hpp>
 #include <boost/spirit/x4/char_encoding/standard_wide.hpp>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Encoding>
     struct char_class_base
     {
         using char_type = typename Encoding::classify_type;
 
-#define BOOST_SPIRIT_X3_CLASSIFY(name)                                          \
+#define BOOST_SPIRIT_X4_CLASSIFY(name)                                          \
         template <typename Char>                                                \
         [[nodiscard]] static constexpr bool                                     \
         is(name##_tag, Char ch) noexcept                                        \
@@ -31,21 +31,21 @@ namespace boost::spirit::x3
                     (detail::cast_char<char_type>(ch));                         \
         }
 
-        BOOST_SPIRIT_X3_CLASSIFY(char)
-        BOOST_SPIRIT_X3_CLASSIFY(alnum)
-        BOOST_SPIRIT_X3_CLASSIFY(alpha)
-        BOOST_SPIRIT_X3_CLASSIFY(digit)
-        BOOST_SPIRIT_X3_CLASSIFY(xdigit)
-        BOOST_SPIRIT_X3_CLASSIFY(cntrl)
-        BOOST_SPIRIT_X3_CLASSIFY(graph)
-        BOOST_SPIRIT_X3_CLASSIFY(lower)
-        BOOST_SPIRIT_X3_CLASSIFY(print)
-        BOOST_SPIRIT_X3_CLASSIFY(punct)
-        BOOST_SPIRIT_X3_CLASSIFY(space)
-        BOOST_SPIRIT_X3_CLASSIFY(blank)
-        BOOST_SPIRIT_X3_CLASSIFY(upper)
+        BOOST_SPIRIT_X4_CLASSIFY(char)
+        BOOST_SPIRIT_X4_CLASSIFY(alnum)
+        BOOST_SPIRIT_X4_CLASSIFY(alpha)
+        BOOST_SPIRIT_X4_CLASSIFY(digit)
+        BOOST_SPIRIT_X4_CLASSIFY(xdigit)
+        BOOST_SPIRIT_X4_CLASSIFY(cntrl)
+        BOOST_SPIRIT_X4_CLASSIFY(graph)
+        BOOST_SPIRIT_X4_CLASSIFY(lower)
+        BOOST_SPIRIT_X4_CLASSIFY(print)
+        BOOST_SPIRIT_X4_CLASSIFY(punct)
+        BOOST_SPIRIT_X4_CLASSIFY(space)
+        BOOST_SPIRIT_X4_CLASSIFY(blank)
+        BOOST_SPIRIT_X4_CLASSIFY(upper)
 
-#undef BOOST_SPIRIT_X3_CLASSIFY
+#undef BOOST_SPIRIT_X4_CLASSIFY
     };
 
     template <typename Encoding, typename Tag>
@@ -62,39 +62,39 @@ namespace boost::spirit::x3
         {
             return encoding::ischar(ch)
                 && char_class_base<Encoding>::is(
-                    x3::get_case_compare<Encoding>(context).get_char_class_tag(tag()), ch);
+                    x4::get_case_compare<Encoding>(context).get_char_class_tag(tag()), ch);
         }
     };
 
-#define BOOST_SPIRIT_X3_CHAR_CLASS(encoding, name)                                 \
+#define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name)                                 \
     using name##_type = char_class<char_encoding::encoding, name##_tag>;           \
     inline constexpr name##_type name{};
 
-#define BOOST_SPIRIT_X3_CHAR_CLASSES(encoding)                                     \
+#define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding)                                     \
     namespace encoding                                                             \
     {                                                                              \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, alnum)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, alpha)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, digit)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, xdigit)                               \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, cntrl)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, graph)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, lower)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, print)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, punct)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, space)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, blank)                                \
-        BOOST_SPIRIT_X3_CHAR_CLASS(encoding, upper)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alnum)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alpha)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, digit)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, xdigit)                               \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, cntrl)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, graph)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, lower)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, print)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, punct)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, space)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, blank)                                \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, upper)                                \
     }
 
-    BOOST_SPIRIT_X3_CHAR_CLASSES(standard)
+    BOOST_SPIRIT_X4_CHAR_CLASSES(standard)
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
-    BOOST_SPIRIT_X3_CHAR_CLASSES(standard_wide)
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+    BOOST_SPIRIT_X4_CHAR_CLASSES(standard_wide)
 #endif
 
-#undef BOOST_SPIRIT_X3_CHAR_CLASS
-#undef BOOST_SPIRIT_X3_CHAR_CLASSES
+#undef BOOST_SPIRIT_X4_CHAR_CLASS
+#undef BOOST_SPIRIT_X4_CHAR_CLASSES
 
     using alnum_type  = standard::alnum_type;
     using alpha_type  = standard::alpha_type;
@@ -122,6 +122,6 @@ namespace boost::spirit::x3
     inline constexpr auto const& blank  = standard::blank;
     inline constexpr auto const& upper  = standard::upper;
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

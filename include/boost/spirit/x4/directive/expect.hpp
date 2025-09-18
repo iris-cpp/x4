@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_EXPECT_MARCH_16_2012_1024PM
-#define BOOST_SPIRIT_X3_EXPECT_MARCH_16_2012_1024PM
+#ifndef BOOST_SPIRIT_X4_EXPECT_MARCH_16_2012_1024PM
+#define BOOST_SPIRIT_X4_EXPECT_MARCH_16_2012_1024PM
 
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject>
     struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
@@ -42,9 +42,9 @@ namespace boost::spirit::x3
             bool const r = this->subject.parse(first, last, context, rcontext, attr);
 
             // only the first failure is needed
-            if (!r && !x3::has_expectation_failure(context))
+            if (!r && !x4::has_expectation_failure(context))
             {
-                x3::set_expectation_failure(first, this->subject, context);
+                x4::set_expectation_failure(first, this->subject, context);
             }
             return r;
         }
@@ -54,7 +54,7 @@ namespace boost::spirit::x3
     {
         struct expect_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr expect_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const
                 noexcept(is_parser_nothrow_constructible_v<expect_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -69,9 +69,9 @@ namespace boost::spirit::x3
         inline constexpr detail::expect_gen expect{};
     } // cpos
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     // Special case handling for expect expressions.
     template <typename Subject, typename Context, typename RContext>
@@ -88,13 +88,13 @@ namespace boost::spirit::x3::detail
                 parser.subject, first, last, context, rcontext, attr);
 
             // only the first error is needed
-            if (!r && !x3::has_expectation_failure(context))
+            if (!r && !x4::has_expectation_failure(context))
             {
-                x3::set_expectation_failure(first, parser.subject, context);
+                x4::set_expectation_failure(first, parser.subject, context);
             }
             return r;
         }
     };
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

@@ -17,15 +17,15 @@
 
 int main()
 {
-    namespace x3 = boost::spirit::x3;
+    namespace x4 = boost::spirit::x4;
     using namespace spirit_test;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(x3::confix('(', ')'));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(x3::confix("[", "]"));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(x3::confix("/*", "*/"));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::confix('(', ')'));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::confix("[", "]"));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::confix("/*", "*/"));
 
     {
-        constexpr auto comment = x3::confix("/*", "*/");
+        constexpr auto comment = x4::confix("/*", "*/");
 
         BOOST_TEST(!parse("/abcdef*/", comment["abcdef"]));
         BOOST_TEST(!parse("/* abcdef*/", comment["abcdef"]));
@@ -35,24 +35,24 @@ int main()
         {
             unsigned value = 0;
             BOOST_TEST(
-                parse(" /* 123 */ ", comment[x3::uint_], value, x3::standard::space));
+                parse(" /* 123 */ ", comment[x4::uint_], value, x4::standard::space));
             BOOST_TEST(value == 123);
 
-            using x3::_attr;
+            using x4::_attr;
             value = 0;
             auto const lambda = [&value](auto& ctx) { value = _attr(ctx) + 1; };
-            BOOST_TEST(parse("/*123*/", comment[x3::uint_][lambda], value));
+            BOOST_TEST(parse("/*123*/", comment[x4::uint_][lambda], value));
             BOOST_TEST(value == 124);
         }
     }
     {
-        constexpr auto array = x3::confix('[', ']');
+        constexpr auto array = x4::confix('[', ']');
 
         {
             std::vector<unsigned> values;
 
-            BOOST_TEST(parse("[0,2,4,6,8]", array[x3::uint_ % ',']));
-            BOOST_TEST(parse("[0,2,4,6,8]", array[x3::uint_ % ','], values));
+            BOOST_TEST(parse("[0,2,4,6,8]", array[x4::uint_ % ',']));
+            BOOST_TEST(parse("[0,2,4,6,8]", array[x4::uint_ % ','], values));
             BOOST_TEST(
                 values.size() == 5 &&
                 values[0] == 0 &&
@@ -64,11 +64,11 @@ int main()
         {
             std::vector<std::vector<unsigned>> values;
             BOOST_TEST(
-                parse("[[1,3,5],[0,2,4]]", array[array[x3::uint_ % ','] % ',']));
+                parse("[[1,3,5],[0,2,4]]", array[array[x4::uint_ % ','] % ',']));
             BOOST_TEST(
                 parse(
                     "[[1,3,5],[0,2,4]]",
-                    array[array[x3::uint_ % ','] % ','],
+                    array[array[x4::uint_ % ','] % ','],
                     values));
             BOOST_TEST(
                 values.size() == 2 &&

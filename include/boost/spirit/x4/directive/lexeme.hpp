@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_LEXEME_MARCH_24_2007_0802AM
-#define BOOST_SPIRIT_X3_LEXEME_MARCH_24_2007_0802AM
+#ifndef BOOST_SPIRIT_X4_LEXEME_MARCH_24_2007_0802AM
+#define BOOST_SPIRIT_X4_LEXEME_MARCH_24_2007_0802AM
 
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject>
     struct lexeme_directive : unary_parser<Subject, lexeme_directive<Subject>>
@@ -35,7 +35,7 @@ namespace boost::spirit::x3
 
         template <typename Context>
         using pre_skip_context_t = std::remove_cvref_t<decltype(
-            x3::make_context<skipper_tag>(std::declval<unused_skipper_t<Context>&>(), std::declval<Context const&>())
+            x4::make_context<skipper_tag>(std::declval<unused_skipper_t<Context>&>(), std::declval<Context const&>())
         )>;
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
@@ -44,18 +44,18 @@ namespace boost::spirit::x3
             It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
         ) const
             noexcept(
-                noexcept(x3::skip_over(first, last, context)) &&
+                noexcept(x4::skip_over(first, last, context)) &&
                 is_nothrow_parsable_v<Subject, It, Se, pre_skip_context_t<Context>, RContext, Attribute>
             )
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
 
-            auto const& skipper = x3::get<skipper_tag>(context);
+            auto const& skipper = x4::get<skipper_tag>(context);
             unused_skipper_t<Context> unused_skipper(skipper);
 
             return this->subject.parse(
                 first, last,
-                x3::make_context<skipper_tag>(unused_skipper, context),
+                x4::make_context<skipper_tag>(unused_skipper, context),
                 rcontext,
                 attr
             );
@@ -77,7 +77,7 @@ namespace boost::spirit::x3
     {
         struct lexeme_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr lexeme_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const
                 noexcept(is_parser_nothrow_constructible_v<lexeme_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -91,6 +91,6 @@ namespace boost::spirit::x3
     {
         inline constexpr detail::lexeme_gen lexeme{};
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

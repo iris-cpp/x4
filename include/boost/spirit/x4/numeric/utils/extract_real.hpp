@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_EXTRACT_REAL_APRIL_18_2006_0901AM
-#define BOOST_SPIRIT_X3_EXTRACT_REAL_APRIL_18_2006_0901AM
+#ifndef BOOST_SPIRIT_X4_EXTRACT_REAL_APRIL_18_2006_0901AM
+#define BOOST_SPIRIT_X4_EXTRACT_REAL_APRIL_18_2006_0901AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
@@ -27,7 +27,7 @@
 # pragma warning(disable: 4100)   // 'p': unreferenced formal parameter
 #endif
 
-namespace boost::spirit::x3::extension
+namespace boost::spirit::x4::extension
 {
     template <typename T>
     [[nodiscard]] constexpr bool
@@ -129,9 +129,9 @@ namespace boost::spirit::x3::extension
         // no-op for unused_type
         return n;
     }
-} // boost::spirit::x3::extension
+} // boost::spirit::x4::extension
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename T, typename RealPolicies>
     struct extract_real
@@ -161,7 +161,7 @@ namespace boost::spirit::x3
                     p.parse_inf(first, last, n))
                 {
                     // If we got a negative sign, negate the number
-                    x3::move_to(extension::negate(neg, n), attr);
+                    x4::move_to(extension::negate(neg, n), attr);
                     return true;    // got a NaN or Inf, return early
                 }
 
@@ -262,7 +262,7 @@ namespace boost::spirit::x3
             }
 
             // If we got a negative sign, negate the number
-            x3::move_to(extension::negate(neg, n), attr);
+            x4::move_to(extension::negate(neg, n), attr);
 
             // Success!!!
             return true;
@@ -273,6 +273,6 @@ namespace boost::spirit::x3
 # pragma warning(pop)
 #endif
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

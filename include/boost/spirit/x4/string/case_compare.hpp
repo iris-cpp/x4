@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
-#define BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
+#ifndef BOOST_SPIRIT_X4_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
+#define BOOST_SPIRIT_X4_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/context.hpp>
@@ -14,7 +14,7 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Encoding>
     struct case_compare
@@ -104,9 +104,9 @@ namespace boost::spirit::x3
     [[nodiscard]] constexpr decltype(auto)
     get_case_compare(Context const& context) noexcept
     {
-        return detail::get_case_compare_impl<Encoding>(x3::get<detail::no_case_tag_t>(context));
+        return detail::get_case_compare_impl<Encoding>(x4::get<detail::no_case_tag_t>(context));
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

@@ -6,13 +6,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CAST_CHAR_NOVEMBER_10_2006_0907AM
-#define BOOST_SPIRIT_X3_CAST_CHAR_NOVEMBER_10_2006_0907AM
+#ifndef BOOST_SPIRIT_X4_CAST_CHAR_NOVEMBER_10_2006_0907AM
+#define BOOST_SPIRIT_X4_CAST_CHAR_NOVEMBER_10_2006_0907AM
 
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     // Here's the thing... typical encodings (except ASCII) deal with unsigned
     // integers > 127 (ASCII uses only 127). Yet, most char and wchar_t are signed.
@@ -55,6 +55,6 @@ namespace boost::spirit::x3::detail
     concept cast_char_noexcept = requires(SourceChar ch) {
         { cast_char<TargetChar>(ch) } noexcept -> std::convertible_to<TargetChar>;
     };
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

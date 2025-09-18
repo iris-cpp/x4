@@ -10,7 +10,7 @@
 
 #include "grammar.hpp"
 
-auto const grammar_def = x3::int_;
+auto const grammar_def = x4::int_;
 
-BOOST_SPIRIT_X3_DEFINE(grammar)
-BOOST_SPIRIT_X3_INSTANTIATE(grammar_type, char const*, x3::parse_context_for<char const*>)
+BOOST_SPIRIT_X4_DEFINE(grammar)
+BOOST_SPIRIT_X4_INSTANTIATE(grammar_type, char const*, x4::parse_context_for<char const*>)

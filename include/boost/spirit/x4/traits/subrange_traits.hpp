@@ -5,14 +5,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_IS_RANGE_DEC_06_2017_1900PM
-#define BOOST_SPIRIT_X3_IS_RANGE_DEC_06_2017_1900PM
+#ifndef BOOST_SPIRIT_X4_IS_RANGE_DEC_06_2017_1900PM
+#define BOOST_SPIRIT_X4_IS_RANGE_DEC_06_2017_1900PM
 
 #include <iterator>
 #include <ranges>
 #include <type_traits>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename T>
     struct is_subrange : std::false_type {};
@@ -23,6 +23,6 @@ namespace boost::spirit::x3::traits
     template <std::input_or_output_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
     struct is_subrange<std::ranges::subrange<It, Se, Kind>> : std::true_type {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

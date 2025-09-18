@@ -22,50 +22,50 @@ int main()
     using namespace std::string_literals;
     using namespace std::string_view_literals;
 
-    using boost::spirit::x3::attr;
-    using boost::spirit::x3::int_;
+    using boost::spirit::x4::attr;
+    using boost::spirit::x4::int_;
 
     {
         auto attr_p = attr(1);
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<int>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<int>>);
     }
     {
         auto attr_p = attr(3.14);
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<double>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<double>>);
     }
 
     {
         auto attr_p = attr("foo");
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<std::basic_string<char>>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<std::basic_string<char>>>);
     }
     {
         auto attr_p = attr("foo"s);
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<std::basic_string<char>>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<std::basic_string<char>>>);
     }
     {
         auto attr_p = attr("foo"sv);
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<std::basic_string_view<char>>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<std::basic_string_view<char>>>);
     }
 
     {
         auto attr_p = attr(U"foo");
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<std::basic_string<char32_t>>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<std::basic_string<char32_t>>>);
     }
     {
         auto attr_p = attr(U"foo"s);
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<std::basic_string<char32_t>>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<std::basic_string<char32_t>>>);
     }
     {
         auto attr_p = attr(U"foo"sv);
-        static_assert(std::same_as<decltype(attr_p), x3::attr_parser<std::basic_string_view<char32_t>>>);
+        static_assert(std::same_as<decltype(attr_p), x4::attr_parser<std::basic_string_view<char32_t>>>);
     }
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(attr(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(attr("asd"));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(attr(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(attr("asd"));
 
     {
         constexpr char s[] = "asd";
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(attr(s));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(attr(s));
     }
 
     {

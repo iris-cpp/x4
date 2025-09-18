@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#ifndef BOOST_SPIRIT_X3_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
-#define BOOST_SPIRIT_X3_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
+#ifndef BOOST_SPIRIT_X4_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
+#define BOOST_SPIRIT_X4_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
 
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/for_each.hpp>
@@ -17,11 +17,11 @@
 #include <boost/variant.hpp>
 #include <boost/variant/apply_visitor.hpp> // TODO: remove this
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Out, typename T>
     void print_attribute(Out& out, T const& val);
@@ -49,7 +49,7 @@ namespace boost::spirit::x3::traits
                 {
                     out << ", ";
                 }
-                x3::traits::print_attribute(out, val);
+                x4::traits::print_attribute(out, val);
             }
 
             Out& out;
@@ -67,7 +67,7 @@ namespace boost::spirit::x3::traits
             template <typename T>
             void operator()(T const& val) const
             {
-                x3::traits::print_attribute(out, val);
+                x4::traits::print_attribute(out, val);
             }
 
             Out& out;
@@ -92,7 +92,7 @@ namespace boost::spirit::x3::traits
             out << val;
         }
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
         static void call(Out& out, char_encoding::unicode::char_type const& val)
         {
             if (val >= 0 && val < 127)
@@ -139,7 +139,7 @@ namespace boost::spirit::x3::traits
                 {
                     out << ", ";
                 }
-                x3::traits::print_attribute(out, *it);
+                x4::traits::print_attribute(out, *it);
             }
             out << ']';
         }
@@ -154,7 +154,7 @@ namespace boost::spirit::x3::traits
         {
             if (val)
             {
-                x3::traits::print_attribute(out, *val);
+                x4::traits::print_attribute(out, *val);
             }
             else
             {
@@ -169,6 +169,6 @@ namespace boost::spirit::x3::traits
         print_attribute_debug<Out, T>::call(out, val);
     }
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

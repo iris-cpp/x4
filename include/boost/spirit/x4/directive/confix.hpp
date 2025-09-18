@@ -8,8 +8,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#ifndef BOOST_SPIRIT_X3_CONFIX_MAY_30_2014_1819PM
-#define BOOST_SPIRIT_X3_CONFIX_MAY_30_2014_1819PM
+#ifndef BOOST_SPIRIT_X4_CONFIX_MAY_30_2014_1819PM
+#define BOOST_SPIRIT_X4_CONFIX_MAY_30_2014_1819PM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template<typename Prefix, typename Subject, typename Postfix>
     struct confix_directive :
@@ -63,7 +63,7 @@ namespace boost::spirit::x3
                   this->subject.parse(first, last, context, rcontext, attr) &&
                   postfix_.parse(first, last, context, rcontext, unused))
             ) {
-                if (x3::has_expectation_failure(context))
+                if (x4::has_expectation_failure(context))
                 {
                     // don't rollback iterator (mimicking exception-like behavior)
                     return false;
@@ -83,10 +83,10 @@ namespace boost::spirit::x3
 
     namespace detail
     {
-        template <X3Subject Prefix, X3Subject Postfix>
+        template <X4Subject Prefix, X4Subject Postfix>
         struct [[nodiscard]] confix_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr confix_directive<Prefix, as_parser_plain_t<Subject>, Postfix>
             operator[](Subject&& subject) const
                 noexcept(
@@ -108,7 +108,7 @@ namespace boost::spirit::x3
 
         struct confix_fn
         {
-            template <X3Subject Prefix, X3Subject Postfix>
+            template <X4Subject Prefix, X4Subject Postfix>
             static constexpr confix_gen<as_parser_plain_t<Prefix>, as_parser_plain_t<Postfix>>
             operator()(Prefix&& prefix, Postfix&& postfix)
                 noexcept(
@@ -129,6 +129,6 @@ namespace boost::spirit::x3
     {
         inline constexpr detail::confix_fn confix{};
     } // cpos
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

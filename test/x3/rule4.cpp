@@ -18,7 +18,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 namespace {
 int got_it = 0;
@@ -61,10 +61,10 @@ bool on_success_gets_preskipped_iterator::ok = false;
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::rule;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::lit;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::rule;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::lit;
 
     // show that ra = rb and ra %= rb works as expected
     {

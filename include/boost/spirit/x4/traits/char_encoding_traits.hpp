@@ -4,19 +4,19 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SUPPORT_TRAITS_CHAR_ENCODING_TRAITS_HPP
-#define BOOST_SPIRIT_X3_SUPPORT_TRAITS_CHAR_ENCODING_TRAITS_HPP
+#ifndef BOOST_SPIRIT_X4_SUPPORT_TRAITS_CHAR_ENCODING_TRAITS_HPP
+#define BOOST_SPIRIT_X4_SUPPORT_TRAITS_CHAR_ENCODING_TRAITS_HPP
 
 #include <boost/spirit/x4/char/char.hpp>
 
 #include <boost/spirit/x4/char/literal_char.hpp>
 #include <boost/spirit/x4/string/literal_string.hpp>
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     namespace detail
     {
@@ -47,16 +47,16 @@ namespace boost::spirit::x3::traits
     template <>
     struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
     template <>
     struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
 #endif
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
     template <>
     struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
 #endif
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

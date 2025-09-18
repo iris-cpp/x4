@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ATTR_JUL_23_2008_0956AM
-#define BOOST_SPIRIT_X3_ATTR_JUL_23_2008_0956AM
+#ifndef BOOST_SPIRIT_X4_ATTR_JUL_23_2008_0956AM
+#define BOOST_SPIRIT_X4_ATTR_JUL_23_2008_0956AM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -22,12 +22,12 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename T>
     struct attr_parser : parser<attr_parser<T>>
     {
-        static_assert(X3Attribute<T>);
+        static_assert(X4Attribute<T>);
         using attribute_type = T;
 
         static constexpr bool has_attribute = !std::is_same_v<T, unused_type>;
@@ -45,10 +45,10 @@ namespace boost::spirit::x3
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool
         parse(It&, Se const&, Context const&, RContext const&, Attribute& attr_) const
-            noexcept(noexcept(x3::move_to(std::as_const(value_), attr_)))
+            noexcept(noexcept(x4::move_to(std::as_const(value_), attr_)))
         {
             // Always copy (need reuse in repetitive invocations)
-            x3::move_to(std::as_const(value_), attr_);
+            x4::move_to(std::as_const(value_), attr_);
             return true;
         }
 
@@ -99,6 +99,6 @@ namespace boost::spirit::x3
 
     } // cpos
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

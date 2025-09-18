@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_LITERAL_CHAR_APRIL_16_2006_1051AM
-#define BOOST_SPIRIT_X3_LITERAL_CHAR_APRIL_16_2006_1051AM
+#ifndef BOOST_SPIRIT_X4_LITERAL_CHAR_APRIL_16_2006_1051AM
+#define BOOST_SPIRIT_X4_LITERAL_CHAR_APRIL_16_2006_1051AM
 
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/string/utf8.hpp>
@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Encoding, typename Attribute = typename Encoding::char_type>
     struct literal_char : char_parser<literal_char<Encoding, Attribute>>
@@ -37,7 +37,7 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
         {
             static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
-            return x3::get_case_compare<encoding>(context)(ch, char_type(ch_)) == 0;
+            return x4::get_case_compare<encoding>(context)(ch, char_type(ch_)) == 0;
         }
 
         char_type ch;
@@ -49,9 +49,9 @@ namespace boost::spirit::x3
         using result_type = std::string;
         [[nodiscard]] std::string operator()(literal_char<Encoding, Attribute> const& p) const
         {
-            return '\'' + x3::to_utf8(Encoding::toucs4(p.ch)) + '\'';
+            return '\'' + x4::to_utf8(Encoding::toucs4(p.ch)) + '\'';
         }
     };
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

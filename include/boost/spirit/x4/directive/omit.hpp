@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_OMIT_MARCH_24_2007_0802AM
-#define BOOST_SPIRIT_X3_OMIT_MARCH_24_2007_0802AM
+#ifndef BOOST_SPIRIT_X4_OMIT_MARCH_24_2007_0802AM
+#define BOOST_SPIRIT_X4_OMIT_MARCH_24_2007_0802AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // `omit_directive` forces the attribute of subject parser
     // to be `unused_type`
@@ -50,7 +50,7 @@ namespace boost::spirit::x3
     {
         struct omit_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr omit_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const
                 noexcept(is_parser_nothrow_constructible_v<omit_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -64,6 +64,6 @@ namespace boost::spirit::x3
     {
         [[maybe_unused]] inline constexpr detail::omit_gen omit{};
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

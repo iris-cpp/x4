@@ -13,10 +13,10 @@
 
 int main()
 {
-    namespace x3 = boost::spirit::x3;
-    using x3::eol;
+    namespace x4 = boost::spirit::x4;
+    using x4::eol;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(eol);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eol);
 
     {
         BOOST_TEST(parse("\r\n", eol));
@@ -27,7 +27,7 @@ int main()
     }
 
     {
-        BOOST_TEST(x3::what(eol) == "eol");
+        BOOST_TEST(x4::what(eol) == "eol");
     }
 
     return boost::report_errors();

@@ -14,29 +14,29 @@
 #include <string>
 #include <iostream>
 
-using boost::spirit::x3::rule;
+using boost::spirit::x4::rule;
 
 rule<class direct_rule, int> direct_rule = "direct_rule";
 rule<class indirect_rule, int> indirect_rule = "indirect_rule";
 
-auto const direct_rule_def = boost::spirit::x3::int_;
+auto const direct_rule_def = boost::spirit::x4::int_;
 auto const indirect_rule_def = direct_rule;
 
-BOOST_SPIRIT_X3_DEFINE(direct_rule)
-BOOST_SPIRIT_X3_DEFINE(indirect_rule)
+BOOST_SPIRIT_X4_DEFINE(direct_rule)
+BOOST_SPIRIT_X4_DEFINE(indirect_rule)
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::unused_type;
-    using boost::spirit::x3::unused;
-    using boost::spirit::x3::int_;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::omit;
+    using boost::spirit::x4::unused_type;
+    using boost::spirit::x4::unused;
+    using boost::spirit::x4::int_;
 
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(omit['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(omit['x']);
 
     {
         BOOST_TEST(parse("a", omit['a']));

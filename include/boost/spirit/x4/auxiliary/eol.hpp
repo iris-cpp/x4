@@ -5,14 +5,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_EOL_MARCH_23_2007_0454PM
-#define BOOST_SPIRIT_X3_EOL_MARCH_23_2007_0454PM
+#ifndef BOOST_SPIRIT_X4_EOL_MARCH_23_2007_0454PM
+#define BOOST_SPIRIT_X4_EOL_MARCH_23_2007_0454PM
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 
-namespace boost { namespace spirit { namespace x3
+namespace boost { namespace spirit { namespace x4
 {
     struct eol_parser : parser<eol_parser>
     {
@@ -23,7 +23,7 @@ namespace boost { namespace spirit { namespace x3
         bool parse(Iterator& first, Iterator const& last
          , Context const& context, unused_type, Attribute& /*attr*/) const
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             Iterator iter = first;
             bool matched = false;
             if (iter != last && *iter == '\r')  // CR

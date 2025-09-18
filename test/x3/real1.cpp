@@ -15,7 +15,7 @@ int main()
 {
     // thousand separated numbers
     {
-        using boost::spirit::x3::uint_parser;
+        using boost::spirit::x4::uint_parser;
 
         uint_parser<unsigned, 10, 1, 3> uint3;
         uint_parser<unsigned, 10, 3, 3> uint3_3;
@@ -32,13 +32,13 @@ int main()
 
     // unsigned real number tests
     {
-        using boost::spirit::x3::real_parser;
-        using boost::spirit::x3::ureal_policies;
+        using boost::spirit::x4::real_parser;
+        using boost::spirit::x4::ureal_policies;
 
         constexpr real_parser<double, ureal_policies<double> > udouble;
         double d;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(udouble);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(udouble);
 
         BOOST_TEST(parse("1234", udouble));
         BOOST_TEST(parse("1234", udouble, d) && compare(d, 1234));

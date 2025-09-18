@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_PARSER_APR_16_2006_0906AM
-#define BOOST_SPIRIT_X3_CHAR_PARSER_APR_16_2006_0906AM
+#ifndef BOOST_SPIRIT_X4_CHAR_PARSER_APR_16_2006_0906AM
+#define BOOST_SPIRIT_X4_CHAR_PARSER_APR_16_2006_0906AM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
@@ -14,7 +14,7 @@
 
 #include <iterator>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Derived>
     struct char_parser : parser<Derived>
@@ -24,16 +24,16 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr) const
             // TODO: noexcept
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             if (first != last && this->derived().test(*first, context))
             {
-                x3::move_to(std::iter_value_t<It>{*first}, attr);
+                x4::move_to(std::iter_value_t<It>{*first}, attr);
                 ++first;
                 return true;
             }
             return false;
         }
     };
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

@@ -14,13 +14,13 @@
 
 int main()
 {
-    using boost::spirit::x3::standard::space;
-    using boost::spirit::x3::standard::space_type;
-    using boost::spirit::x3::standard::char_;
-    using boost::spirit::x3::lexeme;
-    using boost::spirit::x3::no_skip;
+    using boost::spirit::x4::standard::space;
+    using boost::spirit::x4::standard::space_type;
+    using boost::spirit::x4::standard::char_;
+    using boost::spirit::x4::lexeme;
+    using boost::spirit::x4::no_skip;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(no_skip['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(no_skip['x']);
 
     // without skipping no_skip is equivalent to lexeme
     {

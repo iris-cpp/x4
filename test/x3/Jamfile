@@ -17,7 +17,7 @@ import testing ;
 
 ###############################################################################
 
-project spirit-x3
+project spirit-x4
     : requirements
         <include>.
         <c++-template-depth>512
@@ -39,7 +39,7 @@ project spirit-x3
 
 ###############################################################################
 
-local subproject-name = x3 ;
+local subproject-name = x4 ;
 
 rule run ( sources + : args * : input-files *
          : requirements * : target-name ? : default-build * )

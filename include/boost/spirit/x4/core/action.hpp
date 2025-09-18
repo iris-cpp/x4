@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ACTION_JANUARY_07_2007_1128AM
-#define BOOST_SPIRIT_X3_ACTION_JANUARY_07_2007_1128AM
+#ifndef BOOST_SPIRIT_X4_ACTION_JANUARY_07_2007_1128AM
+#define BOOST_SPIRIT_X4_ACTION_JANUARY_07_2007_1128AM
 
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/action_context.hpp>
@@ -19,12 +19,12 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     struct raw_attribute_type; // TODO: move this to detail
 
     // Ideally we should have a context-agnostic concept that can be used
-    // like `X3ActionFunctor<F>`, but we technically can't.
+    // like `X4ActionFunctor<F>`, but we technically can't.
     //
     // In order to check `std::invocable`, we need to know the actual context
     // type passed to the `.parse(...)` function but it is unknown until
@@ -33,7 +33,7 @@ namespace boost::spirit::x3
     // Even if we make up the most trivial context type (i.e. `unused_type`),
     // such concept will be useless because a user-provided functor always
     // operates on user-specific precondition that assumes the context
-    // holds exact specific type provided to the entry point (`x3::parse`).
+    // holds exact specific type provided to the entry point (`x4::parse`).
 
     template <typename Subject, typename Action>
     struct action : unary_parser<Subject, action<Subject, Action>>
@@ -88,16 +88,16 @@ namespace boost::spirit::x3
     private:
         // Compose attr(where(val(pass(context))))
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
-        using composed_context_t = x3::context<
+        using composed_context_t = x4::context<
             attr_context_tag,
             Attribute,
-            x3::context<
+            x4::context<
                 where_context_tag,
                 std::ranges::subrange<It, Se> const,
-                x3::context<
+                x4::context<
                     rule_val_context_tag,
                     RContext,
-                    x3::context<
+                    x4::context<
                         parse_pass_context_tag,
                         bool,
                         Context
@@ -122,9 +122,9 @@ namespace boost::spirit::x3
             );
 
             bool pass = true;
-            auto const pass_context = x3::make_context<parse_pass_context_tag>(pass, context);
+            auto const pass_context = x4::make_context<parse_pass_context_tag>(pass, context);
 
-            auto const val_context = x3::make_context<rule_val_context_tag>(rcontext, pass_context);
+            auto const val_context = x4::make_context<rule_val_context_tag>(rcontext, pass_context);
 
             // TODO: Provide some trait to detect whether this is actually needed for
             // each semantic actions.
@@ -133,9 +133,9 @@ namespace boost::spirit::x3
             // this still may introduce compile time overhead (and also runtime
             // overhead, as constructing `subrange` is never noexcept).
             where_range_t const where_rng(first, last);
-            auto const where_context = x3::make_context<where_context_tag>(where_rng, val_context);
+            auto const where_context = x4::make_context<where_context_tag>(where_rng, val_context);
 
-            auto const attr_context = x3::make_context<attr_context_tag>(attr, where_context);
+            auto const attr_context = x4::make_context<attr_context_tag>(attr, where_context);
 
             // Sanity check (internal check to detect implementation divergence)
             static_assert(std::same_as<
@@ -210,7 +210,7 @@ namespace boost::spirit::x3
         }
     };
 
-    template <X3Subject Subject, typename Action>
+    template <X4Subject Subject, typename Action>
     [[nodiscard, deprecated(
         "Use `operator[]` instead. The symbol `/` normally means \"ordered choice\" "
         "in PEG, and is irrelevant to semantic actions. Furthermore, using C++'s "
@@ -230,6 +230,6 @@ namespace boost::spirit::x3
     {
         return { as_parser(std::forward<Subject>(p)), std::forward<Action>(f) };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

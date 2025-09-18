@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_DIFFERENCE_FEBRUARY_11_2007_1250PM
-#define BOOST_SPIRIT_X3_DIFFERENCE_FEBRUARY_11_2007_1250PM
+#ifndef BOOST_SPIRIT_X4_DIFFERENCE_FEBRUARY_11_2007_1250PM
+#define BOOST_SPIRIT_X4_DIFFERENCE_FEBRUARY_11_2007_1250PM
 
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Left, typename Right>
     struct difference : binary_parser<Left, Right, difference<Left, Right>>
@@ -52,7 +52,7 @@ namespace boost::spirit::x3
             // the whole difference expression (*this) should also yield error.
             // In other words, when the THROW macro was 1 (i.e. traditional behavior),
             // Right should already have thrown an exception.
-            if (x3::has_expectation_failure(context))
+            if (x4::has_expectation_failure(context))
             {
                 // don't rollback iterator (mimicking exception-like behavior)
                 return false;
@@ -63,7 +63,7 @@ namespace boost::spirit::x3
         }
     };
 
-    template <X3Subject Left, X3Subject Right>
+    template <X4Subject Left, X4Subject Right>
     [[nodiscard]] constexpr difference<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
     operator-(Left&& left, Right&& right)
         noexcept(
@@ -79,20 +79,20 @@ namespace boost::spirit::x3
         return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Left, typename Right, typename Context>
-    struct attribute_of<x3::difference<Left, Right>, Context>
+    struct attribute_of<x4::difference<Left, Right>, Context>
         : attribute_of<Left, Context>
     {};
 
     template <typename Left, typename Right, typename Context>
-    struct has_attribute<x3::difference<Left, Right>, Context>
+    struct has_attribute<x4::difference<Left, Right>, Context>
         : has_attribute<Left, Context>
     {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

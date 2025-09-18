@@ -5,15 +5,15 @@
 	Distributed under the Boost Software License, Version 1.0. (See accompanying
 	file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_NUMERIC_TRAITS_JAN_07_2011_0722AM
-#define BOOST_SPIRIT_X3_NUMERIC_TRAITS_JAN_07_2011_0722AM
+#ifndef BOOST_SPIRIT_X4_NUMERIC_TRAITS_JAN_07_2011_0722AM
+#define BOOST_SPIRIT_X4_NUMERIC_TRAITS_JAN_07_2011_0722AM
 
 #include <boost/config.hpp>
 
 #include <limits>
 #include <type_traits>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     // Determine if T is a boolean type
     template <typename T>
@@ -79,6 +79,6 @@ namespace boost::spirit::x3::traits
     template <typename T, typename Enable = void>
     struct check_overflow : std::bool_constant<std::numeric_limits<T>::is_bounded> {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

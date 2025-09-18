@@ -9,8 +9,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
-#define BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
+#ifndef BOOST_SPIRIT_X4_EXTRACT_INT_APRIL_17_2006_0830AM
+#define BOOST_SPIRIT_X4_EXTRACT_INT_APRIL_17_2006_0830AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
@@ -31,11 +31,11 @@
 
 #include <cassert>
 
-#ifndef BOOST_SPIRIT_X3_NUMERICS_LOOP_UNROLL
-# define BOOST_SPIRIT_X3_NUMERICS_LOOP_UNROLL 3
+#ifndef BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL
+# define BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL 3
 #endif
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     // The maximum radix digits that can be represented without
     // overflow:
@@ -50,7 +50,7 @@ namespace boost::spirit::x3::detail
     struct digits2_to_n;
 
 // lookup table for log2(x) : 2 <= x <= 36
-#define BOOST_SPIRIT_X3_LOG2 (#error)(#error)                                   \
+#define BOOST_SPIRIT_X4_LOG2 (#error)(#error)                                   \
         (1000000)(1584960)(2000000)(2321920)(2584960)(2807350)                  \
         (3000000)(3169920)(3321920)(3459430)(3584960)(3700430)                  \
         (3807350)(3906890)(4000000)(4087460)(4169920)(4247920)                  \
@@ -64,14 +64,14 @@ namespace boost::spirit::x3::detail
     {                                                                           \
         static constexpr int value = static_cast<int>(                          \
             (Digits * 1000000) /                                                \
-                BOOST_PP_SEQ_ELEM(Radix, BOOST_SPIRIT_X3_LOG2));                \
+                BOOST_PP_SEQ_ELEM(Radix, BOOST_SPIRIT_X4_LOG2));                \
     };
 
 #define BOOST_PP_LOCAL_LIMITS (2, 36)
 #include BOOST_PP_LOCAL_ITERATE()
 #undef BOOST_PP_LOCAL_MACRO
 
-#undef BOOST_SPIRIT_X3_LOG2
+#undef BOOST_SPIRIT_X4_LOG2
 
     template <typename T, unsigned Radix>
     struct digits_traits : digits2_to_n<std::numeric_limits<T>::digits, Radix>
@@ -248,7 +248,7 @@ namespace boost::spirit::x3::detail
     };
 
     // extract_int: main code for extracting integers
-#define BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP(z, x, data)                          \
+#define BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP(z, x, data)                          \
         if (!check_max_digits<MaxDigits>::call(count + leading_zeros)           \
             || it == last)                                                      \
             break;                                                              \
@@ -298,12 +298,12 @@ namespace boost::spirit::x3::detail
 
             while (true)
             {
-                BOOST_PP_REPEAT(BOOST_SPIRIT_X3_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP, _)
+                BOOST_PP_REPEAT(BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP, _)
             }
 
             if (count + leading_zeros >= MinDigits)
             {
-                x3::move_to(std::move(val), attr);
+                x4::move_to(std::move(val), attr);
                 first = it;
                 return true;
             }
@@ -340,11 +340,11 @@ namespace boost::spirit::x3::detail
             return extract_int::parse_main(first, last, attr);
         }
     };
-#undef BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP
+#undef BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP
 
     // extract_int: main code for extracting integers
     // common case where MinDigits == 1 and MaxDigits = -1
-#define BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP(z, x, data)                          \
+#define BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP(z, x, data)                          \
         if (it == last)                                                         \
             break;                                                              \
         ch = *it;                                                               \
@@ -402,7 +402,7 @@ namespace boost::spirit::x3::detail
             if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val))
             {
                 if (count == 0) return false; // must have at least one digit
-                x3::move_to(std::move(val), attr);
+                x4::move_to(std::move(val), attr);
                 first = it;
                 return true;
             }
@@ -411,10 +411,10 @@ namespace boost::spirit::x3::detail
             ++it;
             while (true)
             {
-                BOOST_PP_REPEAT(BOOST_SPIRIT_X3_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP, _)
+                BOOST_PP_REPEAT(BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP, _)
             }
 
-            x3::move_to(std::move(val), attr);
+            x4::move_to(std::move(val), attr);
             first = it;
             return true;
         }
@@ -450,11 +450,11 @@ namespace boost::spirit::x3::detail
         }
     };
 
-#undef BOOST_SPIRIT_X3_NUMERIC_INNER_LOOP
+#undef BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP
 
 } // detail
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     namespace detail
     {
@@ -516,14 +516,14 @@ namespace boost::spirit::x3
             noexcept(
                 std::is_nothrow_default_constructible_v<T> &&
                 noexcept(extract_uint::call(first, last, std::declval<T&>())) &&
-                noexcept(x3::move_to(std::declval<T&&>(), attr))
+                noexcept(x4::move_to(std::declval<T&&>(), attr))
             )
         {
             // this case is called when Attribute is not T
             T tmp_attr; // default initialize
             if (extract_uint::call(first, last, tmp_attr))
             {
-                x3::move_to(std::move(tmp_attr), attr);
+                x4::move_to(std::move(tmp_attr), attr);
                 return true;
             }
             return false;
@@ -580,19 +580,19 @@ namespace boost::spirit::x3
             noexcept(
                 std::is_nothrow_default_constructible_v<T> &&
                 noexcept(extract_int::call(first, last, std::declval<T&>())) &&
-                noexcept(x3::move_to(std::declval<T&&>(), attr))
+                noexcept(x4::move_to(std::declval<T&&>(), attr))
             )
         {
             // this case is called when Attribute is not T
             T tmp_attr; // default initialize
             if (extract_int::call(first, last, tmp_attr))
             {
-                x3::move_to(std::move(tmp_attr), attr);
+                x4::move_to(std::move(tmp_attr), attr);
                 return true;
             }
             return false;
         }
     };
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

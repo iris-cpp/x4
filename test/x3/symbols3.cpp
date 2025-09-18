@@ -7,8 +7,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define BOOST_SPIRIT_X3_DEBUG
-#define BOOST_SPIRIT_X3_UNICODE
+#define BOOST_SPIRIT_X4_DEBUG
+#define BOOST_SPIRIT_X4_UNICODE
 
 #include "test.hpp"
 
@@ -41,8 +41,8 @@ int eval(roman const & c)
 
 int main()
 {
-    namespace x3 = boost::spirit::x3;
-    using x3::shared_symbols;
+    namespace x4 = boost::spirit::x4;
+    using x4::shared_symbols;
 
     { // construction from initializer-list
         shared_symbols<int> const ones =
@@ -85,7 +85,7 @@ int main()
     }
 
     { // unicode | construction from initializer-list
-        x3::shared_symbols_parser<x3::char_encoding::unicode, int> foo = {{U"a1", 1}, {U"a2", 2}, {U"a3", 3}};
+        x4::shared_symbols_parser<x4::char_encoding::unicode, int> foo = {{U"a1", 1}, {U"a2", 2}, {U"a3", 3}};
 
         int r = 0;
         BOOST_TEST(parse(U"a3", foo, r));

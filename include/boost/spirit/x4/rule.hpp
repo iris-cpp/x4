@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_RULE_JAN_08_2012_0326PM
-#define BOOST_SPIRIT_X3_RULE_JAN_08_2012_0326PM
+#ifndef BOOST_SPIRIT_X4_RULE_JAN_08_2012_0326PM
+#define BOOST_SPIRIT_X4_RULE_JAN_08_2012_0326PM
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
@@ -16,7 +16,7 @@
 
 #include <boost/spirit/x4/traits/transform_attribute.hpp>
 
-#if defined(BOOST_SPIRIT_X3_DEBUG)
+#if defined(BOOST_SPIRIT_X4_DEBUG)
 #include <boost/spirit/x4/debug/simple_trace.hpp>
 #endif
 
@@ -30,13 +30,13 @@
 #include <concepts>
 #include <utility>
 
-#ifndef BOOST_SPIRIT_X3_NO_RTTI
+#ifndef BOOST_SPIRIT_X4_NO_RTTI
 #include <typeinfo>
 #endif
 
 #include <cassert>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename ID, typename Attribute = unused_type, bool force_attribute = false>
     struct rule;
@@ -53,7 +53,7 @@ namespace boost::spirit::x3
 
         template <typename ID, typename Context>
         constexpr bool context_has_rule_id = !std::is_same_v<
-            std::remove_cvref_t<decltype(x3::get<ID>(std::declval<Context const&>()))>,
+            std::remove_cvref_t<decltype(x4::get<ID>(std::declval<Context const&>()))>,
             unused_type
         >;
     } // detail
@@ -63,7 +63,7 @@ namespace boost::spirit::x3
     // This overload will only be selected when there exists no user-defined
     // definition for `parse_rule`.
     //
-    // When a user invokes `BOOST_SPIRIT_X3_DEFINE_`, an unconstrained overload
+    // When a user invokes `BOOST_SPIRIT_X4_DEFINE_`, an unconstrained overload
     // is generated at the user's namespace scope. It will never conflict with
     // this (vvvvv) overload, as the generated one is never directly called with
     // a context containing `ID`.
@@ -76,7 +76,7 @@ namespace boost::spirit::x3
         Context const& context, Attribute& attr
     )
     {
-        auto&& rule_ = x3::get<ID>(context);
+        auto&& rule_ = x4::get<ID>(context);
         return static_cast<detail::default_parse_rule_result>(
             rule_.parse(first, last, context, unused, attr)
         );
@@ -91,12 +91,12 @@ namespace boost::spirit::x3
         detail::rule_id<ID>,
         It&, Se const&,
         Context const&, Attribute&
-    ) = delete; // BOOST_SPIRIT_X3_DEFINE undefined for this rule
+    ) = delete; // BOOST_SPIRIT_X4_DEFINE undefined for this rule
 
 
     namespace detail
     {
-#if defined(BOOST_SPIRIT_X3_DEBUG)
+#if defined(BOOST_SPIRIT_X4_DEBUG)
         // TODO: This should be customizable by users
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
         struct scoped_debug
@@ -190,9 +190,9 @@ namespace boost::spirit::x3
             //   (2) it does not make sense to modify the grammar-specific iterator on the
             //       grammar-agnostic callback.
             //
-            // Furthermore, any modification to X3's internal iterator variables may invoke
+            // Furthermore, any modification to X4's internal iterator variables may invoke
             // undefined behavior, since we never provide any kind of guarantee on how the
-            // intermediate iterator variables are processed in X3's implementation details.
+            // intermediate iterator variables are processed in X4's implementation details.
             static_assert(
                 false,
                 "The `on_error` callback should only accept const reference or passed-by-value iterators."
@@ -278,7 +278,7 @@ namespace boost::spirit::x3
                 using parse_rule_result_type = decltype(
                     parse_rule( // ADL
                         std::declval<detail::rule_id<ID>>(), first, last,
-                        std::declval<decltype(x3::make_unique_context<ID>(rhs, context))>(),
+                        std::declval<decltype(x4::make_unique_context<ID>(rhs, context))>(),
                         std::declval<Attribute&>()
                     )
                 );
@@ -297,7 +297,7 @@ namespace boost::spirit::x3
                     // we'll make a context for this rule tagged by its ID
                     // so we can extract the rule later on in the default
                     // parse_rule function.
-                    auto rule_id_context = x3::make_unique_context<ID>(rhs, context);
+                    auto rule_id_context = x4::make_unique_context<ID>(rhs, context);
                     ok = rhs.parse(first, last, rule_id_context, rcontext, attr);
                 }
 
@@ -306,11 +306,11 @@ namespace boost::spirit::x3
                 {
                     if (!ok) return false;
 
-                    x3::skip_over(start, first, context);
+                    x4::skip_over(start, first, context);
                     bool pass = true;
                     ID().on_success(
                         std::as_const(start), std::as_const(first), attr,
-                        x3::make_context<parse_pass_context_tag>(pass, context)
+                        x4::make_context<parse_pass_context_tag>(pass, context)
                     );
                     return pass;
                 }
@@ -337,8 +337,8 @@ namespace boost::spirit::x3
                         return true;
                     }
 
-                    if (x3::has_expectation_failure(context)) {
-                        auto const& x = x3::get_expectation_failure(context);
+                    if (x4::has_expectation_failure(context)) {
+                        auto const& x = x4::get_expectation_failure(context);
                         static_assert(
                             std::is_void_v<decltype(ID{}.on_error(std::as_const(first), std::as_const(last), *x, context))>,
                             "error handler should not return a value"
@@ -371,7 +371,7 @@ namespace boost::spirit::x3
                 // called inside the following scope.
                 bool parse_ok;
                 {
-                #ifdef BOOST_SPIRIT_X3_DEBUG
+                #ifdef BOOST_SPIRIT_X4_DEBUG
                     parse_ok = false;
 
                     // Create a scope to cause the dbg variable below (within
@@ -441,7 +441,7 @@ namespace boost::spirit::x3
     } // detail
 
 
-    template <typename ID, X3Subject RHS, typename Attribute, bool ForceAttribute, bool SkipDefinitionInjection = false>
+    template <typename ID, X4Subject RHS, typename Attribute, bool ForceAttribute, bool SkipDefinitionInjection = false>
     struct rule_definition : parser<rule_definition<ID, RHS, Attribute, ForceAttribute, SkipDefinitionInjection>>
     {
         using this_type = rule_definition<ID, RHS, Attribute, ForceAttribute, SkipDefinitionInjection>;
@@ -488,7 +488,7 @@ namespace boost::spirit::x3
         static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<Attribute>>;
         static constexpr bool force_attribute = ForceAttribute;
 
-#ifndef BOOST_SPIRIT_X3_NO_RTTI
+#ifndef BOOST_SPIRIT_X4_NO_RTTI
         rule() : name(typeid(rule).name()) {}
 #else
         constexpr rule() noexcept : name("unnamed") {}
@@ -507,7 +507,7 @@ namespace boost::spirit::x3
             assert(r.name != nullptr && "uninitialized rule"); // static initialization order fiasco
         }
 
-        template <X3Subject RHS>
+        template <X4Subject RHS>
         [[nodiscard]] constexpr rule_definition<ID, as_parser_plain_t<RHS>, Attribute, ForceAttribute>
         operator=(RHS&& rhs) const&
             noexcept(
@@ -521,7 +521,7 @@ namespace boost::spirit::x3
             return { as_parser(std::forward<RHS>(rhs)), name };
         }
 
-        template <X3Subject RHS>
+        template <X4Subject RHS>
         [[nodiscard]] constexpr rule_definition<ID, as_parser_plain_t<RHS>, Attribute, true>
         operator%=(RHS&& rhs) const&
             noexcept(
@@ -539,7 +539,7 @@ namespace boost::spirit::x3
         // that's why the rule definition injection into a parser context can be skipped.
         // This optimization has a huge impact on compile times because immediate rules are commonly
         // used to cast an attribute like `as`/`attr_cast` does in Qi.
-        template <X3Subject RHS>
+        template <X4Subject RHS>
         [[nodiscard]] constexpr rule_definition<ID, as_parser_plain_t<RHS>, Attribute, ForceAttribute, true>
         operator=(RHS&& rhs) const&&
             noexcept(
@@ -553,7 +553,7 @@ namespace boost::spirit::x3
             return { as_parser(std::forward<RHS>(rhs)), name };
         }
 
-        template <X3Subject RHS>
+        template <X4Subject RHS>
         [[nodiscard]] constexpr rule_definition<ID, as_parser_plain_t<RHS>, Attribute, true, true>
         operator%=(RHS&& rhs) const&&
             noexcept(
@@ -579,7 +579,7 @@ namespace boost::spirit::x3
                 traits::Transformable<Attribute, Exposed>,
                 "Attribute type mismatch; the rule's attribute is not assignable to "
                 "the exposed attribute, and no eligible specialization of "
-                "`x3::traits::transform_attribute` was found."
+                "`x4::traits::transform_attribute` was found."
             );
 
             using transform = traits::transform_attribute<Attribute, Exposed>;
@@ -611,7 +611,7 @@ namespace boost::spirit::x3
 
     namespace traits
     {
-        template <typename T, typename Enable = void>
+        template <typename T>
         struct is_rule : std::false_type {};
 
         template <typename T>
@@ -638,45 +638,45 @@ namespace boost::spirit::x3
 
 // -------------------------------------------------------------
 
-#define BOOST_SPIRIT_X3_DEPRECATED_MACRO_WARN_I(x) _Pragma(#x)
-#define BOOST_SPIRIT_X3_DEPRECATED_MACRO_WARN(msg) BOOST_SPIRIT_X3_DEPRECATED_MACRO_WARN_I(message(msg))
+#define BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN_I(x) _Pragma(#x)
+#define BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN(msg) BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN_I(message(msg))
 
-#define BOOST_SPIRIT_X3_DECLARE_(r, constexpr_, rule_type)                                       \
+#define BOOST_SPIRIT_X4_DECLARE_(r, constexpr_, rule_type)                                       \
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>           \
     [[nodiscard]] constexpr_ bool                                                             \
     parse_rule(                                                                               \
-        ::boost::spirit::x3::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>,    \
+        ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>,    \
         It& first, Se const& last,                                                            \
         Context const& context, typename std::remove_cvref_t<rule_type>::attribute_type& attr \
     );
 
-#define BOOST_SPIRIT_X3_DECLARE(rule_type) BOOST_SPIRIT_X3_DECLARE_(,, rule_type)
-#define BOOST_SPIRIT_X3_DECLARE_CONSTEXPR(rule_type) BOOST_SPIRIT_X3_DECLARE_(, constexpr, rule_type)
+#define BOOST_SPIRIT_X4_DECLARE(rule_type) BOOST_SPIRIT_X4_DECLARE_(,, rule_type)
+#define BOOST_SPIRIT_X4_DECLARE_CONSTEXPR(rule_type) BOOST_SPIRIT_X4_DECLARE_(, constexpr, rule_type)
 
 // NB: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation. We simply
 // can't drop (legit) use cases of `BOOST_SPIRIT_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
-// support in your rule, use `BOOST_SPIRIT_X3_DECLARE_CONSTEXPR`.
+// support in your rule, use `BOOST_SPIRIT_X4_DECLARE_CONSTEXPR`.
 #define BOOST_SPIRIT_DECLARE(...) \
-    BOOST_SPIRIT_X3_DEPRECATED_MACRO_WARN( \
+    BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN( \
         "Use of variadic arguments with `BOOST_SPIRIT_DECLARE` is deprecated due to the heavy compile-time cost of " \
-	"`BOOST_PP_SEQ_*`. Just apply `BOOST_SPIRIT_X3_DECLARE` for each of your rules." \
+	"`BOOST_PP_SEQ_*`. Just apply `BOOST_SPIRIT_X4_DECLARE` for each of your rules." \
     ) \
-    BOOST_PP_SEQ_FOR_EACH(BOOST_SPIRIT_X3_DECLARE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+    BOOST_PP_SEQ_FOR_EACH(BOOST_SPIRIT_X4_DECLARE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
 
-#define BOOST_SPIRIT_X3_DEFINE_(r, constexpr_, rule_name)                                      \
+#define BOOST_SPIRIT_X4_DEFINE_(r, constexpr_, rule_name)                                      \
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>         \
     [[nodiscard]] constexpr_ bool                                                           \
     parse_rule(                                                                             \
-        ::boost::spirit::x3::detail::rule_id<std::remove_cvref_t<decltype(rule_name)>::id>, \
+        ::boost::spirit::x4::detail::rule_id<std::remove_cvref_t<decltype(rule_name)>::id>, \
         It& first, Se const& last,                                                          \
         Context const& context,                                                             \
         std::remove_cvref_t<decltype(rule_name)>::attribute_type& attr                      \
     ) {                                                                                     \
         using rule_t = std::remove_cvref_t<decltype(rule_name)>;                            \
-        return ::boost::spirit::x3::detail::rule_parser<                                    \
+        return ::boost::spirit::x4::detail::rule_parser<                                    \
             typename rule_t::attribute_type, typename rule_t::id, true                      \
         >::call_rule_definition<rule_t::force_attribute>(                                   \
             BOOST_JOIN(rule_name, _def), rule_name.name,                                    \
@@ -684,20 +684,20 @@ namespace boost::spirit::x3
         );                                                                                  \
     }
 
-#define BOOST_SPIRIT_X3_DEFINE(rule_type) BOOST_SPIRIT_X3_DEFINE_(,, rule_type)
-#define BOOST_SPIRIT_X3_DEFINE_CONSTEXPR(rule_type) BOOST_SPIRIT_X3_DEFINE_(, constexpr, rule_type)
+#define BOOST_SPIRIT_X4_DEFINE(rule_type) BOOST_SPIRIT_X4_DEFINE_(,, rule_type)
+#define BOOST_SPIRIT_X4_DEFINE_CONSTEXPR(rule_type) BOOST_SPIRIT_X4_DEFINE_(, constexpr, rule_type)
 
 // NB: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation. We simply
 // can't drop (legit) use cases of `BOOST_SPIRIT_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
-// support in your rule, use `BOOST_SPIRIT_X3_DEFINE_CONSTEXPR`.
+// support in your rule, use `BOOST_SPIRIT_X4_DEFINE_CONSTEXPR`.
 #define BOOST_SPIRIT_DEFINE(...) \
-    BOOST_SPIRIT_X3_DEPRECATED_MACRO_WARN( \
+    BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN( \
         "Use of variadic arguments with `BOOST_SPIRIT_DEFINE` is deprecated due to the heavy compile-time cost of " \
-	"`BOOST_PP_SEQ_*`. Just apply `BOOST_SPIRIT_X3_DEFINE` for each of your rules." \
+	"`BOOST_PP_SEQ_*`. Just apply `BOOST_SPIRIT_X4_DEFINE` for each of your rules." \
     ) \
-    BOOST_PP_SEQ_FOR_EACH(BOOST_SPIRIT_X3_DEFINE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+    BOOST_PP_SEQ_FOR_EACH(BOOST_SPIRIT_X4_DEFINE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
     namespace detail
     {
@@ -722,32 +722,32 @@ namespace boost::spirit::x3
         };
     } // detail
 
-#define BOOST_SPIRIT_X3_INSTANTIATE_(rule_type, It, Se, Context)                           \
+#define BOOST_SPIRIT_X4_INSTANTIATE_(rule_type, It, Se, Context)                           \
     template bool parse_rule<It, Se, Context>(                                             \
-        ::boost::spirit::x3::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
+        ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
         It&, Se const&, Context const&,                                                    \
         typename std::remove_cvref_t<rule_type>::attribute_type&                           \
     );
 
-#define BOOST_SPIRIT_X3_INSTANTIATE_WRAP(...) __VA_ARGS__
+#define BOOST_SPIRIT_X4_INSTANTIATE_WRAP(...) __VA_ARGS__
 
 // NB: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation.
-#define BOOST_SPIRIT_X3_INSTANTIATE(...) \
-    BOOST_SPIRIT_X3_INSTANTIATE_( \
-        BOOST_SPIRIT_X3_INSTANTIATE_WRAP(typename ::boost::spirit::x3::detail::instantiate_macro_helper<__VA_ARGS__>::rule_type), \
-        BOOST_SPIRIT_X3_INSTANTIATE_WRAP(typename ::boost::spirit::x3::detail::instantiate_macro_helper<__VA_ARGS__>::iterator_type), \
-        BOOST_SPIRIT_X3_INSTANTIATE_WRAP(typename ::boost::spirit::x3::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
-        BOOST_SPIRIT_X3_INSTANTIATE_WRAP(typename ::boost::spirit::x3::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
+#define BOOST_SPIRIT_X4_INSTANTIATE(...) \
+    BOOST_SPIRIT_X4_INSTANTIATE_( \
+        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::rule_type), \
+        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::iterator_type), \
+        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
+        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
     )
 
 #define BOOST_SPIRIT_INSTANTIATE(...) \
-    BOOST_SPIRIT_X3_DEPRECATED_MACRO_WARN( \
-        "Use `BOOST_SPIRIT_X3_INSTANTIATE`. `BOOST_SPIRIT_INSTANTIATE` is deprecated because " \
-        "the name was not correctly prefixed with `X3`." \
+    BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN( \
+        "Use `BOOST_SPIRIT_X4_INSTANTIATE`. `BOOST_SPIRIT_INSTANTIATE` is deprecated because " \
+        "the name was not correctly prefixed with `X4`." \
     ) \
-    BOOST_SPIRIT_X3_INSTANTIATE(__VA_ARGS__)
+    BOOST_SPIRIT_X4_INSTANTIATE(__VA_ARGS__)
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

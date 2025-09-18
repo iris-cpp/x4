@@ -22,7 +22,7 @@
 #include <string>
 #include <type_traits>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 // check if we did not break user defined specializations
 namespace check_substitute {
@@ -32,7 +32,7 @@ template <typename T> struct is_bar : std::false_type {};
 template <typename T> struct is_bar<bar<T>> : std::true_type {};
 }
 
-namespace boost::spirit::x3::traits {
+namespace boost::spirit::x4::traits {
 using namespace check_substitute;
 
 template <typename T, typename U>
@@ -48,28 +48,28 @@ struct is_substitute<T, U>
 }
 
 namespace check_substitute {
-using x3::traits::is_substitute_v;
+using x4::traits::is_substitute_v;
 static_assert( is_substitute_v<foo<int>, foo<int>>,  "is_substitute problem");
 static_assert(!is_substitute_v<foo<int>, foo<long>>, "is_substitute problem");
 static_assert( is_substitute_v<bar<int>, bar<int>>,  "is_substitute problem");
 static_assert(!is_substitute_v<bar<int>, bar<long>>, "is_substitute problem");
 }
 
-constexpr x3::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
-constexpr x3::rule<class string_rule, std::string> string_rule("string");
+constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
+constexpr x4::rule<class string_rule, std::string> string_rule("string");
 
-constexpr auto pair_rule_def = string_rule > x3::lit('=') > string_rule;
-constexpr auto string_rule_def = x3::lexeme[*x3::standard::alnum];
+constexpr auto pair_rule_def = string_rule > x4::lit('=') > string_rule;
+constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
 
-BOOST_SPIRIT_X3_DEFINE(pair_rule)
-BOOST_SPIRIT_X3_DEFINE(string_rule)
+BOOST_SPIRIT_X4_DEFINE(pair_rule)
+BOOST_SPIRIT_X4_DEFINE(string_rule)
 
 template <typename Container>
 void test_map_support()
 {
     Container container;
     Container const compare {{"k1", "v1"}, {"k2", "v2"}};
-    constexpr auto rule = pair_rule % x3::lit(',');
+    constexpr auto rule = pair_rule % x4::lit(',');
 
     BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", rule, container));
     BOOST_TEST(container.size() == 2);
@@ -91,7 +91,7 @@ void test_multimap_support()
 {
     Container container;
     Container const compare {{"k1", "v1"}, {"k2", "v2"}, {"k2", "v3"}};
-    constexpr auto rule = pair_rule % x3::lit(',');
+    constexpr auto rule = pair_rule % x4::lit(',');
 
     BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", rule, container));
     BOOST_TEST(container.size() == 3);
@@ -113,7 +113,7 @@ void test_sequence_support()
 {
     Container container;
     Container const compare {"e1", "e2", "e2"};
-    constexpr auto rule = string_rule % x3::lit(',');
+    constexpr auto rule = string_rule % x4::lit(',');
 
     BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 3);
@@ -135,7 +135,7 @@ void test_set_support()
 {
     Container container;
     Container const compare {"e1", "e2"};
-    constexpr auto rule = string_rule % x3::lit(',');
+    constexpr auto rule = string_rule % x4::lit(',');
 
     BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 2);
@@ -157,7 +157,7 @@ void test_multiset_support()
 {
     Container container;
     Container const compare {"e1", "e2", "e2"};
-    constexpr auto rule = string_rule % x3::lit(',');
+    constexpr auto rule = string_rule % x4::lit(',');
 
     BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 3);
@@ -179,7 +179,7 @@ void test_string_support()
 {
     Container container;
     Container const compare {"e1e2e2"};
-    constexpr auto rule = string_rule % x3::lit(',');
+    constexpr auto rule = string_rule % x4::lit(',');
 
     BOOST_TEST(parse("e1,e2,e2", rule, container));
     BOOST_TEST(container.size() == 6);
@@ -198,7 +198,7 @@ void test_string_support()
 
 int main()
 {
-    using x3::traits::is_associative_v;
+    using x4::traits::is_associative_v;
 
     // ------------------------------------------------------------------
 

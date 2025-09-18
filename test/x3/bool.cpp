@@ -14,7 +14,7 @@
 #include <string_view>
 #include <iterator>
 
-struct backwards_bool_policies : boost::spirit::x3::bool_policies<>
+struct backwards_bool_policies : boost::spirit::x4::bool_policies<>
 {
     // we want to interpret a 'true' spelled backwards as 'false'
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompare>
@@ -24,10 +24,10 @@ struct backwards_bool_policies : boost::spirit::x3::bool_policies<>
     )
     {
         using namespace std::string_view_literals;
-        namespace x3 = boost::spirit::x3;
-        if (x3::detail::string_parse("eurt"sv, first, last, x3::unused, case_compare))
+        namespace x4 = boost::spirit::x4;
+        if (x4::detail::string_parse("eurt"sv, first, last, x4::unused, case_compare))
         {
-            x3::move_to(false, attr);   // result is false
+            x4::move_to(false, attr);   // result is false
             return true;
         }
         return false;
@@ -37,10 +37,10 @@ struct backwards_bool_policies : boost::spirit::x3::bool_policies<>
 int main()
 {
     using spirit_test::parse;
-    using boost::spirit::x3::bool_;
+    using boost::spirit::x4::bool_;
 
     {
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(bool_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bool_);
 
         BOOST_TEST(parse("true", bool_));
         BOOST_TEST(parse("false", bool_));
@@ -48,11 +48,11 @@ int main()
     }
 
     {
-        using boost::spirit::x3::true_;
-        using boost::spirit::x3::false_;
+        using boost::spirit::x4::true_;
+        using boost::spirit::x4::false_;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(true_);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(false_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(true_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(false_);
 
         BOOST_TEST(parse("true", true_));
         BOOST_TEST(!parse("true", false_));
@@ -61,9 +61,9 @@ int main()
     }
 
     {
-        using boost::spirit::x3::true_;
-        using boost::spirit::x3::false_;
-        using boost::spirit::x3::no_case;
+        using boost::spirit::x4::true_;
+        using boost::spirit::x4::false_;
+        using boost::spirit::x4::no_case;
 
         BOOST_TEST(parse("True", no_case[bool_]));
         BOOST_TEST(parse("False", no_case[bool_]));
@@ -79,10 +79,10 @@ int main()
     }
 
     {
-        using backwards_bool_type = boost::spirit::x3::bool_parser<bool, boost::spirit::x3::char_encoding::standard, backwards_bool_policies>;
+        using backwards_bool_type = boost::spirit::x4::bool_parser<bool, boost::spirit::x4::char_encoding::standard, backwards_bool_policies>;
         constexpr backwards_bool_type backwards_bool{};
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(backwards_bool);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(backwards_bool);
 
         BOOST_TEST(parse("true", backwards_bool));
         BOOST_TEST(parse("eurt", backwards_bool));
@@ -103,10 +103,10 @@ int main()
             bool b;
         };
 
-        using bool_test_type = boost::spirit::x3::bool_parser<test_bool_type, boost::spirit::x3::char_encoding::standard>;
+        using bool_test_type = boost::spirit::x4::bool_parser<test_bool_type, boost::spirit::x4::char_encoding::standard>;
         constexpr bool_test_type test_bool{};
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(test_bool);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(test_bool);
 
         BOOST_TEST(parse("true", test_bool));
         BOOST_TEST(parse("false", test_bool));

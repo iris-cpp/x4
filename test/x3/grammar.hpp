@@ -12,8 +12,8 @@
 
 #include <boost/spirit/x4.hpp>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
-x3::rule<struct grammar_r, int> const grammar;
+x4::rule<struct grammar_r, int> const grammar;
 using grammar_type = decltype(grammar);
-BOOST_SPIRIT_X3_DECLARE(grammar_type)
+BOOST_SPIRIT_X4_DECLARE(grammar_type)

@@ -26,63 +26,63 @@ constexpr auto binary_test(char const (&binstr)[N], Args&&... args)
 
 int main()
 {
-    using boost::spirit::x3::byte_;
-    using boost::spirit::x3::word;
-    using boost::spirit::x3::dword;
-    using boost::spirit::x3::big_word;
-    using boost::spirit::x3::big_dword;
-    using boost::spirit::x3::little_word;
-    using boost::spirit::x3::little_dword;
+    using boost::spirit::x4::byte_;
+    using boost::spirit::x4::word;
+    using boost::spirit::x4::dword;
+    using boost::spirit::x4::big_word;
+    using boost::spirit::x4::big_dword;
+    using boost::spirit::x4::little_word;
+    using boost::spirit::x4::little_dword;
 
-    using boost::spirit::x3::qword;
-    using boost::spirit::x3::big_qword;
-    using boost::spirit::x3::little_qword;
+    using boost::spirit::x4::qword;
+    using boost::spirit::x4::big_qword;
+    using boost::spirit::x4::little_qword;
 
-    using boost::spirit::x3::bin_float;
-    using boost::spirit::x3::big_bin_float;
-    using boost::spirit::x3::little_bin_float;
-    using boost::spirit::x3::bin_double;
-    using boost::spirit::x3::big_bin_double;
-    using boost::spirit::x3::little_bin_double;
+    using boost::spirit::x4::bin_float;
+    using boost::spirit::x4::big_bin_float;
+    using boost::spirit::x4::little_bin_float;
+    using boost::spirit::x4::bin_double;
+    using boost::spirit::x4::big_bin_double;
+    using boost::spirit::x4::little_bin_double;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(byte_);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(word);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(dword);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_word);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_dword);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_word);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_dword);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(byte_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(word);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(dword);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_word);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_dword);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_word);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_dword);
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(qword);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_qword);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_qword);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(bin_float);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_bin_float);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_bin_float);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(bin_double);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_bin_double);
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_bin_double);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(qword);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_qword);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_qword);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bin_float);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_bin_float);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_bin_float);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bin_double);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_bin_double);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_bin_double);
 
 // TODO: boost::endian::endian_arithmetic value constructor is not constexpr
 #if 0
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(byte_(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(word(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(dword(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_word(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_dword(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_word(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_dword(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(byte_(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(word(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(dword(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_word(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_dword(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_word(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_dword(1));
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(qword(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_qword(1));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_qword(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(qword(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_qword(1));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_qword(1));
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(bin_float(1.0f));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_bin_float(1.0f));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_bin_float(1.0f));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(bin_double(1.0));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(big_bin_double(1.0));
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(little_bin_double(1.0));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bin_float(1.0f));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_bin_float(1.0f));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_bin_float(1.0f));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bin_double(1.0));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(big_bin_double(1.0));
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(little_bin_double(1.0));
 #endif
 
     if constexpr (std::endian::native == std::endian::little)

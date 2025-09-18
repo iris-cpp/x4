@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_MOVE_TO_JAN_17_2013_0859PM
-#define BOOST_SPIRIT_X3_MOVE_TO_JAN_17_2013_0859PM
+#ifndef BOOST_SPIRIT_X4_MOVE_TO_JAN_17_2013_0859PM
+#define BOOST_SPIRIT_X4_MOVE_TO_JAN_17_2013_0859PM
 
 #include <boost/spirit/x4/traits/attribute_category.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
@@ -23,7 +23,7 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // Identical types ---------------------------------------
     //
@@ -60,14 +60,14 @@ namespace boost::spirit::x3
     {
         static_assert(
             !std::is_const_v<T>,
-            "`x3::move_to(T const&, T const&)` is not allowed"
+            "`x4::move_to(T const&, T const&)` is not allowed"
         );
 
         static_assert(
             false,
-            "lvalue reference detected on the `src` argument of `x3::move_to`. "
+            "lvalue reference detected on the `src` argument of `x4::move_to`. "
             "The caller is definitely lacking `std::move` or `std::forward`. If you "
-            "intend to *copy* the mutable value, apply `x3::move_to(std::as_const(attr_), attr)`."
+            "intend to *copy* the mutable value, apply `x4::move_to(std::as_const(attr_), attr)`."
         );
         // Banned: possible, but bug-prone.
         // dest = std::move(src);
@@ -92,16 +92,16 @@ namespace boost::spirit::x3
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se>
-    constexpr void move_to(It const&, Se const&, unused_type&) = delete; // the call site is lacking `x3::assume_container`
+    constexpr void move_to(It const&, Se const&, unused_type&) = delete; // the call site is lacking `x4::assume_container`
 
     template <std::forward_iterator It, std::sentinel_for<It> Se>
-    constexpr void move_to(It const&, Se const&, unused_type const&) = delete; // the call site is lacking `x3::assume_container`
+    constexpr void move_to(It const&, Se const&, unused_type const&) = delete; // the call site is lacking `x4::assume_container`
 
     template <std::forward_iterator It, std::sentinel_for<It> Se>
-    constexpr void move_to(It const&, Se const&, unused_type&&) = delete; // the call site is lacking `x3::assume_container`
+    constexpr void move_to(It const&, Se const&, unused_type&&) = delete; // the call site is lacking `x4::assume_container`
 
     template <std::forward_iterator It, std::sentinel_for<It> Se>
-    constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // the call site is lacking `x3::assume_container`
+    constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // the call site is lacking `x4::assume_container`
 
     // Category specific --------------------------------------
 
@@ -232,9 +232,9 @@ namespace boost::spirit::x3
         requires traits::is_size_one_sequence_v<Dest>
     constexpr void
     move_to(It first, Se last, Dest& dest)
-        noexcept(noexcept(x3::move_to(first, last, fusion::front(dest))))
+        noexcept(noexcept(x4::move_to(first, last, fusion::front(dest))))
     {
-        x3::move_to(first, last, fusion::front(dest));
+        x4::move_to(first, last, fusion::front(dest));
     }
 
     template <traits::ContainerAttr Source, traits::CategorizedAttr<traits::container_attribute> Dest>
@@ -246,11 +246,11 @@ namespace boost::spirit::x3
 
         if constexpr (std::is_rvalue_reference_v<Source&&>)
         {
-            x3::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
+            x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
         }
         else
         {
-            x3::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
+            x4::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
         }
     }
 
@@ -259,13 +259,13 @@ namespace boost::spirit::x3
         requires traits::is_size_one_sequence_v<Dest>
     constexpr void
     move_to(Source&& src, Dest& dest)
-        noexcept(noexcept(x3::move_to(std::forward<Source>(src), fusion::front(dest))))
+        noexcept(noexcept(x4::move_to(std::forward<Source>(src), fusion::front(dest))))
     {
         static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-        x3::move_to(std::forward<Source>(src), fusion::front(dest));
+        x4::move_to(std::forward<Source>(src), fusion::front(dest));
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

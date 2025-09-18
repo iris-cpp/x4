@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_SET_OCT_12_2014_1051AM
-#define BOOST_SPIRIT_X3_CHAR_SET_OCT_12_2014_1051AM
+#ifndef BOOST_SPIRIT_X4_CHAR_SET_OCT_12_2014_1051AM
+#define BOOST_SPIRIT_X4_CHAR_SET_OCT_12_2014_1051AM
 
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/char/detail/cast_char.hpp>
@@ -19,7 +19,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // Parser for a character range
     template <typename Encoding, typename Attribute = typename Encoding::char_type>
@@ -39,8 +39,8 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
         {
             char_type ch = static_cast<char_type>(ch_);  // optimize for token based parsing
-            return (x3::get_case_compare<encoding>(context)(ch, from) >= 0)
-                && (x3::get_case_compare<encoding>(context)(ch , to) <= 0);
+            return (x4::get_case_compare<encoding>(context)(ch, from) >= 0)
+                && (x4::get_case_compare<encoding>(context)(ch , to) <= 0);
         }
 
         char_type from, to;
@@ -98,7 +98,7 @@ namespace boost::spirit::x3
         template <typename Char, typename Context>
         [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
         {
-            return x3::get_case_compare<encoding>(context).in_set(ch_, chset);
+            return x4::get_case_compare<encoding>(context).in_set(ch_, chset);
         }
 
         detail::basic_chset<char_type> chset;
@@ -121,10 +121,10 @@ namespace boost::spirit::x3
         [[nodiscard]] constexpr std::string operator()(char_range<Encoding, Attribute> const& p) const
         {
             // TODO: make more user-friendly && make the format consistent with above
-            return "char_range \"" + x3::to_utf8(Encoding::toucs4(p.from)) + '-' + x3::to_utf8(Encoding::toucs4(p.to))+ '"';
+            return "char_range \"" + x4::to_utf8(Encoding::toucs4(p.from)) + '-' + x4::to_utf8(Encoding::toucs4(p.to))+ '"';
         }
     };
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

@@ -64,10 +64,10 @@ int main()
 {
     // signed integer tests
     {
-        using boost::spirit::x3::int_;
+        using boost::spirit::x4::int_;
         int i;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(int_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(int_);
 
         BOOST_TEST(parse("123456", int_));
         BOOST_TEST(parse("123456", int_, i));
@@ -111,10 +111,10 @@ int main()
 
     // long long tests
     {
-        using boost::spirit::x3::long_long;
+        using boost::spirit::x4::long_long;
         boost::long_long_type ll;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(long_long);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(long_long);
 
         BOOST_TEST(parse("1234567890123456789", long_long));
         BOOST_TEST(parse("1234567890123456789", long_long, ll));
@@ -140,12 +140,12 @@ int main()
 
     // short_ and long_ tests
     {
-        using boost::spirit::x3::short_;
-        using boost::spirit::x3::long_;
+        using boost::spirit::x4::short_;
+        using boost::spirit::x4::long_;
         int i;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(short_);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(long_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(short_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(long_);
 
         BOOST_TEST(parse("12345", short_));
         BOOST_TEST(parse("12345", short_, i));
@@ -158,26 +158,26 @@ int main()
 
     // Check overflow is parse error
     {
-        constexpr boost::spirit::x3::int_parser<boost::int8_t> int8_{};
+        constexpr boost::spirit::x4::int_parser<boost::int8_t> int8_{};
         char c;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(int8_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(int8_);
 
         BOOST_TEST(!parse("999", int8_, c));
 
         int i;
-        using boost::spirit::x3::short_;
+        using boost::spirit::x4::short_;
         BOOST_TEST(!parse("32769", short_, i).is_partial_match());
         BOOST_TEST(!parse("41234", short_, i).is_partial_match());
     }
 
     // int_parser<unused_type> tests
     {
-        using boost::spirit::x3::int_parser;
-        using boost::spirit::x3::unused_type;
+        using boost::spirit::x4::int_parser;
+        using boost::spirit::x4::unused_type;
         constexpr int_parser<unused_type> any_int{};
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(any_int);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(any_int);
 
         BOOST_TEST(parse("123456", any_int));
         BOOST_TEST(parse("-123456", any_int));
@@ -186,9 +186,9 @@ int main()
 
     // action tests
     {
-        using boost::spirit::x3::_attr;
-        using boost::spirit::x3::standard::space;
-        using boost::spirit::x3::int_;
+        using boost::spirit::x4::_attr;
+        using boost::spirit::x4::standard::space;
+        using boost::spirit::x4::int_;
         int n = 0, m = 0;
 
         auto f = [&](auto& ctx){ n = _attr(ctx); };
@@ -203,8 +203,8 @@ int main()
 
     // custom int tests
     {
-        using boost::spirit::x3::int_;
-        using boost::spirit::x3::int_parser;
+        using boost::spirit::x4::int_;
+        using boost::spirit::x4::int_parser;
         custom_int i;
 
         BOOST_TEST(parse("-123456", int_, i));
@@ -214,8 +214,8 @@ int main()
 
     // single-element fusion vector tests
     {
-        using boost::spirit::x3::int_;
-        using boost::spirit::x3::int_parser;
+        using boost::spirit::x4::int_;
+        using boost::spirit::x4::int_parser;
         boost::fusion::vector<int> i;
 
         BOOST_TEST(parse("-123456", int_, i));

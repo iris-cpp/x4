@@ -16,7 +16,7 @@
 #include <string>
 #include <sstream>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 struct error_handler_base
 {
@@ -24,21 +24,21 @@ struct error_handler_base
     void on_error(It const&, Se const&, Exception const& x, Context const& context) const
     {
         std::string message = "Error! Expecting: " + x.which() + " here:";
-        auto& error_handler = x3::get<x3::error_handler_tag>(context).get();
+        auto& error_handler = x4::get<x4::error_handler_tag>(context).get();
         error_handler(x.where(), message);
     }
 };
 
 struct test_inner_rule_class;
-struct test_rule_class : x3::annotate_on_success, error_handler_base {};
+struct test_rule_class : x4::annotate_on_success, error_handler_base {};
 
-x3::rule<test_inner_rule_class> const test_inner_rule = "\"bar\"";
-x3::rule<test_rule_class> const test_rule;
-auto const test_inner_rule_def = x3::lit("bar");
-auto const test_rule_def = x3::lit("foo") > test_inner_rule > x3::lit("git");
+x4::rule<test_inner_rule_class> const test_inner_rule = "\"bar\"";
+x4::rule<test_rule_class> const test_rule;
+auto const test_inner_rule_def = x4::lit("bar");
+auto const test_rule_def = x4::lit("foo") > test_inner_rule > x4::lit("git");
 
-BOOST_SPIRIT_X3_DEFINE(test_inner_rule)
-BOOST_SPIRIT_X3_DEFINE(test_rule)
+BOOST_SPIRIT_X4_DEFINE(test_inner_rule)
+BOOST_SPIRIT_X4_DEFINE(test_rule)
 
 void do_parse(std::string const& line_break)
 {
@@ -48,10 +48,10 @@ void do_parse(std::string const& line_break)
 
     {
         std::stringstream stream;
-        x3::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
+        x4::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
 
-        auto const parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[test_rule];
-        (void)parse(begin, end, parser, x3::standard::space);
+        auto const parser = x4::with<x4::error_handler_tag>(std::ref(error_handler))[test_rule];
+        (void)parse(begin, end, parser, x4::standard::space);
 
         BOOST_TEST_EQ(stream.str(), "In line 2:\nError! Expecting: \"bar\" here:\n  foo\n__^_\n");
     }
@@ -59,9 +59,9 @@ void do_parse(std::string const& line_break)
     {
         // TODO: cleanup when error_handler is reenterable
         std::stringstream stream;
-        x3::error_handler<std::string::const_iterator> error_handler{ begin, end, stream };
+        x4::error_handler<std::string::const_iterator> error_handler{ begin, end, stream };
 
-        auto const parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[test_rule];
+        auto const parser = x4::with<x4::error_handler_tag>(std::ref(error_handler))[test_rule];
         (void)parse(begin, end, parser);
 
         BOOST_TEST_CSTR_EQ(stream.str().c_str(), "In line 1:\nError! Expecting: \"bar\" here:\nfoo\n___^_\n");
@@ -75,10 +75,10 @@ void test_line_break_first(std::string const& line_break)
     auto const end = std::end(input);
 
     std::stringstream stream;
-    x3::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
+    x4::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
 
-    auto const parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[test_rule];
-    (void)parse(begin, end, parser, x3::space);
+    auto const parser = x4::with<x4::error_handler_tag>(std::ref(error_handler))[test_rule];
+    (void)parse(begin, end, parser, x4::space);
 
     BOOST_TEST_EQ(stream.str(), "In line 2:\nError! Expecting: \"bar\" here:\nfoo  foo\n_____^_\n");
 }

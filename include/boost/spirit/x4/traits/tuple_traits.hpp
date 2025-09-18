@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#ifndef BOOST_SPIRIT_X3_TUPLE_TRAITS_JANUARY_2012_1132PM
-#define BOOST_SPIRIT_X3_TUPLE_TRAITS_JANUARY_2012_1132PM
+#ifndef BOOST_SPIRIT_X4_TUPLE_TRAITS_JANUARY_2012_1132PM
+#define BOOST_SPIRIT_X4_TUPLE_TRAITS_JANUARY_2012_1132PM
 
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/include/is_view.hpp>
@@ -14,7 +14,7 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     // Note that these metafunctions MUST be explicitly derived from `std::bool_constant`,
     // because they are used for tag dispatch in some locations.
@@ -74,6 +74,6 @@ namespace boost::spirit::x3::traits
     template <typename View>
     constexpr bool is_size_one_view_v = is_size_one_view<View>::value;
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

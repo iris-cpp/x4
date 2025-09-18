@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_NEGATED_CHAR_PARSER_APR_16_2006_0906AM
-#define BOOST_SPIRIT_X3_NEGATED_CHAR_PARSER_APR_16_2006_0906AM
+#ifndef BOOST_SPIRIT_X4_NEGATED_CHAR_PARSER_APR_16_2006_0906AM
+#define BOOST_SPIRIT_X4_NEGATED_CHAR_PARSER_APR_16_2006_0906AM
 
 #include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/char/char_parser.hpp>
@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
     template <typename Positive>
@@ -61,9 +61,9 @@ namespace boost::spirit::x3
         return cp.positive();
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Positive, typename Context>
     struct attribute_of<negated_char_parser<Positive>, Context>
@@ -75,6 +75,6 @@ namespace boost::spirit::x3::traits
         : has_attribute<Positive, Context>
     {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

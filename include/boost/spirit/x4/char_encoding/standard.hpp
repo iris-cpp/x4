@@ -6,15 +6,15 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_ENCODING_STANDARD_HPP
-#define BOOST_SPIRIT_X3_CHAR_ENCODING_STANDARD_HPP
+#ifndef BOOST_SPIRIT_X4_CHAR_ENCODING_STANDARD_HPP
+#define BOOST_SPIRIT_X4_CHAR_ENCODING_STANDARD_HPP
 
 #include <cassert>
 #include <cstdint>
 #include <cctype>
 #include <climits>
 
-namespace boost::spirit::x3::char_encoding
+namespace boost::spirit::x4::char_encoding
 {
     // Test characters for specified conditions (using std functions)
     struct standard
@@ -156,6 +156,6 @@ namespace boost::spirit::x3::char_encoding
             return static_cast<std::uint32_t>(ch);
         }
     };
-} // boost::spirit::x3::char_encoding
+} // boost::spirit::x4::char_encoding
 
 #endif

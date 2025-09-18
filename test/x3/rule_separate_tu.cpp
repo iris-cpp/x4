@@ -11,25 +11,25 @@
 
 namespace sem_act {
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 auto nop = [](auto const&){};
 
-x3::rule<class used_attr1_r, int> used_attr1;
+x4::rule<class used_attr1_r, int> used_attr1;
 auto const used_attr1_def = used_attr::grammar[nop];
-BOOST_SPIRIT_X3_DEFINE(used_attr1);
+BOOST_SPIRIT_X4_DEFINE(used_attr1);
 
-x3::rule<class used_attr2_r, int> used_attr2;
+x4::rule<class used_attr2_r, int> used_attr2;
 auto const used_attr2_def = unused_attr::grammar[nop];
-BOOST_SPIRIT_X3_DEFINE(used_attr2);
+BOOST_SPIRIT_X4_DEFINE(used_attr2);
 
-x3::rule<class unused_attr1_r> unused_attr1;
+x4::rule<class unused_attr1_r> unused_attr1;
 auto const unused_attr1_def = used_attr::grammar[nop];
-BOOST_SPIRIT_X3_DEFINE(unused_attr1);
+BOOST_SPIRIT_X4_DEFINE(unused_attr1);
 
-x3::rule<class unused_attr2_r> unused_attr2;
+x4::rule<class unused_attr2_r> unused_attr2;
 auto const unused_attr2_def = unused_attr::grammar[nop];
-BOOST_SPIRIT_X3_DEFINE(unused_attr2);
+BOOST_SPIRIT_X4_DEFINE(unused_attr2);
 
 }
 

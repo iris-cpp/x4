@@ -5,13 +5,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_DETAIL_CHAR_RANGE_HPP
-#define BOOST_SPIRIT_X3_CHAR_DETAIL_CHAR_RANGE_HPP
+#ifndef BOOST_SPIRIT_X4_CHAR_DETAIL_CHAR_RANGE_HPP
+#define BOOST_SPIRIT_X4_CHAR_DETAIL_CHAR_RANGE_HPP
 
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     // A closed range [first, last]
     template <typename CharT>
@@ -35,6 +35,6 @@ namespace boost::spirit::x3::detail
         CharT first{};
         CharT last{};
     };
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

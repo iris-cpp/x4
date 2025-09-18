@@ -4,8 +4,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_NUMERIC_FEBRUARY_05_2007_1231PM
-#define BOOST_SPIRIT_X3_NUMERIC_FEBRUARY_05_2007_1231PM
+#ifndef BOOST_SPIRIT_X4_NUMERIC_FEBRUARY_05_2007_1231PM
+#define BOOST_SPIRIT_X4_NUMERIC_FEBRUARY_05_2007_1231PM
 
 #include <boost/spirit/x4/numeric/bool.hpp>
 #include <boost/spirit/x4/numeric/int.hpp>

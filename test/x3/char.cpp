@@ -9,7 +9,7 @@
 =============================================================================*/
 
 #define BOOST_SPIRIT_UNICODE
-#define BOOST_SPIRIT_X3_UNICODE
+#define BOOST_SPIRIT_X4_UNICODE
 
 #include "test.hpp"
 
@@ -24,15 +24,15 @@
 int main()
 {
     {
-        using namespace boost::spirit::x3::standard;
+        using namespace boost::spirit::x4::standard;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_('x'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_('a', 'z'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~char_('x'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~char_('a', 'z'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~~char_('x'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~~char_('a', 'z'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_('x'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_('a', 'z'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_('x'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_('a', 'z'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_('x'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_('a', 'z'));
 
         BOOST_TEST(parse("x", 'x'));
         BOOST_TEST(parse(L"x", L'x'));
@@ -68,7 +68,7 @@ int main()
     }
 
     {
-        using namespace boost::spirit::x3::standard;
+        using namespace boost::spirit::x4::standard;
 
         BOOST_TEST(parse("   x", 'x', space));
         BOOST_TEST(parse(L"   x", L'x', space));
@@ -81,15 +81,15 @@ int main()
     }
 
     {
-        using namespace boost::spirit::x3::standard_wide;
+        using namespace boost::spirit::x4::standard_wide;
 
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_);
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_(L'x'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_(L'a', L'z'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~char_(L'x'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~char_(L'a', L'z'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~~char_(L'x'));
-        BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(~~char_(L'a', L'z'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_);
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_(L'x'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_(L'a', L'z'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'x'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'a', L'z'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'x'));
+        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'a', L'z'));
 
         BOOST_TEST(parse(L"x", char_));
         BOOST_TEST(parse(L"x", char_(L'x')));
@@ -116,7 +116,7 @@ int main()
 
     // unicode (normal ASCII)
     {
-        using namespace boost::spirit::x3::unicode;
+        using namespace boost::spirit::x4::unicode;
 
         BOOST_TEST(parse(U"abcd", +char_(U"abcd")));
         BOOST_TEST(!parse(U"abcd", +char_(U"qwer")));
@@ -137,7 +137,7 @@ int main()
 
     // unicode (escaped Unicode char literals)
     {
-        using namespace boost::spirit::x3::unicode;
+        using namespace boost::spirit::x4::unicode;
 
         auto const chars = char_(U"\u0024\u00a2\u0939\u20ac\U00010348");
 
@@ -163,8 +163,8 @@ int main()
 
 
     {   // single char strings!
-        namespace standard = boost::spirit::x3::standard;
-        namespace wide = boost::spirit::x3::standard_wide;
+        namespace standard = boost::spirit::x4::standard;
+        namespace wide = boost::spirit::x4::standard_wide;
 
         BOOST_TEST(parse("x", "x"));
         BOOST_TEST(parse(L"x", L"x"));
@@ -177,8 +177,8 @@ int main()
 
     {
         // chsets
-        namespace standard = boost::spirit::x3::standard;
-        namespace wide = boost::spirit::x3::standard_wide;
+        namespace standard = boost::spirit::x4::standard;
+        namespace wide = boost::spirit::x4::standard_wide;
 
         BOOST_TEST(parse("x", standard::char_("a-z")));
         BOOST_TEST(!parse("1", standard::char_("a-z")));

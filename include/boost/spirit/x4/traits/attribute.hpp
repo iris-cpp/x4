@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ATTRIBUTE_OF_JAN_7_2012_0914AM
-#define BOOST_SPIRIT_X3_ATTRIBUTE_OF_JAN_7_2012_0914AM
+#ifndef BOOST_SPIRIT_X4_ATTRIBUTE_OF_JAN_7_2012_0914AM
+#define BOOST_SPIRIT_X4_ATTRIBUTE_OF_JAN_7_2012_0914AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 
@@ -16,7 +16,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     // Retrieve the attribute type to use from the given type.
     // This is needed to extract the correct attribute type from proxy classes
@@ -127,9 +127,9 @@ namespace boost::spirit::x3::traits
         static constexpr bool value = has_attribute_v<typename Component::subject_type, Context>;
     };
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     template <typename... T>
     struct type_sequence
@@ -200,6 +200,6 @@ namespace boost::spirit::x3::detail
         typename get_types_of_binary<B, B<L, R>, C>::type
     >;
 
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

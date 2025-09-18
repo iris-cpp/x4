@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM
-#define BOOST_SPIRIT_X3_IS_SUBSTITUTE_JAN_9_2012_1049PM
+#ifndef BOOST_SPIRIT_X4_IS_SUBSTITUTE_JAN_9_2012_1049PM
+#define BOOST_SPIRIT_X4_IS_SUBSTITUTE_JAN_9_2012_1049PM
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
@@ -28,7 +28,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename T>
     struct is_variant;
@@ -162,6 +162,6 @@ namespace boost::spirit::x3::traits
         : is_substitute<T, Attribute>
     {};
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

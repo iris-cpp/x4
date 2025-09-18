@@ -7,8 +7,8 @@
     License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
     http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_TEST_X3_REAL_HPP
-#define BOOST_SPIRIT_TEST_X3_REAL_HPP
+#ifndef BOOST_SPIRIT_X4_TEST_REAL_HPP
+#define BOOST_SPIRIT_X4_TEST_REAL_HPP
 
 #include "test.hpp"
 
@@ -24,15 +24,15 @@
 // numbers with at most 2 decimal digits after the decimal
 // point. e.g. 123,456,789.01
 template <typename T>
-struct ts_real_policies : boost::spirit::x3::ureal_policies<T>
+struct ts_real_policies : boost::spirit::x4::ureal_policies<T>
 {
     //  2 decimal places Max
     template <typename Iterator, typename Attribute>
     static bool
     parse_frac_n(Iterator& first, Iterator const& last, Attribute& attr)
     {
-        namespace x3 = boost::spirit::x3;
-        return boost::spirit::x3::extract_uint<T, 10, 1, 2, true>::call(first, last, attr);
+        namespace x4 = boost::spirit::x4;
+        return boost::spirit::x4::extract_uint<T, 10, 1, 2, true>::call(first, last, attr);
     }
 
     //  No exponent
@@ -56,8 +56,8 @@ struct ts_real_policies : boost::spirit::x3::ureal_policies<T>
     static bool
     parse_n(Iterator& first, Iterator const& last, Accumulator& result)
     {
-        using boost::spirit::x3::uint_parser;
-        namespace x3 = boost::spirit::x3;
+        using boost::spirit::x4::uint_parser;
+        namespace x4 = boost::spirit::x4;
 
         uint_parser<unsigned, 10, 1, 3> uint3;
         uint_parser<unsigned, 10, 3, 3> uint3_3;
@@ -89,13 +89,13 @@ struct ts_real_policies : boost::spirit::x3::ureal_policies<T>
 };
 
 template <typename T>
-struct no_trailing_dot_policy : boost::spirit::x3::real_policies<T>
+struct no_trailing_dot_policy : boost::spirit::x4::real_policies<T>
 {
     static bool const allow_trailing_dot = false;
 };
 
 template <typename T>
-struct no_leading_dot_policy : boost::spirit::x3::real_policies<T>
+struct no_leading_dot_policy : boost::spirit::x4::real_policies<T>
 {
     static bool const allow_leading_dot = false;
 };

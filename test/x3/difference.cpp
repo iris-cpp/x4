@@ -14,10 +14,10 @@
 
 int main()
 {
-    using boost::spirit::x3::standard::char_;
-    using boost::spirit::x3::standard::space;
-    using boost::spirit::x3::lit;
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
+    using boost::spirit::x4::standard::char_;
+    using boost::spirit::x4::standard::space;
+    using boost::spirit::x4::lit;
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
 
     // Basic tests
     {
@@ -42,7 +42,7 @@ int main()
     }
 
     {
-        using boost::spirit::x3::_attr;
+        using boost::spirit::x4::_attr;
 
         std::string s;
 

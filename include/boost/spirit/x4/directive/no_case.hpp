@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_NO_CASE_SEPT_16_2014_0912PM
-#define BOOST_SPIRIT_X3_NO_CASE_SEPT_16_2014_0912PM
+#ifndef BOOST_SPIRIT_X4_NO_CASE_SEPT_16_2014_0912PM
+#define BOOST_SPIRIT_X4_NO_CASE_SEPT_16_2014_0912PM
 
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     // propagate no_case information through the context
     template <typename Subject>
@@ -44,7 +44,7 @@ namespace boost::spirit::x3
             noexcept(noexcept(
                 this->subject.parse(
                     first, last,
-                    x3::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
+                    x4::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
                     rcontext,
                     attr
                 )
@@ -52,7 +52,7 @@ namespace boost::spirit::x3
         {
             return this->subject.parse(
                 first, last,
-                x3::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
+                x4::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
                 rcontext,
                 attr
             );
@@ -63,7 +63,7 @@ namespace boost::spirit::x3
     {
         struct no_case_gen
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] constexpr no_case_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const
                 noexcept(is_parser_nothrow_constructible_v<no_case_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -80,6 +80,6 @@ namespace boost::spirit::x3
 
     } // cpos
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

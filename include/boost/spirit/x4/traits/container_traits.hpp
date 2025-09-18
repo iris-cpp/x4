@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM
-#define BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM
+#ifndef BOOST_SPIRIT_X4_CONTAINER_FEBRUARY_06_2007_1001AM
+#define BOOST_SPIRIT_X4_CONTAINER_FEBRUARY_06_2007_1001AM
 
 #include <boost/spirit/x4/core/unused.hpp>
 
@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     // Customization point
     template <typename T>
@@ -452,6 +452,6 @@ namespace boost::spirit::x3::traits
         using type = std::basic_string<char32_t>;
     };
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

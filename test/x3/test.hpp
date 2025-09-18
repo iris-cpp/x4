@@ -25,87 +25,87 @@
 #include <utility>
 #include <print>
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 namespace spirit_test
 {
     namespace detail
     {
-        // Provide `x3::unused` default arg fallback
-        struct parse_overloads : x3::detail::parse_fn_main
+        // Provide `x4::unused` default arg fallback
+        struct parse_overloads : x4::detail::parse_fn_main
         {
-            using x3::detail::parse_fn_main::operator();
+            using x4::detail::parse_fn_main::operator();
 
             // It/Se + Parser
-            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser>
-            static constexpr x3::parse_result<It, Se>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>
+            static constexpr x4::parse_result<It, Se>
             operator()(It first, Se last, Parser&& p)
             {
-                return x3::parse(first, last, std::forward<Parser>(p), x3::unused);
+                return x4::parse(first, last, std::forward<Parser>(p), x4::unused);
             }
 
             // parse_result + It/Se + Parser
-            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>
             static constexpr void
-            operator()(x3::parse_result<It, Se>& res, It first, Se last, Parser&& p)
+            operator()(x4::parse_result<It, Se>& res, It first, Se last, Parser&& p)
             {
-                return x3::parse(res, first, last, std::forward<Parser>(p), x3::unused);
+                return x4::parse(res, first, last, std::forward<Parser>(p), x4::unused);
             }
 
             // R + Parser
-            template <std::ranges::forward_range R, x3::detail::X3RangeParseParser<R> Parser>
-            static constexpr x3::parse_result_for<R>
+            template <std::ranges::forward_range R, x4::detail::X4RangeParseParser<R> Parser>
+            static constexpr x4::parse_result_for<R>
             operator()(R&& r, Parser&& p)
             {
-                return x3::parse(std::forward<R>(r), std::forward<Parser>(p), x3::unused);
+                return x4::parse(std::forward<R>(r), std::forward<Parser>(p), x4::unused);
             }
 
             // parse_result + R + Parser
-            template <std::ranges::forward_range R, x3::detail::X3RangeParseParser<R> Parser>
+            template <std::ranges::forward_range R, x4::detail::X4RangeParseParser<R> Parser>
             static constexpr void
-            operator()(x3::parse_result_for<R>& res, R&& r, Parser&& p)
+            operator()(x4::parse_result_for<R>& res, R&& r, Parser&& p)
             {
-                return x3::parse(res, std::forward<R>(r), std::forward<Parser>(p), x3::unused);
+                return x4::parse(res, std::forward<R>(r), std::forward<Parser>(p), x4::unused);
             }
 
             // It/Se + Parser + Skipper
-            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser, x3::X3ExplicitParser<It, Se> Skipper>
-            static constexpr x3::parse_result<It, Se>
-            operator()(It first, Se last, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser, x4::X4ExplicitParser<It, Se> Skipper>
+            static constexpr x4::parse_result<It, Se>
+            operator()(It first, Se last, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x3::parse(first, last, std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(first, last, std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
             }
 
             // parse_result + It/Se + Parser + Skipper
-            template <std::forward_iterator It, std::sentinel_for<It> Se, x3::X3Parser<It, Se> Parser, x3::X3ExplicitParser<It, Se> Skipper>
+            template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser, x4::X4ExplicitParser<It, Se> Skipper>
             static constexpr void
-            operator()(x3::parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            operator()(x4::parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x3::parse(res, first, last, std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(res, first, last, std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
             }
 
             // R + Parser + Skipper
             template <
                 std::ranges::forward_range R,
-                x3::detail::X3RangeParseParser<R> Parser,
-                x3::detail::X3RangeParseSkipper<R> Skipper
+                x4::detail::X4RangeParseParser<R> Parser,
+                x4::detail::X4RangeParseSkipper<R> Skipper
             >
-            static constexpr x3::parse_result_for<R>
-            operator()(R&& r, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            static constexpr x4::parse_result_for<R>
+            operator()(R&& r, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x3::parse(std::forward<R>(r), std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(std::forward<R>(r), std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
             }
 
             // parse_result + R + Parser + Skipper
             template <
                 std::ranges::forward_range R,
-                x3::detail::X3RangeParseParser<R> Parser,
-                x3::detail::X3RangeParseSkipper<R> Skipper
+                x4::detail::X4RangeParseParser<R> Parser,
+                x4::detail::X4RangeParseSkipper<R> Skipper
             >
             static constexpr void
-            operator()(x3::parse_result_for<R>& res, R&& r, Parser&& p, Skipper&& s, x3::root_skipper_flag flag = x3::root_skipper_flag::do_post_skip)
+            operator()(x4::parse_result_for<R>& res, R&& r, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x3::parse(res, std::forward<R>(r), std::forward<Parser>(p), x3::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(res, std::forward<R>(r), std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
             }
         }; // parse_overload
 
@@ -146,7 +146,7 @@ namespace spirit_test
     };
 
     template <typename T>
-    struct synth_parser : boost::spirit::x3::parser<synth_parser<T>>
+    struct synth_parser : boost::spirit::x4::parser<synth_parser<T>>
     {
         using attribute_type = T;
 
@@ -161,7 +161,7 @@ namespace spirit_test
         {
             if (iter != last && *iter == 's') {
                 ++iter;
-                boost::spirit::x3::move_to(attribute_type{}, attr);
+                boost::spirit::x4::move_to(attribute_type{}, attr);
                 return true;
             }
             return false;
@@ -177,7 +177,7 @@ namespace spirit_test
 
 using spirit_test::parse;
 
-#define BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(...) \
+#define BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(...) \
     static_assert(::spirit_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
 
 #endif

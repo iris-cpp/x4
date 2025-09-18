@@ -19,7 +19,7 @@
 # pragma warning(disable: 4709) // comma operator within array index expression
 #endif
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 struct setnext
 {
@@ -28,7 +28,7 @@ struct setnext
     template <typename Context>
     void operator()(Context const& ctx) const
     {
-        next = x3::_attr(ctx);
+        next = x4::_attr(ctx);
     }
 
     char& next;
@@ -36,21 +36,21 @@ struct setnext
 
 int main()
 {
-    using x3::int_;
+    using x4::int_;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(x3::int_type{}[std::true_type{}]);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::int_type{}[std::true_type{}]);
 
     {
         int x = 0;
-        auto const fun_action = [&](auto& ctx) { x += x3::_attr(ctx); };
+        auto const fun_action = [&](auto& ctx) { x += x4::_attr(ctx); };
         char const *s1 = "{42}", *e1 = s1 + std::strlen(s1);
         BOOST_TEST(parse(s1, e1, '{' >> int_[fun_action] >> '}'));
     }
     {
-        auto const fail = [](auto& ctx) { x3::_pass(ctx) = false; };
+        auto const fail = [](auto& ctx) { x4::_pass(ctx) = false; };
         std::string input("1234 6543");
         char next = '\0';
-        BOOST_TEST(parse(input, x3::int_[fail] | x3::digit[setnext(next)], x3::space).is_partial_match());
+        BOOST_TEST(parse(input, x4::int_[fail] | x4::digit[setnext(next)], x4::space).is_partial_match());
         BOOST_TEST(next == '1');
     }
 
@@ -59,7 +59,7 @@ int main()
         auto p = '{' >> int_ >> '}';
 
         spirit_test::stationary st { 0 };
-        static_assert(x3::X3Attribute<spirit_test::stationary>);
+        static_assert(x4::X4Attribute<spirit_test::stationary>);
 
         BOOST_TEST(parse("{42}", p[([]{})], st));
         BOOST_TEST_EQ(st.val, 42);

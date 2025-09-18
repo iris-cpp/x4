@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_APRIL_16_2006_1051AM
-#define BOOST_SPIRIT_X3_CHAR_APRIL_16_2006_1051AM
+#ifndef BOOST_SPIRIT_X4_CHAR_APRIL_16_2006_1051AM
+#define BOOST_SPIRIT_X4_CHAR_APRIL_16_2006_1051AM
 
 #include <boost/spirit/x4/char/any_char.hpp>
 #include <boost/spirit/x4/char/literal_char.hpp>
@@ -14,17 +14,17 @@
 
 #include <boost/spirit/x4/char_encoding/standard.hpp>
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 # include <boost/spirit/x4/char_encoding/standard_wide.hpp>
 #endif
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
 #include <type_traits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     namespace standard
     {
@@ -39,14 +39,14 @@ namespace boost::spirit::x3
             }
 
             [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
-            lit(traits::X3VagueArrayOf2Chars<char> auto const& ch) noexcept
+            lit(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
             {
                 return { ch[0] };
             }
         } // helpers
 
         // If you see "no matching overload" on string literals (e.g. `"foo"`),
-        // you may need to include `x3/string/literal_string.hpp`.
+        // you may need to include `string/literal_string.hpp`.
         // If you still see errors after the inclusion, that might be due to
         // mixing incompatible string literals. Don't do that.
 
@@ -57,7 +57,7 @@ namespace boost::spirit::x3
     inline constexpr auto const& char_ = standard::char_; // TODO: this can't overload other character types
     using standard::helpers::lit;
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
     namespace standard_wide
     {
         inline constexpr any_char<char_encoding::standard_wide> char_{};
@@ -71,7 +71,7 @@ namespace boost::spirit::x3
             }
 
             [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
-            lit(traits::X3VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
+            lit(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
             {
                 return { ch[0] };
             }
@@ -84,7 +84,7 @@ namespace boost::spirit::x3
     using standard_wide::helpers::lit;
 #endif
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
     namespace unicode
     {
         inline constexpr any_char<char_encoding::unicode> char_{};
@@ -100,7 +100,7 @@ namespace boost::spirit::x3
             }
 
             [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
-            lit(traits::X3VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
+            lit(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
             {
                 return { ch[0] };
             }
@@ -127,7 +127,7 @@ namespace boost::spirit::x3
             }
         };
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
         template <>
         struct as_parser<wchar_t>
         {
@@ -153,7 +153,7 @@ namespace boost::spirit::x3
             }
         };
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
         template <>
         struct as_parser<wchar_t [2]>
         {
@@ -168,6 +168,6 @@ namespace boost::spirit::x3
 #endif
     }
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

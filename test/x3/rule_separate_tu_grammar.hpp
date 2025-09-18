@@ -11,27 +11,27 @@
 
 #include <boost/spirit/x4.hpp>
 
-// Check that `BOOST_SPIRIT_X3_INSTANTIATE` instantiates `parse_rule` with proper
+// Check that `BOOST_SPIRIT_X4_INSTANTIATE` instantiates `parse_rule` with proper
 // types when a rule has no attribute.
 
 namespace unused_attr {
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
 // skipper must has no attribute, checks `parse` and `skip_over`
-using skipper_type = x3::rule<class skipper_r>;
+using skipper_type = x4::rule<class skipper_r>;
 const skipper_type skipper;
-BOOST_SPIRIT_X3_DECLARE(skipper_type)
+BOOST_SPIRIT_X4_DECLARE(skipper_type)
 
 // the `unused_type const` must have the same effect as no attribute
-using skipper2_type = x3::rule<class skipper2_r, x3::unused_type const>;
+using skipper2_type = x4::rule<class skipper2_r, x4::unused_type const>;
 const skipper2_type skipper2;
-BOOST_SPIRIT_X3_DECLARE(skipper2_type)
+BOOST_SPIRIT_X4_DECLARE(skipper2_type)
 
 // grammar must has no attribute, checks `parse` and `phrase_parse`
-using grammar_type = x3::rule<class grammar_r>;
+using grammar_type = x4::rule<class grammar_r>;
 const grammar_type grammar;
-BOOST_SPIRIT_X3_DECLARE(grammar_type)
+BOOST_SPIRIT_X4_DECLARE(grammar_type)
 
 }
 
@@ -39,14 +39,14 @@ BOOST_SPIRIT_X3_DECLARE(grammar_type)
 
 namespace used_attr {
 
-namespace x3 = boost::spirit::x3;
+namespace x4 = boost::spirit::x4;
 
-using skipper_type = x3::rule<class skipper_r>;
+using skipper_type = x4::rule<class skipper_r>;
 const skipper_type skipper;
-BOOST_SPIRIT_X3_DECLARE(skipper_type)
+BOOST_SPIRIT_X4_DECLARE(skipper_type)
 
-using grammar_type = x3::rule<class grammar_r, int, true>;
+using grammar_type = x4::rule<class grammar_r, int, true>;
 const grammar_type grammar;
-BOOST_SPIRIT_X3_DECLARE(grammar_type)
+BOOST_SPIRIT_X4_DECLARE(grammar_type)
 
 }

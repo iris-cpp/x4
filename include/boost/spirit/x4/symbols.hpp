@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SYMBOLS_MARCH_11_2007_1055AM
-#define BOOST_SPIRIT_X3_SYMBOLS_MARCH_11_2007_1055AM
+#ifndef BOOST_SPIRIT_X4_SYMBOLS_MARCH_11_2007_1055AM
+#define BOOST_SPIRIT_X4_SYMBOLS_MARCH_11_2007_1055AM
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -22,7 +22,7 @@
 #include <boost/spirit/x4/char_encoding/standard.hpp>
 #include <boost/spirit/x4/char_encoding/standard_wide.hpp>
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
@@ -41,7 +41,7 @@
 # pragma warning(disable: 4355) // 'this' : used in base member initializer list warning
 #endif
 
-#define BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING(old_api) \
+#define BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING(old_api) \
     "Use `shared_" old_api "` instead. `" old_api "` has had a " \
     "*implicit* trait where the underlying storage is shared via " \
     "`std::shared_ptr`. This disallows `constexpr` usage in generic " \
@@ -50,7 +50,7 @@
     "represent this trait, so the usage of the old API is strongly " \
     "discouraged."
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
 namespace detail
 {
@@ -252,15 +252,15 @@ namespace detail
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr) const
             noexcept(
-                noexcept(x3::skip_over(first, last, context)) &&
-                noexcept(x3::move_to(std::declval<value_type const&>(), attr))
+                noexcept(x4::skip_over(first, last, context)) &&
+                noexcept(x4::move_to(std::declval<value_type const&>(), attr))
             )
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
 
-            if (value_type const* val_ptr = lookup->find(first, last, x3::get_case_compare<Encoding>(context)))
+            if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(context)))
             {
-                x3::move_to(*val_ptr, attr);
+                x4::move_to(*val_ptr, attr);
                 return true;
             }
             return false;
@@ -348,7 +348,7 @@ namespace detail
     };
 
     template <typename Encoding, typename T = unused_type, typename Lookup = tst<typename Encoding::char_type, T>>
-    struct [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
+    struct [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
     symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
     {
         using base_type = shared_symbols_parser<Encoding, T, Lookup>;
@@ -390,48 +390,48 @@ namespace detail
     namespace standard
     {
         template <typename T = unused_type>
-        using symbols [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-            = x3::shared_symbols_parser<char_encoding::standard, T>;
+        using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
+            = x4::shared_symbols_parser<char_encoding::standard, T>;
 
         template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::standard, T>;
+        using shared_symbols = x4::shared_symbols_parser<char_encoding::standard, T>;
 
         template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::standard, T>;
+        using unique_symbols = x4::unique_symbols_parser<char_encoding::standard, T>;
     } // standard
 
     using standard::symbols;
     using standard::shared_symbols;
     using standard::unique_symbols;
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
     namespace standard_wide
     {
         template <typename T = unused_type>
-        using symbols [[deprecated(BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-            = x3::shared_symbols_parser<char_encoding::standard_wide, T>;
+        using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
+            = x4::shared_symbols_parser<char_encoding::standard_wide, T>;
 
         template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::standard_wide, T>;
+        using shared_symbols = x4::shared_symbols_parser<char_encoding::standard_wide, T>;
 
         template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::standard_wide, T>;
+        using unique_symbols = x4::unique_symbols_parser<char_encoding::standard_wide, T>;
     } // standard_wide
 #endif
 
-#ifdef BOOST_SPIRIT_X3_UNICODE
+#ifdef BOOST_SPIRIT_X4_UNICODE
     namespace unicode {
         template <typename T = unused_type>
-        using shared_symbols = x3::shared_symbols_parser<char_encoding::unicode, T>;
+        using shared_symbols = x4::shared_symbols_parser<char_encoding::unicode, T>;
 
         template <typename T = unused_type>
-        using unique_symbols = x3::unique_symbols_parser<char_encoding::unicode, T>;
+        using unique_symbols = x4::unique_symbols_parser<char_encoding::unicode, T>;
     } // unicode
 #endif
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-#undef BOOST_SPIRIT_X3_IMPLICIT_SHARED_SYMBOLS_WARNING
+#undef BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING
 
 #if defined(BOOST_MSVC)
 # pragma warning(pop)

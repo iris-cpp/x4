@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_NUMERIC_BOOL_HPP
-#define BOOST_SPIRIT_X3_NUMERIC_BOOL_HPP
+#ifndef BOOST_SPIRIT_X4_NUMERIC_BOOL_HPP
+#define BOOST_SPIRIT_X4_NUMERIC_BOOL_HPP
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename T, typename Encoding, typename BoolPolicies = bool_policies<T>>
     struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
@@ -43,7 +43,7 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, RContext const&, T& attr) const
             // TODO: noexcet
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
             return policies_.parse_true(first, last, attr, get_case_compare<encoding>(context))
                 || policies_.parse_false(first, last, attr, get_case_compare<encoding>(context));
         }
@@ -57,7 +57,7 @@ namespace boost::spirit::x3
             T attr_;
             if (bool_parser::parse(first, last, context, unused, attr_))
             {
-                x3::move_to(std::move(attr_), attr_param);
+                x4::move_to(std::move(attr_), attr_param);
                 return true;
             }
             return false;
@@ -100,9 +100,9 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, RContext const&, T& attr) const
             // TODO: noexcept
         {
-            x3::skip_over(first, last, context);
-            return (n_ && policies_.parse_true(first, last, attr, x3::get_case_compare<encoding>(context)))
-                || (!n_ && policies_.parse_false(first, last, attr, x3::get_case_compare<encoding>(context)));
+            x4::skip_over(first, last, context);
+            return (n_ && policies_.parse_true(first, last, attr, x4::get_case_compare<encoding>(context)))
+                || (!n_ && policies_.parse_false(first, last, attr, x4::get_case_compare<encoding>(context)));
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
@@ -114,7 +114,7 @@ namespace boost::spirit::x3
             T attr_;
             if (literal_bool_parser::parse(first, last, context, rcontext, attr_))
             {
-                x3::move_to(std::move(attr_), attr_param);
+                x4::move_to(std::move(attr_), attr_param);
                 return true;
             }
             return false;
@@ -137,7 +137,7 @@ namespace boost::spirit::x3
         inline constexpr false_type false_{false};
     }
 
-#ifndef BOOST_SPIRIT_X3_NO_STANDARD_WIDE
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
     namespace standard_wide
     {
         using bool_type = bool_parser<bool, char_encoding::standard_wide>;
@@ -157,6 +157,6 @@ namespace boost::spirit::x3
     using standard::true_;
     using standard::false_;
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

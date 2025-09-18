@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
-#define BOOST_SPIRIT_X3_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
+#ifndef BOOST_SPIRIT_X4_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
+#define BOOST_SPIRIT_X4_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
 
 #include <boost/spirit/x4/traits/subrange_traits.hpp>
 #include <boost/spirit/x4/traits/variant_traits.hpp>
@@ -18,14 +18,14 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     struct unused_type;
     struct unused_container_type;
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     struct unused_attribute {};
     struct plain_attribute {};
@@ -127,6 +127,6 @@ namespace boost::spirit::x3::traits
         using type = container_attribute;
     };
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

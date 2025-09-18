@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM
-#define BOOST_SPIRIT_X3_BINARY_MAY_08_2007_0808AM
+#ifndef BOOST_SPIRIT_X4_BINARY_MAY_08_2007_0808AM
+#define BOOST_SPIRIT_X4_BINARY_MAY_08_2007_0808AM
 
 #include <boost/config.hpp>
 
@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <climits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename T, boost::endian::order endian, std::size_t bits>
     struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
@@ -48,7 +48,7 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, unused_type, Attribute& attr_param) const
             // TODO: noexcept
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
 
             unsigned char const* bytes = n_.data();
 
@@ -62,7 +62,7 @@ namespace boost::spirit::x3
             }
 
             first = it;
-            x3::move_to(n_, attr_param);
+            x4::move_to(n_, attr_param);
             return true;
         }
 
@@ -82,7 +82,7 @@ namespace boost::spirit::x3
         parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr_param) const
             // TODO: noexcept
         {
-            x3::skip_over(first, last, context);
+            x4::skip_over(first, last, context);
 
             // Properly align the buffer for performance reasons
             alignas(T) unsigned char buf[sizeof(T)];
@@ -98,7 +98,7 @@ namespace boost::spirit::x3
             first = it;
 
             static_assert(bits % CHAR_BIT == 0, "Boost.Endian supports only multiples of CHAR_BIT");
-            x3::move_to(
+            x4::move_to(
                 endian::endian_load<T, bits / CHAR_BIT, endian>(buf),
                 attr_param
             );
@@ -115,31 +115,31 @@ namespace boost::spirit::x3
 
     inline namespace cpos
     {
-    #define BOOST_SPIRIT_X3_BINARY_PARSER(name, endiantype, attrtype, bits) \
+    #define BOOST_SPIRIT_X4_BINARY_PARSER(name, endiantype, attrtype, bits) \
         using name##type = any_binary_parser<attrtype, boost::endian::order::endiantype, bits>; \
         inline constexpr name##type name{};
 
 
-        BOOST_SPIRIT_X3_BINARY_PARSER(byte_, native, uint_least8_t, 8)
-        BOOST_SPIRIT_X3_BINARY_PARSER(word, native, uint_least16_t, 16)
-        BOOST_SPIRIT_X3_BINARY_PARSER(big_word, big, uint_least16_t, 16)
-        BOOST_SPIRIT_X3_BINARY_PARSER(little_word, little, uint_least16_t, 16)
-        BOOST_SPIRIT_X3_BINARY_PARSER(dword, native, uint_least32_t, 32)
-        BOOST_SPIRIT_X3_BINARY_PARSER(big_dword, big, uint_least32_t, 32)
-        BOOST_SPIRIT_X3_BINARY_PARSER(little_dword, little, uint_least32_t, 32)
+        BOOST_SPIRIT_X4_BINARY_PARSER(byte_, native, uint_least8_t, 8)
+        BOOST_SPIRIT_X4_BINARY_PARSER(word, native, uint_least16_t, 16)
+        BOOST_SPIRIT_X4_BINARY_PARSER(big_word, big, uint_least16_t, 16)
+        BOOST_SPIRIT_X4_BINARY_PARSER(little_word, little, uint_least16_t, 16)
+        BOOST_SPIRIT_X4_BINARY_PARSER(dword, native, uint_least32_t, 32)
+        BOOST_SPIRIT_X4_BINARY_PARSER(big_dword, big, uint_least32_t, 32)
+        BOOST_SPIRIT_X4_BINARY_PARSER(little_dword, little, uint_least32_t, 32)
     #ifdef BOOST_HAS_LONG_LONG
-        BOOST_SPIRIT_X3_BINARY_PARSER(qword, native, uint_least64_t, 64)
-        BOOST_SPIRIT_X3_BINARY_PARSER(big_qword, big, uint_least64_t, 64)
-        BOOST_SPIRIT_X3_BINARY_PARSER(little_qword, little, uint_least64_t, 64)
+        BOOST_SPIRIT_X4_BINARY_PARSER(qword, native, uint_least64_t, 64)
+        BOOST_SPIRIT_X4_BINARY_PARSER(big_qword, big, uint_least64_t, 64)
+        BOOST_SPIRIT_X4_BINARY_PARSER(little_qword, little, uint_least64_t, 64)
     #endif
-        BOOST_SPIRIT_X3_BINARY_PARSER(bin_float, native, float, sizeof(float) * CHAR_BIT)
-        BOOST_SPIRIT_X3_BINARY_PARSER(big_bin_float, big, float, sizeof(float) * CHAR_BIT)
-        BOOST_SPIRIT_X3_BINARY_PARSER(little_bin_float, little, float, sizeof(float) * CHAR_BIT)
-        BOOST_SPIRIT_X3_BINARY_PARSER(bin_double, native, double, sizeof(double) * CHAR_BIT)
-        BOOST_SPIRIT_X3_BINARY_PARSER(big_bin_double, big, double, sizeof(double) * CHAR_BIT)
-        BOOST_SPIRIT_X3_BINARY_PARSER(little_bin_double, little, double, sizeof(double) * CHAR_BIT)
+        BOOST_SPIRIT_X4_BINARY_PARSER(bin_float, native, float, sizeof(float) * CHAR_BIT)
+        BOOST_SPIRIT_X4_BINARY_PARSER(big_bin_float, big, float, sizeof(float) * CHAR_BIT)
+        BOOST_SPIRIT_X4_BINARY_PARSER(little_bin_float, little, float, sizeof(float) * CHAR_BIT)
+        BOOST_SPIRIT_X4_BINARY_PARSER(bin_double, native, double, sizeof(double) * CHAR_BIT)
+        BOOST_SPIRIT_X4_BINARY_PARSER(big_bin_double, big, double, sizeof(double) * CHAR_BIT)
+        BOOST_SPIRIT_X4_BINARY_PARSER(little_bin_double, little, double, sizeof(double) * CHAR_BIT)
 
-    #undef BOOST_SPIRIT_X3_BINARY_PARSER
+    #undef BOOST_SPIRIT_X4_BINARY_PARSER
     } // cpos
 
     template <typename T, std::size_t bits>
@@ -190,6 +190,6 @@ namespace boost::spirit::x3
         }
     };
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_SEQUENCE_JAN_06_2013_1015AM
-#define BOOST_SPIRIT_X3_SEQUENCE_JAN_06_2013_1015AM
+#ifndef BOOST_SPIRIT_X4_SEQUENCE_JAN_06_2013_1015AM
+#define BOOST_SPIRIT_X4_SEQUENCE_JAN_06_2013_1015AM
 
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Left, typename Right>
     struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
@@ -54,7 +54,7 @@ namespace boost::spirit::x3
                 return true;
             }
 
-            if (x3::has_expectation_failure(context))
+            if (x4::has_expectation_failure(context))
             {
                 // don't rollback iterator (mimicking exception-like behavior)
                 return false;
@@ -74,7 +74,7 @@ namespace boost::spirit::x3
         }
     };
 
-    template <X3Subject Left, X3Subject Right>
+    template <X4Subject Left, X4Subject Right>
     [[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
     operator>>(Left&& left, Right&& right)
         noexcept(
@@ -90,7 +90,7 @@ namespace boost::spirit::x3
         return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
     }
 
-    template <X3Subject Left, X3Subject Right>
+    template <X4Subject Left, X4Subject Right>
     [[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>
     operator>(Left&& left, Right&& right)
         noexcept(
@@ -112,13 +112,13 @@ namespace boost::spirit::x3
             expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))
         };
     }
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Left, typename Right, typename Context>
-    struct attribute_of<x3::sequence<Left, Right>, Context>
-        : x3::detail::attribute_of_binary<fusion::deque, x3::sequence, Left, Right, Context> {};
-} // boost::spirit::x3::traits
+    struct attribute_of<x4::sequence<Left, Right>, Context>
+        : x4::detail::attribute_of_binary<fusion::deque, x4::sequence, Left, Right, Context> {};
+} // boost::spirit::x4::traits
 
 #endif

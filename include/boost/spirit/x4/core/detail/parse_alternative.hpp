@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
-#define BOOST_SPIRIT_X3_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
+#ifndef BOOST_SPIRIT_X4_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
+#define BOOST_SPIRIT_X4_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
 
 #include <boost/spirit/x4/core/move_to.hpp>
 
@@ -22,13 +22,13 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Left, typename Right>
     struct alternative;
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     struct pass_variant_unused
     {
@@ -193,7 +193,7 @@ namespace boost::spirit::x3::detail
             Parser, It, Se, Context, RContext,
             std::remove_reference_t<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>
         > &&
-        noexcept(x3::move_to(
+        noexcept(x4::move_to(
             std::declval<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type&&>(),
             attribute
         ))
@@ -205,7 +205,7 @@ namespace boost::spirit::x3::detail
 
         if (p.parse(first, last, context, rcontext, attr_))
         {
-            x3::move_to(std::move(attr_), attribute);
+            x4::move_to(std::move(attr_), attribute);
             return true;
         }
         return false;
@@ -258,6 +258,6 @@ namespace boost::spirit::x3::detail
         }
     };
 
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

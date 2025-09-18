@@ -5,15 +5,15 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_CHAR_DETAIL_CHAR_RANGE_FUNCTIONS_HPP
-#define BOOST_SPIRIT_X3_CHAR_DETAIL_CHAR_RANGE_FUNCTIONS_HPP
+#ifndef BOOST_SPIRIT_X4_CHAR_DETAIL_CHAR_RANGE_FUNCTIONS_HPP
+#define BOOST_SPIRIT_X4_CHAR_DETAIL_CHAR_RANGE_FUNCTIONS_HPP
 
 #include <boost/spirit/x4/char/detail/char_range.hpp>
 
 #include <limits>
 #include <concepts>
 
-namespace boost::spirit::x3::detail
+namespace boost::spirit::x4::detail
 {
     template <typename CharT>
     [[nodiscard]] constexpr bool
@@ -103,6 +103,6 @@ namespace boost::spirit::x3::detail
             return x == y;
         }
     };
-} // boost::spirit::x3::detail
+} // boost::spirit::x4::detail
 
 #endif

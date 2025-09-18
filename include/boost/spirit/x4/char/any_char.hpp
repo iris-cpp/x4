@@ -5,13 +5,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_ANY_CHAR_APRIL_16_2006_1051AM
-#define BOOST_SPIRIT_X3_ANY_CHAR_APRIL_16_2006_1051AM
+#ifndef BOOST_SPIRIT_X4_ANY_CHAR_APRIL_16_2006_1051AM
+#define BOOST_SPIRIT_X4_ANY_CHAR_APRIL_16_2006_1051AM
 
 #include <boost/spirit/x4/char/literal_char.hpp>
 #include <boost/spirit/x4/char/char_set.hpp>
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Encoding>
     struct any_char : char_parser<any_char<Encoding>>
@@ -58,6 +58,6 @@ namespace boost::spirit::x3
             return { std::move(sv) };
         }
     };
-} // boost::spirit::x3
+} // boost::spirit::x4
 
 #endif

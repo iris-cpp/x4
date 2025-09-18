@@ -40,16 +40,16 @@ struct undefined {};
 
 int main()
 {
-    using boost::spirit::x3::standard::char_;
-    using boost::spirit::x3::standard::lit;
-    using boost::spirit::x3::attr;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::unused_type;
-    using boost::spirit::x3::unused;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::eps;
+    using boost::spirit::x4::standard::char_;
+    using boost::spirit::x4::standard::lit;
+    using boost::spirit::x4::attr;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::unused_type;
+    using boost::spirit::x4::unused;
+    using boost::spirit::x4::omit;
+    using boost::spirit::x4::eps;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(char_ | char_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
     {
         BOOST_TEST(parse("a", char_ | char_));
@@ -124,9 +124,9 @@ int main()
     {   // make sure collapsing eps works as expected
         // (compile check only)
 
-        using boost::spirit::x3::rule;
-        using boost::spirit::x3::_attr;
-        using boost::spirit::x3::_val;
+        using boost::spirit::x4::rule;
+        using boost::spirit::x4::_attr;
+        using boost::spirit::x4::_val;
 
         rule<class r1, wchar_t> r1;
         rule<class r2, wchar_t> r2;
@@ -175,14 +175,14 @@ int main()
         //compile test only (bug_march_10_2011_8_35_am)
         using value_type = boost::variant<double, std::string>;
 
-        using boost::spirit::x3::rule;
+        using boost::spirit::x4::rule;
 
         rule<class r1, value_type> r1;
         [[maybe_unused]] auto r1_ = r1 = r1 | eps; // left recursive!
     }
 
     {
-        using boost::spirit::x3::rule;
+        using boost::spirit::x4::rule;
         using d_line = boost::variant<di_ignore, di_include>;
 
         rule<class ignore, di_ignore> ignore;

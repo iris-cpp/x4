@@ -9,7 +9,7 @@
 ==============================================================================*/
 #include <cstdint>
 
-namespace boost::spirit::x3::unicode::detail
+namespace boost::spirit::x4::unicode::detail
 {
     inline constexpr std::uint8_t lowercase_stage1[] = {
 
@@ -751,4 +751,4 @@ namespace boost::spirit::x3::unicode::detail
         return lowercase_stage2[block_offset + ch % 256];
     }
 
-} // boost::spirit::x3::unicode::detail
+} // boost::spirit::x4::unicode::detail

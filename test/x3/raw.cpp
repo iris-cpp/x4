@@ -16,28 +16,28 @@
 #include <iostream>
 #include <string>
 
-using boost::spirit::x3::rule;
+using boost::spirit::x4::rule;
 
 rule<class direct_rule, int> direct_rule = "direct_rule";
 rule<class indirect_rule, int> indirect_rule = "indirect_rule";
 
-auto const direct_rule_def = boost::spirit::x3::int_;
+auto const direct_rule_def = boost::spirit::x4::int_;
 auto const indirect_rule_def = direct_rule;
 
-BOOST_SPIRIT_X3_DEFINE(direct_rule)
-BOOST_SPIRIT_X3_DEFINE(indirect_rule)
+BOOST_SPIRIT_X4_DEFINE(direct_rule)
+BOOST_SPIRIT_X4_DEFINE(indirect_rule)
 
 int main()
 {
-    using namespace boost::spirit::x3::standard;
-    using boost::spirit::x3::raw;
-    using boost::spirit::x3::eps;
-    using boost::spirit::x3::lit;
-    using boost::spirit::x3::_attr;
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::char_;
+    using namespace boost::spirit::x4::standard;
+    using boost::spirit::x4::raw;
+    using boost::spirit::x4::eps;
+    using boost::spirit::x4::lit;
+    using boost::spirit::x4::_attr;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::char_;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(raw['x']);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(raw['x']);
 
     {
         std::ranges::subrange<std::string_view::const_iterator> range;

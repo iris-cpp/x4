@@ -41,13 +41,13 @@ struct test_attribute_type
 
 int main()
 {
-    static_assert(x3::traits::is_optional_v<std::optional<int>>);
+    static_assert(x4::traits::is_optional_v<std::optional<int>>);
 
-    using boost::spirit::x3::int_;
-    using boost::spirit::x3::omit;
-    using boost::spirit::x3::standard::char_;
+    using boost::spirit::x4::int_;
+    using boost::spirit::x4::omit;
+    using boost::spirit::x4::standard::char_;
 
-    BOOST_SPIRIT_X3_ASSERT_CONSTEXPR_CTORS(-int_);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(-int_);
 
     {
         BOOST_TEST(parse("1234", -int_));

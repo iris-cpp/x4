@@ -148,7 +148,7 @@ constexpr std::string_view digit_overflow_base36 =             "1Z141Z30";
 
 int main()
 {
-    using boost::spirit::x3::uint_parser;
+    using boost::spirit::x4::uint_parser;
 
     // arbitrary radix test (base 3)
     {

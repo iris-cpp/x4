@@ -6,15 +6,15 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#ifndef BOOST_SPIRIT_X3_PRINT_TOKEN_JANUARY_20_2013_0814AM
-#define BOOST_SPIRIT_X3_PRINT_TOKEN_JANUARY_20_2013_0814AM
+#ifndef BOOST_SPIRIT_X4_PRINT_TOKEN_JANUARY_20_2013_0814AM
+#define BOOST_SPIRIT_X4_PRINT_TOKEN_JANUARY_20_2013_0814AM
 
 #include <type_traits>
 #include <ios>
 
 #include <cctype>
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     namespace detail
     {
@@ -79,6 +79,6 @@ namespace boost::spirit::x3::traits
         token_printer_debug<T>::print(out, val);
     }
 
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif

@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM
-#define BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM
+#ifndef BOOST_SPIRIT_X4_PARSER_OCTOBER_16_2008_0254PM
+#define BOOST_SPIRIT_X4_PARSER_OCTOBER_16_2008_0254PM
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/context.hpp>
@@ -19,11 +19,11 @@
 #include <concepts>
 #include <utility>
 
-#ifndef BOOST_SPIRIT_X3_NO_RTTI
+#ifndef BOOST_SPIRIT_X4_NO_RTTI
 #include <typeinfo>
 #endif
 
-namespace boost::spirit::x3
+namespace boost::spirit::x4
 {
     template <typename Subject, typename Action>
     struct action;
@@ -36,7 +36,7 @@ namespace boost::spirit::x3
 
 
     template <typename T>
-    concept X3Attribute =
+    concept X4Attribute =
         std::is_object_v<T> && // implies not reference
         (
             std::is_same_v<std::remove_const_t<T>, unused_type> ||
@@ -148,25 +148,25 @@ namespace boost::spirit::x3
     namespace extension
     {
         // In short: if you want to customize the `as_parser(p)` behavior, just
-        // specialize `x3::extension::as_parser` for your class.
+        // specialize `x4::extension::as_parser` for your class.
         //
-        // Older versions of X3 specified the signature `as_spirit_parser(p)` to be
+        // Older versions of X4 specified the signature `as_spirit_parser(p)` to be
         // used for the ADL adaptation of user-defined types. However, many parts in
-        // X3 were instead using ADL of the form `as_parser(p)` to dispatch any types
+        // X4 were instead using ADL of the form `as_parser(p)` to dispatch any types
         // in the first place. This makes it impossible for the control to reach the
         // `as_spirit_parser(p)` call if any user-defined `as_parser(p)` is *more
         // constrained* than `as_spirit_parser(p)`.
         //
         // In other words, the old signature `as_spirit_parser(p)` has never been
-        // implemented correctly since its very first introduction to X3.
+        // implemented correctly since its very first introduction to X4.
         //
         // Additionally, GitHub fulltext search shows that there exists zero usage of
         // `as_spirit_parser` except for the unmaintained blog post written by the
         // original inventor. Therefore, we simply removed the feature.
         //
-        // Furthermore, the current maintainer of X3 believes there are no practical
+        // Furthermore, the current maintainer of X4 believes there are no practical
         // use cases of ADL adaptation on user-defined types. As such, we make the
-        // `x3::as_parser` (not to be confused with `x3::extension::as_parser`) to
+        // `x4::as_parser` (not to be confused with `x4::extension::as_parser`) to
         // model a C++20-ish CPO to inhibit undesired ADL in the first place.
 
         template <typename T>
@@ -175,7 +175,7 @@ namespace boost::spirit::x3
         template <>
         struct as_parser<unused_type>
         {
-            using value_type [[deprecated("Use x3::as_parser_plain_t")]] = unused_type;
+            using value_type [[deprecated("Use x4::as_parser_plain_t")]] = unused_type;
 
             template <typename T>
             [[nodiscard]] static constexpr auto&& call(T&& unused_) noexcept
@@ -188,7 +188,7 @@ namespace boost::spirit::x3
             requires std::is_base_of_v<detail::parser_base, std::remove_cvref_t<Derived>>
         struct as_parser<Derived>
         {
-            using value_type [[deprecated("Use x3::as_parser_plain_t")]] = std::remove_cvref_t<Derived>;
+            using value_type [[deprecated("Use x4::as_parser_plain_t")]] = std::remove_cvref_t<Derived>;
 
             template <typename T>
             [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
@@ -200,7 +200,7 @@ namespace boost::spirit::x3
         template <typename Derived>
         struct as_parser<parser<Derived>>
         {
-            using value_type [[deprecated("Use x3::as_parser_plain_t")]] = Derived;
+            using value_type [[deprecated("Use x4::as_parser_plain_t")]] = Derived;
 
             template <typename T>
             [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
@@ -215,7 +215,7 @@ namespace boost::spirit::x3
         struct as_parser_fn
         {
             template <typename T>
-            static void operator()(T&&) = delete; // If you reach here, your specialization of `x3::extension::as_parser` has a wrong signature, or the type is simply incompatible.
+            static void operator()(T&&) = delete; // If you reach here, your specialization of `x4::extension::as_parser` has a wrong signature, or the type is simply incompatible.
 
             // catch-all default fallback
             template <typename T>
@@ -272,12 +272,12 @@ namespace boost::spirit::x3
 
 
     // This is a very low level API provided for consistency with
-    // `is_parser_nothrow_castable`. Most users should use `X3Subject`
+    // `is_parser_nothrow_castable`. Most users should use `X4Subject`
     // instead.
     template <typename T>
     struct is_parser_castable : std::bool_constant<
         requires {
-            { x3::as_parser(std::declval<T>()) };
+            { x4::as_parser(std::declval<T>()) };
         }
     > {};
 
@@ -293,7 +293,7 @@ namespace boost::spirit::x3
     template <typename T>
     struct is_parser_nothrow_castable : std::bool_constant<
         requires {
-            { x3::as_parser(std::declval<T>()) } noexcept;
+            { x4::as_parser(std::declval<T>()) } noexcept;
         }
     > {};
 
@@ -302,43 +302,43 @@ namespace boost::spirit::x3
 
 
     template <typename T>
-    concept X3ExplicitSubject =
+    concept X4ExplicitSubject =
         std::is_base_of_v<detail::parser_base, std::remove_cvref_t<T>>;
 
     template <typename T>
-    concept X3ImplicitSubject =
+    concept X4ImplicitSubject =
         is_parser_castable_v<T> && // `as_parser(t)` is valid?
         std::is_base_of_v<detail::parser_base, as_parser_plain_t<T>>;
 
-    // A type that models `X3Subject` can be used in generic directives
+    // A type that models `X4Subject` can be used in generic directives
     // and operators. Note that this concept is iterator-agnostic.
     //
     // For example, let `p` denote an object of `T`. Then, `!p` is a
-    // well-formed NOT predicate in X3's domain (with "NOT predicate"
+    // well-formed NOT predicate in X4's domain (with "NOT predicate"
     // referring to that of the PEG semantics) if and only if `T`
-    // models `X3Subject`.
+    // models `X4Subject`.
     template <typename T>
-    concept X3Subject = X3ExplicitSubject<T> || X3ImplicitSubject<T>;
+    concept X4Subject = X4ExplicitSubject<T> || X4ImplicitSubject<T>;
 
 
     // Checks whether `Parser(as_parser(t))` is valid.
     //
     // This trait can be used for checking whether a "Parser" is constructible
-    // with some arbitrary argument `T`. In our (X3 core) use cases, the `Parser`
+    // with some arbitrary argument `T`. In our (X4 core) use cases, the `Parser`
     // is usually a concrete type (e.g. `some_parser<as_parser_plain_t<Subject>>`)
-    // whereas the `T` is some user-provided arbitrary type (e.g. `X3Subject Subject`).
+    // whereas the `T` is some user-provided arbitrary type (e.g. `X4Subject Subject`).
     //
     // This interface can only be used to check whether `Parser`'s single-parameter
     // constructor is available. For multi-parameter construction, manually combine
     // `is_parser_castable` with `std::is_constructible`.
-    template <X3Subject Parser, X3Subject T>
+    template <X4Subject Parser, X4Subject T>
     struct is_parser_constructible : std::false_type {};
 
-    template <X3Subject Parser, X3Subject T>
+    template <X4Subject Parser, X4Subject T>
         requires std::is_constructible_v<Parser, as_parser_t<T>>
     struct is_parser_constructible<Parser, T> : std::true_type {};
 
-    template <X3Subject Parser, X3Subject T>
+    template <X4Subject Parser, X4Subject T>
     constexpr bool is_parser_constructible_v = is_parser_constructible<Parser, T>::value;
 
     // Checks whether `Parser(as_parser(t))` is noexcept.
@@ -346,16 +346,16 @@ namespace boost::spirit::x3
     // This interface can only be used to check whether `Parser`'s single-parameter
     // constructor is available. For multi-parameter construction, manually combine
     // `is_parser_nothrow_castable` with `std::is_nothrow_constructible`.
-    template <X3Subject Parser, X3Subject T>
+    template <X4Subject Parser, X4Subject T>
     struct is_parser_nothrow_constructible : std::false_type {};
 
-    template <X3Subject Parser, X3Subject T>
+    template <X4Subject Parser, X4Subject T>
         requires
             is_parser_nothrow_castable_v<T> &&
             std::is_nothrow_constructible_v<Parser, as_parser_t<T>>
     struct is_parser_nothrow_constructible<Parser, T> : std::true_type {};
 
-    template <X3Subject Parser, X3Subject T>
+    template <X4Subject Parser, X4Subject T>
     constexpr bool is_parser_nothrow_constructible_v = is_parser_nothrow_constructible<Parser, T>::value;
 
 
@@ -369,7 +369,7 @@ namespace boost::spirit::x3
     >
     struct is_parsable
     {
-        static_assert(X3Subject<Parser>);
+        static_assert(X4Subject<Parser>);
         static_assert(!std::is_reference_v<It>);
         static_assert(std::forward_iterator<It>);
         static_assert(std::sentinel_for<Se, It>);
@@ -409,7 +409,7 @@ namespace boost::spirit::x3
     >
     struct is_nothrow_parsable
     {
-        static_assert(X3Subject<Parser>);
+        static_assert(X4Subject<Parser>);
         static_assert(!std::is_reference_v<It>);
         static_assert(std::forward_iterator<It>);
         static_assert(std::sentinel_for<Se, It>);
@@ -436,25 +436,25 @@ namespace boost::spirit::x3
 
 
     template <typename Parser, class It, class Se>
-    concept X3ExplicitParser =
-        X3ExplicitSubject<Parser> &&
+    concept X4ExplicitParser =
+        X4ExplicitSubject<Parser> &&
         is_parsable_v<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
 
     template <typename Parser, class It, class Se>
-    concept X3ImplicitParser =
-        X3ImplicitSubject<Parser> &&
+    concept X4ImplicitParser =
+        X4ImplicitSubject<Parser> &&
         is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
 
-    // The primary "parser" concept of X3, applicable in iterator-aware contexts.
+    // The primary "parser" concept of X4, applicable in iterator-aware contexts.
     //
     // Let `it` denote an lvalue reference of `It`, and let `se` denote a prvalue of `Se`.
     // Let `p` denote an lvalue reference of `Parser`.
     //
-    // For `Parser` to model `X3Parser`, the following conditions must be satisfied:
-    //   -- the expression `x3::as_parser(p)` is well-formed in unevaluated context, and
-    //   -- the expression `cp.parse(it, se, x3::unused, x3::unused, x3::unused)`
+    // For `Parser` to model `X4Parser`, the following conditions must be satisfied:
+    //   -- the expression `x4::as_parser(p)` is well-formed in unevaluated context, and
+    //   -- the expression `cp.parse(it, se, x4::unused, x4::unused, x4::unused)`
     //      is well-formed and the return type is convertible to `bool`, where `cp` denotes a
-    //      const lvalue reference to the result of the expression `x3::as_parser(p)`.
+    //      const lvalue reference to the result of the expression `x4::as_parser(p)`.
     //
     // Although some exotic user-defined parser could be designed to operate on the very
     // specific context type and/or attribute type, we require the parser to at least
@@ -462,25 +462,25 @@ namespace boost::spirit::x3
     // core parsers of Spirit have historically been assuming natural use of `unused_type`
     // in many locations.
     template <typename Parser, class It, class Se>
-    concept X3Parser = X3ExplicitParser<Parser, It, Se> || X3ImplicitParser<Parser, It, Se>;
+    concept X4Parser = X4ExplicitParser<Parser, It, Se> || X4ImplicitParser<Parser, It, Se>;
 
 
-    // The runtime type info that can be obtained via `x3::what(p)`.
-    template <X3Subject Subject, typename Enabled = void>
+    // The runtime type info that can be obtained via `x4::what(p)`.
+    template <X4Subject Subject>
     struct get_info
     {
         [[nodiscard]] static constexpr std::string operator()(Subject const& subject)
         {
             if constexpr (requires {
-                { subject.get_x3_info() } -> std::convertible_to<std::string>;
+                { subject.get_x4_info() } -> std::convertible_to<std::string>;
             })
             {
-                return subject.get_x3_info();
+                return subject.get_x4_info();
             }
             else
             {
                 (void)subject;
-        #ifndef BOOST_SPIRIT_X3_NO_RTTI
+        #ifndef BOOST_SPIRIT_X4_NO_RTTI
                 return typeid(Subject).name();
         #else
                 return "(get_info undefined)";
@@ -496,7 +496,7 @@ namespace boost::spirit::x3
         // (Note: CPO inhibits ADL in general.)
         struct what_fn
         {
-            template <X3Subject Subject>
+            template <X4Subject Subject>
             [[nodiscard]] static constexpr std::string operator()(Subject const& p)
             {
                 return get_info<Subject>{}(p);
@@ -509,17 +509,17 @@ namespace boost::spirit::x3
         inline constexpr detail::what_fn what{}; // no ADL
     } // cpos
 
-} // boost::spirit::x3
+} // boost::spirit::x4
 
-namespace boost::spirit::x3::traits
+namespace boost::spirit::x4::traits
 {
     template <typename Subject, typename Derived, typename Context>
-    struct has_attribute<x3::unary_parser<Subject, Derived>, Context>
+    struct has_attribute<x4::unary_parser<Subject, Derived>, Context>
         : has_attribute<Subject, Context> {};
 
     template <typename Left, typename Right, typename Derived, typename Context>
-    struct has_attribute<x3::binary_parser<Left, Right, Derived>, Context>
+    struct has_attribute<x4::binary_parser<Left, Right, Derived>, Context>
         : std::disjunction<has_attribute<Left, Context>, has_attribute<Right, Context>> {};
-} // boost::spirit::x3::traits
+} // boost::spirit::x4::traits
 
 #endif
