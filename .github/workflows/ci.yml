@@ -5,12 +5,11 @@ on:
   push:
 
 concurrency:
-  group: ${{format('{0}:{1}', github.repository, github.ref)}}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  BOOST_SPIRIT_BUILD_JOBS: 4
-  BOOST_SPIRIT_CACHED_UPSTREAM_LIBS: --with-regex --with-thread --with-atomic --with-chrono --with-container --with-date_time --with-exception --with-math
+  BOOST_SPIRIT_X4_BUILD_JOBS: 4
 
 jobs:
   changes:
@@ -26,6 +25,8 @@ jobs:
           filters: |
             x3:
               - '.github/workflows/*.yml'
+              - 'CMakeLists.txt'
+              - 'test/CMakeLists.txt'
               - 'include/boost/spirit/home/x3/**/*'
               - 'include/boost/spirit/home/x3.hpp'
               - 'test/x3/**/*'
@@ -55,23 +56,24 @@ jobs:
         cpp_version:
           - name: C++23
             number: 23
-            msvc_std: /std:c++23preview
           - name: C++26
             number: 26
-            msvc_std: /std:c++latest
         compiler:
           - name: GCC
             toolset: gcc
             version: 14
+            executable: g++-14
             cxxflags: -fdiagnostics-color=always
           - name: Clang
             toolset: clang
             version: 21
-            cxxflags: -fcolor-diagnostics
+            executable: clang++-21
+            cxxflags: -stdlib=libc++ -fcolor-diagnostics
           - name: MSVC
             toolset: msvc
             version: 2022
-            cxxflags: /EHsc /utf-8 /permissive- /Zc:preprocessor
+            builder_additional_args: -consoleLoggerParameters:ForceConsoleColor
+            executable: cl
 
         spirit_component: ${{ fromJSON(needs.changes.outputs.spirit_component) }}
 
@@ -121,7 +123,6 @@ jobs:
           chmod +x ./llvm.sh
           sudo ./llvm.sh ${{ matrix.compiler.version }}
           sudo apt-get install -y libc++-${{ matrix.compiler.version }}-dev libc++abi-${{ matrix.compiler.version }}-dev libunwind-${{ matrix.compiler.version }}-dev
-          echo "BOOST_SPIRIT_STDLIB=stdlib=libc++" >> "$GITHUB_ENV"
 
       - name: Fetch Environment Info
         id: env-info
@@ -151,8 +152,43 @@ jobs:
 
       - name: Clone upstream Boost libraries
         if: steps.cache-boost.outputs.cache-hit != 'true'
+        shell: bash
         run: |
-          git -c advice.detachedHead=false clone --no-tags --single-branch --branch=${{ steps.env-info.outputs.BOOST_RELEASE_VERSION_NAME }} --depth=1 --quiet --recurse-submodules=":(exclude)libs/spirit" --shallow-submodules https://github.com/boostorg/boost.git ${{ steps.env-info.outputs.BOOST_ROOT }}
+          git -c advice.detachedHead=false clone --no-tags \
+            --single-branch --branch=${{ steps.env-info.outputs.BOOST_RELEASE_VERSION_NAME }} \
+            --depth=1 --filter=blob:none --quiet https://github.com/boostorg/boost.git \
+            "${{ steps.env-info.outputs.BOOST_ROOT }}"
+
+          cd "${{ steps.env-info.outputs.BOOST_ROOT }}"
+          git submodule update --init --depth 1 --recursive -- \
+            tools/build \
+            tools/boost_install \
+            libs/assert \
+            libs/bind \
+            libs/config \
+            libs/container_hash \
+            libs/core \
+            libs/describe \
+            libs/detail \
+            libs/endian \
+            libs/function \
+            libs/function_types \
+            libs/functional \
+            libs/fusion \
+            libs/integer \
+            libs/io \
+            libs/mp11 \
+            libs/mpl \
+            libs/predef \
+            libs/preprocessor \
+            libs/static_assert \
+            libs/throw_exception \
+            libs/tuple \
+            libs/type_index \
+            libs/type_traits \
+            libs/typeof \
+            libs/utility \
+            libs/variant
 
       - name: Build upstream Boost libraries (Ubuntu)
         if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'
@@ -162,15 +198,9 @@ jobs:
         shell: bash
         run: |
           set -xe
-          rm -rf libs/spirit
+          rm -rf libs/spirit_x4
           ./bootstrap.sh --with-toolset=${{ matrix.compiler.toolset }}
           ./b2 -d0 headers
-          ./b2 -d1 -j$BOOST_SPIRIT_BUILD_JOBS $BOOST_SPIRIT_CACHED_UPSTREAM_LIBS link=shared threading=multi variant=${{ matrix.build_type.lowercase }} toolset=${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} cxxstd=${{ matrix.cpp_version.number }} cxxflags="${{ matrix.compiler.cxxflags }}" $BOOST_SPIRIT_STDLIB warnings=extra warnings-as-errors=off
-
-      - uses: TheMrMilchmann/setup-msvc-dev@v3
-        if: matrix.os.name == 'windows'
-        with:
-          arch: x64
 
       - name: Build upstream Boost libraries (Windows)
         if: matrix.os.name == 'windows' && steps.cache-boost.outputs.cache-hit != 'true'
@@ -179,10 +209,9 @@ jobs:
         working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
         shell: cmd
         run: |
-          rd /s /q libs\spirit
+          rd /s /q libs\spirit_x4
           .\bootstrap.bat --with-toolset=${{ matrix.compiler.toolset }}
           .\b2 -d0 headers
-          .\b2 -d1 -j%BOOST_SPIRIT_BUILD_JOBS% %BOOST_SPIRIT_CACHED_UPSTREAM_LIBS% link=shared threading=multi variant=${{ matrix.build_type.lowercase }} toolset=${{ matrix.compiler.toolset }} cxxflags="${{ matrix.cpp_version.msvc_std }} ${{matrix.compiler.cxxflags}}" warnings=extra warnings-as-errors=off
 
       - name: Cache upstream Boost libraries
         if: steps.cache-boost.outputs.cache-hit != 'true'
@@ -193,29 +222,39 @@ jobs:
             ${{ steps.env-info.outputs.BOOST_ROOT }}
             !${{ steps.env-info.outputs.BOOST_ROOT }}/.git
 
-      - name: Build and test (Ubuntu)
-        if: matrix.os.name == 'ubuntu'
+      - name: Configure
         env:
           BOOST_ROOT: ${{ steps.env-info.outputs.BOOST_ROOT }}
         working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
         shell: bash
         run: |
           set -xe
-          cp -rp $GITHUB_WORKSPACE libs/spirit
-          cd libs/spirit/test
-          cd ${{ matrix.spirit_component }}
+          cp -rp "${{ github.workspace }}" libs/spirit_x4
+          cd libs/spirit_x4
+          cmake -B build \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
+            -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
+            -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
+            -S .
 
-          $BOOST_ROOT/b2 -d1 -j$BOOST_SPIRIT_BUILD_JOBS link=shared threading=multi variant=${{ matrix.build_type.lowercase }} toolset=${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} cxxstd=${{ matrix.cpp_version.number }} cxxflags="${{ matrix.compiler.cxxflags }}" $BOOST_SPIRIT_STDLIB warnings=extra warnings-as-errors=off
-
-      - name: Build and test (Windows)
-        if: matrix.os.name == 'windows'
-        env:
-          BOOST_ROOT: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        shell: cmd
+      - name: Build Tests (Ubuntu)
+        if: matrix.os.name == 'ubuntu'
+        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4
         run: |
-          xcopy /S /E /Q %GITHUB_WORKSPACE% libs\spirit\
-          cd libs\spirit\test
-          cd ${{ matrix.spirit_component }}
+          cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.BOOST_SPIRIT_X4_BUILD_JOBS }}
 
-          %BOOST_ROOT%\b2 -d1 -j%BOOST_SPIRIT_BUILD_JOBS% link=shared threading=multi variant=${{ matrix.build_type.lowercase }} toolset=${{ matrix.compiler.toolset }} cxxflags="${{ matrix.cpp_version.msvc_std }} ${{matrix.compiler.cxxflags}}" warnings=extra warnings-as-errors=off
+      - name: Build Tests (Windows)
+        if: matrix.os.name == 'windows'
+        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4
+        run: |
+          cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.BOOST_SPIRIT_X4_BUILD_JOBS }} -- "${{ matrix.compiler.builder_additional_args }}"
+
+      - uses: TheMrMilchmann/setup-msvc-dev@v3
+        if: matrix.os.name == 'windows'
+        with:
+          arch: x64
+
+      - name: Test
+        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4/build/test
+        run: ctest --output-on-failure -C ${{ matrix.build_type.name }}
