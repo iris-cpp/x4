@@ -546,7 +546,7 @@ void print_head(Out& out)
         << "==============================================================================*/\n"
         << "#include <cstdint>\n"
         << "\n"
-        << "namespace boost::spirit::x3::unicode::detail\n"
+        << "namespace boost::spirit::x4::unicode::detail\n"
         << "{"
         ;
 }
@@ -556,7 +556,7 @@ void print_tail(Out& out)
 {
     out
         << "\n"
-        << "} // boost::spirit::x3::unicode::detail\n"
+        << "} // boost::spirit::x4::unicode::detail\n"
         ;
 }
 
