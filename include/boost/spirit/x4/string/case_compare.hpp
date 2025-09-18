@@ -8,8 +8,8 @@
 #ifndef BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
 #define BOOST_SPIRIT_X3_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
 
-#include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/context.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/char/char_class_tags.hpp>
 
 #include <cstdint>

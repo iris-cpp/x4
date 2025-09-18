@@ -8,8 +8,8 @@
 #ifndef BOOST_SPIRIT_X3_ANNOTATE_ON_SUCCESS_HPP
 #define BOOST_SPIRIT_X3_ANNOTATE_ON_SUCCESS_HPP
 
-#include <boost/spirit/x4/support/context.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/context.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 
 #include <iterator>
 #include <type_traits>

@@ -9,7 +9,7 @@
 #define BOOST_SPIRIT_X3_RULE_JAN_08_2012_0326PM
 
 #include <boost/spirit/x4/nonterminal/detail/rule_parser.hpp>
-#include <boost/spirit/x4/support/context.hpp>
+#include <boost/spirit/x4/core/context.hpp>
 #include <boost/preprocessor/variadic/to_seq.hpp>
 #include <boost/preprocessor/variadic/elem.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>

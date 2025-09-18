@@ -17,7 +17,7 @@
 #include <boost/spirit/x4.hpp>
 #include <boost/spirit/x4/binary.hpp>
 #include <boost/spirit/x4/directive/with.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/at.hpp>
 #include <boost/preprocessor/facilities/overload.hpp>

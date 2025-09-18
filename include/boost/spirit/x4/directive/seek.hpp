@@ -11,7 +11,7 @@
 #define BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
 
 #include <iterator>
 #include <type_traits>

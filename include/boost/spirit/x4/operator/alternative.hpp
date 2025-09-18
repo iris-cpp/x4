@@ -10,7 +10,7 @@
 #define BOOST_SPIRIT_X3_ALTERNATIVE_JAN_07_2013_1131AM
 
 #include <boost/spirit/x4/traits/attribute_of_binary.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/operator/detail/alternative.hpp>
 

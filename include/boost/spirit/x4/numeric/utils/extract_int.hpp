@@ -12,7 +12,7 @@
 #ifndef BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
 #define BOOST_SPIRIT_X3_EXTRACT_INT_APRIL_17_2006_0830AM
 
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 
 #include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/traits/attribute_type.hpp>

@@ -12,8 +12,8 @@
 #define BOOST_SPIRIT_X3_CONFIX_MAY_30_2014_1819PM
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 
 #include <iterator>
 #include <type_traits>

@@ -9,7 +9,8 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4/string/tst.hpp>
-#include <boost/spirit/x4/support/case_compare.hpp>
+#include <boost/spirit/x4/string/case_compare.hpp>
+
 #include <boost/spirit/x4/char_encoding/standard.hpp>
 #include <boost/spirit/x4/char_encoding/standard_wide.hpp>
 

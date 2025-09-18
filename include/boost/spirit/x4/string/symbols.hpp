@@ -11,11 +11,13 @@
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/string/tst.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
+
 #include <boost/spirit/x4/traits/string_traits.hpp>
 #include <boost/spirit/x4/traits/move_to.hpp>
-#include <boost/spirit/x4/support/case_compare.hpp>
+
+#include <boost/spirit/x4/string/tst.hpp>
+#include <boost/spirit/x4/string/case_compare.hpp>
 
 #include <boost/spirit/x4/char_encoding/standard.hpp>
 #include <boost/spirit/x4/char_encoding/standard_wide.hpp>

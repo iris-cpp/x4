@@ -9,7 +9,7 @@
 #ifndef BOOST_SPIRIT_X3_SIMPLE_TRACE_DECEMBER_06_2008_1102AM
 #define BOOST_SPIRIT_X3_SIMPLE_TRACE_DECEMBER_06_2008_1102AM
 
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/traits/print_token.hpp>
 #include <boost/spirit/x4/traits/print_attribute.hpp>
 #include <boost/spirit/x4/debug/debug_handler_state.hpp>

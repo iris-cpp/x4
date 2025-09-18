@@ -11,7 +11,7 @@
 
 #include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/traits/has_attribute.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 
 #include <iterator>

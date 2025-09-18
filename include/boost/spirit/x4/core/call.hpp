@@ -8,7 +8,7 @@
 #ifndef BOOST_SPIRIT_X3_CALL_CONTEXT_MAY_26_2014_0234PM
 #define BOOST_SPIRIT_X3_CALL_CONTEXT_MAY_26_2014_0234PM
 
-#include <boost/spirit/x4/support/context.hpp>
+#include <boost/spirit/x4/core/context.hpp>
 
 namespace boost::spirit::x3
 {

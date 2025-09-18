@@ -11,7 +11,7 @@
 #define BOOST_SPIRIT_X3_ATTR_JUL_23_2008_0956AM
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/traits/string_traits.hpp>

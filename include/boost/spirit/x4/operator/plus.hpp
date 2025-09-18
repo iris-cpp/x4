@@ -11,8 +11,8 @@
 #define BOOST_SPIRIT_X3_PLUS_MARCH_13_2007_0127PM
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>

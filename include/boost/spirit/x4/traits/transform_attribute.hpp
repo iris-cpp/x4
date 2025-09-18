@@ -10,7 +10,7 @@
 #define BOOST_SPIRIT_X3_ATTRIBUTE_TRANSFORM_JAN_8_2012_0721PM
 
 #include <boost/spirit/x4/traits/move_to.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 
 #include <type_traits>
 #include <concepts>

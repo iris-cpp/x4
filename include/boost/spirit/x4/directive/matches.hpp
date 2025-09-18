@@ -12,8 +12,8 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/traits/move_to.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 
 #include <iterator>
 #include <type_traits>

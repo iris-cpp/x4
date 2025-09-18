@@ -12,7 +12,7 @@
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
-#include <boost/spirit/x4/support/expectation.hpp>
+#include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/traits/attribute_of.hpp>
 #include <boost/spirit/x4/traits/move_to.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>

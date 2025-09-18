@@ -9,7 +9,7 @@
 #ifndef BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM
 #define BOOST_SPIRIT_X3_CONTAINER_FEBRUARY_06_2007_1001AM
 
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/fusion/support/category_of.hpp>
 #include <boost/fusion/include/deque.hpp>
 #include <boost/fusion/include/is_sequence.hpp>

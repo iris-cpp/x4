@@ -8,8 +8,8 @@
 #ifndef BOOST_SPIRIT_X3_LEXEME_MARCH_24_2007_0802AM
 #define BOOST_SPIRIT_X3_LEXEME_MARCH_24_2007_0802AM
 
-#include <boost/spirit/x4/support/context.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/context.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 

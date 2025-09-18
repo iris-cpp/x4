@@ -9,8 +9,8 @@
 #ifndef BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM
 #define BOOST_SPIRIT_X3_PARSER_OCTOBER_16_2008_0254PM
 
-#include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/context.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/traits/has_attribute.hpp>
 
 #include <iterator>

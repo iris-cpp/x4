@@ -13,7 +13,7 @@
 #include <boost/spirit/x4/char/detail/basic_chset.hpp>
 #include <boost/spirit/x4/traits/string_traits.hpp>
 #include <boost/spirit/x4/string/utf8.hpp>
-#include <boost/spirit/x4/support/case_compare.hpp>
+#include <boost/spirit/x4/string/case_compare.hpp>
 
 #include <ranges>
 #include <string_view>

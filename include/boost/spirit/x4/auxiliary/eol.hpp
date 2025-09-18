@@ -10,7 +10,7 @@
 
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 
 namespace boost { namespace spirit { namespace x3
 {

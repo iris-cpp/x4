@@ -9,7 +9,7 @@
 #ifndef BOOST_SPIRIT_X3_POW10_DECEMBER_26_2008_1118AM
 #define BOOST_SPIRIT_X3_POW10_DECEMBER_26_2008_1118AM
 
-#include <boost/spirit/x4/support/unused.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/traits/numeric_traits.hpp>
 
 #include <concepts>

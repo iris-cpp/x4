@@ -9,8 +9,8 @@
 #define BOOST_SPIRIT_X3_SUPPORT_EXPECTATION_HPP
 
 #include <boost/spirit/x4/core/parser.hpp> // for `x3::what`
-#include <boost/spirit/x4/support/unused.hpp>
-#include <boost/spirit/x4/support/context.hpp>
+#include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>
 
 #include <iterator>
