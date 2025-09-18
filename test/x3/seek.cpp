@@ -9,15 +9,15 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3/auxiliary/eoi.hpp>
-#include <boost/spirit/home/x3/core.hpp>
-#include <boost/spirit/home/x3/char.hpp>
-#include <boost/spirit/home/x3/string.hpp>
-#include <boost/spirit/home/x3/numeric.hpp>
-#include <boost/spirit/home/x3/operator/plus.hpp>
-#include <boost/spirit/home/x3/operator/sequence.hpp>
+#include <boost/spirit/x4/auxiliary/eoi.hpp>
+#include <boost/spirit/x4/core.hpp>
+#include <boost/spirit/x4/char.hpp>
+#include <boost/spirit/x4/string.hpp>
+#include <boost/spirit/x4/numeric.hpp>
+#include <boost/spirit/x4/operator/plus.hpp>
+#include <boost/spirit/x4/operator/sequence.hpp>
 
-#include <boost/spirit/home/x3/directive/seek.hpp>
+#include <boost/spirit/x4/directive/seek.hpp>
 
 #include <vector>
 

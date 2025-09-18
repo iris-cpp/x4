@@ -8,7 +8,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3/support/utility/utf8.hpp>
+#include <boost/spirit/x4/support/utility/utf8.hpp>
 
 #include <string>
 

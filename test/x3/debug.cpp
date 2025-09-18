@@ -9,8 +9,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3.hpp>
-#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
+#include <boost/spirit/x4.hpp>
+#include <boost/spirit/x4/support/utility/error_reporting.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/fusion/include/vector.hpp>

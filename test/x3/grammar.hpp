@@ -10,7 +10,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/x4.hpp>
 
 namespace x3 = boost::spirit::x3;
 

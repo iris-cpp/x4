@@ -9,9 +9,9 @@
 #ifndef BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 #define BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 
-#include <boost/spirit/home/x3/core/parse.hpp>
-#include <boost/spirit/home/x3/core/parser.hpp>
-#include <boost/spirit/home/x3/support/traits/move_to.hpp>
+#include <boost/spirit/x4/core/parse.hpp>
+#include <boost/spirit/x4/core/parser.hpp>
+#include <boost/spirit/x4/support/traits/move_to.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 

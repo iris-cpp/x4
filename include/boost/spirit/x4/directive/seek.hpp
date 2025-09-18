@@ -1,0 +1,85 @@
+/*=============================================================================
+    Copyright (c) 2011 Jamboree
+    Copyright (c) 2014 Lee Clagett
+    Copyright (c) 2017 wanghan02
+    Copyright (c) 2024 Nana Sakisaka
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+==============================================================================*/
+#ifndef BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
+#define BOOST_SPIRIT_X3_SEEK_APRIL_13_2014_1920PM
+
+#include <boost/spirit/x4/core/parser.hpp>
+#include <boost/spirit/x4/support/expectation.hpp>
+
+#include <iterator>
+#include <type_traits>
+#include <utility>
+
+namespace boost::spirit::x3
+{
+    template <typename Subject>
+    struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
+    {
+        using base_type = unary_parser<Subject, seek_directive<Subject>>;
+
+        static constexpr bool is_pass_through_unary = true;
+        static constexpr bool handles_container = Subject::handles_container;
+
+        template <typename SubjectT>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<SubjectT>, seek_directive>) &&
+                std::is_constructible_v<Subject, SubjectT>
+        constexpr seek_directive(SubjectT&& subject)
+            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            : base_type(std::forward<SubjectT>(subject))
+        {}
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        {
+            for (It current(first); ; ++current)
+            {
+                if (this->subject.parse(current, last, context, rcontext, attr))
+                {
+                    first = current;
+                    return true;
+                }
+
+                if (x3::has_expectation_failure(context))
+                {
+                    return false;
+                }
+
+                // fail only after subject fails & no input
+                if (current == last) return false;
+            }
+        }
+    };
+
+    namespace detail
+    {
+        struct seek_gen
+        {
+            template<typename Subject>
+            [[nodiscard]] constexpr seek_directive<as_parser_plain_t<Subject>>
+            operator[](Subject&& subject) const // TODO: MSVC does not support static operator[]
+                noexcept(is_parser_nothrow_constructible_v<seek_directive<as_parser_plain_t<Subject>>, Subject>)
+            {
+                return { as_parser(std::forward<Subject>(subject)) };
+            }
+        };
+
+    } // detail
+
+    inline namespace cpos
+    {
+        inline constexpr detail::seek_gen seek{};
+
+    } // cpos
+
+} // boost::spirit::x3
+
+#endif

@@ -12,9 +12,9 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3/char.hpp>
-#include <boost/spirit/home/x3/numeric.hpp>
-#include <boost/spirit/home/x3/operator.hpp>
+#include <boost/spirit/x4/char.hpp>
+#include <boost/spirit/x4/numeric.hpp>
+#include <boost/spirit/x4/operator.hpp>
 
 #include <climits>
 

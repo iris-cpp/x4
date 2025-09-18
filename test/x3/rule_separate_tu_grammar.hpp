@@ -9,7 +9,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/x4.hpp>
 
 // Check that `BOOST_SPIRIT_X3_INSTANTIATE` instantiates `parse_rule` with proper
 // types when a rule has no attribute.

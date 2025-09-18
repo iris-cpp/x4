@@ -8,7 +8,7 @@
 =============================================================================*/
 #include "test.hpp"
 
-#include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/x4.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>
 #include <boost/fusion/include/vector.hpp>

@@ -9,7 +9,7 @@
 
 #include "rule_separate_tu_grammar.hpp"
 
-#include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/x4.hpp>
 
 namespace unused_attr {
 

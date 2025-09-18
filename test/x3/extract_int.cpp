@@ -8,7 +8,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3/support/numeric_utils/extract_int.hpp>
+#include <boost/spirit/x4/support/numeric_utils/extract_int.hpp>
 
 #include <iostream>
 #include <limits>

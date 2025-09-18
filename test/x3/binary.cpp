@@ -8,7 +8,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3/binary.hpp>
+#include <boost/spirit/x4/binary.hpp>
 
 #include <bit>
 

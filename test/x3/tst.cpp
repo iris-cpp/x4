@@ -8,10 +8,10 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3/string/tst.hpp>
-#include <boost/spirit/home/x3/support/case_compare.hpp>
-#include <boost/spirit/home/x3/char_encoding/standard.hpp>
-#include <boost/spirit/home/x3/char_encoding/standard_wide.hpp>
+#include <boost/spirit/x4/string/tst.hpp>
+#include <boost/spirit/x4/support/case_compare.hpp>
+#include <boost/spirit/x4/char_encoding/standard.hpp>
+#include <boost/spirit/x4/char_encoding/standard_wide.hpp>
 
 #include <string>
 #include <cctype>

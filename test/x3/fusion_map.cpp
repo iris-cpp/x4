@@ -8,7 +8,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/x4.hpp>
 #include <boost/fusion/include/at_key.hpp>
 #include <boost/fusion/include/make_map.hpp>
 #include <boost/fusion/adapted/struct.hpp>
