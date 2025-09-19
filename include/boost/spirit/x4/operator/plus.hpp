@@ -7,8 +7,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_PLUS_MARCH_13_2007_0127PM
-#define BOOST_SPIRIT_X4_PLUS_MARCH_13_2007_0127PM
+#ifndef BOOST_SPIRIT_X4_OPERATOR_PLUS_HPP
+#define BOOST_SPIRIT_X4_OPERATOR_PLUS_HPP
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>

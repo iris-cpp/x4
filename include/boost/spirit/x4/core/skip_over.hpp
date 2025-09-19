@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X4_SKIP_APRIL_16_2006_0625PM
-#define BOOST_SPIRIT_X4_SKIP_APRIL_16_2006_0625PM
+#ifndef BOOST_SPIRIT_X4_CORE_SKIP_OVER_HPP
+#define BOOST_SPIRIT_X4_CORE_SKIP_OVER_HPP
 
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>

@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_DIFFERENCE_FEBRUARY_11_2007_1250PM
-#define BOOST_SPIRIT_X4_DIFFERENCE_FEBRUARY_11_2007_1250PM
+#ifndef BOOST_SPIRIT_X4_OPERATOR_DIFFERENCE_HPP
+#define BOOST_SPIRIT_X4_OPERATOR_DIFFERENCE_HPP
 
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>

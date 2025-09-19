@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_EXTRACT_REAL_APRIL_18_2006_0901AM
-#define BOOST_SPIRIT_X4_EXTRACT_REAL_APRIL_18_2006_0901AM
+#ifndef BOOST_SPIRIT_X4_NUMERIC_UTILS_EXTRACT_REAL_HPP
+#define BOOST_SPIRIT_X4_NUMERIC_UTILS_EXTRACT_REAL_HPP
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>

@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
-#define BOOST_SPIRIT_X4_ATTRIBUTE_CATEGORY_JAN_4_2012_1150AM
+#ifndef BOOST_SPIRIT_X4_TRAITS_ATTRIBUTE_CATEGORY_HPP
+#define BOOST_SPIRIT_X4_TRAITS_ATTRIBUTE_CATEGORY_HPP
 
 #include <boost/spirit/x4/traits/subrange_traits.hpp>
 #include <boost/spirit/x4/traits/variant_traits.hpp>

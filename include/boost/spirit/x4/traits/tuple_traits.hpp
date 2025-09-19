@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#ifndef BOOST_SPIRIT_X4_TUPLE_TRAITS_JANUARY_2012_1132PM
-#define BOOST_SPIRIT_X4_TUPLE_TRAITS_JANUARY_2012_1132PM
+#ifndef BOOST_SPIRIT_X4_TRAITS_TUPLE_TRAITS_HPP
+#define BOOST_SPIRIT_X4_TRAITS_TUPLE_TRAITS_HPP
 
 #include <boost/fusion/support/is_sequence.hpp>
 #include <boost/fusion/include/is_view.hpp>

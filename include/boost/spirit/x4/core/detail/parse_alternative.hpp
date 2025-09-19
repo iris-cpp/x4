@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
-#define BOOST_SPIRIT_X4_ALTERNATIVE_DETAIL_JAN_07_2013_1245PM
+#ifndef BOOST_SPIRIT_X4_CORE_DETAIL_PARSE_ALTERNATIVE_HPP
+#define BOOST_SPIRIT_X4_CORE_DETAIL_PARSE_ALTERNATIVE_HPP
 
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>

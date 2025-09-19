@@ -6,8 +6,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#ifndef BOOST_SPIRIT_X4_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
-#define BOOST_SPIRIT_X4_PRINT_ATTRIBUTE_JANUARY_20_2013_0814AM
+#ifndef BOOST_SPIRIT_X4_DEBUG_PRINT_ATTRIBUTE_HPP
+#define BOOST_SPIRIT_X4_DEBUG_PRINT_ATTRIBUTE_HPP
 
 #include <boost/spirit/x4/traits/attribute_category.hpp>
 #include <boost/spirit/x4/traits/variant_traits.hpp>

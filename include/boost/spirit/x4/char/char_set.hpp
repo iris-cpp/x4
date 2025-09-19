@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X4_CHAR_SET_OCT_12_2014_1051AM
-#define BOOST_SPIRIT_X4_CHAR_SET_OCT_12_2014_1051AM
+#ifndef BOOST_SPIRIT_X4_CHAR_CHAR_SET_HPP
+#define BOOST_SPIRIT_X4_CHAR_CHAR_SET_HPP
 
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/char/detail/cast_char.hpp>

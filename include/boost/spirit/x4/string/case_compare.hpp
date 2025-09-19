@@ -5,8 +5,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X4_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
-#define BOOST_SPIRIT_X4_SUPPORT_NO_CASE_SEPT_24_2014_1125PM
+#ifndef BOOST_SPIRIT_X4_STRING_CASE_COMPARE_HPP
+#define BOOST_SPIRIT_X4_STRING_CASE_COMPARE_HPP
 
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/context.hpp>
