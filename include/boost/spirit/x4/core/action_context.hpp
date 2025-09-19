@@ -18,45 +18,70 @@ namespace boost::spirit::x4
     struct where_context_tag; // _where
     struct attr_context_tag; // _attr
 
-    template <typename Context>
-    [[nodiscard]] constexpr bool&
-    _pass(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    namespace detail
     {
-        return x4::get<parse_pass_context_tag>(context);
-    }
+        struct _pass_fn
+        {
+            template <typename Context>
+            [[nodiscard]] static constexpr bool&
+            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+            {
+                return x4::get<parse_pass_context_tag>(context);
+            }
 
-    template <typename Context>
-    void _pass(Context const&&) = delete; // dangling
+            template <typename Context>
+            static void operator()(Context const&&) = delete; // dangling
+        };
 
-    template <typename Context>
-    [[nodiscard]] constexpr auto&&
-    _val(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+        struct _val_fn
+        {
+            template <typename Context>
+            [[nodiscard]] static constexpr auto&&
+            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+            {
+                return x4::get<rule_val_context_tag>(context);
+            }
+
+            template <typename Context>
+            static void operator()(Context const&&) = delete; // dangling
+        };
+
+        struct _where_fn
+        {
+            template <typename Context>
+            [[nodiscard]] static constexpr auto&&
+            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+            {
+                return x4::get<where_context_tag>(context);
+            }
+
+            template <typename Context>
+            static void operator()(Context const&&) = delete; // dangling
+        };
+
+        struct _attr_fn
+        {
+            template <typename Context>
+            [[nodiscard]] static constexpr auto&&
+            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+            {
+                return x4::get<attr_context_tag>(context);
+            }
+
+            template <typename Context>
+            static void operator()(Context const&&) = delete; // dangling
+        };
+
+    } // detail
+
+    inline namespace cpos
     {
-        return x4::get<rule_val_context_tag>(context);
-    }
+        inline constexpr detail::_pass_fn _pass{};
+        inline constexpr detail::_val_fn _val{};
+        inline constexpr detail::_where_fn _where{};
+        inline constexpr detail::_attr_fn _attr{};
 
-    template <typename Context>
-    void _val(Context const&&) = delete; // dangling
-
-    template <typename Context>
-    [[nodiscard]] constexpr auto&&
-    _where(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-    {
-        return x4::get<where_context_tag>(context);
-    }
-
-    template <typename Context>
-    void _where(Context const&&) = delete; // dangling
-
-    template <typename Context>
-    [[nodiscard]] constexpr auto&&
-    _attr(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-    {
-        return x4::get<attr_context_tag>(context);
-    }
-
-    template <typename Context>
-    void _attr(Context const&&) = delete; // dangling
+    } // cpos
 
 } // boost::spirit::x4
 
