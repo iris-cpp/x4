@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_DIRECTIVE_MATCHES_HPP
+#define BOOST_SPIRIT_X4_DIRECTIVE_MATCHES_HPP
+
 /*=============================================================================
     Copyright (c) 2015 Mario Lang
     Copyright (c) 2001-2011 Hartmut Kaiser
@@ -7,8 +10,6 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_MATCHES_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_MATCHES_HPP
 
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>

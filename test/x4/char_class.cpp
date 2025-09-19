@@ -7,7 +7,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define BOOST_SPIRIT_UNICODE
 #define BOOST_SPIRIT_X4_UNICODE
 
 #include "test.hpp"

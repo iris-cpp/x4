@@ -4,9 +4,8 @@
 #   Copyright (c) 2011 Bryce Lelbach
 #   Copyright (c) 2025 Nana Sakisaka
 #
-#   Use, modification and distribution is subject to the Boost Software
-#   License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-#   http://www.boost.org/LICENSE_1_0.txt)
+#   Distributed under the Boost Software License, Version 1.0. (See accompanying
+#   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #==============================================================================
 
 import-search /boost/config/checks ;
@@ -14,8 +13,6 @@ import config : requires ;
 import modules ;
 import feature ;
 import testing ;
-
-###############################################################################
 
 project spirit-x4
     : requirements
@@ -36,8 +33,6 @@ project spirit-x4
             cxx14_variable_templates
         ]
     ;
-
-###############################################################################
 
 local subproject-name = x4 ;
 
@@ -62,8 +57,6 @@ rule compile-fail ( sources + : requirements * : target-name ? )
     return [ testing.compile-fail $(sources)
            : $(requirements) : $(target-name) ] ;
 }
-
-###############################################################################
 
 run actions.cpp ;
 run alternative.cpp ;

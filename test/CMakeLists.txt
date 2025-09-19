@@ -1,3 +1,8 @@
+# Copyright 2025 Nana Sakisaka
+#
+# Distributed under the Boost Software License, Version 1.0.
+# https://www.boost.org/LICENSE_1_0.txt
+
 # For Spirit-specific tests.
 add_library(boost_spirit_x4_cxx_test INTERFACE)
 set_target_properties(boost_spirit_x4_cxx_test PROPERTIES CXX_EXTENSIONS OFF)

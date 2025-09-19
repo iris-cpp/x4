@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_TEST_X4_TEST_HPP
+#define BOOST_SPIRIT_X4_TEST_X4_TEST_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman
     Copyright (c) 2019 Nikita Kniazev
@@ -6,9 +9,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
-#define BOOST_SPIRIT_TEST_FEBRUARY_01_2007_0605PM
 
+#include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
