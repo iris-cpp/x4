@@ -45,6 +45,7 @@ namespace
     using x4::int_;
     using x4::with;
     using x4::_pass;
+    using x4::_attr;
 
     template<class T>
     constexpr auto value_equals = int_[([](auto& ctx) {

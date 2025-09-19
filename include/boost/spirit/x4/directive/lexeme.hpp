@@ -26,7 +26,9 @@ namespace boost::spirit::x4
         static constexpr bool handles_container = Subject::handles_container;
 
         template <typename SubjectT>
-            requires std::is_constructible_v<Subject, SubjectT>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<SubjectT>, lexeme_directive>) &&
+                std::is_constructible_v<base_type, SubjectT>
         constexpr lexeme_directive(SubjectT&& subject)
             noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
@@ -39,9 +41,8 @@ namespace boost::spirit::x4
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
             requires has_skipper_v<Context>
-        [[nodiscard]] constexpr bool parse(
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
-        ) const
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
             noexcept(
                 noexcept(x4::skip_over(first, last, context)) &&
                 is_nothrow_parsable_v<Subject, It, Se, pre_skip_context_t<Context>, RContext, Attribute>
@@ -62,9 +63,8 @@ namespace boost::spirit::x4
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
             requires (!has_skipper_v<Context>)
-        [[nodiscard]] constexpr bool parse(
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
-        ) const
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
             noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, RContext, Attribute>)
         {
             //  no need to pre-skip if skipper is unused

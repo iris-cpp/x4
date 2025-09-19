@@ -109,6 +109,8 @@ int main()
     using x4::lit;
     using x4::eps;
     using x4::unused_type;
+    using x4::_val;
+    using x4::_attr;
 
     // synth attribute value-init
     {
@@ -140,7 +142,6 @@ int main()
 
     {
         auto r = rule<class r_id, int>{} = eps[([] ([[maybe_unused]] auto& ctx) {
-            using x4::_val;
             static_assert(
                 std::is_same_v<std::decay_t<decltype(_val(ctx))>, unused_type>,
                 "Attribute must not be synthesized"

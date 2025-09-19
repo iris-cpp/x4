@@ -36,9 +36,11 @@ namespace boost::spirit::x4
         static constexpr bool handles_container = true;
 
         template <typename SubjectT>
-            requires std::is_constructible_v<Subject, SubjectT>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<SubjectT>, raw_directive>) &&
+                std::is_constructible_v<base_type, SubjectT>
         constexpr raw_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 
@@ -76,7 +78,7 @@ namespace boost::spirit::x4
             template <X4Subject Subject>
             [[nodiscard]] constexpr raw_directive<as_parser_plain_t<Subject>>
             operator[](Subject&& subject) const
-                noexcept(is_parser_nothrow_constructible_v<raw_directive<as_parser_plain_t<Subject>>, as_parser_t<Subject>>)
+                noexcept(is_parser_nothrow_constructible_v<raw_directive<as_parser_plain_t<Subject>>, Subject>)
             {
                 return { as_parser(std::forward<Subject>(subject)) };
             }

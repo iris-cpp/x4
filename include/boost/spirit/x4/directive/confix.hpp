@@ -25,19 +25,20 @@ namespace boost::spirit::x4
     struct confix_directive :
         unary_parser<Subject, confix_directive<Prefix, Subject, Postfix>>
     {
-        using base_type = unary_parser<Subject, confix_directive<Prefix, Subject, Postfix>>;
+        using base_type = unary_parser<Subject, confix_directive>;
+
         static constexpr bool is_pass_through_unary = true;
         static constexpr bool handles_container = Subject::handles_container;
 
         template <typename PrefixT, typename SubjectT, typename PostfixT>
             requires
                 std::is_constructible_v<Prefix, PrefixT> &&
-                std::is_constructible_v<Subject, SubjectT> &&
+                std::is_constructible_v<base_type, SubjectT> &&
                 std::is_constructible_v<Postfix, PostfixT>
         constexpr confix_directive(PrefixT&& prefix, SubjectT&& subject, PostfixT&& postfix)
             noexcept(
                 std::is_nothrow_constructible_v<Prefix, PrefixT> &&
-                std::is_nothrow_constructible_v<Subject, SubjectT> &&
+                std::is_nothrow_constructible_v<base_type, SubjectT> &&
                 std::is_nothrow_constructible_v<Postfix, PostfixT>
             )
             : base_type(std::forward<SubjectT>(subject))

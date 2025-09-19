@@ -36,7 +36,7 @@ namespace boost::spirit::x4::traits
     struct optional_attribute {};
     struct subrange_attribute {};
 
-    template <typename T, typename Enable = void>
+    template <typename T>
     struct attribute_category
     {
         using type = plain_attribute;

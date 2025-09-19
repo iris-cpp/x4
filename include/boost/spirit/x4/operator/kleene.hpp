@@ -27,15 +27,15 @@ namespace boost::spirit::x4
     template <typename Subject>
     struct kleene : unary_parser<Subject, kleene<Subject>>
     {
-        using base_type = unary_parser<Subject, kleene<Subject>>;
+        using base_type = unary_parser<Subject, kleene>;
         static constexpr bool handles_container = true;
 
         template <typename SubjectT>
             requires
                 (!std::is_same_v<std::remove_cvref_t<SubjectT>, kleene>) &&
-                std::is_constructible_v<Subject, SubjectT>
+                std::is_constructible_v<base_type, SubjectT>
         constexpr kleene(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 

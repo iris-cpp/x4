@@ -30,11 +30,11 @@ namespace boost::spirit::x4
 
             template <typename SubjectT, typename U>
                 requires
-                    std::is_constructible_v<Subject, SubjectT> &&
+                    std::is_constructible_v<base_type, SubjectT> &&
                     std::is_constructible_v<T, U>
             constexpr with_directive_impl(SubjectT&& subject, U&& val)
                 noexcept(
-                    std::is_nothrow_constructible_v<Subject, SubjectT> &&
+                    std::is_nothrow_constructible_v<base_type, SubjectT> &&
                     std::is_nothrow_constructible_v<T, U>
                 )
                 : base_type(std::forward<SubjectT>(subject))
@@ -51,11 +51,11 @@ namespace boost::spirit::x4
 
             template <typename SubjectT, typename U>
                 requires
-                    std::is_constructible_v<Subject, SubjectT> &&
+                    std::is_constructible_v<base_type, SubjectT> &&
                     std::is_constructible_v<T const, U>
             constexpr with_directive_impl(SubjectT&& subject, U&& val)
                 noexcept(
-                    std::is_nothrow_constructible_v<Subject, SubjectT> &&
+                    std::is_nothrow_constructible_v<base_type, SubjectT> &&
                     std::is_nothrow_constructible_v<T const, U>
                 )
                 : base_type(std::forward<SubjectT>(subject))
@@ -72,10 +72,10 @@ namespace boost::spirit::x4
 
             template <typename SubjectT, typename U>
                 requires
-                    std::is_constructible_v<Subject, SubjectT> &&
+                    std::is_constructible_v<base_type, SubjectT> &&
                     std::is_constructible_v<T&, U&>
             constexpr with_directive_impl(SubjectT&& subject, U& val BOOST_SPIRIT_LIFETIMEBOUND)
-                noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+                noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
                 : base_type(std::forward<SubjectT>(subject))
                 , val_(val)
             {}

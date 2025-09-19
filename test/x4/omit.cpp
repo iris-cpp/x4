@@ -38,6 +38,7 @@ int main()
     using x4::unused_type;
     using x4::unused;
     using x4::int_;
+    using x4::_attr;
 
     using boost::fusion::vector;
     using boost::fusion::at_c;

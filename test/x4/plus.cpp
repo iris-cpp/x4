@@ -54,6 +54,7 @@ int main()
     using x4::omit;
     using x4::lit;
     using x4::lexeme;
+    using x4::_attr;
 
     BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(+char_);
 

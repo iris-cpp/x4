@@ -96,7 +96,7 @@ namespace boost::spirit::x4
 
     namespace detail
     {
-#if defined(BOOST_SPIRIT_X4_DEBUG)
+#ifdef BOOST_SPIRIT_X4_DEBUG
         // TODO: This should be customizable by users
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
         struct scoped_debug
@@ -114,12 +114,17 @@ namespace boost::spirit::x4
                 , attr(attr)
                 , f(detail::get_simple_trace())
             {
-                f(first, last, attr, pre_parse, rule_name);
+                f(first, last, attr, debug_handler_state::pre_parse, rule_name);
             }
 
             ~scoped_debug()
             {
-                f(first, last, attr, *parse_ok ? successful_parse : failed_parse, rule_name);
+                f(
+                    first, last,
+                    attr,
+                    *parse_ok ? debug_handler_state::successful_parse : debug_handler_state::failed_parse,
+                    rule_name
+                );
             }
 
             bool const* parse_ok = nullptr;

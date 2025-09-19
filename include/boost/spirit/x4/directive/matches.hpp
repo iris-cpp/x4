@@ -24,14 +24,17 @@ namespace boost::spirit::x4
     template <typename Subject>
     struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
     {
-        using base_type = unary_parser<Subject, matches_directive<Subject>>;
-        static constexpr bool has_attribute = true;
+        using base_type = unary_parser<Subject, matches_directive>;
         using attribute_type = bool;
 
+        static constexpr bool has_attribute = true;
+
         template <typename SubjectT>
-            requires std::is_constructible_v<Subject, SubjectT>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<SubjectT>, matches_directive>) &&
+                std::is_constructible_v<base_type, SubjectT>
         constexpr matches_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 

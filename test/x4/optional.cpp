@@ -41,7 +41,7 @@ struct test_attribute_type
     template <typename Context>
     void operator()(Context& ctx) const
     {
-        BOOST_TEST(typeid(decltype(_attr(ctx))).name() == typeid(std::optional<int>).name());
+        BOOST_TEST(typeid(decltype(x4::_attr(ctx))).name() == typeid(std::optional<int>).name());
     }
 };
 
@@ -52,6 +52,7 @@ int main()
     using x4::int_;
     using x4::omit;
     using x4::standard::char_;
+    using x4::_attr;
 
     BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(-int_);
 

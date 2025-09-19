@@ -259,25 +259,23 @@ namespace boost::spirit::x4
 
 #define BOOST_SPIRIT_X4_BASIC_CLASSIFY(name)                                     \
         template <typename Char>                                                 \
-        static bool                                                              \
-        is(name##_tag, Char ch)                                                  \
+        static constexpr bool                                                    \
+        is(name##_tag, Char ch) noexcept                                         \
         {                                                                        \
             return encoding::is ##name                                           \
                 BOOST_PREVENT_MACRO_SUBSTITUTION                                 \
                     (detail::cast_char<char_type>(ch));                          \
-        }                                                                        \
-        /***/
+        }
 
 #define BOOST_SPIRIT_X4_CLASSIFY(name)                                           \
         template <typename Char>                                                 \
-        static bool                                                              \
-        is(name##_tag, Char ch)                                                  \
+        static constexpr bool                                                    \
+        is(name##_tag, Char ch) noexcept                                         \
         {                                                                        \
             return encoding::is_##name                                           \
                 BOOST_PREVENT_MACRO_SUBSTITUTION                                 \
                     (detail::cast_char<char_type>(ch));                          \
-        }                                                                        \
-        /***/
+        }
 
 
     // Unicode Major Categories
@@ -530,10 +528,11 @@ namespace boost::spirit::x4
         using tag = Tag;
         using char_type = typename encoding::char_type;
         using attribute_type = char_type;
+
         static constexpr bool has_attribute = true;
 
         template <typename Char, typename Context>
-        [[nodiscard]] constexpr bool test(Char ch, Context const&) const noexcept
+        [[nodiscard]] static constexpr bool test(Char ch, Context const&) noexcept
         {
             return encoding::ischar(ch) && unicode_char_class_base::is(tag{}, ch);
         }

@@ -21,7 +21,7 @@ namespace boost::spirit::x4::traits
     // Retrieve the attribute type to use from the given type.
     // This is needed to extract the correct attribute type from proxy classes
     // as utilized in `FUSION_ADAPT_ADT` et al.
-    template <typename Attribute, typename Enable = void>
+    template <typename Attribute>
     struct attribute_type
     {
         using type = Attribute;
@@ -35,7 +35,7 @@ namespace boost::spirit::x4::traits
     // its actual attribute at parse time. This trait customization point
     // provides a mechanism to convert the trait to the actual trait at
     // parse time.
-    template <typename Context, typename Attribute, std::forward_iterator It, std::sentinel_for<It> Se = It, typename Enable = void>
+    template <typename Context, typename Attribute, std::forward_iterator It, std::sentinel_for<It> Se = It>
     struct pseudo_attribute
     {
         using attribute_type = Attribute;
@@ -52,13 +52,13 @@ namespace boost::spirit::x4::traits
 
 
     // Get the attribute type of the component. By default, this gets the
-    // Component's attribute_type typedef or instantiates a nested attribute
+    // Component's `::attribute_type` or instantiates a nested attribute
     // metafunction. Components may specialize this if such an attribute_type
     // is not readily available (e.g. expensive to compute at compile time).
-    template <typename Component, typename Context, typename Enable = void>
+    template <typename Component, typename Context>
     struct attribute_of;
 
-    template <typename Component, typename Context, typename Enable = void>
+    template <typename Component, typename Context>
     using attribute_of_t = typename attribute_of<Component, Context>::type;
 
     template <typename Component, typename Context>
@@ -97,7 +97,7 @@ namespace boost::spirit::x4::traits
     // component attribute against unused_type. If the component provides a
     // nested constant expression has_attribute as a hint, that value is used
     // instead. Components may specialize this.
-    template <typename Component, typename Context, typename Enable = void>
+    template <typename Component, typename Context>
     struct has_attribute
     {
         static_assert(requires {

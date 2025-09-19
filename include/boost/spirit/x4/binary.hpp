@@ -74,7 +74,7 @@ namespace boost::spirit::x4
     {
         using attribute_type = T;
 
-        static bool const has_attribute = !std::is_same_v<unused_type, T>;
+        static constexpr bool has_attribute = !std::is_same_v<unused_type, T>;
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
         [[nodiscard]] constexpr bool

@@ -31,9 +31,9 @@ namespace boost::spirit::x4
         template <typename SubjectT>
             requires
                 (!std::is_same_v<std::remove_cvref_t<SubjectT>, reskip_directive>) &&
-                std::is_constructible_v<Subject, SubjectT>
+                std::is_constructible_v<base_type, SubjectT>
         constexpr reskip_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 
@@ -86,9 +86,9 @@ namespace boost::spirit::x4
         static constexpr bool handles_container = Subject::handles_container;
 
         template <typename SubjectT, typename SkipperT>
-            requires std::is_constructible_v<Subject, SubjectT> && std::is_constructible_v<Skipper, SkipperT>
+            requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Skipper, SkipperT>
         constexpr skip_directive(SubjectT&& subject, SkipperT&& skipper)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT> && std::is_nothrow_constructible_v<Skipper, SkipperT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<Skipper, SkipperT>)
             : base_type(std::forward<SubjectT>(subject))
             , skipper_(skipper)
         {}

@@ -63,7 +63,7 @@ namespace boost::spirit::x4::traits
 
     } // detail
 
-    template <typename T, typename Enable = void>
+    template <typename T>
     struct token_printer_debug
         : std::conditional_t<
             std::is_convertible_v<T, char> && std::is_convertible_v<char, T>,

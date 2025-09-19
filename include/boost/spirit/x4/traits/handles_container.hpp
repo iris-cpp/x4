@@ -18,7 +18,7 @@ namespace boost::spirit::x4::traits
     // By default, this gets the Component's handles_container nested value.
     // Components may specialize this if such a handles_container is not
     // readily available (e.g. expensive to compute at compile time).
-    template <typename Component, typename Context, typename Enable = void>
+    template <typename Component, typename Context>
     struct handles_container : std::bool_constant<Component::handles_container> {};
 
     template <typename Component, typename Context>

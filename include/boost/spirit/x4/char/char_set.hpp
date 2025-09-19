@@ -51,10 +51,11 @@ namespace boost::spirit::x4
         using char_type = typename Encoding::char_type;
         using encoding = Encoding;
         using attribute_type = Attribute;
+
         static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
         template<std::ranges::forward_range R>
-        constexpr char_set(R const& str)
+        constexpr explicit char_set(R const& str)
             noexcept(detail::cast_char_noexcept<std::ranges::range_value_t<R>, char_type>)
         {
             static_assert(detail::cast_char_viable<std::ranges::range_value_t<R>, char_type>);

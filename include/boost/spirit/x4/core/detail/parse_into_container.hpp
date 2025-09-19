@@ -219,7 +219,7 @@ namespace boost::spirit::x4::detail
         }
     };
 
-    template <typename Parser, typename Context, typename RContext, typename Enable = void>
+    template <typename Parser, typename Context, typename RContext>
     struct parse_into_container_impl : parse_into_container_base_impl<Parser> {};
 
 

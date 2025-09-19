@@ -30,9 +30,9 @@ namespace boost::spirit::x4
         template <typename SubjectT>
             requires
                 (!std::is_same_v<std::remove_cvref_t<SubjectT>, seek_directive>) &&
-                std::is_constructible_v<Subject, SubjectT>
+                std::is_constructible_v<base_type, SubjectT>
         constexpr seek_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 

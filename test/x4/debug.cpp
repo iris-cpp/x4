@@ -118,7 +118,7 @@ int main()
     {
         // std::container attributes
 
-        typedef boost::fusion::vector<int, char> fs;
+        using fs = boost::fusion::vector<int, char>;
         rule<class start, std::vector<fs>> start("start");
         auto start_def =
             start = *(int_ >> alpha);

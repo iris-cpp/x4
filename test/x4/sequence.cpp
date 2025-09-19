@@ -51,6 +51,7 @@ int main()
     using x4::float_;
     using x4::no_case;
     using x4::rule;
+    using x4::_attr;
 
     using traits::attribute_of_t;
 
