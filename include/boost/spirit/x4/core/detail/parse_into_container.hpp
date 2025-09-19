@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_CORE_DETAIL_PARSE_INTO_CONTAINER_HPP
+#define BOOST_SPIRIT_X4_CORE_DETAIL_PARSE_INTO_CONTAINER_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
@@ -5,8 +8,6 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_PARSE_INTO_CONTAINER_JAN_15_2013_0957PM
-#define BOOST_SPIRIT_X4_PARSE_INTO_CONTAINER_JAN_15_2013_0957PM
 
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
@@ -14,7 +15,6 @@
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/attribute.hpp>
-#include <boost/spirit/x4/traits/handles_container.hpp>
 #include <boost/spirit/x4/traits/substitution.hpp>
 
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
@@ -224,7 +224,7 @@ namespace boost::spirit::x4::detail
 
 
     template <typename Parser, typename Context, typename RContext>
-        requires traits::handles_container_v<Parser, Context>
+        requires Parser::handles_container
     struct parse_into_container_impl<Parser, Context, RContext>
     {
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>

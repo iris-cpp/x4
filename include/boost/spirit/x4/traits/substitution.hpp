@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_TRAITS_SUBSTITUTION_HPP
+#define BOOST_SPIRIT_X4_TRAITS_SUBSTITUTION_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
@@ -5,8 +8,6 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
-#ifndef BOOST_SPIRIT_X4_IS_SUBSTITUTE_JAN_9_2012_1049PM
-#define BOOST_SPIRIT_X4_IS_SUBSTITUTE_JAN_9_2012_1049PM
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>

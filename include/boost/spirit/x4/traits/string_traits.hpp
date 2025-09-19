@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_TRAITS_STRING_TRAITS_HPP
+#define BOOST_SPIRIT_X4_TRAITS_STRING_TRAITS_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2001-2011 Hartmut Kaiser
@@ -7,8 +10,6 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
-#ifndef BOOST_SPIRIT_X4_STRING_TRAITS_OCTOBER_2008_1252PM
-#define BOOST_SPIRIT_X4_STRING_TRAITS_OCTOBER_2008_1252PM
 
 #if defined(BOOST_SPIRIT_UNICODE) && !defined(BOOST_SPIRIT_X4_UNICODE)
 # error "`BOOST_SPIRIT_UNICODE` has no effect on X4. #define `BOOST_SPIRIT_X4_UNICODE`"

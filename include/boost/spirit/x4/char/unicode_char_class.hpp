@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_CHAR_UNICODE_CHAR_CLASS_HPP
+#define BOOST_SPIRIT_X4_CHAR_UNICODE_CHAR_CLASS_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
@@ -5,30 +8,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X4_UNICODE_JAN_20_2012_1218AM
-#define BOOST_SPIRIT_X4_UNICODE_JAN_20_2012_1218AM
 
+#include <boost/spirit/x4/char/char_class_tags.hpp>
 #include <boost/spirit/x4/char/char_parser.hpp>
 #include <boost/spirit/x4/char/detail/cast_char.hpp>
 #include <boost/spirit/x4/char_encoding/unicode.hpp>
 
 namespace boost::spirit::x4
 {
-    // Unicode Major Categories
-    struct char_tag;
-    struct alnum_tag;
-    struct alpha_tag;
-    struct blank_tag;
-    struct cntrl_tag;
-    struct digit_tag;
-    struct graph_tag;
-    struct print_tag;
-    struct punct_tag;
-    struct space_tag;
-    struct xdigit_tag;
-    struct lower_tag;
-    struct upper_tag;
-
     // Unicode Major Categories
     struct letter_tag {};
     struct mark_tag {};

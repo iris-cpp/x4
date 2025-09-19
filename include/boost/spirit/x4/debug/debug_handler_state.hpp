@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_DEBUG_DEBUG_HANDLER_STATE_HPP
+#define BOOST_SPIRIT_X4_DEBUG_DEBUG_HANDLER_STATE_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
@@ -5,8 +8,6 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X4_DEBUG_HANDLER_STATE_APR_21_2010_0733PM
-#define BOOST_SPIRIT_X4_DEBUG_HANDLER_STATE_APR_21_2010_0733PM
 
 namespace boost::spirit::x4
 {

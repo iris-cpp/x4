@@ -1,3 +1,6 @@
+#ifndef BOOST_SPIRIT_X4_CHAR_CHAR_HPP
+#define BOOST_SPIRIT_X4_CHAR_CHAR_HPP
+
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
@@ -5,8 +8,6 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-#ifndef BOOST_SPIRIT_X4_CHAR_APRIL_16_2006_1051AM
-#define BOOST_SPIRIT_X4_CHAR_APRIL_16_2006_1051AM
 
 #include <boost/spirit/x4/char/any_char.hpp>
 #include <boost/spirit/x4/char/literal_char.hpp>
