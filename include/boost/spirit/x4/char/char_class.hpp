@@ -63,7 +63,7 @@ namespace boost::spirit::x4
         static constexpr bool has_attribute = true;
 
         template <typename Char, typename Context>
-        [[nodiscard]] constexpr bool test(Char ch, Context const& context) const noexcept
+        [[nodiscard]] static constexpr bool test(Char ch, Context const& context) noexcept
         {
             return encoding::ischar(ch)
                 && char_class_base<Encoding>::is(

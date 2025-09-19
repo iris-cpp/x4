@@ -35,8 +35,8 @@ namespace boost::spirit::x4::traits
     // By declaring a nested struct named `adapted_variant_tag` in
     // your class, you tell spirit that it is regarded as a variant type.
     // The minimum required interface for such a variant is that it has
-    // constructors for various types supported by your variant and a
-    // typedef 'types' which is an mpl sequence of the contained types.
+    // constructors for various types supported by your variant and
+    // `::types` which is an mpl sequence of the contained types.
     // Note (2025): The above spec is obsolete and will change in the near future.
     //
     // This is an intrusive interface. For a non-intrusive interface,

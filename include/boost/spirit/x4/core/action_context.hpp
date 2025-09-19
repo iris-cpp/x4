@@ -19,28 +19,45 @@ namespace boost::spirit::x4
     struct attr_context_tag; // _attr
 
     template <typename Context>
-    [[nodiscard]] constexpr bool& _pass(Context const& context) noexcept
+    [[nodiscard]] constexpr bool&
+    _pass(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
         return x4::get<parse_pass_context_tag>(context);
     }
 
     template <typename Context>
-    [[nodiscard]] constexpr auto&& _val(Context const& context) noexcept
+    void _pass(Context const&&) = delete; // dangling
+
+    template <typename Context>
+    [[nodiscard]] constexpr auto&&
+    _val(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
         return x4::get<rule_val_context_tag>(context);
     }
 
     template <typename Context>
-    [[nodiscard]] constexpr auto&& _where(Context const& context) noexcept
+    void _val(Context const&&) = delete; // dangling
+
+    template <typename Context>
+    [[nodiscard]] constexpr auto&&
+    _where(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
         return x4::get<where_context_tag>(context);
     }
 
     template <typename Context>
-    [[nodiscard]] constexpr auto&& _attr(Context const& context) noexcept
+    void _where(Context const&&) = delete; // dangling
+
+    template <typename Context>
+    [[nodiscard]] constexpr auto&&
+    _attr(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
         return x4::get<attr_context_tag>(context);
     }
+
+    template <typename Context>
+    void _attr(Context const&&) = delete; // dangling
+
 } // boost::spirit::x4
 
 #endif

@@ -78,7 +78,7 @@ namespace boost::spirit::x4::detail
         constexpr basic_chset&
         operator|=(basic_chset const& x)
         {
-            typedef typename char_range_run<CharT>::const_iterator const_iterator;
+            using const_iterator = typename char_range_run<CharT>::const_iterator;
             for (const_iterator iter = x.rr.begin(); iter != x.rr.end(); ++iter)
                 rr.set(*iter);
             return *this;
@@ -100,7 +100,7 @@ namespace boost::spirit::x4::detail
         constexpr basic_chset&
         operator-=(basic_chset const& x)
         {
-            typedef typename char_range_run<CharT>::const_iterator const_iterator;
+            using const_iterator = typename char_range_run<CharT>::const_iterator;
             for (const_iterator iter = x.rr.begin(); iter != x.rr.end(); ++iter)
                 rr.clear(*iter);
             return *this;

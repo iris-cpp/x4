@@ -38,50 +38,59 @@ namespace boost::spirit::x4
     namespace detail
     {
         template <typename Char>
-        inline void token_printer(std::ostream& o, Char c)
+        void token_printer(std::ostream& o, Char c)
         {
             // allow customization of the token printer routine
-            x4::traits::print_token(o, c);
+            traits::print_token(o, c);
         }
     }
 
     template <int IndentSpaces = 2, int CharsToPrint = 20>
     struct simple_trace
     {
-        simple_trace(std::ostream& out)
-          : out(out), indent(0) {}
+        explicit simple_trace(std::ostream& out) noexcept
+            : out(out)
+        {}
 
         void print_indent(int n) const
         {
             n *= IndentSpaces;
             for (int i = 0; i != n; ++i)
+            {
                 out << ' ';
+            }
         }
 
-        template <typename Iterator>
+        template <std::forward_iterator It, std::sentinel_for<It> Se>
         void print_some(
-            char const* tag
-          , Iterator first, Iterator const& last) const
+            char const* tag,
+            It first, Se last
+        ) const
         {
-            print_indent(indent);
+            simple_trace::print_indent(indent);
+
             out << '<' << tag << '>';
-            int const n = CharsToPrint;
-            for (int i = 0; first != last && i != n && *first; ++i, ++first)
+
+            for (int i = 0; first != last && i != CharsToPrint && *first; ++i, ++first)
+            {
                 detail::token_printer(out, *first);
+            }
             out << "</" << tag << '>' << std::endl;
 
             // $$$ FIXME convert invalid xml characters (e.g. '<') to valid
             // character entities. $$$
         }
 
-        template <typename Iterator, typename Attribute, typename State>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
         void operator()(
-            Iterator const& first
-          , Iterator const& last
-          , Attribute const& attr
-          , State state
-          , std::string const& rule_name) const
+            It first,
+            Se last,
+            Attribute const& attr,
+            debug_handler_state const state,
+            std::string const& rule_name
+        ) const
         {
+            using enum debug_handler_state;
             switch (state)
             {
                 case pre_parse:
@@ -122,22 +131,24 @@ namespace boost::spirit::x4
         }
 
         std::ostream& out;
-        mutable int indent;
+        mutable int indent = 0;
     };
 
     namespace detail
     {
-        typedef simple_trace<
-            BOOST_SPIRIT_X4_DEBUG_INDENT, BOOST_SPIRIT_X4_DEBUG_PRINT_SOME>
-        simple_trace_type;
+        using simple_trace_type = simple_trace<
+            BOOST_SPIRIT_X4_DEBUG_INDENT,
+            BOOST_SPIRIT_X4_DEBUG_PRINT_SOME
+        >;
 
-        inline simple_trace_type&
+        [[nodiscard]] inline simple_trace_type&
         get_simple_trace()
         {
             static simple_trace_type tracer(BOOST_SPIRIT_X4_DEBUG_OUT);
             return tracer;
         }
-    }
+
+    } // detail
 
 } // boost::spirit::x4
 

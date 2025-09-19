@@ -19,7 +19,7 @@ namespace boost::spirit::x4
     template <typename Subject>
     struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
     {
-        using base_type = unary_parser<Subject, and_predicate<Subject>>;
+        using base_type = unary_parser<Subject, and_predicate>;
         using attribute_type = unused_type;
 
         static constexpr bool has_attribute = false;
@@ -29,7 +29,7 @@ namespace boost::spirit::x4
                 (!std::is_same_v<std::remove_cvref_t<SubjectT>, and_predicate>) &&
                 std::is_constructible_v<base_type, SubjectT>
         constexpr and_predicate(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 

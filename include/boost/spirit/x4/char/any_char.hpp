@@ -46,7 +46,7 @@ namespace boost::spirit::x4
         [[nodiscard]] static constexpr char_set<Encoding>
         operator()(char_type const (&ch)[N])
         {
-            return { ch };
+            return char_set<Encoding>{ ch };
         }
 
         [[nodiscard]] static constexpr char_range<Encoding>
@@ -64,7 +64,7 @@ namespace boost::spirit::x4
         [[nodiscard]] static char_set<Encoding>
         operator()(std::basic_string_view<char_type> sv)
         {
-            return { std::move(sv) };
+            return char_set<Encoding>{ std::move(sv) };
         }
 
         static constexpr void

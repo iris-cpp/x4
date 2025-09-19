@@ -23,10 +23,13 @@ namespace boost::spirit::x4
         using char_type = typename Encoding::char_type;
         using encoding = Encoding;
         using attribute_type = Attribute;
+
         static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
         template <typename Char>
-            requires std::convertible_to<Char, char_type>
+            requires
+                (!std::is_same_v<std::remove_cvref_t<Char>, literal_char>) &&
+                std::convertible_to<Char, char_type>
         constexpr literal_char(Char ch) noexcept
             : ch(static_cast<char_type>(ch))
         {

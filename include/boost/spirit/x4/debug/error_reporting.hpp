@@ -28,12 +28,16 @@ namespace boost::spirit::x4
         using iterator_type = It;
 
         error_handler(
-            It first, It last, std::ostream& err_out
-          , std::string file = "", int tabs = 4)
-          : err_out(err_out)
-          , file(file)
-          , tabs(tabs)
-          , pos_cache(first, last) {}
+            It first, It last,
+            std::ostream& err_out,
+            std::string file = "",
+            int tabs = 4
+        )
+            : err_out(err_out)
+            , file(file)
+            , tabs(tabs)
+            , pos_cache(first, last)
+        {}
 
         using result_type = void;
 
@@ -104,7 +108,7 @@ namespace boost::spirit::x4
             else
                 ++end;
         }
-        typedef typename std::iterator_traits<It>::value_type char_type;
+        using char_type = typename std::iterator_traits<It>::value_type;
         std::basic_string<char_type> line{start, end};
         err_out << x4::to_utf8(line) << '\n';
     }

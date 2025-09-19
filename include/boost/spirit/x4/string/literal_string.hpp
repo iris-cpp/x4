@@ -46,11 +46,14 @@ namespace boost::spirit::x4
             : str(std::forward<Args>(args)...)
         {}
 
-        template <typename Iterator, typename Context, typename Attribute_>
-        [[nodiscard]] constexpr bool parse(
-            Iterator& first, Iterator const& last,
-            Context const& context, unused_type, Attribute_& attr
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute_>
+        [[nodiscard]] constexpr bool
+        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute_& attr
         ) const
+            noexcept(
+                noexcept(x4::skip_over(first, last, context)) &&
+                noexcept(detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context)))
+            )
         {
             x4::skip_over(first, last, context);
             return detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context));

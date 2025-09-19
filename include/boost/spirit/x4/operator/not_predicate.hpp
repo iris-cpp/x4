@@ -21,7 +21,7 @@ namespace boost::spirit::x4
     template <typename Subject>
     struct not_predicate : unary_parser<Subject, not_predicate<Subject>>
     {
-        using base_type = unary_parser<Subject, not_predicate<Subject>>;
+        using base_type = unary_parser<Subject, not_predicate>;
         using attribute_type = unused_type;
 
         static constexpr bool has_attribute = false;

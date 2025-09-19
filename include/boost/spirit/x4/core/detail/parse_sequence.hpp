@@ -36,7 +36,7 @@ namespace boost::spirit::x4
 
 namespace boost::spirit::x4::detail
 {
-    template <typename Parser, typename Context, typename Enable = void>
+    template <typename Parser, typename Context>
     struct sequence_size
     {
         static constexpr int value = traits::has_attribute_v<Parser, Context>;

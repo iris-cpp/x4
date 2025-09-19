@@ -26,12 +26,12 @@ namespace boost::spirit::x4
     template <typename Left, typename Right>
     struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
     {
-        using base_type = binary_parser<Left, Right, alternative<Left, Right>>;
+        using base_type = binary_parser<Left, Right, alternative>;
 
         template <typename LeftT, typename RightT>
-            requires std::is_constructible_v<Left, LeftT> && std::is_constructible_v<Right, RightT>
+            requires std::is_constructible_v<base_type, LeftT, RightT>
         constexpr alternative(LeftT&& left, RightT&& right)
-            noexcept(std::is_nothrow_constructible_v<Left, LeftT> && std::is_nothrow_constructible_v<Right, RightT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, LeftT, RightT>)
             : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
         {}
 
@@ -82,8 +82,8 @@ namespace boost::spirit::x4
 namespace boost::spirit::x4::traits
 {
     template <typename Left, typename Right, typename Context>
-    struct attribute_of<x4::alternative<Left, Right>, Context>
-        : x4::detail::attribute_of_binary<boost::variant, x4::alternative, Left, Right, Context>
+    struct attribute_of<alternative<Left, Right>, Context>
+        : x4::detail::attribute_of_binary<boost::variant, alternative, Left, Right, Context>
     {};
 } // boost::spirit::x4::traits
 

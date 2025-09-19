@@ -25,14 +25,15 @@ namespace boost::spirit::x4
         using base_type = unary_parser<Subject, omit_directive<Subject>>;
         using attribute_type = unused_type;
         using subject_type = Subject;
+
         static constexpr bool has_attribute = false;
 
         template <typename SubjectT>
             requires
                 (!std::is_same_v<std::remove_cvref_t<SubjectT>, omit_directive>) &&
-                std::is_constructible_v<Subject, SubjectT>
+                std::is_constructible_v<base_type, SubjectT>
         constexpr omit_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
             : base_type(std::forward<SubjectT>(subject))
         {}
 
