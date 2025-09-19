@@ -6,11 +6,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#ifndef BOOST_SPIRIT_X4_POSITION_TAGGED_MAY_01_2014_0321PM
-#define BOOST_SPIRIT_X4_POSITION_TAGGED_MAY_01_2014_0321PM
+#ifndef BOOST_SPIRIT_X4_AST_POSITION_TAGGED_HPP
+#define BOOST_SPIRIT_X4_AST_POSITION_TAGGED_HPP
 
+#include <concepts>
 #include <ranges>
-#include <utility>
 
 namespace boost::spirit::x4
 {
@@ -29,10 +29,10 @@ namespace boost::spirit::x4
     public:
         using iterator_type = typename Container::value_type;
 
-        position_cache(
-            iterator_type first
-          , iterator_type last)
-          : first_(first), last_(last) {}
+        position_cache(iterator_type first, iterator_type last)
+            : first_(first)
+            , last_(last)
+        {}
 
         template <typename AST>
             requires std::derived_from<AST, position_tagged>
@@ -40,15 +40,15 @@ namespace boost::spirit::x4
         position_of(AST const& ast) const
         {
             return std::ranges::subrange<iterator_type>{
-                positions.at(ast.id_first),
-                positions.at(ast.id_last)
+                positions_.at(ast.id_first),
+                positions_.at(ast.id_last)
             };
         }
 
         template <typename AST>
             requires (!std::derived_from<AST, position_tagged>)
         [[nodiscard]] std::ranges::subrange<iterator_type>
-        position_of(AST const& /* ast */) const
+        position_of(AST const&) const
         {
             // returns an empty position
             return std::ranges::subrange<iterator_type>{};
@@ -56,37 +56,33 @@ namespace boost::spirit::x4
 
         // This will catch all nodes except those inheriting from position_tagged
         template <typename AST>
-        void annotate(AST& /* ast */, iterator_type /* first */, iterator_type /* last */, mpl::false_)
+            requires (!std::derived_from<AST, position_tagged>)
+        void annotate(AST&, iterator_type const&, iterator_type const&)
         {
             // (no-op) no need for tags
         }
 
-        // This will catch all nodes inheriting from position_tagged
-        void annotate(position_tagged& ast, iterator_type first, iterator_type last, mpl::true_)
-        {
-            ast.id_first = int(positions.size());
-            positions.push_back(first);
-            ast.id_last = int(positions.size());
-            positions.push_back(last);
-        }
-
         template <typename AST>
+            requires std::derived_from<AST, position_tagged>
         void annotate(AST& ast, iterator_type first, iterator_type last)
         {
-            annotate(ast, first, last, is_base_of<position_tagged, AST>());
+            ast.id_first = int(positions_.size());
+            positions_.push_back(std::move(first));
+            ast.id_last = int(positions_.size());
+            positions_.push_back(std::move(last));
         }
 
-        Container const&
-        get_positions() const
+        [[nodiscard]] Container const&
+        get_positions() const noexcept
         {
-            return positions;
+            return positions_;
         }
 
         iterator_type first() const { return first_; }
         iterator_type last() const { return last_; }
 
     private:
-        Container positions;
+        Container positions_;
         iterator_type first_;
         iterator_type last_;
     };
