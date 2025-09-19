@@ -105,7 +105,7 @@ namespace boost::spirit::x4
 
     inline namespace cpos
     {
-        inline constexpr eps_parser eps{};
+        [[maybe_unused]] inline constexpr eps_parser eps{};
 
     } // cpos
 
