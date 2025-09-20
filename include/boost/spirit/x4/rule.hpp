@@ -347,7 +347,7 @@ namespace boost::spirit::x4
         constexpr rule(rule const& r) noexcept
             : name(r.name)
         {
-            // Assert that we are not copying an unitialized static rule. If
+            // Assert that we are not copying an uninitialized static rule. If
             // the static is in another TU, it may be initialized after we copy
             // it. If so, its name member will be nullptr.
             assert(r.name != nullptr && "uninitialized rule"); // static initialization order fiasco
@@ -382,11 +382,11 @@ namespace boost::spirit::x4
             // Note that this removal is possible only because the actual invocation of
             // `parse_rule` *ALWAYS* results in subsequent invocation of `call_rule_definition`,
             // which resets the `_val` context to the appropriate reference.
-            auto&& non_rule_specific_ctx = x4::remove_first_context<rule_val_context_tag>(context);
+            auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
 
             // ADL
             using detail::parse_rule;
-            if (static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, non_rule_specific_ctx, transformed_attr))) {
+            if (static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, transformed_attr))) {
                 transform::post(exposed_attr, std::forward<transformed_type>(transformed_attr));
                 return true;
             }
@@ -402,11 +402,11 @@ namespace boost::spirit::x4
             attribute_type no_attr; // default-initialize
 
             // See the comments on the primary overload of `rule::parse(...)`
-            auto&& non_rule_specific_ctx = x4::remove_first_context<rule_val_context_tag>(context);
+            auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
 
             // ADL
             using detail::parse_rule;
-            return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, non_rule_specific_ctx, no_attr));
+            return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, no_attr));
         }
 
         template <X4Subject RHS>
@@ -587,14 +587,9 @@ namespace boost::spirit::x4
     } // detail
 
 #define BOOST_SPIRIT_X4_INSTANTIATE_(rule_type, It, Se, Context) \
-    /* non-recursively invoked version */ \
-    template bool parse_rule< \
-        It, Se, \
-        Context \
-    >( \
+    template bool parse_rule<It, Se, Context>( \
         ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
-        It&, Se const&,\
-        Context const&, /* non-recursively invoked context is the plain `Context` */ \
+        It&, Se const&, Context const&, \
         typename std::remove_cvref_t<rule_type>::attribute_type& \
     );
 
