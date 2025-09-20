@@ -99,13 +99,9 @@ namespace boost::spirit::x4
         }
     };
 
-    struct unary_category;
-    struct binary_category;
-
     template <typename Subject, typename Derived>
     struct unary_parser : parser<Derived>
     {
-        using category = unary_category;
         using subject_type = Subject;
 
         static constexpr bool has_action = Subject::has_action;
@@ -125,7 +121,6 @@ namespace boost::spirit::x4
     template <typename Left, typename Right, typename Derived>
     struct binary_parser : parser<Derived>
     {
-        using category = binary_category;
         using left_type = Left;
         using right_type = Right;
 
