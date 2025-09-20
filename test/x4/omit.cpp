@@ -101,7 +101,7 @@ int main()
     {
         // if only one node in a sequence is left (all the others are omitted),
         // then we need "naked" attributes (not wrapped in a tuple)
-        int attr;
+        int attr = 0;
         BOOST_TEST(parse("a 123 c", omit['a'] >> int_ >> omit['c'], attr, space));
         BOOST_TEST((attr == 123));
     }
