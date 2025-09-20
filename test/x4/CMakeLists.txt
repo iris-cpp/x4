@@ -78,6 +78,7 @@ x4_define_tests(
     no_skip
     omit
     optional
+    parser
     plus
     raw
     real1

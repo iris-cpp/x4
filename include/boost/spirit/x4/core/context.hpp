@@ -51,7 +51,7 @@ namespace boost::spirit::x4
     // TODO: check whether auto-completion is available for this current implementation.
     // If not, we should implement a partially specialized metafunction instead.
     template <typename ID, typename Context>
-    using get_context_t = std::remove_cvref_t<decltype(x4::get<ID>(std::declval<Context const&>()))>;
+    using get_context_plain_t = std::remove_cvref_t<decltype(x4::get<ID>(std::declval<Context const&>()))>;
 
 
     template <typename Context, typename ID_To_Search>
@@ -85,7 +85,7 @@ namespace boost::spirit::x4
     struct has_context_of
     {
         static_assert(!std::is_reference_v<T>);
-        static constexpr bool value = std::same_as<get_context_t<ID, Context>, T>;
+        static constexpr bool value = std::same_as<get_context_plain_t<ID, Context>, T>;
     };
 
     template <typename Context, typename ID, typename T>

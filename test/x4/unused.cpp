@@ -22,8 +22,6 @@ int main()
     namespace traits = x4::traits;
     using traits::Transformable;
     using traits::transform_attribute;
-    using x4::unused_type;
-    using x4::unused;
     using x4::unused_container_type;
     using x4::unused_container;
 

@@ -14,7 +14,6 @@
 int main()
 {
     using x4::eps;
-    using x4::unused_type;
 
     {
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps);

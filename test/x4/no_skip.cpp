@@ -42,12 +42,12 @@ int main()
     // with skipping, no_skip allows to match a leading skipper
     {
         std::string str;
-        BOOST_TEST(parse("'  abc '", '\'' >> no_skip[+~char_('\'')] >> '\'', str, space));
+        BOOST_TEST(parse("'  abc '", '\'' >> no_skip[+~char_('\'')] >> '\'', space, str));
         BOOST_TEST(str == "  abc ");
     }
     {
         std::string str;
-        BOOST_TEST(parse("'  abc '", '\'' >> lexeme[+~char_('\'')] >> '\'', str, space));
+        BOOST_TEST(parse("'  abc '", '\'' >> lexeme[+~char_('\'')] >> '\'', space, str));
         BOOST_TEST(str == "abc ");
     }
 

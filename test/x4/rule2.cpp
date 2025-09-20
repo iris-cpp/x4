@@ -25,7 +25,6 @@ int main()
     using namespace x4::standard;
     using x4::rule;
     using x4::lit;
-    using x4::unused_type;
     using x4::_attr;
 
     { // context tests

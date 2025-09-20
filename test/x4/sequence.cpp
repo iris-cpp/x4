@@ -37,8 +37,6 @@ int main()
     namespace x4 = boost::spirit::x4;
     namespace traits = x4::traits;
 
-    using x4::unused_type;
-
     using x4::standard::char_;
     using x4::standard::space;
     using x4::standard::string;
@@ -109,7 +107,7 @@ int main()
 
     {
         vector<char, char, char> vec;
-        BOOST_TEST(parse(" a\n  b\n  c", char_ >> char_ >> char_, vec, space));
+        BOOST_TEST(parse(" a\n  b\n  c", char_ >> char_ >> char_, space, vec));
         BOOST_TEST((at_c<0>(vec) == 'a'));
         BOOST_TEST((at_c<1>(vec) == 'b'));
         BOOST_TEST((at_c<2>(vec) == 'c'));
@@ -134,7 +132,7 @@ int main()
     {
         // "hello" has an unused_type. unused attributes are not part of the sequence
         vector<char, char> vec;
-        BOOST_TEST(parse("a hello c", char_ >> "hello" >> char_, vec, space));
+        BOOST_TEST(parse("a hello c", char_ >> "hello" >> char_, space, vec));
         BOOST_TEST((at_c<0>(vec) == 'a'));
         BOOST_TEST((at_c<1>(vec) == 'c'));
     }
@@ -418,7 +416,7 @@ int main()
 
         auto r = *int_;
 
-        BOOST_TEST(parse("123 456", r, vec, space));
+        BOOST_TEST(parse("123 456", r, space, vec));
         BOOST_TEST(at_c<0>(vec).size() == 2);
         BOOST_TEST(at_c<0>(vec)[0] == 123);
         BOOST_TEST(at_c<0>(vec)[1] == 456);
@@ -446,7 +444,7 @@ int main()
         auto const term = rule<class term_id, Attr>("term") = int_ | float_;
         auto const expr = rule<class expr_id, Attr>("expr") = term | ('(' > term > ')');
         Attr var;
-        BOOST_TEST(parse("(1)", expr, var, space));
+        BOOST_TEST(parse("(1)", expr, space, var));
     }
 
     // test that failing sequence leaves attribute consistent

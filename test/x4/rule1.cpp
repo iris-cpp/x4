@@ -25,7 +25,6 @@ int main()
     using x4::rule;
     using x4::lit;
     using x4::int_;
-    using x4::unused_type;
     using x4::phrase_parse;
     using x4::root_skipper_flag;
     using x4::traits::has_attribute_v;

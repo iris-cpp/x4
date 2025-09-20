@@ -69,24 +69,24 @@ int main()
         BOOST_TEST(parse("bbbb", *char_, s) && 4 == s.size() && s == "bbbb");
 
         s.clear();
-        BOOST_TEST(parse("b b b b ", *char_, s, space)  && s == "bbbb");
+        BOOST_TEST(parse("b b b b ", *char_, space, s)  && s == "bbbb");
     }
 
     {
         std::vector<int> v;
-        BOOST_TEST(parse("123 456 789 10", *int_, v, space) && 4 == v.size() &&
+        BOOST_TEST(parse("123 456 789 10", *int_, space, v) && 4 == v.size() &&
             v[0] == 123 && v[1] == 456 && v[2] == 789 &&  v[3] == 10);
     }
 
     {
         std::vector<std::string> v;
-        BOOST_TEST(parse("a b c d", *lexeme[+alpha], v, space) && 4 == v.size() &&
+        BOOST_TEST(parse("a b c d", *lexeme[+alpha], space, v) && 4 == v.size() &&
             v[0] == "a" && v[1] == "b" && v[2] == "c" &&  v[3] == "d");
     }
 
     {
         std::vector<int> v;
-        BOOST_TEST(parse("123 456 789", *int_, v, space) && 3 == v.size() &&
+        BOOST_TEST(parse("123 456 789", *int_, space, v) && 3 == v.size() &&
             v[0] == 123 && v[1] == 456 && v[2] == 789);
     }
 

@@ -150,7 +150,10 @@ int main()
         ;
 
         int i;
-        auto f = [&](auto& ctx){ i = _attr(ctx); };
+        auto f = [&](auto& ctx){ i = _attr(ctx); }; // lambda with capture (important for subsequent checks)
+
+        using Parser = std::remove_cvref_t<decltype(sym[f])>;
+        static_assert(x4::X4ExplicitSubject<Parser>);
 
         BOOST_TEST(parse("Joel", sym[f]));
         BOOST_TEST(i == 1);

@@ -16,11 +16,19 @@
 
 namespace boost::spirit::x4
 {
+    template <typename ID, typename T, typename Next>
+    struct context;
+
     struct unused_type
     {
         constexpr explicit unused_type() noexcept = default;
 
         // unused_type can masquerade as an empty context (see context.hpp)
+
+        template <typename ID, typename T, typename Next>
+        [[deprecated("If your parser don't need a `context`, just accept it by `auto const&` and discard it.")]]
+        /* not explicit */ constexpr unused_type(context<ID, T, Next> const&) noexcept
+        {}
 
         [[nodiscard]] static constexpr unused_type get(auto) noexcept
         {

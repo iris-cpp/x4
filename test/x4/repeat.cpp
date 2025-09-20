@@ -144,7 +144,7 @@ int main()
 
     {
         std::vector<std::string> v;
-        BOOST_TEST(parse("a b c d", repeat(4)[lexeme[+alpha]], v, space) && 4 == v.size() &&
+        BOOST_TEST(parse("a b c d", repeat(4)[lexeme[+alpha]], space, v) && 4 == v.size() &&
             v[0] == "a" && v[1] == "b" && v[2] == "c" &&  v[3] == "d");
     }
     {
@@ -154,7 +154,7 @@ int main()
 
     {
         std::vector<int> v;
-        BOOST_TEST(parse("1 2 3", int_ >> repeat(2)[int_], v, space));
+        BOOST_TEST(parse("1 2 3", int_ >> repeat(2)[int_], space, v));
         BOOST_TEST(v.size() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3);
 
         BOOST_TEST(!parse("1 2", int_ >> repeat(2)[int_], space));

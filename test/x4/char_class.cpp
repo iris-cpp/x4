@@ -20,8 +20,6 @@
 
 int main()
 {
-    using x4::unused_type;
-
     {
         using namespace x4::standard;
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
@@ -175,7 +173,7 @@ int main()
         using x4::standard::alpha;
         using x4::standard::space;
         char attr = 0;
-        BOOST_TEST(parse("     a", alpha, attr, space));
+        BOOST_TEST(parse("     a", alpha, space, attr));
         BOOST_TEST(attr == 'a');
     }
 

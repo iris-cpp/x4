@@ -26,6 +26,9 @@
 
 namespace x4 = boost::spirit::x4;
 
+using x4::unused_type;
+using x4::unused;
+
 namespace spirit_test
 {
     namespace detail
@@ -72,7 +75,7 @@ namespace spirit_test
             static constexpr x4::parse_result<It, Se>
             operator()(It first, Se last, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x4::parse(first, last, std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(first, last, std::forward<Parser>(p), std::forward<Skipper>(s), x4::unused, flag);
             }
 
             // parse_result + It/Se + Parser + Skipper
@@ -80,7 +83,7 @@ namespace spirit_test
             static constexpr void
             operator()(x4::parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x4::parse(res, first, last, std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(res, first, last, std::forward<Parser>(p), std::forward<Skipper>(s), x4::unused, flag);
             }
 
             // R + Parser + Skipper
@@ -92,7 +95,7 @@ namespace spirit_test
             static constexpr x4::parse_result_for<R>
             operator()(R const& r, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x4::parse(r, std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(r, std::forward<Parser>(p), std::forward<Skipper>(s), x4::unused, flag);
             }
 
             // parse_result + R + Parser + Skipper
@@ -104,7 +107,7 @@ namespace spirit_test
             static constexpr void
             operator()(x4::parse_result_for<R>& res, R const& r, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
             {
-                return x4::parse(res, r, std::forward<Parser>(p), x4::unused, std::forward<Skipper>(s), flag);
+                return x4::parse(res, r, std::forward<Parser>(p), std::forward<Skipper>(s), x4::unused, flag);
             }
         }; // parse_overload
 

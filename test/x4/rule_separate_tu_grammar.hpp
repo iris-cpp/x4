@@ -26,7 +26,7 @@ const skipper_type skipper;
 BOOST_SPIRIT_X4_DECLARE(skipper_type)
 
 // the `unused_type const` must have the same effect as no attribute
-using skipper2_type = x4::rule<class skipper2_r, x4::unused_type const>;
+using skipper2_type = x4::rule<class skipper2_r, unused_type const>;
 const skipper2_type skipper2;
 BOOST_SPIRIT_X4_DECLARE(skipper2_type)
 

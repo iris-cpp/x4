@@ -12,7 +12,6 @@
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/traits/string_traits.hpp>
 
-#include <optional>
 #include <iterator>
 #include <ranges>
 #include <string_view>
@@ -34,7 +33,7 @@ namespace boost::spirit::x4
         // Has value if and only if `ok` is `false` and any of
         // the underlying parsers have encountered expectation
         // failure.
-        std::optional<expectation_failure<It>> expect_failure;
+        expectation_failure<It> expect_failure;
 
         // Represents the remaining subrange of the input, after
         // applications of all (partially) successful attempts on

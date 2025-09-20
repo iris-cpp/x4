@@ -171,10 +171,10 @@ namespace boost::spirit::x4
                     if (x4::has_expectation_failure(context)) {
                         auto const& x = x4::get_expectation_failure(context);
                         static_assert(
-                            std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), *x, context))>,
+                            std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), x, context))>,
                             "error handler should not return a value"
                         );
-                        RuleID{}.on_error(std::as_const(first), std::as_const(last), *x, context);
+                        RuleID{}.on_error(std::as_const(first), std::as_const(last), x, context);
                         return false;
                     }
                     return false;

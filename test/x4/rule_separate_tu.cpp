@@ -58,7 +58,7 @@ int main()
         );
         BOOST_TEST(parse("123", used_attr::grammar, i));
         BOOST_TEST_EQ(i, 123);
-        BOOST_TEST(parse(" 42", used_attr::grammar, i, used_attr::skipper));
+        BOOST_TEST(parse(" 42", used_attr::grammar, used_attr::skipper, i));
         BOOST_TEST_EQ(i, 42);
     }
 
