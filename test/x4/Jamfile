@@ -59,6 +59,7 @@ rule compile-fail ( sources + : requirements * : target-name ? )
 }
 
 run parser.cpp ;
+run context.cpp ;
 
 run actions.cpp ;
 run alternative.cpp ;

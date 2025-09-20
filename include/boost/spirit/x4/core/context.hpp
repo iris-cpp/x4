@@ -237,6 +237,13 @@ namespace boost::spirit::x4
         return {val, next};
     }
 
+    template <typename ID, typename T>
+    [[nodiscard]] constexpr context<ID, T>
+    make_context(T& val, detail::monostate_context const&) noexcept
+    {
+        return context<ID, T>{val};
+    }
+
     template <typename ID, typename T, typename Next>
     void make_context(T const&&, Next const&) = delete; // dangling
 
@@ -405,9 +412,18 @@ namespace boost::spirit::x4
                 {
                     // Assert `decltype(auto)` is working as intended; i.e., no dangling reference
                     static_assert(std::is_lvalue_reference_v<NewNext>);
-                    return context<ID, T, std::remove_cvref_t<NewNext>>{
-                        ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
-                    };
+
+                    if constexpr (std::same_as<Next, std::remove_cvref_t<NewNext>>)
+                    {
+                        // Avoid creating copy on exact same type
+                        return ctx;
+                    }
+                    else
+                    {
+                        return context<ID, T, std::remove_cvref_t<NewNext>>{
+                            ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
+                        };
+                    }
                 }
                 else // prvalue context
                 {

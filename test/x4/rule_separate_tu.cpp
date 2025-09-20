@@ -69,7 +69,7 @@ int main()
     {
         using Context = x4::context<
             x4::expectation_failure_tag,
-            std::optional<x4::expectation_failure<std::string_view::const_iterator>>,
+            x4::expectation_failure<std::string_view::const_iterator>,
             x4::owning_context<
                 x4::context<
                     x4::rule_val_context_tag,
@@ -79,7 +79,7 @@ int main()
         >;
         using RuleAgnosticContext = x4::context<
             x4::expectation_failure_tag,
-            std::optional<x4::expectation_failure<std::string_view::const_iterator>>
+            x4::expectation_failure<std::string_view::const_iterator>
         >;
 
         static_assert(std::same_as<
