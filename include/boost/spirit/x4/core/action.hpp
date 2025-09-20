@@ -61,72 +61,64 @@ namespace boost::spirit::x4
         }
 
         // attr==unused, action wants attribute
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
-        parse(
-            It& first, Se const& last, Context const& context, RContext& rcontext, unused_type
-        ) const noexcept(
-            std::is_nothrow_default_constructible_v<traits::attribute_of_t<action<Subject, Action>, Context>> &&
-            noexcept(this->parse_main(first, last, context, rcontext, std::declval<traits::attribute_of_t<action<Subject, Action>, Context>&>()))
-        )
+        parse(It& first, Se const& last, Context const& context, unused_type) const
+            noexcept(
+                std::is_nothrow_default_constructible_v<traits::attribute_of_t<action, Context>> &&
+                noexcept(this->parse_main(first, last, context, std::declval<traits::attribute_of_t<action, Context>&>()))
+            )
         {
-            using attribute_type = traits::attribute_of_t<action<Subject, Action>, Context>;
+            using attribute_type = traits::attribute_of_t<action, Context>;
 
             // Synthesize the attribute since one is not supplied
             attribute_type attribute; // default-initialize
-            return this->parse_main(first, last, context, rcontext, attribute);
+            return this->parse_main(first, last, context, attribute);
         }
 
         // Catch-all overload for non-unused_type attribute
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
-        ) const noexcept(noexcept(this->parse_main(first, last, context, rcontext, attr)))
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(noexcept(this->parse_main(first, last, context, attr)))
         {
-            return this->parse_main(first, last, context, rcontext, attr);
+            return this->parse_main(first, last, context, attr);
         }
 
     private:
         // Compose attr(where(val(pass(context))))
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
-        using composed_context_t = x4::context<
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+        using composed_context_t = context<
             attr_context_tag,
             Attribute,
-            x4::context<
+            context<
                 where_context_tag,
                 std::ranges::subrange<It, Se> const,
-                x4::context<
-                    rule_val_context_tag,
-                    RContext,
-                    x4::context<
-                        parse_pass_context_tag,
-                        bool,
-                        Context
-                    >
+                context<
+                    parse_pass_context_tag,
+                    bool,
+                    Context
                 >
             >
         >;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
-            requires std::invocable<Action const&, composed_context_t<It, Se, Context, RContext, Attribute> const&>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+            requires std::invocable<Action const&, composed_context_t<It, Se, Context, Attribute> const&>
         [[nodiscard]] constexpr bool
         call_action(
             It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
+            Context const& context, Attribute& attr
         ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
         {
             using where_range_t = std::ranges::subrange<It, Se>;
 
             static_assert(
-                std::is_void_v<std::invoke_result_t<Action const&, composed_context_t<It, Se, Context, RContext, Attribute> const&>>,
+                std::is_void_v<std::invoke_result_t<Action const&, composed_context_t<It, Se, Context, Attribute> const&>>,
                 "Semantic action should not return value. Check your function signature."
             );
 
             bool pass = true;
             auto const pass_context = x4::make_context<parse_pass_context_tag>(pass, context);
-
-            auto const val_context = x4::make_context<rule_val_context_tag>(rcontext, pass_context);
 
             // TODO: Provide some trait to detect whether this is actually needed for
             // each semantic actions.
@@ -135,26 +127,26 @@ namespace boost::spirit::x4
             // this still may introduce compile time overhead (and also runtime
             // overhead, as constructing `subrange` is never noexcept).
             where_range_t const where_rng(first, last);
-            auto const where_context = x4::make_context<where_context_tag>(where_rng, val_context);
+            auto const where_context = x4::make_context<where_context_tag>(where_rng, pass_context);
 
             auto const attr_context = x4::make_context<attr_context_tag>(attr, where_context);
 
             // Sanity check (internal check to detect implementation divergence)
             static_assert(std::same_as<
-                std::remove_cvref_t<decltype(attr_context)>,
-                composed_context_t<It, Se, Context, RContext, Attribute>
+                std::remove_const_t<decltype(attr_context)>,
+                composed_context_t<It, Se, Context, Attribute>
             >);
 
             this->f(attr_context);
             return pass;
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
-            requires (!std::invocable<Action const&, composed_context_t<It, Se, Context, RContext, Attribute> const&>)
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+            requires (!std::invocable<Action const&, composed_context_t<It, Se, Context, Attribute> const&>)
         [[nodiscard]] constexpr bool
         call_action(
             It&, Se const&,
-            Context const&, RContext&, Attribute&
+            Context const&, Attribute&
         ) const noexcept(std::is_nothrow_invocable_v<Action const&>)
         {
             // Explicitly make this hard error instead of emitting "no matching overload".
@@ -174,20 +166,20 @@ namespace boost::spirit::x4
             return true;
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
         parse_main(
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
+            It& first, Se const& last, Context const& context, Attribute& attr
         ) const noexcept(
             std::is_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, RContext, Attribute> &&
-            noexcept(this->call_action(first, last, context, rcontext, attr))
+            is_nothrow_parsable_v<Subject, It, Se, Context, Attribute> &&
+            noexcept(this->call_action(first, last, context, attr))
         )
         {
             It const saved_first = first;
-            if (this->subject.parse(first, last, context, rcontext, attr))
+            if (this->subject.parse(first, last, context, attr))
             {
-                if (this->call_action(first, last, context, rcontext, attr))
+                if (this->call_action(first, last, context, attr))
                 {
                     return true;
                 }
@@ -200,15 +192,15 @@ namespace boost::spirit::x4
         }
 
         // attr==raw_attribute_type, action wants iterator_range (see raw.hpp)
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
         parse_main(
-            It& first, Se const& last, Context const& context, RContext& rcontext, raw_attribute_type&
+            It& first, Se const& last, Context const& context, raw_attribute_type&
         ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
         {
             // synthesize the attribute since one is not supplied
             std::ranges::subrange<It, Se> rng;
-            return this->parse_main(first, last, context, rcontext, rng);
+            return this->parse_main(first, last, context, rng);
         }
     };
 

@@ -8,11 +8,17 @@
 
 #include "rule_separate_tu_grammar.hpp"
 
+#include <concepts>
+#include <utility>
+#include <type_traits>
+
+namespace {
+
 namespace sem_act {
 
 namespace x4 = boost::spirit::x4;
 
-auto nop = [](auto const&){};
+constexpr auto nop = [](auto const&) {};
 
 x4::rule<class used_attr1_r, int> used_attr1;
 auto const used_attr1_def = used_attr::grammar[nop];
@@ -30,7 +36,9 @@ x4::rule<class unused_attr2_r> unused_attr2;
 auto const unused_attr2_def = unused_attr::grammar[nop];
 BOOST_SPIRIT_X4_DEFINE(unused_attr2);
 
-}
+} // sem_act
+
+} // anonymous
 
 int main()
 {
@@ -45,7 +53,7 @@ int main()
     {
         long i;
         static_assert(
-            !std::is_same_v<decltype(i), used_attr::grammar_type::attribute_type>,
+            !std::same_as<decltype(i), used_attr::grammar_type::attribute_type>,
             "ensure we have instantiated the rule with a different attribute type"
         );
         BOOST_TEST(parse("123", used_attr::grammar, i));
@@ -57,8 +65,37 @@ int main()
     {
         long i;
         BOOST_TEST(parse("123", sem_act::used_attr1, i));
+    }
+    {
+        using Context = x4::context<
+            x4::expectation_failure_tag,
+            std::optional<x4::expectation_failure<std::string_view::const_iterator>>,
+            x4::owning_context<
+                x4::context<
+                    x4::rule_val_context_tag,
+                    int
+                >
+            >
+        >;
+        using RuleAgnosticContext = x4::context<
+            x4::expectation_failure_tag,
+            std::optional<x4::expectation_failure<std::string_view::const_iterator>>
+        >;
+
+        static_assert(std::same_as<
+            std::remove_cvref_t<decltype(
+                x4::remove_first_context<x4::rule_val_context_tag>(std::declval<Context const&>())
+            )>,
+            RuleAgnosticContext
+        >);
+
+        long i;
         BOOST_TEST(parse("===", sem_act::used_attr2, i));
+    }
+    {
         BOOST_TEST(parse("123", sem_act::unused_attr1));
+    }
+    {
         BOOST_TEST(parse("===", sem_act::unused_attr2));
     }
 

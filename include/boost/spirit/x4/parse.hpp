@@ -70,7 +70,7 @@ namespace boost::spirit::x4
                 std::optional<expectation_failure<It>> expect_failure;
                 auto failure_ctx = x4::make_context<expectation_failure_tag>(expect_failure);
 
-                bool const ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, unused, attr);
+                bool const ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, attr);
                 return parse_result<It, Se>{
                     .ok = ok,
                     .expect_failure = std::move(expect_failure),
@@ -86,7 +86,7 @@ namespace boost::spirit::x4
                 res.expect_failure.reset();
                 auto failure_ctx = x4::make_context<expectation_failure_tag>(res.expect_failure);
 
-                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, unused, attr);
+                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, attr);
                 res.remainder = {std::move(first), std::move(last)};
             }
 
@@ -107,7 +107,7 @@ namespace boost::spirit::x4
 
                 It first = std::ranges::begin(range);
                 Se last = std::ranges::end(range);
-                bool const ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, unused, attr);
+                bool const ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, attr);
                 return parse_result_for<R>{
                     .ok = ok,
                     .expect_failure = std::move(expect_failure),
@@ -137,7 +137,7 @@ namespace boost::spirit::x4
 
                 It first = std::ranges::begin(range);
                 Se last = std::ranges::end(range);
-                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, unused, attr);
+                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, failure_ctx, attr);
                 res.remainder = {std::move(first), std::move(last)};
             }
 
@@ -162,7 +162,7 @@ namespace boost::spirit::x4
                 std::optional<expectation_failure<It>> expect_failure;
                 auto ctx = x4::make_context<expectation_failure_tag>(expect_failure, skipper_ctx);
 
-                bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, unused, attr);
+                bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
                 if (ok && flag == root_skipper_flag::do_post_skip)
                 {
                     x4::skip_over(first, last, ctx);
@@ -186,7 +186,7 @@ namespace boost::spirit::x4
                 res.expect_failure.reset();
                 auto ctx = x4::make_context<expectation_failure_tag>(res.expect_failure, skipper_ctx);
 
-                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, unused, attr);
+                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
                 if (res.ok && flag == root_skipper_flag::do_post_skip)
                 {
                     x4::skip_over(first, last, ctx);
@@ -214,7 +214,7 @@ namespace boost::spirit::x4
 
                 It first = std::ranges::begin(range);
                 Se last = std::ranges::end(range);
-                bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, unused, attr);
+                bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
                 if (ok && flag == root_skipper_flag::do_post_skip)
                 {
                     x4::skip_over(first, last, ctx);
@@ -252,7 +252,7 @@ namespace boost::spirit::x4
 
                 It first = std::ranges::begin(range);
                 Se last = std::ranges::end(range);
-                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, unused, attr);
+                res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
                 if (res.ok && flag == root_skipper_flag::do_post_skip)
                 {
                     x4::skip_over(first, last, ctx);
@@ -346,12 +346,11 @@ namespace boost::spirit::x4
         {
             static_assert(X4ExplicitParser<Skipper, It, Se>);
 
-            using skipper_ctx_type = decltype(x4::make_context<skipper_tag>(std::declval<Skipper const&>()));
-
-            using type = decltype(x4::make_context<expectation_failure_tag>(
-                std::declval<std::optional<expectation_failure<It>>&>(),
-                std::declval<skipper_ctx_type const&>()
-            ));
+            using type = context<
+                expectation_failure_tag,
+                std::optional<expectation_failure<It>>,
+                context<skipper_tag, Skipper const>
+            >;
         };
 
         template <typename Skipper, std::ranges::forward_range R>
@@ -373,9 +372,10 @@ namespace boost::spirit::x4
         template <std::forward_iterator It>
         struct parse_context_for_impl<It>
         {
-            using type = decltype(x4::make_context<expectation_failure_tag>(
-                std::declval<std::optional<expectation_failure<It>>&>()
-            ));
+            using type = context<
+                expectation_failure_tag,
+                std::optional<expectation_failure<It>>
+            >;
         };
 
         template <std::ranges::forward_range R>

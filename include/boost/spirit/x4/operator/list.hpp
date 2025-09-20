@@ -39,25 +39,25 @@ namespace boost::spirit::x4
             : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             noexcept(
-                noexcept(detail::parse_into_container(this->left, first, last, context, rcontext, x4::assume_container(attr))) &&
+                noexcept(detail::parse_into_container(this->left, first, last, context, x4::assume_container(attr))) &&
                 std::is_nothrow_copy_assignable_v<It> &&
-                is_nothrow_parsable_v<Right, It, Se, Context, RContext, unused_type>
+                is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
             )
         {
             // In order to succeed we need to match at least one element
-            if (!detail::parse_into_container(this->left, first, last, context, rcontext, x4::assume_container(attr)))
+            if (!detail::parse_into_container(this->left, first, last, context, x4::assume_container(attr)))
             {
                 return false;
             }
 
             It last_parse_it = first;
             while (
-                this->right.parse(last_parse_it, last, context, rcontext, unused) &&
-                detail::parse_into_container(this->left, last_parse_it, last, context, rcontext, x4::assume_container(attr))
+                this->right.parse(last_parse_it, last, context, unused) &&
+                detail::parse_into_container(this->left, last_parse_it, last, context, x4::assume_container(attr))
             )
             {
                 // TODO: can we reduce this copy assignment?

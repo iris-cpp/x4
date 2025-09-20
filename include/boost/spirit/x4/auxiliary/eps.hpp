@@ -13,14 +13,13 @@
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 
 namespace boost::spirit::x4
 {
-    struct rule_context_tag;
-
     struct semantic_predicate : parser<semantic_predicate>
     {
         using attribute_type = unused_type;
@@ -31,9 +30,9 @@ namespace boost::spirit::x4
             : predicate_(predicate)
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute&) const
+        parse(It& first, Se const& last, Context const& context, Attribute&) const
             noexcept(noexcept(x4::skip_over(first, last, context)))
         {
             x4::skip_over(first, last, context);
@@ -60,14 +59,31 @@ namespace boost::spirit::x4
             : f_(std::forward<F_>(f))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& /* attr */) const
+        parse(It& first, Se const& last, Context const& context, Attribute&) const
         {
-            static_assert(std::is_invocable_r_v<bool, F const&, decltype(x4::get<rule_context_tag>(context))>);
-
             x4::skip_over(first, last, context);
-            return f_(x4::get<rule_context_tag>(context));
+
+            if constexpr (std::invocable<F const&, Context const&>)
+            {
+                static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
+                return f_(context);
+            }
+            else if constexpr (std::invocable<F const&, unused_type const&>)
+            {
+                static_assert(
+                    false,
+                    "We no longer accept a lazy semantic predicate that expects a single `unused_type`. "
+                    "Just make your functor take no arguments instead."
+                );
+            }
+            else
+            {
+                static_assert(std::invocable<F const&>);
+                static_assert(std::same_as<std::invoke_result_t<F const&>, bool>);
+                return f_();
+            }
         }
 
     private:
@@ -80,9 +96,9 @@ namespace boost::spirit::x4
 
         static constexpr bool has_attribute = false;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute&) const
+        parse(It& first, Se const& last, Context const& context, Attribute&) const
             noexcept(noexcept(x4::skip_over(first, last, context)))
         {
             x4::skip_over(first, last, context);

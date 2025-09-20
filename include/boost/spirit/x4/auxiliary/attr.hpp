@@ -43,9 +43,9 @@ namespace boost::spirit::x4
             : value_(std::forward<U>(value))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It&, Se const&, Context const&, RContext const&, Attribute& attr_) const
+        parse(It&, Se const&, Context const&, Attribute& attr_) const
             noexcept(noexcept(x4::move_to(std::as_const(value_), attr_)))
         {
             // Always copy (need reuse in repetitive invocations)

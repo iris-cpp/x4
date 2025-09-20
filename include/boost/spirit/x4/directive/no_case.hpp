@@ -38,22 +38,20 @@ namespace boost::spirit::x4
             : base_type(std::forward<SubjectT>(subject))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             noexcept(noexcept(
                 this->subject.parse(
                     first, last,
-                    x4::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
-                    rcontext,
+                    x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, context),
                     attr
                 )
             ))
         {
             return this->subject.parse(
                 first, last,
-                x4::make_context<detail::no_case_tag_t>(detail::no_case_tag, context),
-                rcontext,
+                x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, context),
                 attr
             );
         }

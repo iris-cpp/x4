@@ -36,12 +36,12 @@ namespace boost::spirit::x4
             : base_type(std::forward<SubjectT>(subject))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             // never noexcept; expectation failure requires construction of debug information
         {
-            bool const r = this->subject.parse(first, last, context, rcontext, attr);
+            bool const r = this->subject.parse(first, last, context, attr);
 
             // only the first failure is needed
             if (!r && !x4::has_expectation_failure(context))
@@ -76,18 +76,18 @@ namespace boost::spirit::x4
 namespace boost::spirit::x4::detail
 {
     // Special case handling for expect expressions.
-    template <typename Subject, typename Context, typename RContext>
-    struct parse_into_container_impl<expect_directive<Subject>, Context, RContext>
+    template <typename Subject, typename Context>
+    struct parse_into_container_impl<expect_directive<Subject>, Context>
     {
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
         [[nodiscard]] static constexpr bool
         call(
             expect_directive<Subject> const& parser,
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
+            It& first, Se const& last, Context const& context, Attribute& attr
         ) // never noexcept; expectation failure requires construction of debug information
         {
             bool const r = detail::parse_into_container(
-                parser.subject, first, last, context, rcontext, attr);
+                parser.subject, first, last, context, attr);
 
             // only the first error is needed
             if (!r && !x4::has_expectation_failure(context))

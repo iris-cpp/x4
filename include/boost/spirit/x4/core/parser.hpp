@@ -107,6 +107,7 @@ namespace boost::spirit::x4
     {
         using category = unary_category;
         using subject_type = Subject;
+
         static constexpr bool has_action = Subject::has_action;
 
         template <typename SubjectT>
@@ -118,8 +119,6 @@ namespace boost::spirit::x4
             : subject(std::forward<SubjectT>(subject))
         {}
 
-        [[nodiscard]] constexpr unary_parser const& get_unary() const noexcept { return *this; }
-
         Subject subject;
     };
 
@@ -129,6 +128,7 @@ namespace boost::spirit::x4
         using category = binary_category;
         using left_type = Left;
         using right_type = Right;
+
         static constexpr bool has_action = left_type::has_action || right_type::has_action;
 
         template <typename LeftT, typename RightT>
@@ -138,8 +138,6 @@ namespace boost::spirit::x4
             : left(std::forward<LeftT>(left))
             , right(std::forward<RightT>(right))
         {}
-
-        [[nodiscard]] constexpr binary_parser const& get_binary() const noexcept { return *this; }
 
         Left left;
         Right right;
@@ -367,7 +365,6 @@ namespace boost::spirit::x4
         typename It, // Don't constrain these; just let `static_assert` be engaged for friendly errors
         typename Se,
         typename Context,
-        typename RContext,
         typename Attribute
     >
     struct is_parsable
@@ -377,7 +374,6 @@ namespace boost::spirit::x4
         static_assert(std::forward_iterator<It>);
         static_assert(std::sentinel_for<Se, It>);
         static_assert(!std::is_reference_v<Context>);
-        static_assert(!std::is_reference_v<RContext>);
         static_assert(!std::is_reference_v<Attribute>);
 
         static constexpr bool value = requires(Parser const& p) // mutable parser use case is currently unknown
@@ -387,19 +383,17 @@ namespace boost::spirit::x4
                     std::declval<It&>(), // first
                     std::declval<Se>(), // last
                     std::declval<Context const&>(), // context
-                    std::declval<RContext&>(), // rcontext
                     std::declval<Attribute&>() // attr
                 )
             } -> std::convertible_to<bool>;
         };
     };
 
-    template <typename Parser, typename It, typename Se, typename Context, typename RContext, typename Attribute>
-    constexpr bool is_parsable_v = is_parsable<Parser, It, Se, Context, RContext, Attribute>::value;
+    template <typename Parser, typename It, typename Se, typename Context, typename Attribute>
+    constexpr bool is_parsable_v = is_parsable<Parser, It, Se, Context, Attribute>::value;
 
-    // TODO: handle `parse_into_container` case
-    template <typename Parser, typename It, typename Se, typename Context, typename RContext, typename Attribute>
-    concept Parsable = is_parsable<Parser, It, Se, Context, RContext, Attribute>::value;
+    template <typename Parser, typename It, typename Se, typename Context, typename Attribute>
+    concept Parsable = is_parsable<Parser, It, Se, Context, Attribute>::value;
     // ^^^ this must be concept in order to provide better diagnostics (e.g. on MSVC)
 
     template <
@@ -407,7 +401,6 @@ namespace boost::spirit::x4
         typename It, // Don't constrain these; just let `static_assert` be engaged for friendly errors
         typename Se,
         typename Context,
-        typename RContext,
         typename Attribute
     >
     struct is_nothrow_parsable
@@ -417,7 +410,6 @@ namespace boost::spirit::x4
         static_assert(std::forward_iterator<It>);
         static_assert(std::sentinel_for<Se, It>);
         static_assert(!std::is_reference_v<Context>);
-        static_assert(!std::is_reference_v<RContext>);
         static_assert(!std::is_reference_v<Attribute>);
 
         static constexpr bool value = requires(Parser const& p) // mutable parser use case is currently unknown
@@ -427,26 +419,25 @@ namespace boost::spirit::x4
                     std::declval<It&>(), // first
                     std::declval<Se>(), // last
                     std::declval<Context const&>(), // context
-                    std::declval<RContext&>(), // rcontext
                     std::declval<Attribute&>() // attr
                 )
             } noexcept -> std::convertible_to<bool>;
         };
     };
 
-    template <typename Parser, typename It, typename Se, typename Context, typename RContext, typename Attribute>
-    constexpr bool is_nothrow_parsable_v = is_nothrow_parsable<Parser, It, Se, Context, RContext, Attribute>::value;
+    template <typename Parser, typename It, typename Se, typename Context, typename Attribute>
+    constexpr bool is_nothrow_parsable_v = is_nothrow_parsable<Parser, It, Se, Context, Attribute>::value;
 
 
     template <typename Parser, class It, class Se>
     concept X4ExplicitParser =
         X4ExplicitSubject<Parser> &&
-        is_parsable_v<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
+        is_parsable_v<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type>;
 
     template <typename Parser, class It, class Se>
     concept X4ImplicitParser =
         X4ImplicitSubject<Parser> &&
-        is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type, unused_type>;
+        is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type>;
 
     // The primary "parser" concept of X4, applicable in iterator-aware contexts.
     //
@@ -461,11 +452,11 @@ namespace boost::spirit::x4
     //
     // Although some exotic user-defined parser could be designed to operate on the very
     // specific context type and/or attribute type, we require the parser to at least
-    // accept `unused_type` for `RContext`, `Context` and `Attribute`. This is because
+    // accept `unused_type` for `Context` and `Attribute`. This is because
     // core parsers of Spirit have historically been assuming natural use of `unused_type`
     // in many locations.
-    template <typename Parser, class It, class Se>
-    concept X4Parser = X4ExplicitParser<Parser, It, Se> || X4ImplicitParser<Parser, It, Se>;
+    template <typename Parser, class It, class Se> // TODO
+    concept X4Parser = X4Subject<Parser>; // X4ExplicitParser<Parser, It, Se> || X4ImplicitParser<Parser, It, Se>;
 
 
     // The runtime type info that can be obtained via `x4::what(p)`.

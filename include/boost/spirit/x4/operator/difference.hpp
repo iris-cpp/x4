@@ -35,13 +35,13 @@ namespace boost::spirit::x4
             : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         {
             // Try Right first
             It start = first;
-            if (this->right.parse(first, last, context, rcontext, unused))
+            if (this->right.parse(first, last, context, unused))
             {
                 // Right succeeds, we fail.
                 first = start;
@@ -60,7 +60,7 @@ namespace boost::spirit::x4
             }
 
             // Right fails, now try Left
-            return this->left.parse(first, last, context, rcontext, attr);
+            return this->left.parse(first, last, context, attr);
         }
     };
 

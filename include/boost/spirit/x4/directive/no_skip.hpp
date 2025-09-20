@@ -50,14 +50,13 @@ namespace boost::spirit::x4
         >;
 
     public:
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires has_skipper_v<Context>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             noexcept(is_nothrow_parsable_v<
                 Subject, It, Se,
                 unused_skipper_context_t<Context>,
-                RContext,
                 Attribute
             >)
         {
@@ -69,18 +68,17 @@ namespace boost::spirit::x4
             return this->subject.parse(
                 first, last,
                 x4::make_context<skipper_tag>(unused_skipper, context),
-                rcontext,
                 attr
             );
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires (!has_skipper_v<Context>)
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, RContext, Attribute>)
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
         {
-            return this->subject.parse(first, last, context, rcontext, attr);
+            return this->subject.parse(first, last, context, attr);
         }
     };
 

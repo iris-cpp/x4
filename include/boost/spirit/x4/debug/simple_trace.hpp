@@ -149,6 +149,45 @@ namespace boost::spirit::x4
             return tracer;
         }
 
+
+        // TODO: This should be customizable by users
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+        struct [[nodiscard]] scoped_rule_debug
+        {
+            scoped_rule_debug(
+                char const* rule_name,
+                It const& first, Se const& last,
+                Attribute const& attr,
+                bool const* parse_ok
+            )
+                : parse_ok(parse_ok)
+                , rule_name(rule_name)
+                , first(first)
+                , last(last)
+                , attr(attr)
+                , f(detail::get_simple_trace())
+            {
+                f(first, last, attr, debug_handler_state::pre_parse, rule_name);
+            }
+
+            ~scoped_rule_debug()
+            {
+                f(
+                    first, last,
+                    attr,
+                    *parse_ok ? debug_handler_state::successful_parse : debug_handler_state::failed_parse,
+                    rule_name
+                );
+            }
+
+            bool const* parse_ok = nullptr;
+            char const* rule_name = nullptr;
+            It const& first;
+            Se const& last;
+            Attribute const& attr;
+            simple_trace_type& f;
+        };
+
     } // detail
 
 } // boost::spirit::x4

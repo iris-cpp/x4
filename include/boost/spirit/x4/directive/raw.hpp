@@ -45,16 +45,16 @@ namespace boost::spirit::x4
             : base_type(std::forward<SubjectT>(subject))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             // never noexcept; construction of `std::ranges::subrange` is never noexcept
         {
-            static_assert(Parsable<Subject, It, Se, Context, RContext, unused_type>);
+            static_assert(Parsable<Subject, It, Se, Context, unused_type>);
 
             x4::skip_over(first, last, context);
             It local_it = first;
-            if (this->subject.parse(local_it, last, context, rcontext, unused))
+            if (this->subject.parse(local_it, last, context, unused))
             {
                 x4::move_to(first, local_it, attr);
                 first = local_it;
@@ -63,12 +63,12 @@ namespace boost::spirit::x4
             return false;
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, unused_type) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, RContext, unused_type>)
+        parse(It& first, Se const& last, Context const& context, unused_type) const
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
         {
-            return this->subject.parse(first, last, context, rcontext, unused);
+            return this->subject.parse(first, last, context, unused);
         }
     };
 

@@ -36,13 +36,11 @@ namespace boost::spirit::x4
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(
-            It& first, Se const& last,
-            Context const& context, unused_type, Attribute& attr
-        ) const noexcept(
-            noexcept(x4::skip_over(first, last, context)) &&
-            noexcept(extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
-        )
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(
+                noexcept(x4::skip_over(first, last, context)) &&
+                noexcept(extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
+            )
         {
             x4::skip_over(first, last, context);
             return extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);

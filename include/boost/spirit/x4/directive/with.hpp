@@ -120,16 +120,16 @@ namespace boost::spirit::x4
         template <typename Context>
         using context_t = context<ID, std::remove_reference_t<T>, Context>;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, RContext, Attribute>)
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attribute>)
         {
-            static_assert(Parsable<Subject, It, Se, context_t<Context>, RContext, Attribute>);
+            static_assert(Parsable<Subject, It, Se, context_t<Context>, Attribute>);
             return this->subject.parse(
                 first, last,
                 x4::make_context<ID>(this->val_, context),
-                rcontext, attr
+                attr
             );
         }
 

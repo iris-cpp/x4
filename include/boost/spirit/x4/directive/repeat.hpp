@@ -82,16 +82,16 @@ namespace boost::spirit::x4
             , bounds_(std::forward<BoundsT>(bounds))
         {}
 
-        template<std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template<std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             // never noexcept (requires container insertion)
         {
             It local_it = first;
             typename Bounds::value_type i{};
             for (; !bounds_.got_min(i); ++i)
             {
-                if (!detail::parse_into_container(this->subject, local_it, last, context, rcontext, x4::assume_container(attr)))
+                if (!detail::parse_into_container(this->subject, local_it, last, context, x4::assume_container(attr)))
                 {
                     return false;
                 }
@@ -101,7 +101,7 @@ namespace boost::spirit::x4
             // parse some more up to the maximum specified
             for (; !bounds_.got_max(i); ++i)
             {
-                if (!detail::parse_into_container(this->subject, first, last, context, rcontext, x4::assume_container(attr)))
+                if (!detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr)))
                 {
                     break;
                 }

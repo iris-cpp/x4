@@ -93,12 +93,12 @@ namespace boost::spirit::x4::detail
     struct parse_into_container_base_impl
     {
         // Parser has attribute (synthesize; Attribute is a container)
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires (!parser_accepts_container_v<Parser, Attribute, Context>)
         [[nodiscard]] static constexpr bool
         call_synthesize(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
+            Context const& context, Attribute& attr
         ) // never noexcept (requires container insertion)
         {
             static_assert(!std::same_as<std::remove_const_t<Attribute>, unused_container_type>);
@@ -106,8 +106,8 @@ namespace boost::spirit::x4::detail
             using value_type = traits::container_value_t<Attribute>;
             value_type val; // default-initialize
 
-            static_assert(Parsable<Parser, It, Se, Context, RContext, value_type>);
-            if (!parser.parse(first, last, context, rcontext, val))
+            static_assert(Parsable<Parser, It, Se, Context, value_type>);
+            if (!parser.parse(first, last, context, val))
             {
                 return false;
             }
@@ -117,48 +117,48 @@ namespace boost::spirit::x4::detail
             return true;
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
             requires (!parser_accepts_container_v<Parser, unused_container_type, Context>)
         [[nodiscard]] static constexpr bool
         call_synthesize(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, unused_container_type const&
-        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_type>)
+            Context const& context, unused_container_type const&
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_type>)
         {
-            static_assert(Parsable<Parser, It, Se, Context, RContext, unused_type>);
-            return parser.parse(first, last, context, rcontext, unused);
+            static_assert(Parsable<Parser, It, Se, Context, unused_type>);
+            return parser.parse(first, last, context, unused);
         }
 
         // Parser has attribute (synthesize; Attribute is a container)
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires parser_accepts_container_v<Parser, Attribute, Context>
         [[nodiscard]] static constexpr bool
         call_synthesize(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
-        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, Attribute>)
+            Context const& context, Attribute& attr
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attribute>)
         {
-            static_assert(Parsable<Parser, It, Se, Context, RContext, Attribute>);
-            return parser.parse(first, last, context, rcontext, attr);
+            static_assert(Parsable<Parser, It, Se, Context, Attribute>);
+            return parser.parse(first, last, context, attr);
         }
 
         // Parser has attribute && it is NOT fusion sequence
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires
                 traits::has_attribute_v<Parser, Context> &&
                 (!fusion::traits::is_sequence<Attribute>::value)
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
+            Context const& context, Attribute& attr
         )
         {
             // TODO: reduce call stack while keeping maintainability
-            return parse_into_container_base_impl::call_synthesize(parser, first, last, context, rcontext, attr);
+            return parse_into_container_base_impl::call_synthesize(parser, first, last, context, attr);
         }
 
         // Parser has attribute && it is fusion sequence (NOT associative)
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires
                 traits::has_attribute_v<Parser, Context> &&
                 fusion::traits::is_sequence<Attribute>::value &&
@@ -166,16 +166,16 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
-        ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, context, rcontext, fusion::front(attr))))
+            Context const& context, Attribute& attr
+        ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, context, fusion::front(attr))))
         {
             static_assert(traits::has_size_v<Attribute, 1>, "Expecting a single element fusion sequence");
             // TODO: reduce call stack while keeping maintainability
-            return parse_into_container_base_impl::call_synthesize(parser, first, last, context, rcontext, fusion::front(attr));
+            return parse_into_container_base_impl::call_synthesize(parser, first, last, context, fusion::front(attr));
         }
 
         // Parser has attribute && it is fusion sequence (associative)
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires
                 traits::has_attribute_v<Parser, Context> &&
                 fusion::traits::is_sequence<Attribute>::value &&
@@ -183,15 +183,15 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
+            Context const& context, Attribute& attr
         ) // never noexcept (requires container insertion)
         {
             using attribute_type = traits::attribute_of_t<Parser, Context>;
             static_assert(traits::has_size_v<attribute_type, 2>, "To parse directly into fusion map, parser must produce 2 element attr");
 
             attribute_type attr_; // default-initialize
-            static_assert(Parsable<Parser, It, Se, Context, RContext, attribute_type>);
-            if (!parser.parse(first, last, context, rcontext, attr_))
+            static_assert(Parsable<Parser, It, Se, Context, attribute_type>);
+            if (!parser.parse(first, last, context, attr_))
             {
                 return false;
             }
@@ -206,26 +206,26 @@ namespace boost::spirit::x4::detail
         }
 
         // Parser has no attribute (pass unused)
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires (!traits::has_attribute_v<Parser, Context>)
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& /* attr */
-        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_container_type>)
+            Context const& context, Attribute& /* attr */
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_container_type>)
         {
-            // static_assert(Parsable<Parser, It, Se, Context, RContext, unused_container_type>);
-            return parser.parse(first, last, context, rcontext, unused_container);
+            // static_assert(Parsable<Parser, It, Se, Context, unused_container_type>);
+            return parser.parse(first, last, context, unused_container);
         }
     };
 
-    template <typename Parser, typename Context, typename RContext>
+    template <typename Parser, typename Context>
     struct parse_into_container_impl : parse_into_container_base_impl<Parser> {};
 
 
-    template <typename Parser, typename Context, typename RContext>
+    template <typename Parser, typename Context>
         requires Parser::handles_container
-    struct parse_into_container_impl<Parser, Context, RContext>
+    struct parse_into_container_impl<Parser, Context>
     {
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
         static constexpr bool pass_attibute_as_is = std::disjunction_v<
@@ -246,13 +246,13 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
+            Context const& context, Attribute& attr
         ) noexcept(noexcept(parse_into_container_base_impl<Parser>::call(
-            parser, first, last, context, rcontext, attr
+            parser, first, last, context, attr
         )))
         {
             return parse_into_container_base_impl<Parser>::call(
-                parser, first, last, context, rcontext, attr
+                parser, first, last, context, attr
             );
         }
 
@@ -261,11 +261,11 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, unused_container_type
-        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, unused_container_type>)
+            Context const& context, unused_container_type
+        ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_container_type>)
         {
-            static_assert(Parsable<Parser, It, Se, Context, RContext, unused_container_type>);
-            return parser.parse(first, last, context, rcontext, unused_container);
+            static_assert(Parsable<Parser, It, Se, Context, unused_container_type>);
+            return parser.parse(first, last, context, unused_container);
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
@@ -273,21 +273,21 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             Parser const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attr
+            Context const& context, Attribute& attr
         ) // never noexcept (requires container insertion)
         {
             static_assert(!std::is_same_v<std::remove_const_t<Attribute>, unused_type>);
             static_assert(!std::is_same_v<std::remove_const_t<Attribute>, unused_container_type>);
 
-            static_assert(Parsable<Parser, It, Se, Context, RContext, Attribute>);
+            static_assert(Parsable<Parser, It, Se, Context, Attribute>);
 
             if (traits::is_empty(attr))
             {
-                return parser.parse(first, last, context, rcontext, attr);
+                return parser.parse(first, last, context, attr);
             }
 
             Attribute rest; // default-initialize
-            if (!parser.parse(first, last, context, rcontext, rest))
+            if (!parser.parse(first, last, context, rest))
             {
                 return false;
             }
@@ -302,14 +302,14 @@ namespace boost::spirit::x4::detail
 
     template <
         typename Parser, std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext, typename Attribute
+        typename Context, typename Attribute
     >
     [[nodiscard]] constexpr bool
     parse_into_container(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, RContext& rcontext, Attribute& attr
-    ) noexcept(noexcept(parse_into_container_impl<Parser, Context, RContext>::call(
-        parser, first, last, context, rcontext, attr
+        Context const& context, Attribute& attr
+    ) noexcept(noexcept(parse_into_container_impl<Parser, Context>::call(
+        parser, first, last, context, attr
     )))
     {
         static_assert(
@@ -317,8 +317,8 @@ namespace boost::spirit::x4::detail
             "`unused_type` should not be passed to `parse_into_container`. Use `x4::assume_container(attr)`"
         );
 
-        return parse_into_container_impl<Parser, Context, RContext>::call(
-            parser, first, last, context, rcontext, attr
+        return parse_into_container_impl<Parser, Context>::call(
+            parser, first, last, context, attr
         );
     }
 

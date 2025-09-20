@@ -14,13 +14,13 @@
 #include <boost/spirit/x4/rule.hpp>
 
 // Check that `BOOST_SPIRIT_X4_INSTANTIATE` instantiates `parse_rule` with proper
-// types when a rule has no attribute.
+// types when the rule has no attribute.
 
 namespace unused_attr {
 
 namespace x4 = boost::spirit::x4;
 
-// skipper must has no attribute, checks `parse` and `skip_over`
+// skipper must have no attribute, check `parse` and `skip_over`
 using skipper_type = x4::rule<class skipper_r>;
 const skipper_type skipper;
 BOOST_SPIRIT_X4_DECLARE(skipper_type)
@@ -30,14 +30,14 @@ using skipper2_type = x4::rule<class skipper2_r, x4::unused_type const>;
 const skipper2_type skipper2;
 BOOST_SPIRIT_X4_DECLARE(skipper2_type)
 
-// grammar must has no attribute, checks `parse` and `phrase_parse`
+// grammar must have no attribute, check `parse` and `phrase_parse`
 using grammar_type = x4::rule<class grammar_r>;
 const grammar_type grammar;
 BOOST_SPIRIT_X4_DECLARE(grammar_type)
 
 }
 
-// Check instantiation when rule has an attribute.
+// Check instantiation when the rule has an attribute.
 
 namespace used_attr {
 

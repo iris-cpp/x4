@@ -44,54 +44,51 @@ namespace boost::spirit::x4
 
         // catch-all overload
         template <
-            std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext,
-            typename Attribute // unconstrained
+            std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute // unconstrained
         >
         [[nodiscard]] constexpr bool
         parse(
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
+            It& first, Se const& last, Context const& context, Attribute& attr
         ) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, RContext, Attribute>)
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
         {
-            static_assert(Parsable<Subject, It, Se, Context, RContext, Attribute>);
+            static_assert(Parsable<Subject, It, Se, Context, Attribute>);
 
             // discard [[nodiscard]]
-            (void)this->subject.parse(first, last, context, rcontext, attr);
+            (void)this->subject.parse(first, last, context, attr);
             return !x4::has_expectation_failure(context);
         }
 
         // container attribute
         template <
-            std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext,
-            traits::CategorizedAttr<traits::container_attribute> Attribute
+            std::forward_iterator It, std::sentinel_for<It> Se, typename Context, traits::CategorizedAttr<traits::container_attribute> Attribute
         >
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, rcontext, attr)))
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, attr)))
         {
             // discard [[nodiscard]]
-            (void)detail::parse_into_container(this->subject, first, last, context, rcontext, attr);
+            (void)detail::parse_into_container(this->subject, first, last, context, attr);
             return !x4::has_expectation_failure(context);
         }
 
         // optional attribute
         template <
-            std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext,
-            traits::CategorizedAttr<traits::optional_attribute> Attribute
+            std::forward_iterator It, std::sentinel_for<It> Se, typename Context, traits::CategorizedAttr<traits::optional_attribute> Attribute
         >
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             noexcept(
                 std::is_nothrow_default_constructible_v<x4::traits::optional_value_t<Attribute>> &&
-                is_nothrow_parsable_v<Subject, It, Se, Context, RContext, x4::traits::optional_value_t<Attribute>> &&
+                is_nothrow_parsable_v<Subject, It, Se, Context, x4::traits::optional_value_t<Attribute>> &&
                 noexcept(x4::move_to(std::declval<x4::traits::optional_value_t<Attribute>&&>(), attr))
             )
         {
             using value_type = x4::traits::optional_value_t<Attribute>;
             value_type val; // default-initialize
 
-            static_assert(Parsable<Subject, It, Se, Context, RContext, value_type>);
-            if (this->subject.parse(first, last, context, rcontext, val))
+            static_assert(Parsable<Subject, It, Se, Context, value_type>);
+            if (this->subject.parse(first, last, context, val))
             {
                 // assign the parsed value into our attribute
                 x4::move_to(std::move(val), attr);

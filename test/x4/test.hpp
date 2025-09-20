@@ -152,10 +152,10 @@ namespace spirit_test
         static constexpr bool has_attribute = true;
         static constexpr bool handles_container = false;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool parse(
             It& iter, Se const& last, Context const&,
-            RContext&, Attribute& attr
+            Attribute& attr
         ) const
         {
             if (iter != last && *iter == 's') {

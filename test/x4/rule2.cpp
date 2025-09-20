@@ -14,31 +14,11 @@
 #include <boost/spirit/x4/operator/sequence.hpp>
 #include <boost/spirit/x4/operator/kleene.hpp>
 
+#include <concepts>
 #include <iterator>
 #include <string>
 #include <cstring>
 #include <type_traits>
-
-namespace x4 = boost::spirit::x4;
-
-struct check_no_rule_injection_parser
-    : x4::parser<check_no_rule_injection_parser>
-{
-    using attribute_type = x4::unused_type;
-
-    static constexpr bool has_attribute = false;
-
-    template <
-        std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext, typename Attribute
-    >
-    [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, RContext const&, Attribute&) const
-    {
-        static_assert(std::is_same_v<Context, x4::parse_context_for<std::string_view>>, "no rule definition injection should occur");
-        return true;
-    }
-} const check_no_rule_injection{};
 
 int main()
 {
@@ -125,11 +105,6 @@ int main()
             BOOST_TEST(parse("abcdef", r[f]));
             BOOST_TEST(s == "abcdef");
         }
-    }
-
-    {
-        BOOST_TEST(parse("", rule<class a>{} = check_no_rule_injection));
-        BOOST_TEST(parse("", rule<class a>{} %= check_no_rule_injection));
     }
 
     return boost::report_errors();

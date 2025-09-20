@@ -199,33 +199,30 @@ namespace boost::spirit::x4
             : policies_(std::forward<RealPoliciesT>(policies))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
-        parse(
-            It& first, Se const& last,
-            Context const& context, RContext const&, T& attr_
-        ) const noexcept(
-            noexcept(x4::skip_over(first, last, context)) &&
-            noexcept(extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
-        )
+        parse(It& first, Se const& last, Context const& context, T& attr_) const
+            noexcept(
+                noexcept(x4::skip_over(first, last, context)) &&
+                noexcept(extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
+            )
         {
             x4::skip_over(first, last, context);
             return extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last,
-            Context const& context, RContext const&, Attribute& attr_param
-        ) const noexcept(
-            std::is_nothrow_default_constructible_v<T> &&
-            noexcept(this->parse(first, last, context, unused, std::declval<T&>())) &&
-            noexcept(x4::move_to(std::declval<T&&>(), attr_param))
-        )
+        parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
+            noexcept(
+                std::is_nothrow_default_constructible_v<T> &&
+                noexcept(this->parse(first, last, context, std::declval<T&>())) &&
+                noexcept(x4::move_to(std::declval<T&&>(), attr_param))
+            )
         {
             // this case is called when Attribute is not T
             T attr_;
-            if (this->parse(first, last, context, unused, attr_))
+            if (this->parse(first, last, context, attr_))
             {
                 x4::move_to(std::move(attr_), attr_param);
                 return true;
