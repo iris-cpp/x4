@@ -32,11 +32,11 @@ struct checked_attr_parser : x4::attr_parser<Value>
     checked_attr_parser(Value const& value) : base_type(value) {}
     checked_attr_parser(Value&& value) : base_type(std::move(value)) {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attribute& attr_) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr_) const
     {
-        static_assert(std::is_same_v<Expected, Attribute>, "attribute type check failed");
+        static_assert(std::is_same_v<Expected, Attr>, "attribute type check failed");
         return base_type::parse(first, last, ctx, attr_);
     }
 };
@@ -56,23 +56,23 @@ static void test_expr(Value const& v, Expr&& expr)
     BOOST_TEST((r == v));
 }
 
-template<class Expr, class Attribute>
-static void gen_sequence(Attribute const& attribute, Expr&& expr)
+template<class Expr, class Attr>
+static void gen_sequence(Attr const& attribute, Expr&& expr)
 {
     test_expr(attribute, expr);
     test_expr(attribute, expr >> x4::eps);
 }
 
-template<class Expected, class... ExpectedTail, class Attribute, class Expr, class Value, class... Tail>
-static void gen_sequence(Attribute const& attribute, Expr&& expr, Value const& v, Tail const&... tail)
+template<class Expected, class... ExpectedTail, class Attr, class Expr, class Value, class... Tail>
+static void gen_sequence(Attr const& attribute, Expr&& expr, Value const& v, Tail const&... tail)
 {
     gen_sequence<ExpectedTail...>(attribute, expr >> checked_attr<Expected>(v), tail...);
     gen_sequence<ExpectedTail...>(attribute, expr >> x4::eps >> checked_attr<Expected>(v), tail...);
     gen_sequence<ExpectedTail...>(attribute, expr >> (x4::eps >> checked_attr<Expected>(v)), tail...);
 }
 
-template<class Expected, class... ExpectedTail, class Attribute, class Value, class... Tail>
-static void gen_sequence_tests(Attribute const& attribute, Value const& v, Tail const&... tail)
+template<class Expected, class... ExpectedTail, class Attr, class Value, class... Tail>
+static void gen_sequence_tests(Attr const& attribute, Value const& v, Tail const&... tail)
 {
     gen_sequence<ExpectedTail...>(attribute, checked_attr<Expected>(v), tail...);
     gen_sequence<ExpectedTail...>(attribute, x4::eps >> checked_attr<Expected>(v), tail...);

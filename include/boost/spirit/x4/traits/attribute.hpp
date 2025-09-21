@@ -11,6 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <boost/spirit/x4/core/attribute.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 
 #include <concepts>
@@ -22,34 +23,36 @@ namespace boost::spirit::x4::traits {
 // Retrieve the attribute type to use from the given type.
 // This is needed to extract the correct attribute type from proxy classes
 // as utilized in `FUSION_ADAPT_ADT` et al.
-template<class Attribute>
+template<class Attr>
 struct attribute_type
 {
-    using type = Attribute;
+    using type = Attr;
 };
 
-template<class Attribute>
-using attribute_type_t = typename attribute_type<Attribute>::type;
+template<class Attr>
+using attribute_type_t = typename attribute_type<Attr>::type;
 
 
 // Pseudo attributes are placeholders for parsers that can only know
 // its actual attribute at parse time. This trait customization point
 // provides a mechanism to convert the trait to the actual trait at
 // parse time.
-template<class Context, class Attribute, std::forward_iterator It, std::sentinel_for<It> Se = It>
+template<class Context, class Attr, std::forward_iterator It, std::sentinel_for<It> Se = It>
 struct pseudo_attribute
 {
-    using attribute_type = Attribute;
-    using type = Attribute;
+    static_assert(X4Attribute<std::remove_reference_t<Attr>>);
 
-    [[nodiscard]] static constexpr type&& call(It&, Se const&, Attribute&& attribute) noexcept
+    using attribute_type = Attr;
+    using type = Attr;
+
+    [[nodiscard]] static constexpr type&& call(It&, Se const&, Attr&& attr_) noexcept
     {
-        return static_cast<type&&>(attribute);
+        return static_cast<type&&>(attr_);
     }
 };
 
-template<class Context, class Attribute, std::forward_iterator It, std::sentinel_for<It> Se>
-using pseudo_attribute_t = typename pseudo_attribute<Context, Attribute, It, Se>::type;
+template<class Context, X4Attribute Attr, std::forward_iterator It, std::sentinel_for<It> Se>
+using pseudo_attribute_t = typename pseudo_attribute<Context, Attr, It, Se>::type;
 
 
 // Get the attribute type of the component. By default, this gets the
@@ -115,7 +118,7 @@ template<class Component, class Context>
         { Component::has_attribute } -> std::same_as<bool>;
     }
 struct has_attribute<Component, Context>
-    : std::bool_constant<Component::has_attribute>
+    : std::bool_constant<Component::has_Attr>
 {};
 
 template<class Component, class Context>
@@ -152,8 +155,8 @@ struct type_sequence
     using transfer_to = U<T...>;
 };
 
-template<class Attribute>
-struct types_of_binary_init : type_sequence<Attribute>
+template<X4Attribute Attr>
+struct types_of_binary_init : type_sequence<Attr>
 {};
 
 template<>

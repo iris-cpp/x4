@@ -339,22 +339,22 @@ struct parse_fn_deprecated
     // It/Se + Parser
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
     static constexpr void
-    operator()(It, Se, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(It, Se, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // parse_result + It/Se + Parser
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
     static constexpr void
-    operator()(parse_result<It, Se>&, It, Se, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(parse_result<It, Se>&, It, Se, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // R + Parser
     template<std::ranges::forward_range R, X4RangeParseParser<R> Parser>
     static constexpr void
-    operator()(R&&, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(R&&, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // parse_result + R + Parser
     template<std::ranges::forward_range R, X4RangeParseParser<R> Parser>
     static constexpr void
-    operator()(parse_result_for<R>&, R&&, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(parse_result_for<R>&, R&&, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // ---------------------------------------------
     // deprecated `phrase_parse`
@@ -362,22 +362,22 @@ struct parse_fn_deprecated
     // It/Se + Parser + Skipper
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
     static constexpr void
-    operator()(It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // parse_result + It/Se + Parser + Skipper
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
     static constexpr void
-    operator()(parse_result<It, Se>&, It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(parse_result<It, Se>&, It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // R + Parser + Skipper
     template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
     static constexpr void
-    operator()(R&&, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(R&&, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 
     // parse_result + R + Parser + Skipper
     template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
     static constexpr void
-    operator()(parse_result_for<R>&, R&&, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
+    operator()(parse_result_for<R>&, R&&, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
 };
 
 struct parse_fn : parse_fn_main, parse_fn_deprecated

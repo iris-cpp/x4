@@ -44,13 +44,14 @@ struct optional : unary_parser<Subject, optional<Subject>>
 
     // catch-all overload
     template<
-        std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute // unconstrained
+        std::forward_iterator It, std::sentinel_for<It> Se, class Context,
+        class Attr // unconstrained
     >
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
-        static_assert(Parsable<Subject, It, Se, Context, Attribute>);
+        static_assert(Parsable<Subject, It, Se, Context, Attr>);
 
         // discard [[nodiscard]]
         (void)this->subject.parse(first, last, context, attr);
@@ -59,10 +60,11 @@ struct optional : unary_parser<Subject, optional<Subject>>
 
     // container attribute
     template<
-        std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::CategorizedAttr<traits::container_attribute> Attribute
+        std::forward_iterator It, std::sentinel_for<It> Se, class Context,
+        traits::CategorizedAttr<traits::container_attr> Attr
     >
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, attr)))
     {
         // discard [[nodiscard]]
@@ -72,17 +74,18 @@ struct optional : unary_parser<Subject, optional<Subject>>
 
     // optional attribute
     template<
-        std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::CategorizedAttr<traits::optional_attribute> Attribute
+        std::forward_iterator It, std::sentinel_for<It> Se, class Context,
+        traits::CategorizedAttr<traits::optional_attr> Attr
     >
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(
-            std::is_nothrow_default_constructible_v<x4::traits::optional_value_t<Attribute>> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, x4::traits::optional_value_t<Attribute>> &&
-            noexcept(x4::move_to(std::declval<x4::traits::optional_value_t<Attribute>&&>(), attr))
+            std::is_nothrow_default_constructible_v<x4::traits::optional_value_t<Attr>> &&
+            is_nothrow_parsable_v<Subject, It, Se, Context, x4::traits::optional_value_t<Attr>> &&
+            noexcept(x4::move_to(std::declval<x4::traits::optional_value_t<Attr>&&>(), attr))
         )
     {
-        using value_type = x4::traits::optional_value_t<Attribute>;
+        using value_type = x4::traits::optional_value_t<Attr>;
         value_type val; // default-initialize
 
         static_assert(Parsable<Subject, It, Se, Context, value_type>);

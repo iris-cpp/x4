@@ -49,9 +49,9 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
                 && this->right.parse(first, last, context, unused));
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(
             noexcept(detail::parse_alternative(this->left, first, last, context, attr)) &&
             noexcept(detail::parse_alternative(this->right, first, last, context, attr))

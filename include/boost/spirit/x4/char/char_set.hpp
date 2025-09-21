@@ -21,12 +21,12 @@
 namespace boost::spirit::x4 {
 
 // Parser for a character range
-template<class Encoding, class Attribute = typename Encoding::char_type>
-struct char_range : char_parser<char_range<Encoding, Attribute>>
+template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
+struct char_range : char_parser<char_range<Encoding, Attr>>
 {
     using char_type = typename Encoding::char_type;
     using encoding = Encoding;
-    using attribute_type = Attribute;
+    using attribute_type = Attr;
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
     constexpr char_range(char_type from_, char_type to_) noexcept
@@ -46,12 +46,12 @@ struct char_range : char_parser<char_range<Encoding, Attribute>>
 };
 
 // Parser for a character set
-template<class Encoding, class Attribute = typename Encoding::char_type>
-struct char_set : char_parser<char_set<Encoding, Attribute>>
+template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
+struct char_set : char_parser<char_set<Encoding, Attr>>
 {
     using char_type = typename Encoding::char_type;
     using encoding = Encoding;
-    using attribute_type = Attribute;
+    using attribute_type = Attr;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
@@ -100,21 +100,21 @@ struct char_set : char_parser<char_set<Encoding, Attribute>>
     detail::basic_chset<char_type> chset;
 };
 
-template<class Encoding, class Attribute>
-struct get_info<char_set<Encoding, Attribute>>
+template<class Encoding, X4Attribute Attr>
+struct get_info<char_set<Encoding, Attr>>
 {
     using result_type = std::string;
-    [[nodiscard]] constexpr std::string operator()(char_set<Encoding, Attribute> const& /* p */) const
+    [[nodiscard]] constexpr std::string operator()(char_set<Encoding, Attr> const& /* p */) const
     {
         return "char-set"; // TODO: make more user-friendly
     }
 };
 
-template<class Encoding, class Attribute>
-struct get_info<char_range<Encoding, Attribute>>
+template<class Encoding, X4Attribute Attr>
+struct get_info<char_range<Encoding, Attr>>
 {
     using result_type = std::string;
-    [[nodiscard]] constexpr std::string operator()(char_range<Encoding, Attribute> const& p) const
+    [[nodiscard]] constexpr std::string operator()(char_range<Encoding, Attr> const& p) const
     {
         // TODO: make more user-friendly && make the format consistent with above
         return "char_range \"" + x4::to_utf8(Encoding::toucs4(p.from)) + '-' + x4::to_utf8(Encoding::toucs4(p.to))+ '"';

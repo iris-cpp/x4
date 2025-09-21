@@ -130,9 +130,9 @@ namespace boost::spirit::x4 {
 template<class T, class RealPolicies>
 struct extract_real
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse(It& first, Se const& last, Attribute& attr, RealPolicies const& p)
+    parse(It& first, Se const& last, Attr& attr, RealPolicies const& p)
         // TODO: noexcept
     {
         if (first == last) return false;

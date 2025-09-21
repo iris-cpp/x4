@@ -40,13 +40,13 @@ struct lexeme_directive : unary_parser<Subject, lexeme_directive<Subject>>
         x4::make_context<skipper_tag>(std::declval<unused_skipper_t<Context>&>(), std::declval<Context const&>())
     )>;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(
             noexcept(x4::skip_over(first, last, context)) &&
-            is_nothrow_parsable_v<Subject, It, Se, pre_skip_context_t<Context>, Attribute>
+            is_nothrow_parsable_v<Subject, It, Se, pre_skip_context_t<Context>, Attr>
         )
     {
         x4::skip_over(first, last, context);
@@ -61,11 +61,11 @@ struct lexeme_directive : unary_parser<Subject, lexeme_directive<Subject>>
         );
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires (!has_skipper_v<Context>)
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
         //  no need to pre-skip if skipper is unused
         return this->subject.parse(first, last, context, attr);

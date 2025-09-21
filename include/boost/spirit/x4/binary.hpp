@@ -43,9 +43,9 @@ struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
         : n_(std::forward<U>(n))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr_param) const
         // TODO: noexcept
     {
         x4::skip_over(first, last, context);
@@ -77,9 +77,9 @@ struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, T>;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr_param) const
         // TODO: noexcept
     {
         x4::skip_over(first, last, context);

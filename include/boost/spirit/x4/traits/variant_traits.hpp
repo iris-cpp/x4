@@ -49,13 +49,13 @@ template<class T>
 struct is_variant<T> : std::true_type
 {};
 
-template<BOOST_VARIANT_ENUM_PARAMS(class T)>
+template<BOOST_VARIANT_ENUM_PARAMS(typename T)>
 struct is_variant<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>>
     : std::true_type
 {};
 
 
-template<class Variant, class T>
+template<class Variant, X4Attribute T>
 struct variant_find_substitute
 {
     // Get the type from the Variant that can be a substitute for T.
@@ -80,7 +80,7 @@ struct variant_find_substitute
     >::type;
 };
 
-template<class Variant, class T>
+template<class Variant, X4Attribute T>
 using variant_find_substitute_t = typename variant_find_substitute<Variant, T>::type;
 
 template<class Variant>
@@ -92,7 +92,7 @@ struct variant_find_substitute<Variant, Variant>
 
 namespace detail {
 
-template<class Variant, class T>
+template<class Variant, X4Attribute T>
 struct variant_has_substitute_impl
 {
     // Find a type from the Variant that can be a substitute for T.
@@ -114,19 +114,19 @@ struct variant_has_substitute_impl
 
 } // detail
 
-template<class Variant, class T>
+template<class Variant, X4Attribute Attr>
 struct variant_has_substitute
-    : detail::variant_has_substitute_impl<Variant, T>::type
+    : detail::variant_has_substitute_impl<Variant, Attr>::type
 {};
 
-template<class Variant, class T>
-constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, T>::value;
+template<class Variant, X4Attribute Attr>
+constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, Attr>::value;
 
-template<class T>
-struct variant_has_substitute<unused_type, T> : std::true_type {};
+template<X4Attribute Attr>
+struct variant_has_substitute<unused_type, Attr> : std::true_type {};
 
-template<class T>
-struct variant_has_substitute<unused_type const, T> : std::true_type {};
+template<X4Attribute Attr>
+struct variant_has_substitute<unused_type const, Attr> : std::true_type {};
 
 } // boost::spirit::x4::traits
 

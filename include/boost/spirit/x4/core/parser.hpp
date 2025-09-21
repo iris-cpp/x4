@@ -11,6 +11,7 @@
 ==============================================================================*/
 
 #include <boost/spirit/config.hpp>
+#include <boost/spirit/x4/core/attribute.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/traits/attribute.hpp>
@@ -35,22 +36,7 @@ namespace detail {
 struct parser_base {};
 struct parser_id;
 
-struct arbitrary_context_tag; // not defined
-using arbitrary_context_type = context<arbitrary_context_tag, int>;
-
 } // detail
-
-template<class T>
-concept X4Attribute =
-    std::same_as<std::remove_const_t<T>, unused_type> ||
-    std::same_as<std::remove_const_t<T>, unused_container_type> ||
-    (
-        std::is_object_v<T> && // implies not reference
-        !std::is_base_of_v<detail::parser_base, std::remove_const_t<T>> &&
-        // std::default_initializable<T> &&
-        std::move_constructible<T> &&
-        std::assignable_from<T&, T>
-    );
 
 template<class Derived>
 struct parser : private detail::parser_base

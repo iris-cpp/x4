@@ -77,11 +77,11 @@ struct simple_trace
         // TODO: convert invalid xml characters (e.g. '<') to valid character entities
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     void operator()(
         It first,
         Se last,
-        Attribute const& attr,
+        Attr const& attr,
         debug_handler_state const state,
         std::string const& rule_name
     ) const
@@ -96,7 +96,7 @@ struct simple_trace
 
         case successful_parse:
             simple_trace::print_some("success", first, last);
-            if constexpr (!std::same_as<Attribute, unused_type>) {
+            if constexpr (!std::same_as<Attr, unused_type>) {
                 simple_trace::print_indent(indent);
                 out << "<attributes>";
                 traits::print_attribute(out, attr);
@@ -136,13 +136,15 @@ get_simple_trace()
 
 
 // TODO: This should be customizable by users
-template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr>
 struct [[nodiscard]] scoped_rule_debug
 {
+    static_assert(X4Attribute<std::remove_reference_t<Attr>>);
+
     scoped_rule_debug(
         char const* rule_name,
         It const& first, Se const& last,
-        Attribute const& attr,
+        Attr const& attr,
         bool const* parse_ok
     )
         : parse_ok(parse_ok)
@@ -169,7 +171,7 @@ struct [[nodiscard]] scoped_rule_debug
     char const* rule_name = nullptr;
     It const& first;
     Se const& last;
-    Attribute const& attr;
+    Attr const& attr;
     simple_trace_type& f;
 };
 

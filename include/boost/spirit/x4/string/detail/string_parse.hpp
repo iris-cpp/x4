@@ -16,13 +16,13 @@
 
 namespace boost::spirit::x4::detail {
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompareFunc>
+template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string_view<CharT, CharTraitsT> const str,
     It& first, Se const& last,
-    Attribute& attr, CaseCompareFunc const& compare
-) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+    Attr& attr, CaseCompareFunc const& compare
+) noexcept(std::is_same_v<std::remove_const_t<Attr>, unused_type>)
 {
     It i = first;
     auto stri = str.begin();
@@ -39,24 +39,24 @@ string_parse(
     return true;
 }
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompareFunc>
+template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string<CharT, CharTraitsT> const& str,
     It& first, Se const& last,
-    Attribute& attr, CaseCompareFunc const& compare
-) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+    Attr& attr, CaseCompareFunc const& compare
+) noexcept(std::is_same_v<std::remove_const_t<Attr>, unused_type>)
 {
     return detail::string_parse(std::basic_string_view{str}, first, last, attr, compare);
 }
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string_view<CharT, CharTraitsT> const ucstr,
     std::basic_string_view<CharT, CharTraitsT> const lcstr,
-    It& first, Se const& last, Attribute& attr
-) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+    It& first, Se const& last, Attr& attr
+) noexcept(std::is_same_v<std::remove_const_t<Attr>, unused_type>)
 {
     auto uc_i = ucstr.begin();
     auto uc_last = ucstr.end();
@@ -73,13 +73,13 @@ string_parse(
     return true;
 }
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string<CharT, CharTraitsT> const& ucstr,
     std::basic_string<CharT, CharTraitsT> const& lcstr,
-    It& first, Se const& last, Attribute& attr
-) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+    It& first, Se const& last, Attr& attr
+) noexcept(std::is_same_v<std::remove_const_t<Attr>, unused_type>)
 {
     return detail::string_parse(std::basic_string_view{ucstr}, std::basic_string_view{lcstr}, first, last, attr);
 }

@@ -36,9 +36,9 @@ struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         // never noexcept; expectation failure requires construction of debug information
     {
         bool const r = this->subject.parse(first, last, context, attr);
@@ -80,11 +80,11 @@ namespace boost::spirit::x4::detail {
 template<class Subject, class Context>
 struct parse_into_container_impl<expect_directive<Subject>, Context>
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
     call(
         expect_directive<Subject> const& parser,
-        It& first, Se const& last, Context const& context, Attribute& attr
+        It& first, Se const& last, Context const& context, Attr& attr
     ) // never noexcept; expectation failure requires construction of debug information
     {
         bool const r = detail::parse_into_container(parser.subject, first, last, context, attr);

@@ -39,9 +39,9 @@ struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(
             is_nothrow_parsable_v<Subject, It, Se, Context, unused_type> &&
             noexcept(x4::move_to(std::declval<bool const&>(), attr))

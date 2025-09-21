@@ -25,8 +25,8 @@
 
 namespace boost::spirit::x4 {
 
-template<class String, class Encoding, class Attribute = std::basic_string<typename Encoding::char_type>>
-struct literal_string : parser<literal_string<String, Encoding, Attribute>>
+template<class String, class Encoding, X4Attribute Attr = std::basic_string<typename Encoding::char_type>>
+struct literal_string : parser<literal_string<String, Encoding, Attr>>
 {
     static_assert(
         !std::is_pointer_v<std::decay_t<String>>,
@@ -36,7 +36,7 @@ struct literal_string : parser<literal_string<String, Encoding, Attribute>>
 
     using char_type = typename Encoding::char_type;
     using encoding = Encoding;
-    using attribute_type = Attribute;
+    using attribute_type = Attr;
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
     static constexpr bool handles_container = has_attribute;
 
@@ -47,10 +47,9 @@ struct literal_string : parser<literal_string<String, Encoding, Attribute>>
         : str(std::forward<Args>(args)...)
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute_>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute_& attr
-    ) const
+    parse(It& first, Se const& last, Context const& context, Attr_& attr) const
         noexcept(
             noexcept(x4::skip_over(first, last, context)) &&
             noexcept(detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context)))
@@ -63,11 +62,11 @@ struct literal_string : parser<literal_string<String, Encoding, Attribute>>
     String str;
 };
 
-template<class String, class Encoding, class Attribute>
-struct get_info<literal_string<String, Encoding, Attribute>>
+template<class String, class Encoding, X4Attribute Attr>
+struct get_info<literal_string<String, Encoding, Attr>>
 {
     using result_type = std::string;
-    [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attribute> const& p) const
+    [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attr> const& p) const
     {
         return '"' + x4::to_utf8(p.str) + '"';
     }

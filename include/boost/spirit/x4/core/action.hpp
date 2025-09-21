@@ -77,9 +77,9 @@ struct action : unary_parser<Subject, action<Subject, Action>>
     }
 
     // Catch-all overload for non-unused_type attribute
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(noexcept(this->parse_main(first, last, context, attr)))
     {
         return this->parse_main(first, last, context, attr);
@@ -87,10 +87,10 @@ struct action : unary_parser<Subject, action<Subject, Action>>
 
 private:
     // Compose attr(where(val(pass(context))))
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     using composed_context_t = context<
         attr_context_tag,
-        Attribute,
+        Attr,
         context<
             where_context_tag,
             std::ranges::subrange<It, Se> const,
@@ -102,18 +102,18 @@ private:
         >
     >;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
-        requires std::invocable<Action const&, composed_context_t<It, Se, Context, Attribute> const&>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires std::invocable<Action const&, composed_context_t<It, Se, Context, Attr> const&>
     [[nodiscard]] constexpr bool
     call_action(
         It& first, Se const& last,
-        Context const& context, Attribute& attr
+        Context const& context, Attr& attr
     ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
     {
         using where_range_t = std::ranges::subrange<It, Se>;
 
         static_assert(
-            std::is_void_v<std::invoke_result_t<Action const&, composed_context_t<It, Se, Context, Attribute> const&>>,
+            std::is_void_v<std::invoke_result_t<Action const&, composed_context_t<It, Se, Context, Attr> const&>>,
             "Semantic action should not return value. Check your function signature."
         );
 
@@ -134,19 +134,19 @@ private:
         // Sanity check (internal check to detect implementation divergence)
         static_assert(std::same_as<
             std::remove_const_t<decltype(attr_context)>,
-            composed_context_t<It, Se, Context, Attribute>
+            composed_context_t<It, Se, Context, Attr>
         >);
 
         this->f(attr_context);
         return pass;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
-        requires (!std::invocable<Action const&, composed_context_t<It, Se, Context, Attribute> const&>)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires (!std::invocable<Action const&, composed_context_t<It, Se, Context, Attr> const&>)
     [[nodiscard]] constexpr bool
     call_action(
         It&, Se const&,
-        Context const&, Attribute&
+        Context const&, Attr&
     ) const noexcept(std::is_nothrow_invocable_v<Action const&>)
     {
         // Explicitly make this hard error instead of emitting "no matching overload".
@@ -166,13 +166,13 @@ private:
         return true;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse_main(
-        It& first, Se const& last, Context const& context, Attribute& attr
+        It& first, Se const& last, Context const& context, Attr& attr
     ) const noexcept(
         std::is_copy_assignable_v<It> &&
-        is_nothrow_parsable_v<Subject, It, Se, Context, Attribute> &&
+        is_nothrow_parsable_v<Subject, It, Se, Context, Attr> &&
         noexcept(this->call_action(first, last, context, attr))
     )
     {

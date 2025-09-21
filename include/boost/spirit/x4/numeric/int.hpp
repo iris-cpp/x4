@@ -37,9 +37,9 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
     using attribute_type = T;
     static constexpr bool has_attribute = true;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr)
+    parse(It& first, Se const& last, Context const& context, Attr& attr)
         noexcept(
             noexcept(x4::skip_over(first, last, context)) &&
             noexcept(extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))

@@ -121,12 +121,12 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     template<class Context>
     using context_t = context<ID, std::remove_reference_t<T>, Context>;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attribute>)
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
-        static_assert(Parsable<Subject, It, Se, context_t<Context>, Attribute>);
+        static_assert(Parsable<Subject, It, Se, context_t<Context>, Attr>);
         return this->subject.parse(
             first, last,
             x4::make_context<ID>(this->val_, context),

@@ -30,9 +30,9 @@ struct semantic_predicate : parser<semantic_predicate>
         : predicate_(predicate)
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute&) const
+    parse(It& first, Se const& last, Context const& context, Attr&) const
         noexcept(noexcept(x4::skip_over(first, last, context)))
     {
         x4::skip_over(first, last, context);
@@ -59,9 +59,9 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
         : f_(std::forward<F_>(f))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute&) const
+    parse(It& first, Se const& last, Context const& context, Attr&) const
     {
         x4::skip_over(first, last, context);
 
@@ -93,9 +93,9 @@ struct eps_parser : parser<eps_parser>
 
     static constexpr bool has_attribute = false;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute&) const
+    parse(It& first, Se const& last, Context const& context, Attr&) const
         noexcept(noexcept(x4::skip_over(first, last, context)))
     {
         x4::skip_over(first, last, context);

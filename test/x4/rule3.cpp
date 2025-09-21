@@ -137,7 +137,7 @@ int main()
         auto r = rule<class r_id, int>{} = eps[([] ([[maybe_unused]] auto& ctx) {
             static_assert(
                 std::is_same_v<std::decay_t<decltype(_val(ctx))>, unused_type>,
-                "Attribute must not be synthesized"
+                "Attr must not be synthesized"
             );
         })];
         BOOST_TEST(parse("", r));

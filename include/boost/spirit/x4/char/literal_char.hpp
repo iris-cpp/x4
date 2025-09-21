@@ -18,12 +18,12 @@
 
 namespace boost::spirit::x4 {
 
-template<class Encoding, class Attribute = typename Encoding::char_type>
-struct literal_char : char_parser<literal_char<Encoding, Attribute>>
+template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
+struct literal_char : char_parser<literal_char<Encoding, Attr>>
 {
     using char_type = typename Encoding::char_type;
     using encoding = Encoding;
-    using attribute_type = Attribute;
+    using attribute_type = Attr;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
@@ -47,11 +47,11 @@ struct literal_char : char_parser<literal_char<Encoding, Attribute>>
     char_type ch;
 };
 
-template<class Encoding, class Attribute>
-struct get_info<literal_char<Encoding, Attribute>>
+template<class Encoding, X4Attribute Attr>
+struct get_info<literal_char<Encoding, Attr>>
 {
     using result_type = std::string;
-    [[nodiscard]] std::string operator()(literal_char<Encoding, Attribute> const& p) const
+    [[nodiscard]] std::string operator()(literal_char<Encoding, Attr> const& p) const
     {
         return '\'' + x4::to_utf8(Encoding::toucs4(p.ch)) + '\'';
     }

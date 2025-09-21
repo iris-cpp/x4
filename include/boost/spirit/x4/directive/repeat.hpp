@@ -97,9 +97,9 @@ struct repeat_directive : unary_parser<Subject, repeat_directive<Subject, Bounds
         , bounds_(std::forward<BoundsT>(bounds))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         // never noexcept (requires container insertion)
     {
         It local_it = first;

@@ -13,7 +13,6 @@
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
-
 #include <boost/spirit/x4/parse.hpp>
 
 #include <boost/core/lightweight_test.hpp>
@@ -155,9 +154,9 @@ struct synth_parser : x4::parser<synth_parser<T>>
     static constexpr bool has_attribute = true;
     static constexpr bool handles_container = false;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] constexpr bool
-    parse(It& iter, Se const& last, Context const&, Attribute& attr) const
+    parse(It& iter, Se const& last, Context const&, Attr& attr) const
     {
         if (iter != last && *iter == 's') {
             ++iter;

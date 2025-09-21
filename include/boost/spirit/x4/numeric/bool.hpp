@@ -27,10 +27,10 @@ namespace boost::spirit::x4 {
 template<class T = bool>
 struct bool_policies
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompare>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompare>
     [[nodiscard]] static constexpr bool
-    parse_true(It& first, Se const& last, Attribute& attr_, CaseCompare const& case_compare)
-        noexcept(std::is_nothrow_constructible_v<Attribute, T>)
+    parse_true(It& first, Se const& last, Attr& attr_, CaseCompare const& case_compare)
+        noexcept(std::is_nothrow_constructible_v<Attr, T>)
     {
         using namespace std::string_view_literals;
         if (detail::string_parse("true"sv, first, last, unused, case_compare)) {
@@ -40,10 +40,10 @@ struct bool_policies
         return false;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompare>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompare>
     [[nodiscard]] static constexpr bool
-    parse_false(It& first, Se const& last, Attribute& attr_, CaseCompare const& case_compare)
-        noexcept(std::is_nothrow_constructible_v<Attribute, T>)
+    parse_false(It& first, Se const& last, Attr& attr_, CaseCompare const& case_compare)
+        noexcept(std::is_nothrow_constructible_v<Attr, T>)
     {
         using namespace std::string_view_literals;
         if (detail::string_parse("false"sv, first, last, unused, case_compare)) {
@@ -83,9 +83,9 @@ struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
             || policies_.parse_false(first, last, attr, get_case_compare<encoding>(context));
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr_param) const
         // TODO: noexcept
     {
         // this case is called when Attribute is not T
@@ -139,9 +139,9 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicie
             || (!n_ && policies_.parse_false(first, last, attr, x4::get_case_compare<encoding>(context)));
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr_param) const
         // TODO: noexcept
     {
         // this case is called when Attribute is not T

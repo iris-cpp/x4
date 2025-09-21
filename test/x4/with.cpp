@@ -32,8 +32,8 @@ struct my_rule_class
         ++x4::get<my_tag>(context);
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
-    void on_success(It const&, Se const&, Attribute&, Context const& context)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr, class Context>
+    void on_success(It const&, Se const&, Attr&, Context const& context)
     {
         ++x4::get<my_tag>(context);
     }

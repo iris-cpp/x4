@@ -40,7 +40,7 @@
 
 namespace boost::spirit::x4 {
 
-template<class RuleID, class Attribute = unused_type, bool ForceAttribute = false>
+template<class RuleID, X4Attribute Attr = unused_type, bool ForceAttribute = false>
 struct rule;
 
 struct parse_pass_context_tag;
@@ -65,13 +65,13 @@ enum struct default_parse_rule_result : bool {};
 // is generated at the user's namespace scope. It will never conflict with
 // this (vvvvv) overload, as the generated one is never directly called with
 // a context containing `RuleID`.
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires has_context_v<Context, RuleID>
 [[nodiscard]] constexpr default_parse_rule_result
 parse_rule(
     rule_id<RuleID>,
     It& first, Se const& last,
-    Context const& context, Attribute& attr
+    Context const& context, Attr& attr
 )
 {
     auto&& rule_ = x4::get<RuleID>(context);
@@ -83,14 +83,14 @@ parse_rule(
 
 // This overload is selected only when the user *declares* their `parse_rule`
 // in the user's namespace scope AND the function definition is not found.
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires (!has_context_v<Context, RuleID>)
 constexpr void
-parse_rule(rule_id<RuleID>, It&, Se const&, Context const&, Attribute&)
+parse_rule(rule_id<RuleID>, It&, Se const&, Context const&, Attr&)
     = delete; // BOOST_SPIRIT_X4_DEFINE undefined for this rule
 
 
-template<class Attribute, class RuleID, bool SkipDefinitionInjection = false>
+template<X4Attribute Attr, class RuleID, bool SkipDefinitionInjection = false>
 struct rule_impl
 {
     static_assert(UniqueContextID<RuleID>);
@@ -110,7 +110,7 @@ struct rule_impl
             decltype(parse_rule( // ADL
                 std::declval<rule_id<RuleID>>(), first, last,
                 std::declval<decltype(x4::make_context<RuleID>(rhs, context))>(),
-                std::declval<Attribute&>()
+                std::declval<Attr&>()
             )),
             default_parse_rule_result
         >;
@@ -176,7 +176,7 @@ struct rule_impl
     }
 
     template<
-        bool ForceAttribute,
+        bool ForceAttr,
         class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
         class Context, X4Attribute Exposed
     >
@@ -188,7 +188,7 @@ struct rule_impl
     )
     {
         // Do down-stream transformation, provide attribute for `rhs` parser
-        using transform = traits::transform_attribute<Attribute, Exposed>;
+        using transform = traits::transform_attribute<Attr, Exposed>;
         using transform_attr = typename transform::type;
         transform_attr attr_ = transform::pre(attr);
 
@@ -234,7 +234,7 @@ struct rule_impl
 
             // The existence of semantic action inhibits attribute materialization
             // _unless_ it is explicitly required by the user (primarily via `%=`).
-            if constexpr (RHS::has_action && !ForceAttribute) {
+            if constexpr (RHS::has_action && !ForceAttr) {
                 if constexpr (rhs_has_on_error) {
                     parse_ok = rule_impl::parse_rhs_with_on_error(
                         rhs, first, last, rcontext, unused
@@ -265,18 +265,18 @@ struct rule_impl
     }
 };
 
-template<class RuleID, X4Subject RHS, class Attribute, bool ForceAttribute, bool SkipDefinitionInjection = false>
-struct rule_definition : parser<rule_definition<RuleID, RHS, Attribute, ForceAttribute, SkipDefinitionInjection>>
+template<class RuleID, X4Subject RHS, X4Attribute Attr, bool ForceAttr, bool SkipDefinitionInjection = false>
+struct rule_definition : parser<rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefinitionInjection>>
 {
     using this_type = rule_definition;
     using id = RuleID;
     using rhs_type = RHS;
-    using lhs_type = rule<RuleID, Attribute, ForceAttribute>;
-    using attribute_type = Attribute;
+    using lhs_type = rule<RuleID, Attr, ForceAttr>;
+    using attribute_type = Attr;
 
-    static constexpr bool has_attribute = !std::same_as<Attribute, unused_type>;
-    static constexpr bool handles_container = traits::is_container<Attribute>::value;
-    static constexpr bool force_attribute = ForceAttribute;
+    static constexpr bool has_attribute = !std::same_as<Attr, unused_type>;
+    static constexpr bool handles_container = traits::is_container<Attr>::value;
+    static constexpr bool force_attribute = ForceAttr;
 
     template<class RHS_T>
         requires std::is_constructible_v<RHS, RHS_T>
@@ -286,13 +286,13 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, Attribute, ForceAtt
         , name(name)
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute_>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute_& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr_& attr) const
         // never noexcept; requires very complex implementation details
     {
         return rule_impl<attribute_type, RuleID, SkipDefinitionInjection>
-            ::template call_rule_definition<ForceAttribute>(
+            ::template call_rule_definition<ForceAttr>(
                 rhs, name, first, last, context, attr
             );
     }
@@ -312,41 +312,41 @@ struct narrowing_checker
         requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
 };
 
-template<class Exposed, class Attribute>
-concept RuleAttrNeedsNarrowingConversion = !requires {
-    narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<Attribute>());
-};
+template<class Exposed, typename Attr>
+concept RuleAttrNeedsNarrowingConversion =
+    X4Attribute<Attr> &&
+    !requires { narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<Attr>()); };
 
 // Resolve "The Spirit X3 rule problem" in Boost.Parser's documentation
 // https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
 // https://github.com/boostorg/spirit_x4/issues/38
-template<class Exposed, class Attribute>
+template<class Exposed, typename Attr>
 concept RuleAttrTransformable =
     X4Attribute<std::remove_const_t<Exposed>> &&
-    X4Attribute<Attribute> &&
-    std::default_initializable<Attribute> &&
-    std::is_assignable_v<Exposed&, Attribute> &&
-    !RuleAttrNeedsNarrowingConversion<Exposed, Attribute>;
+    X4Attribute<Attr> &&
+    std::default_initializable<Attr> &&
+    std::is_assignable_v<Exposed&, Attr> &&
+    !RuleAttrNeedsNarrowingConversion<Exposed, Attr>;
 
-template<class Exposed, class Attribute>
+template<class Exposed, typename Attr>
 concept RuleAttrCompatible =
-    std::same_as<std::remove_const_t<Exposed>, Attribute> ||
-    RuleAttrTransformable<Exposed, Attribute>;
+    std::same_as<std::remove_const_t<Exposed>, Attr> ||
+    RuleAttrTransformable<Exposed, Attr>;
 
 } // detail
 
-template<class RuleID, class Attribute, bool ForceAttribute>
-struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
+template<class RuleID, X4Attribute RuleAttr, bool ForceAttr>
+struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 {
-    static_assert(!std::is_reference_v<Attribute>, "reference type is not allowed for rule attribute type");
-    static_assert(X4Attribute<Attribute>);
+    static_assert(!std::is_reference_v<RuleAttr>, "reference type is not allowed for rule attribute type");
+    static_assert(X4Attribute<RuleAttr>);
 
     using id = RuleID;
-    using attribute_type = Attribute;
+    using attribute_type = RuleAttr;
 
-    static constexpr bool has_attribute = !std::same_as<std::remove_const_t<Attribute>, unused_type>;
-    static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<Attribute>>;
-    static constexpr bool force_attribute = ForceAttribute;
+    static constexpr bool has_attribute = !std::same_as<std::remove_const_t<RuleAttr>, unused_type>;
+    static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<RuleAttr>>;
+    static constexpr bool force_attribute = ForceAttr;
 
     char const* name = "unnamed";
 
@@ -373,7 +373,7 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            detail::RuleAttrCompatible<Exposed, Attribute>
+            detail::RuleAttrCompatible<Exposed, RuleAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Exposed& exposed_attr) const
         // never noexcept; requires very complex implementation details
@@ -393,22 +393,22 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
 
         using detail::parse_rule;
 
-        if constexpr (std::same_as<std::remove_const_t<Exposed>, Attribute>) {
+        if constexpr (std::same_as<std::remove_const_t<Exposed>, RuleAttr>) {
             return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));
 
         } else {
-            static_assert(detail::RuleAttrTransformable<Exposed, Attribute>);
-            static_assert(std::is_assignable_v<Exposed&, Attribute>);
-            static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>);
+            static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
+            static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
+            static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>);
 
-            Attribute attr;
-            if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, attr))) {
+            RuleAttr rule_attr;
+            if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {
                 return false;
             }
 
             // X3's behavior
-            // x4::move_to(std::move(attr), exposed_attr);
-            exposed_attr = std::move(attr);
+            // x4::move_to(std::move(rule_attr), exposed_attr);
+            exposed_attr = std::move(rule_attr);
             return true;
         }
     }
@@ -416,8 +416,8 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            (!detail::RuleAttrCompatible<Exposed, Attribute>) &&
-            detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>
+            (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
+            detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
 
@@ -438,12 +438,12 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
     }
 
     template<X4Subject RHS>
-    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute>  // NOLINT(misc-unconventional-assign-operator)
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr>  // NOLINT(misc-unconventional-assign-operator)
     operator=(RHS&& rhs) const&
         noexcept(
             is_parser_nothrow_castable_v<RHS> &&
             std::is_nothrow_constructible_v<
-                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute>,
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr>,
                 as_parser_t<RHS>, char const*
             >
         )
@@ -452,12 +452,12 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
     }
 
     template<X4Subject RHS>
-    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true>
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true>
     operator%=(RHS&& rhs) const&
         noexcept(
             is_parser_nothrow_castable_v<RHS> &&
             std::is_nothrow_constructible_v<
-                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true>,
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true>,
                 as_parser_t<RHS>, char const*
             >
         )
@@ -470,12 +470,12 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
     // This optimization has a huge impact on compile times because immediate rules are commonly
     // used to cast an attribute like `as`/`attr_cast` does in Qi.
     template<X4Subject RHS>
-    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute, true>  // NOLINT(misc-unconventional-assign-operator)
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr, true>  // NOLINT(misc-unconventional-assign-operator)
     operator=(RHS&& rhs) const&&
         noexcept(
             is_parser_nothrow_castable_v<RHS> &&
             std::is_nothrow_constructible_v<
-                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute, true>,
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr, true>,
                 as_parser_t<RHS>, char const*
             >
         )
@@ -484,12 +484,12 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
     }
 
     template<X4Subject RHS>
-    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true, true>
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true, true>
     operator%=(RHS&& rhs) const&&
         noexcept(
             is_parser_nothrow_castable_v<RHS> &&
             std::is_nothrow_constructible_v<
-                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true, true>,
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true, true>,
                 as_parser_t<RHS>, char const*
             >
         )
@@ -514,11 +514,11 @@ struct rule_get_info
 
 } // detail
 
-template<class RuleID, class Attribute, bool ForceAttribute>
-struct get_info<rule<RuleID, Attribute, ForceAttribute>> : detail::rule_get_info {};
+template<class RuleID, X4Attribute Attr, bool ForceAttr>
+struct get_info<rule<RuleID, Attr, ForceAttr>> : detail::rule_get_info {};
 
-template<class RuleID, class Attribute, class RHS, bool ForceAttribute, bool SkipDefinitionInjection>
-struct get_info<detail::rule_definition<RuleID, RHS, Attribute, ForceAttribute, SkipDefinitionInjection>> : detail::rule_get_info {};
+template<class RuleID, X4Attribute Attr, class RHS, bool ForceAttr, bool SkipDefinitionInjection>
+struct get_info<detail::rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefinitionInjection>> : detail::rule_get_info {};
 
 // -------------------------------------------------------------
 

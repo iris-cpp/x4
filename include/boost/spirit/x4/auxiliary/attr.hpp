@@ -43,9 +43,9 @@ struct attr_parser : parser<attr_parser<T>>
         : value_(std::forward<U>(value))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, Attribute& attr_) const
+    parse(It&, Se const&, Context const&, Attr& attr_) const
         noexcept(noexcept(x4::move_to(std::as_const(value_), attr_)))
     {
         // Always copy (need reuse in repetitive invocations)

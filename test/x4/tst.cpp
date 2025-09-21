@@ -45,8 +45,10 @@ void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool const 
     int* r = tst.find(s, last,comp);
     BOOST_TEST(!!r == expected);
 
-    BOOST_TEST(s - first == N);
-    BOOST_TEST(*r == val);
+    if (r) {
+        BOOST_TEST(s - first == N);
+        BOOST_TEST(*r == val);
+    }
 }
 
 struct printer

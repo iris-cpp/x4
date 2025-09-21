@@ -36,10 +36,10 @@ struct transform_attribute
     }
 
     template<class TransformedT>
-    static constexpr void post(Exposed& val, TransformedT&& attribute)
-        noexcept(noexcept(x4::move_to(std::forward<TransformedT>(attribute), val)))
+    static constexpr void post(Exposed& val, TransformedT&& attr)
+        noexcept(noexcept(x4::move_to(std::forward<TransformedT>(attr), val)))
     {
-        x4::move_to(std::forward<TransformedT>(attribute), val);
+        x4::move_to(std::forward<TransformedT>(attr), val);
     }
 };
 
@@ -54,17 +54,17 @@ concept Transformable = requires(Exposed& val) {
 };
 
 // Same attribute types; no transformation needed
-template<class Attribute>
+template<X4Attribute Attr>
     requires
-        (!std::same_as<std::remove_const_t<Attribute>, unused_type>) &&
-        (!std::same_as<std::remove_const_t<Attribute>, unused_container_type>)
-struct transform_attribute<Attribute, Attribute>
+        (!std::same_as<std::remove_const_t<Attr>, unused_type>) &&
+        (!std::same_as<std::remove_const_t<Attr>, unused_container_type>)
+struct transform_attribute<Attr, Attr>
 {
-    static_assert(!std::is_reference_v<Attribute>, "Attribute cannot be a reference type");
+    static_assert(!std::is_reference_v<Attr>, "Attribute cannot be a reference type");
 
-    using type = Attribute&;
-    static constexpr Attribute& pre(Attribute& val) noexcept { return val; }
-    static constexpr void post(Attribute&, Attribute const&) noexcept {}
+    using type = Attr&;
+    static constexpr Attr& pre(Attr& val) noexcept { return val; }
+    static constexpr void post(Attr&, Attr const&) noexcept {}
 };
 
 template<>

@@ -266,9 +266,9 @@ struct extract_int
 # pragma warning(disable: 4127)   // conditional expression is constant
 # pragma warning(disable: 4459)   // declaration hides global declaration
 #endif
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse_main(It& first, Se const& last, Attribute& attr)
+    parse_main(It& first, Se const& last, Attr& attr)
         // TODO: noexcept
     {
         using radix_check = radix_traits<Radix>;
@@ -285,7 +285,7 @@ struct extract_int
             }
         }
 
-        using attribute_type = traits::attribute_type_t<Attribute>;
+        using attribute_type = traits::attribute_type_t<Attr>;
         attribute_type val = Accumulate ? attr : attribute_type(0);
         std::size_t count = 0;
         char_type ch;
@@ -321,9 +321,9 @@ struct extract_int
         }
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse(It& first, Se const& last, Attribute& attr)
+    parse(It& first, Se const& last, Attr& attr)
         noexcept(noexcept(extract_int::parse_main(first, last, attr)))
     {
         return extract_int::parse_main(first, last, attr);
@@ -350,9 +350,9 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 # pragma warning(disable: 4459)   // declaration hides global declaration
 #endif
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse_main(It& first, Se const& last, Attribute& attr)
+    parse_main(It& first, Se const& last, Attr& attr)
         // TODO: noexcept
     {
         using radix_check = radix_traits<Radix>;
@@ -370,7 +370,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 
             if (it == last) {
                 if (count == 0) return false; // must have at least one digit
-                if constexpr (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>) {
+                if constexpr (!std::is_same_v<std::remove_const_t<Attr>, unused_type>) {
                     attr = 0;
                 }
                 first = it;
@@ -378,7 +378,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
             }
         }
 
-        using attribute_type = traits::attribute_type_t<Attribute>;
+        using attribute_type = traits::attribute_type_t<Attr>;
         attribute_type val = Accumulate ? attr : attribute_type{};
 
         char_type ch = *it;
@@ -419,9 +419,9 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         }
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse(It& first, Se const& last, Attribute& attr)
+    parse(It& first, Se const& last, Attr& attr)
         noexcept(noexcept(extract_int::parse_main(first, last, attr)))
     {
         return extract_int::parse_main(first, last, attr);
@@ -481,9 +481,9 @@ struct extract_uint
         return true;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    call(It& first, Se const& last, Attribute& attr)
+    call(It& first, Se const& last, Attr& attr)
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(extract_uint::call(first, last, std::declval<T&>())) &&
@@ -540,9 +540,9 @@ struct extract_int
         return true;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    call(It& first, Se const& last, Attribute& attr)
+    call(It& first, Se const& last, Attr& attr)
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(extract_int::call(first, last, std::declval<T&>())) &&

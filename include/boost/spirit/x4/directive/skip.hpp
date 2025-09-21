@@ -39,11 +39,11 @@ struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
         return this->subject.parse(first, last, context, attr);
     }
@@ -59,11 +59,11 @@ private:
     >;
 
 public:
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires (!has_skipper_v<Context>)
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attribute>)
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
         // This logic is heavily related to the instantiation chain;
         // see `x4::skip_over` for details.
@@ -87,10 +87,10 @@ struct skip_directive : unary_parser<Subject, skip_directive<Subject, Skipper>>
         , skipper_(std::forward<SkipperT>(skipper))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, x4::context<skipper_tag, Skipper, Context>, Attribute>)
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, x4::context<skipper_tag, Skipper, Context>, Attr>)
     {
         static_assert(
             !std::same_as<expectation_failure_t<Context>, unused_type>,

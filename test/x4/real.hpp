@@ -26,9 +26,9 @@ template<class T>
 struct ts_real_policies : x4::ureal_policies<T>
 {
     //  2 decimal places Max
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr>
     static bool
-    parse_frac_n(It& first, Se const& last, Attribute& attr)
+    parse_frac_n(It& first, Se const& last, Attr& attr)
     {
         namespace x4 = boost::spirit::x4;
         return x4::extract_uint<T, 10, 1, 2, true>::call(first, last, attr);
@@ -43,9 +43,9 @@ struct ts_real_policies : x4::ureal_policies<T>
     }
 
     //  No exponent
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr>
     static bool
-    parse_exp_n(It&, Se const&, Attribute&)
+    parse_exp_n(It&, Se const&, Attr&)
     {
         return false;
     }

@@ -20,6 +20,7 @@
 
 #include <boost/fusion/include/deque_fwd.hpp> // TODO: remove this
 
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -64,10 +65,10 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
         return false;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
-        requires (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
+        requires (!std::same_as<std::remove_const_t<Attr>, unused_type>)
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    parse(It& first, Se const& last, Context const& context, Attr& attr) const
         noexcept(noexcept(detail::parse_sequence(*this, first, last, context, attr)))
     {
         return detail::parse_sequence(*this, first, last, context, attr);

@@ -29,19 +29,19 @@ struct unused_container_type;
 
 namespace boost::spirit::x4::traits {
 
-struct unused_attribute {};
-struct plain_attribute {};
-struct container_attribute {};
-struct tuple_attribute {};
-struct associative_attribute {};
-struct variant_attribute {};
-struct optional_attribute {};
-struct subrange_attribute {};
+struct unused_attr {};
+struct plain_attr {};
+struct container_attr {};
+struct tuple_attr {};
+struct assoc_attr {};
+struct variant_attr {};
+struct optional_attr {};
+struct subrange_attr {};
 
 template<class T>
 struct attribute_category
 {
-    using type = plain_attribute;
+    using type = plain_attr;
 };
 
 template<class T>
@@ -65,23 +65,24 @@ using attribute_category_t = typename attribute_category<T>::type;
 template<>
 struct attribute_category<unused_type>
 {
-    using type = unused_attribute;
+    using type = unused_attr;
 };
 
 template<>
 struct attribute_category<unused_container_type>
 {
-    using type = container_attribute;
+    using type = container_attr;
 
     // The attribute category type for `unused_container_type` is
     // `container_attribute`, but it does not satisfy `is_container`.
 };
 
-template<class T, class AttributeCategoryTag>
-concept CategorizedAttr = std::same_as<typename attribute_category<std::remove_cvref_t<T>>::type, AttributeCategoryTag>;
+template<class T, typename AttrCategoryTag>
+concept CategorizedAttr =
+    std::same_as<typename attribute_category<std::remove_cvref_t<T>>::type, AttrCategoryTag>;
 
 template<class T>
-concept NonUnusedAttr = !CategorizedAttr<T, unused_attribute>;
+concept NonUnusedAttr = !CategorizedAttr<T, unused_attr>;
 
 template<class T>
     requires
@@ -89,7 +90,7 @@ template<class T>
         fusion::traits::is_associative<std::remove_cvref_t<T>>::value
 struct attribute_category<T>
 {
-    using type = associative_attribute;
+    using type = assoc_attr;
 };
 
 template<class T>
@@ -98,35 +99,35 @@ template<class T>
         (!fusion::traits::is_associative<std::remove_cvref_t<T>>::value)
 struct attribute_category<T>
 {
-    using type = tuple_attribute;
+    using type = tuple_attr;
 };
 
 template<class T>
     requires is_variant_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = variant_attribute;
+    using type = variant_attr;
 };
 
 template<class T>
     requires is_optional_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = optional_attribute;
+    using type = optional_attr;
 };
 
 template<class T>
     requires is_subrange_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = subrange_attribute;
+    using type = subrange_attr;
 };
 
 template<class T>
     requires traits::is_container_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = container_attribute;
+    using type = container_attr;
 };
 
 } // boost::spirit::x4::traits
