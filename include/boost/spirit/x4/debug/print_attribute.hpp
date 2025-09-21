@@ -50,7 +50,7 @@ struct print_fusion_sequence
         traits::print_attribute(out, val);
     }
 
-    Out& out;
+    Out& out;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
     mutable bool is_first;
 };
 
@@ -68,7 +68,7 @@ struct print_visitor : static_visitor<>
         traits::print_attribute(out, val);
     }
 
-    Out& out;
+    Out& out;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 } // detail
@@ -115,14 +115,14 @@ struct print_attribute_debug
 #endif
 
     // for fusion data types
-    static void call(Out& out, CategorizedAttr<tuple_Attr> auto const& val)
+    static void call(Out& out, CategorizedAttr<tuple_attr> auto const& val)
     {
         out << '[';
         fusion::for_each(val, detail::print_fusion_sequence<Out>(out));
         out << ']';
     }
 
-    template<CategorizedAttr<container_Attr> T_>
+    template<CategorizedAttr<container_attr> T_>
         requires (!std::is_same_v<T_, unused_container_type>)
     static void call(Out& out, T_ const& val)
     {
@@ -141,12 +141,12 @@ struct print_attribute_debug
     }
 
     // for variant types
-    static void call(Out& out, CategorizedAttr<variant_Attr> auto const& val)
+    static void call(Out& out, CategorizedAttr<variant_attr> auto const& val)
     {
         boost::apply_visitor(detail::print_visitor<Out>(out), val);
     }
 
-    static void call(Out& out, CategorizedAttr<optional_Attr> auto const& val)
+    static void call(Out& out, CategorizedAttr<optional_attr> auto const& val)
     {
         if (val) {
             traits::print_attribute(out, *val);

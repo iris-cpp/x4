@@ -46,12 +46,12 @@ namespace boost::spirit::x4::traits {
 
 using namespace check_substitute;
 
-template<class T, class U>
+template<class T, X4Attribute U>
 struct is_substitute<foo<T>, foo<U>>
     : is_substitute<T, U>
 {};
 
-template<class T, class U>
+template<class T, X4Attribute U>
     requires is_bar<T>::value && is_bar<U>::value
 struct is_substitute<T, U>
     : is_substitute<typename T::type, typename U::type>

@@ -510,7 +510,7 @@ int main()
             traits::is_empty(c);
         });
         static_assert(requires(T& c) {
-            traits::push_back(c, std::declval<class T::value_type>());
+            traits::push_back(c, std::declval<typename T::value_type>());
         });
         static_assert(requires(T& c) {
             traits::append(
