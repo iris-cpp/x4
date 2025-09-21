@@ -17,24 +17,25 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename Derived>
-    struct char_parser : parser<Derived>
+template <typename Derived>
+struct char_parser : parser<Derived>
+{
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+        // TODO: noexcept
     {
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            // TODO: noexcept
+        x4::skip_over(first, last, context);
+        if (first != last && this->derived().test(*first, context))
         {
-            x4::skip_over(first, last, context);
-            if (first != last && this->derived().test(*first, context))
-            {
-                x4::move_to(std::iter_value_t<It>{*first}, attr);
-                ++first;
-                return true;
-            }
-            return false;
+            x4::move_to(std::iter_value_t<It>{*first}, attr);
+            ++first;
+            return true;
         }
-    };
+        return false;
+    }
+};
+
 } // boost::spirit::x4
 
 #endif

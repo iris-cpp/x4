@@ -25,53 +25,54 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename String, typename Encoding, typename Attribute = std::basic_string<typename Encoding::char_type>>
-    struct literal_string : parser<literal_string<String, Encoding, Attribute>>
+template <typename String, typename Encoding, typename Attribute = std::basic_string<typename Encoding::char_type>>
+struct literal_string : parser<literal_string<String, Encoding, Attribute>>
+{
+    static_assert(
+        !std::is_pointer_v<std::decay_t<String>>,
+        "`literal_string` for raw character pointer/array is banned; it has an undetectable risk of holding a dangling pointer."
+    );
+    static_assert(std::is_convertible_v<String, std::basic_string_view<typename String::value_type>>);
+
+    using char_type = typename Encoding::char_type;
+    using encoding = Encoding;
+    using attribute_type = Attribute;
+    static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
+    static constexpr bool handles_container = has_attribute;
+
+    template<class... Args>
+        requires std::is_constructible_v<String, Args...>
+    constexpr literal_string(Args&&... args)
+        noexcept(std::is_nothrow_constructible_v<String, Args...>)
+        : str(std::forward<Args>(args)...)
+    {}
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute_>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute_& attr
+    ) const
+        noexcept(
+            noexcept(x4::skip_over(first, last, context)) &&
+            noexcept(detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context)))
+        )
     {
-        static_assert(
-            !std::is_pointer_v<std::decay_t<String>>,
-            "`literal_string` for raw character pointer/array is banned; it has an undetectable risk of holding a dangling pointer."
-        );
-        static_assert(std::is_convertible_v<String, std::basic_string_view<typename String::value_type>>);
+        x4::skip_over(first, last, context);
+        return detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context));
+    }
 
-        using char_type = typename Encoding::char_type;
-        using encoding = Encoding;
-        using attribute_type = Attribute;
-        static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
-        static constexpr bool handles_container = has_attribute;
+    String str;
+};
 
-        template<class... Args>
-            requires std::is_constructible_v<String, Args...>
-        constexpr literal_string(Args&&... args)
-            noexcept(std::is_nothrow_constructible_v<String, Args...>)
-            : str(std::forward<Args>(args)...)
-        {}
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute_>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute_& attr
-        ) const
-            noexcept(
-                noexcept(x4::skip_over(first, last, context)) &&
-                noexcept(detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context)))
-            )
-        {
-            x4::skip_over(first, last, context);
-            return detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context));
-        }
-
-        String str;
-    };
-
-    template <typename String, typename Encoding, typename Attribute>
-    struct get_info<literal_string<String, Encoding, Attribute>>
+template <typename String, typename Encoding, typename Attribute>
+struct get_info<literal_string<String, Encoding, Attribute>>
+{
+    using result_type = std::string;
+    [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attribute> const& p) const
     {
-        using result_type = std::string;
-        [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attribute> const& p) const
-        {
-            return '"' + x4::to_utf8(p.str) + '"';
-        }
-    };
+        return '"' + x4::to_utf8(p.str) + '"';
+    }
+};
+
 } // boost::spirit::x4
 
 #endif

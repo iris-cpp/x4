@@ -21,6 +21,8 @@
 #include <string>
 #include <type_traits>
 
+namespace {
+
 // just an `attr` with added type checker
 template <typename Value, typename Expected>
 struct checked_attr_parser : x4::attr_parser<Value>
@@ -116,6 +118,8 @@ void make_test(Attributes const&... attrs)
         boost::fusion::vector<std::optional<Attributes>>...
     >(boost::fusion::vector<Attributes>(attrs)..., attrs...);
 }
+
+} // anonymous
 
 int main()
 {

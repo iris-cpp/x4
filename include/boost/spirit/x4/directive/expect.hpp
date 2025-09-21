@@ -20,83 +20,86 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename Subject>
-    struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
+template <typename Subject>
+struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
+{
+    using base_type = unary_parser<Subject, expect_directive<Subject>>;
+
+    static constexpr bool is_pass_through_unary = true;
+
+    template <typename SubjectT>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<SubjectT>, expect_directive>) &&
+            std::is_constructible_v<base_type, SubjectT>
+    constexpr expect_directive(SubjectT&& subject)
+        noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
+        : base_type(std::forward<SubjectT>(subject))
+    {}
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+        // never noexcept; expectation failure requires construction of debug information
     {
-        using base_type = unary_parser<Subject, expect_directive<Subject>>;
+        bool const r = this->subject.parse(first, last, context, attr);
 
-        static constexpr bool is_pass_through_unary = true;
-
-        template <typename SubjectT>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<SubjectT>, expect_directive>) &&
-                std::is_constructible_v<base_type, SubjectT>
-        constexpr expect_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
-            : base_type(std::forward<SubjectT>(subject))
-        {}
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            // never noexcept; expectation failure requires construction of debug information
+        // only the first failure is needed
+        if (!r && !x4::has_expectation_failure(context))
         {
-            bool const r = this->subject.parse(first, last, context, attr);
-
-            // only the first failure is needed
-            if (!r && !x4::has_expectation_failure(context))
-            {
-                x4::set_expectation_failure(first, this->subject, context);
-            }
-            return r;
+            x4::set_expectation_failure(first, this->subject, context);
         }
-    };
+        return r;
+    }
+};
 
-    namespace detail {
+namespace detail {
 
-        struct expect_gen
-        {
-            template <X4Subject Subject>
-            [[nodiscard]] constexpr expect_directive<as_parser_plain_t<Subject>>
-            operator[](Subject&& subject) const
-                noexcept(is_parser_nothrow_constructible_v<expect_directive<as_parser_plain_t<Subject>>, Subject>)
-            {
-                return { as_parser(std::forward<Subject>(subject)) };
-            }
-        };
-    } // detail
+struct expect_gen
+{
+    template <X4Subject Subject>
+    [[nodiscard]] constexpr expect_directive<as_parser_plain_t<Subject>>
+    operator[](Subject&& subject) const
+        noexcept(is_parser_nothrow_constructible_v<expect_directive<as_parser_plain_t<Subject>>, Subject>)
+    {
+        return { as_parser(std::forward<Subject>(subject)) };
+    }
+};
 
-    inline namespace cpos {
+} // detail
 
-        inline constexpr detail::expect_gen expect{};
-    } // cpos
+inline namespace cpos {
+
+inline constexpr detail::expect_gen expect{};
+
+} // cpos
 
 } // boost::spirit::x4
 
 namespace boost::spirit::x4::detail {
 
-    // Special case handling for expect expressions.
-    template <typename Subject, typename Context>
-    struct parse_into_container_impl<expect_directive<Subject>, Context>
+// Special case handling for expect expressions.
+template <typename Subject, typename Context>
+struct parse_into_container_impl<expect_directive<Subject>, Context>
+{
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    [[nodiscard]] static constexpr bool
+    call(
+        expect_directive<Subject> const& parser,
+        It& first, Se const& last, Context const& context, Attribute& attr
+    ) // never noexcept; expectation failure requires construction of debug information
     {
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
-        [[nodiscard]] static constexpr bool
-        call(
-            expect_directive<Subject> const& parser,
-            It& first, Se const& last, Context const& context, Attribute& attr
-        ) // never noexcept; expectation failure requires construction of debug information
-        {
-            bool const r = detail::parse_into_container(
-                parser.subject, first, last, context, attr);
+        bool const r = detail::parse_into_container(
+            parser.subject, first, last, context, attr);
 
-            // only the first error is needed
-            if (!r && !x4::has_expectation_failure(context))
-            {
-                x4::set_expectation_failure(first, parser.subject, context);
-            }
-            return r;
+        // only the first error is needed
+        if (!r && !x4::has_expectation_failure(context))
+        {
+            x4::set_expectation_failure(first, parser.subject, context);
         }
-    };
+        return r;
+    }
+};
+
 } // boost::spirit::x4::detail
 
 #endif

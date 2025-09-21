@@ -14,10 +14,9 @@
 #include <boost/spirit/x4/operator/kleene.hpp>
 #include <boost/spirit/x4/operator/sequence.hpp>
 
-
 int main()
 {
-    // thousand separated numbers
+    // 3-digit separated numbers
     {
         using x4::uint_parser;
 

@@ -32,7 +32,7 @@ BOOST_SPIRIT_X4_INSTANTIATE(grammar_type, iterator_type, x4::parse_context_for<i
 BOOST_SPIRIT_X4_INSTANTIATE(grammar_type, iterator_type, x4::phrase_parse_context_for<skipper_type, iterator_type>)
 BOOST_SPIRIT_X4_INSTANTIATE(grammar_type, iterator_type, x4::phrase_parse_context_for<skipper2_type, iterator_type>)
 
-}
+} // unused_attr
 
 namespace used_attr {
 
@@ -48,4 +48,4 @@ BOOST_SPIRIT_X4_INSTANTIATE(grammar_type, iterator_type, x4::parse_context_for<i
 
 BOOST_SPIRIT_X4_INSTANTIATE(grammar_type, iterator_type, x4::phrase_parse_context_for<skipper_type, iterator_type>)
 
-}
+} // used_attr

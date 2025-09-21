@@ -34,7 +34,6 @@
 
 int main()
 {
-    namespace x4 = boost::spirit::x4;
     namespace traits = x4::traits;
 
     using x4::standard::char_;

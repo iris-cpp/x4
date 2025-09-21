@@ -22,57 +22,59 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename Subject>
-    struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
+template <typename Subject>
+struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
+{
+    using base_type = unary_parser<Subject, matches_directive>;
+    using attribute_type = bool;
+
+    static constexpr bool has_attribute = true;
+
+    template <typename SubjectT>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<SubjectT>, matches_directive>) &&
+            std::is_constructible_v<base_type, SubjectT>
+    constexpr matches_directive(SubjectT&& subject)
+        noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
+        : base_type(std::forward<SubjectT>(subject))
+    {}
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+        noexcept(
+            is_nothrow_parsable_v<Subject, It, Se, Context, unused_type> &&
+            noexcept(x4::move_to(std::declval<bool const&>(), attr))
+        )
     {
-        using base_type = unary_parser<Subject, matches_directive>;
-        using attribute_type = bool;
+        bool const matched = this->subject.parse(first, last, context, unused);
+        if (x4::has_expectation_failure(context)) return false;
 
-        static constexpr bool has_attribute = true;
+        x4::move_to(matched, attr);
+        return true;
+    }
+};
 
-        template <typename SubjectT>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<SubjectT>, matches_directive>) &&
-                std::is_constructible_v<base_type, SubjectT>
-        constexpr matches_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
-            : base_type(std::forward<SubjectT>(subject))
-        {}
+namespace detail {
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            noexcept(
-                is_nothrow_parsable_v<Subject, It, Se, Context, unused_type> &&
-                noexcept(x4::move_to(std::declval<bool const&>(), attr))
-            )
-        {
-            bool const matched = this->subject.parse(first, last, context, unused);
-            if (x4::has_expectation_failure(context)) return false;
+struct matches_gen
+{
+    template <X4Subject Subject>
+    [[nodiscard]] constexpr matches_directive<as_parser_plain_t<Subject>>
+    operator[](Subject&& subject) const
+        noexcept(is_parser_nothrow_constructible_v<matches_directive<as_parser_plain_t<Subject>>, Subject>)
+    {
+        return { as_parser(std::forward<Subject>(subject)) };
+    }
+};
 
-            x4::move_to(matched, attr);
-            return true;
-        }
-    };
+} // detail
 
-    namespace detail {
+inline namespace cpos {
 
-        struct matches_gen
-        {
-            template <X4Subject Subject>
-            [[nodiscard]] constexpr matches_directive<as_parser_plain_t<Subject>>
-            operator[](Subject&& subject) const
-                noexcept(is_parser_nothrow_constructible_v<matches_directive<as_parser_plain_t<Subject>>, Subject>)
-            {
-                return { as_parser(std::forward<Subject>(subject)) };
-            }
-        };
-    } // detail
+inline constexpr detail::matches_gen matches{};
 
-    inline namespace cpos {
-
-        inline constexpr detail::matches_gen matches{};
-    } // cpos
+} // cpos
 
 } // boost::spirit::x4
 

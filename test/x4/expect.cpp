@@ -56,8 +56,6 @@
 #include <utility>
 #include <type_traits>
 
-namespace x4 = boost::spirit::x4;
-
 #define TEST_SUCCESS_IMPL(tester, input, parser, ...) \
     BOOST_TEST_NO_THROW({ \
         auto const res = parse(input, parser __VA_OPT__(,) __VA_ARGS__); \

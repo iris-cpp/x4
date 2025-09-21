@@ -20,6 +20,8 @@
 #include <climits>
 #include <cstdint>
 
+namespace {
+
 //
 // BEWARE PLATFORM DEPENDENT!!!
 // The following assumes 32 bit or 64 bit integers and 64 bit long longs.
@@ -60,6 +62,8 @@ struct custom_int
     friend custom_int operator+(custom_int a, custom_int b) { return custom_int(a.n + b.n); }
     friend custom_int operator-(custom_int a, custom_int b) { return custom_int(a.n - b.n); }
 };
+
+} // anonymous
 
 int main()
 {

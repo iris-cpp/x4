@@ -29,7 +29,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace x4 = boost::spirit::x4;
+namespace {
 
 struct my_error_handler
 {
@@ -65,6 +65,8 @@ struct my_attribute
         return os << "my_attribute";
     }
 };
+
+} // anonymous
 
 int main()
 {

@@ -25,147 +25,158 @@
 
 namespace boost::spirit::x4 {
 
-    namespace standard {
+namespace standard {
 
-        inline constexpr any_char<char_encoding::standard> char_{};
+inline constexpr any_char<char_encoding::standard> char_{};
 
-        inline namespace helpers {
+inline namespace helpers {
 
-            [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
-            lit(char ch) noexcept
-            {
-                return { ch };
-            }
+[[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
+lit(char ch) noexcept
+{
+    return { ch };
+}
 
-            [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
-            lit(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
-            {
-                return { ch[0] };
-            }
-        } // helpers
+[[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
+lit(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
+{
+    return { ch[0] };
+}
 
-        // If you see "no matching overload" on string literals (e.g. `"foo"`),
-        // you may need to include `string/literal_string.hpp`.
-        // If you still see errors after the inclusion, that might be due to
-        // mixing incompatible string literals. Don't do that.
+} // helpers
 
-        constexpr void lit(traits::CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
-        constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
-    }
+// If you see "no matching overload" on string literals (e.g. `"foo"`),
+// you may need to include `string/literal_string.hpp`.
+// If you still see errors after the inclusion, that might be due to
+// mixing incompatible string literals. Don't do that.
 
-    inline constexpr auto const& char_ = standard::char_; // TODO: this can't overload other character types
-    using standard::helpers::lit;
+constexpr void lit(traits::CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
+
+} // standard
+
+inline constexpr auto const& char_ = standard::char_; // TODO: this can't overload other character types
+using standard::helpers::lit;
+
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    namespace standard_wide {
+namespace standard_wide {
 
-        inline constexpr any_char<char_encoding::standard_wide> char_{};
+inline constexpr any_char<char_encoding::standard_wide> char_{};
 
-        inline namespace helpers {
+inline namespace helpers {
 
-            [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
-            lit(wchar_t ch) noexcept
-            {
-                return { ch };
-            }
+[[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
+lit(wchar_t ch) noexcept
+{
+    return { ch };
+}
 
-            [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
-            lit(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
-            {
-                return { ch[0] };
-            }
-        } // helpers
+[[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
+lit(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
+{
+    return { ch[0] };
+}
 
-        constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto const*) = delete; // Mixing incompatible character types is not allowed
-        constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto) = delete; // Mixing incompatible character types is not allowed
-    }
+} // helpers
 
-    using standard_wide::helpers::lit;
-#endif
+constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto const*) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto) = delete; // Mixing incompatible character types is not allowed
+
+} // standard_wide
+
+using standard_wide::helpers::lit;
+#endif // BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
-    namespace unicode {
+namespace unicode {
 
-        inline constexpr any_char<char_encoding::unicode> char_{};
+inline constexpr any_char<char_encoding::unicode> char_{};
 
-        inline namespace helpers {
+inline namespace helpers {
 
-            // TODO: add `char8_t` and `char16_t` overloads
+// TODO: add `char8_t` and `char16_t` overloads
 
-            [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
-            lit(char32_t ch) noexcept
-            {
-                return { ch };
-            }
+[[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
+lit(char32_t ch) noexcept
+{
+    return { ch };
+}
 
-            [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
-            lit(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
-            {
-                return { ch[0] };
-            }
-        } // helpers
+[[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
+lit(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
+{
+    return { ch[0] };
+}
 
-        constexpr void lit(traits::CharIncompatibleWith<char32_t> auto const*) = delete; // Mixing incompatible character types is not allowed
-        constexpr void lit(traits::CharIncompatibleWith<char32_t> auto) = delete; // Mixing incompatible character types is not allowed
+} // helpers
+
+constexpr void lit(traits::CharIncompatibleWith<char32_t> auto const*) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(traits::CharIncompatibleWith<char32_t> auto) = delete; // Mixing incompatible character types is not allowed
+
+} // unicode
+
+using unicode::helpers::lit;
+
+#endif // BOOST_SPIRIT_X4_UNICODE
+
+
+namespace extension {
+
+template <>
+struct as_parser<char>
+{
+    using type = literal_char<char_encoding::standard, unused_type>;
+    using value_type = type;
+
+    [[nodiscard]] static constexpr type call(char ch) noexcept
+    {
+        return { ch };
     }
-
-    using unicode::helpers::lit;
-#endif
-
-    namespace extension {
-
-        template <>
-        struct as_parser<char>
-        {
-            using type = literal_char<char_encoding::standard, unused_type>;
-            using value_type = type;
-
-            [[nodiscard]] static constexpr type call(char ch) noexcept
-            {
-                return { ch };
-            }
-        };
+};
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-        template <>
-        struct as_parser<wchar_t>
-        {
-            using type = literal_char<char_encoding::standard_wide, unused_type>;
-            using value_type = type;
+template <>
+struct as_parser<wchar_t>
+{
+    using type = literal_char<char_encoding::standard_wide, unused_type>;
+    using value_type = type;
 
-            [[nodiscard]] static constexpr type call(wchar_t ch) noexcept
-            {
-                return { ch };
-            }
-        };
+    [[nodiscard]] static constexpr type call(wchar_t ch) noexcept
+    {
+        return { ch };
+    }
+};
 #endif
 
-        template <>
-        struct as_parser<char [2]>
-        {
-            using type = literal_char<char_encoding::standard, unused_type>;
-            using value_type = type;
+template <>
+struct as_parser<char [2]>
+{
+    using type = literal_char<char_encoding::standard, unused_type>;
+    using value_type = type;
 
-            [[nodiscard]] static constexpr type call(char const ch[]) noexcept
-            {
-                return { ch[0] };
-            }
-        };
+    [[nodiscard]] static constexpr type call(char const ch[]) noexcept
+    {
+        return { ch[0] };
+    }
+};
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-        template <>
-        struct as_parser<wchar_t [2]>
-        {
-            using type = literal_char<char_encoding::standard_wide, unused_type>;
-            using value_type = type;
+template <>
+struct as_parser<wchar_t [2]>
+{
+    using type = literal_char<char_encoding::standard_wide, unused_type>;
+    using value_type = type;
 
-            [[nodiscard]] static constexpr type call(wchar_t const ch[]) noexcept
-            {
-                return { ch[0] };
-            }
-        };
-#endif
+    [[nodiscard]] static constexpr type call(wchar_t const ch[]) noexcept
+    {
+        return { ch[0] };
     }
+};
+#endif // BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+
+} // extension
 
 } // boost::spirit::x4
 

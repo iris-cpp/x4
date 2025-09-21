@@ -25,6 +25,8 @@
 #include <ranges>
 #include <string>
 
+namespace {
+
 using x4::rule;
 
 rule<class direct_rule, int> direct_rule = "direct_rule";
@@ -35,6 +37,8 @@ auto const indirect_rule_def = direct_rule;
 
 BOOST_SPIRIT_X4_DEFINE(direct_rule)
 BOOST_SPIRIT_X4_DEFINE(indirect_rule)
+
+} // anonymous
 
 int main()
 {

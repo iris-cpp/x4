@@ -23,110 +23,109 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename Encoding>
-    struct char_class_base
-    {
-        using char_type = typename Encoding::classify_type;
+template <typename Encoding>
+struct char_class_base
+{
+    using char_type = typename Encoding::classify_type;
 
-#define BOOST_SPIRIT_X4_CLASSIFY(name)                                          \
-        template <typename Char>                                                \
-        [[nodiscard]] static constexpr bool                                     \
-        is(name##_tag, Char ch) noexcept                                        \
-        {                                                                       \
-            return (Encoding::is##name)                                         \
-                    (detail::cast_char<char_type>(ch));                         \
-        }
-
-        BOOST_SPIRIT_X4_CLASSIFY(char)
-        BOOST_SPIRIT_X4_CLASSIFY(alnum)
-        BOOST_SPIRIT_X4_CLASSIFY(alpha)
-        BOOST_SPIRIT_X4_CLASSIFY(digit)
-        BOOST_SPIRIT_X4_CLASSIFY(xdigit)
-        BOOST_SPIRIT_X4_CLASSIFY(cntrl)
-        BOOST_SPIRIT_X4_CLASSIFY(graph)
-        BOOST_SPIRIT_X4_CLASSIFY(lower)
-        BOOST_SPIRIT_X4_CLASSIFY(print)
-        BOOST_SPIRIT_X4_CLASSIFY(punct)
-        BOOST_SPIRIT_X4_CLASSIFY(space)
-        BOOST_SPIRIT_X4_CLASSIFY(blank)
-        BOOST_SPIRIT_X4_CLASSIFY(upper)
-
-#undef BOOST_SPIRIT_X4_CLASSIFY
-    };
-
-    template <typename Encoding, typename Tag>
-    struct char_class : char_parser<char_class<Encoding, Tag>>
-    {
-        using encoding = Encoding;
-        using tag = Tag;
-        using char_type = typename Encoding::char_type;
-        using attribute_type = char_type;
-        static constexpr bool has_attribute = true;
-
-        template <typename Char, typename Context>
-        [[nodiscard]] static constexpr bool test(Char ch, Context const& context) noexcept
-        {
-            return encoding::ischar(ch)
-                && char_class_base<Encoding>::is(
-                    x4::get_case_compare<Encoding>(context).get_char_class_tag(tag()), ch);
-        }
-    };
-
-#define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name)                                 \
-    using name##_type = char_class<char_encoding::encoding, name##_tag>;           \
-    inline constexpr name##_type name{};
-
-#define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding)                                     \
-    namespace encoding                                                             \
-    {                                                                              \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alnum)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alpha)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, digit)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, xdigit)                               \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, cntrl)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, graph)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, lower)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, print)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, punct)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, space)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, blank)                                \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, upper)                                \
+#define BOOST_SPIRIT_X4_CLASSIFY(name) \
+    template <typename Char> \
+    [[nodiscard]] static constexpr bool \
+    is(name##_tag, Char ch) noexcept \
+    { \
+        return (Encoding::is##name)(detail::cast_char<char_type>(ch)); \
     }
 
-    BOOST_SPIRIT_X4_CHAR_CLASSES(standard)
+    BOOST_SPIRIT_X4_CLASSIFY(char)
+    BOOST_SPIRIT_X4_CLASSIFY(alnum)
+    BOOST_SPIRIT_X4_CLASSIFY(alpha)
+    BOOST_SPIRIT_X4_CLASSIFY(digit)
+    BOOST_SPIRIT_X4_CLASSIFY(xdigit)
+    BOOST_SPIRIT_X4_CLASSIFY(cntrl)
+    BOOST_SPIRIT_X4_CLASSIFY(graph)
+    BOOST_SPIRIT_X4_CLASSIFY(lower)
+    BOOST_SPIRIT_X4_CLASSIFY(print)
+    BOOST_SPIRIT_X4_CLASSIFY(punct)
+    BOOST_SPIRIT_X4_CLASSIFY(space)
+    BOOST_SPIRIT_X4_CLASSIFY(blank)
+    BOOST_SPIRIT_X4_CLASSIFY(upper)
+
+#undef BOOST_SPIRIT_X4_CLASSIFY
+};
+
+template <typename Encoding, typename Tag>
+struct char_class : char_parser<char_class<Encoding, Tag>>
+{
+    using encoding = Encoding;
+    using tag = Tag;
+    using char_type = typename Encoding::char_type;
+    using attribute_type = char_type;
+    static constexpr bool has_attribute = true;
+
+    template <typename Char, typename Context>
+    [[nodiscard]] static constexpr bool test(Char ch, Context const& context) noexcept
+    {
+        return encoding::ischar(ch)
+            && char_class_base<Encoding>::is(
+                x4::get_case_compare<Encoding>(context).get_char_class_tag(tag()), ch);
+    }
+};
+
+#define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name) \
+    using name##_type = char_class<char_encoding::encoding, name##_tag>; \
+    inline constexpr name##_type name{};
+
+#define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding) \
+    namespace encoding \
+    { \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alnum) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alpha) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, digit) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, xdigit) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, cntrl) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, graph) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, lower) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, print) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, punct) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, space) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, blank) \
+        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, upper) \
+    } /* encoding */
+
+BOOST_SPIRIT_X4_CHAR_CLASSES(standard)
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    BOOST_SPIRIT_X4_CHAR_CLASSES(standard_wide)
+BOOST_SPIRIT_X4_CHAR_CLASSES(standard_wide)
 #endif
 
 #undef BOOST_SPIRIT_X4_CHAR_CLASS
 #undef BOOST_SPIRIT_X4_CHAR_CLASSES
 
-    using alnum_type  = standard::alnum_type;
-    using alpha_type  = standard::alpha_type;
-    using digit_type  = standard::digit_type;
-    using xdigit_type = standard::xdigit_type;
-    using cntrl_type  = standard::cntrl_type;
-    using graph_type  = standard::graph_type;
-    using lower_type  = standard::lower_type;
-    using print_type  = standard::print_type;
-    using punct_type  = standard::punct_type;
-    using space_type  = standard::space_type;
-    using blank_type  = standard::blank_type;
-    using upper_type  = standard::upper_type;
+using alnum_type  = standard::alnum_type;
+using alpha_type  = standard::alpha_type;
+using digit_type  = standard::digit_type;
+using xdigit_type = standard::xdigit_type;
+using cntrl_type  = standard::cntrl_type;
+using graph_type  = standard::graph_type;
+using lower_type  = standard::lower_type;
+using print_type  = standard::print_type;
+using punct_type  = standard::punct_type;
+using space_type  = standard::space_type;
+using blank_type  = standard::blank_type;
+using upper_type  = standard::upper_type;
 
-    inline constexpr auto const& alnum  = standard::alnum;
-    inline constexpr auto const& alpha  = standard::alpha;
-    inline constexpr auto const& digit  = standard::digit;
-    inline constexpr auto const& xdigit = standard::xdigit;
-    inline constexpr auto const& cntrl  = standard::cntrl;
-    inline constexpr auto const& graph  = standard::graph;
-    inline constexpr auto const& lower  = standard::lower;
-    inline constexpr auto const& print  = standard::print;
-    inline constexpr auto const& punct  = standard::punct;
-    inline constexpr auto const& space  = standard::space;
-    inline constexpr auto const& blank  = standard::blank;
-    inline constexpr auto const& upper  = standard::upper;
+inline constexpr auto const& alnum  = standard::alnum;
+inline constexpr auto const& alpha  = standard::alpha;
+inline constexpr auto const& digit  = standard::digit;
+inline constexpr auto const& xdigit = standard::xdigit;
+inline constexpr auto const& cntrl  = standard::cntrl;
+inline constexpr auto const& graph  = standard::graph;
+inline constexpr auto const& lower  = standard::lower;
+inline constexpr auto const& print  = standard::print;
+inline constexpr auto const& punct  = standard::punct;
+inline constexpr auto const& space  = standard::space;
+inline constexpr auto const& blank  = standard::blank;
+inline constexpr auto const& upper  = standard::upper;
 
 } // boost::spirit::x4
 

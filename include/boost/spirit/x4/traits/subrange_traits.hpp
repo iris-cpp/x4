@@ -15,14 +15,14 @@
 
 namespace boost::spirit::x4::traits {
 
-    template <typename T>
-    struct is_subrange : std::false_type {};
+template <typename T>
+struct is_subrange : std::false_type {};
 
-    template <typename T>
-    constexpr bool is_subrange_v = is_subrange<T>::value;
+template <typename T>
+constexpr bool is_subrange_v = is_subrange<T>::value;
 
-    template <std::input_or_output_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
-    struct is_subrange<std::ranges::subrange<It, Se, Kind>> : std::true_type {};
+template <std::input_or_output_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
+struct is_subrange<std::ranges::subrange<It, Se, Kind>> : std::true_type {};
 
 } // boost::spirit::x4::traits
 

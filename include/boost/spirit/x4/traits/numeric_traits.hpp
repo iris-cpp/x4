@@ -14,14 +14,14 @@
 
 namespace boost::spirit::x4::traits {
 
-    // Customization points for numeric operations
+// Customization points for numeric operations
 
-    template <typename T>
-    struct pow10_helper;
+template <typename T>
+struct pow10_helper;
 
-    template <typename T>
-    struct check_overflow : std::bool_constant<std::numeric_limits<T>::is_bounded>
-	{};
+template <typename T>
+struct check_overflow : std::bool_constant<std::numeric_limits<T>::is_bounded>
+{};
 
 } // boost::spirit::x4::traits
 

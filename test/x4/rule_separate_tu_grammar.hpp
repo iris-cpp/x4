@@ -18,8 +18,6 @@
 
 namespace unused_attr {
 
-namespace x4 = boost::spirit::x4;
-
 // skipper must have no attribute, check `parse` and `skip_over`
 using skipper_type = x4::rule<class skipper_r>;
 const skipper_type skipper;
@@ -35,13 +33,11 @@ using grammar_type = x4::rule<class grammar_r>;
 const grammar_type grammar;
 BOOST_SPIRIT_X4_DECLARE(grammar_type)
 
-}
+} // unused_attr
 
 // Check instantiation when the rule has an attribute.
 
 namespace used_attr {
-
-namespace x4 = boost::spirit::x4;
 
 using skipper_type = x4::rule<class skipper_r>;
 const skipper_type skipper;
@@ -51,6 +47,6 @@ using grammar_type = x4::rule<class grammar_r, int, true>;
 const grammar_type grammar;
 BOOST_SPIRIT_X4_DECLARE(grammar_type)
 
-}
+} // used_attr
 
 #endif

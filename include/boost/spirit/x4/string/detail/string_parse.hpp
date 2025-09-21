@@ -16,68 +16,69 @@
 
 namespace boost::spirit::x4::detail {
 
-    template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
-    [[nodiscard]] constexpr bool
-    string_parse(
-        std::basic_string_view<CharT, CharTraitsT> const str,
-        It& first, Se const& last,
-        Attribute& attr, CaseCompareFunc const& compare
-    ) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
-    {
-        It i = first;
-        auto stri = str.begin();
-        auto str_last = str.end();
+template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
+[[nodiscard]] constexpr bool
+string_parse(
+    std::basic_string_view<CharT, CharTraitsT> const str,
+    It& first, Se const& last,
+    Attribute& attr, CaseCompareFunc const& compare
+) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+{
+    It i = first;
+    auto stri = str.begin();
+    auto str_last = str.end();
 
-        for (; stri != str_last; ++stri, ++i)
-            if (i == last || (compare(*stri, *i) != 0))
-                return false;
-        x4::move_to(first, i, x4::assume_container(attr));
-        first = i;
-        return true;
-    }
+    for (; stri != str_last; ++stri, ++i)
+        if (i == last || (compare(*stri, *i) != 0))
+            return false;
+    x4::move_to(first, i, x4::assume_container(attr));
+    first = i;
+    return true;
+}
 
-    template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
-    [[nodiscard]] constexpr bool
-    string_parse(
-        std::basic_string<CharT, CharTraitsT> const& str,
-        It& first, Se const& last,
-        Attribute& attr, CaseCompareFunc const& compare
-    ) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
-    {
-        return detail::string_parse(std::basic_string_view{str}, first, last, attr, compare);
-    }
+template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
+[[nodiscard]] constexpr bool
+string_parse(
+    std::basic_string<CharT, CharTraitsT> const& str,
+    It& first, Se const& last,
+    Attribute& attr, CaseCompareFunc const& compare
+) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+{
+    return detail::string_parse(std::basic_string_view{str}, first, last, attr, compare);
+}
 
-    template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
-    [[nodiscard]] constexpr bool
-    string_parse(
-        std::basic_string_view<CharT, CharTraitsT> const ucstr,
-        std::basic_string_view<CharT, CharTraitsT> const lcstr,
-        It& first, Se const& last, Attribute& attr
-    ) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
-    {
-        auto uc_i = ucstr.begin();
-        auto uc_last = ucstr.end();
-        auto lc_i = lcstr.begin();
-        It i = first;
+template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+[[nodiscard]] constexpr bool
+string_parse(
+    std::basic_string_view<CharT, CharTraitsT> const ucstr,
+    std::basic_string_view<CharT, CharTraitsT> const lcstr,
+    It& first, Se const& last, Attribute& attr
+) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+{
+    auto uc_i = ucstr.begin();
+    auto uc_last = ucstr.end();
+    auto lc_i = lcstr.begin();
+    It i = first;
 
-        for (; uc_i != uc_last; ++uc_i, ++lc_i, ++i)
-            if (i == last || ((*uc_i != *i) && (*lc_i != *i)))
-                return false;
-        x4::move_to(first, i, x4::assume_container(attr));
-        first = i;
-        return true;
-    }
+    for (; uc_i != uc_last; ++uc_i, ++lc_i, ++i)
+        if (i == last || ((*uc_i != *i) && (*lc_i != *i)))
+            return false;
+    x4::move_to(first, i, x4::assume_container(attr));
+    first = i;
+    return true;
+}
 
-    template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
-    [[nodiscard]] constexpr bool
-    string_parse(
-        std::basic_string<CharT, CharTraitsT> const& ucstr,
-        std::basic_string<CharT, CharTraitsT> const& lcstr,
-        It& first, Se const& last, Attribute& attr
-    ) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
-    {
-        return detail::string_parse(std::basic_string_view{ucstr}, std::basic_string_view{lcstr}, first, last, attr);
-    }
+template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+[[nodiscard]] constexpr bool
+string_parse(
+    std::basic_string<CharT, CharTraitsT> const& ucstr,
+    std::basic_string<CharT, CharTraitsT> const& lcstr,
+    It& first, Se const& last, Attribute& attr
+) noexcept(std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
+{
+    return detail::string_parse(std::basic_string_view{ucstr}, std::basic_string_view{lcstr}, first, last, attr);
+}
+
 } // boost::spirit::x4::detail
 
 #endif

@@ -15,6 +15,8 @@
 #include <string_view>
 #include <iterator>
 
+namespace {
+
 struct backwards_bool_policies : x4::bool_policies<>
 {
     // we want to interpret a 'true' spelled backwards as 'false'
@@ -34,6 +36,8 @@ struct backwards_bool_policies : x4::bool_policies<>
         return false;
     }
 };
+
+} // anonymous
 
 int main()
 {

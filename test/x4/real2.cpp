@@ -10,6 +10,8 @@
 
 #include "real.hpp"
 
+namespace {
+
 template <typename T, typename P>
 void basic_real_parser_test(P parser)
 {
@@ -45,6 +47,8 @@ void basic_real_parser_test(P parser)
     BOOST_TEST(!parse("-1.2e", parser));
     BOOST_TEST(!parse("-1.2e", parser, attr));
 }
+
+} // anonymous
 
 int main()
 {

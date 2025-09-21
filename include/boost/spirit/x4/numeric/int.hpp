@@ -18,64 +18,64 @@
 
 namespace boost::spirit::x4 {
 
-    template <
-        typename T,
-        unsigned Radix = 10,
-        unsigned MinDigits = 1,
-        int MaxDigits = -1
-    >
-    struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
+template <
+    typename T,
+    unsigned Radix = 10,
+    unsigned MinDigits = 1,
+    int MaxDigits = -1
+>
+struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
+{
+    // check template parameter 'Radix' for validity
+    static_assert(
+        (Radix == 2 || Radix == 8 || Radix == 10 || Radix == 16),
+        "Unsupported Radix"
+    );
+
+    using attribute_type = T;
+    static constexpr bool has_attribute = true;
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+        noexcept(
+            noexcept(x4::skip_over(first, last, context)) &&
+            noexcept(extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
+        )
     {
-        // check template parameter 'Radix' for validity
-        static_assert(
-            (Radix == 2 || Radix == 8 || Radix == 10 || Radix == 16),
-            "Unsupported Radix"
-        );
+        x4::skip_over(first, last, context);
+        return extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
+    }
+};
 
-        using attribute_type = T;
-        static constexpr bool has_attribute = true;
+inline namespace cpos {
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            noexcept(
-                noexcept(x4::skip_over(first, last, context)) &&
-                noexcept(extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
-            )
-        {
-            x4::skip_over(first, last, context);
-            return extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
-        }
-    };
+using short_type = int_parser<short>;
+inline constexpr short_type short_{};
 
-    inline namespace cpos {
+using int_type = int_parser<int>;
+inline constexpr int_type int_{};
 
-        using short_type = int_parser<short>;
-        inline constexpr short_type short_{};
+using long_type = int_parser<long>;
+inline constexpr long_type long_{};
 
-        using int_type = int_parser<int>;
-        inline constexpr int_type int_{};
-
-        using long_type = int_parser<long>;
-        inline constexpr long_type long_{};
-
-        using long_long_type = int_parser<long long>;
-        inline constexpr long_long_type long_long{};
+using long_long_type = int_parser<long long>;
+inline constexpr long_long_type long_long{};
 
 
-        using int8_type = int_parser<std::int8_t>;
-        inline constexpr int8_type int8{};
+using int8_type = int_parser<std::int8_t>;
+inline constexpr int8_type int8{};
 
-        using int16_type = int_parser<std::int16_t>;
-        inline constexpr int16_type int16{};
+using int16_type = int_parser<std::int16_t>;
+inline constexpr int16_type int16{};
 
-        using int32_type = int_parser<std::int32_t>;
-        inline constexpr int32_type int32{};
+using int32_type = int_parser<std::int32_t>;
+inline constexpr int32_type int32{};
 
-        using int64_type = int_parser<std::int64_t>;
-        inline constexpr int64_type int64{};
+using int64_type = int_parser<std::int64_t>;
+inline constexpr int64_type int64{};
 
-    } // cpos
+} // cpos
 
 } // boost::spirit::x4
 

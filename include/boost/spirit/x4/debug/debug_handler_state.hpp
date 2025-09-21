@@ -11,12 +11,12 @@
 
 namespace boost::spirit::x4 {
 
-    enum class debug_handler_state : char
-    {
-        pre_parse,
-        successful_parse,
-        failed_parse,
-    };
+enum class debug_handler_state : char
+{
+    pre_parse,
+    successful_parse,
+    failed_parse,
+};
 
 } // boost::spirit::x4
 

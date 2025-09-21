@@ -23,6 +23,8 @@
 
 namespace x4 = boost::spirit::x4;
 
+namespace {
+
 struct error_handler_base
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
@@ -87,6 +89,8 @@ void test_line_break_first(std::string const& line_break)
 
     BOOST_TEST_EQ(stream.str(), "In line 2:\nError! Expecting: \"bar\" here:\nfoo  foo\n_____^_\n");
 }
+
+} // anonymous
 
 int main()
 {

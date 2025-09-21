@@ -24,146 +24,146 @@
 
 namespace boost::spirit::x4 {
 
-    struct expectation_failure_tag
+struct expectation_failure_tag
+{
+    static constexpr bool is_unique = true;
+};
+
+template <std::forward_iterator It>
+struct expectation_failure
+{
+    constexpr expectation_failure() = default;
+
+    template <typename WhichT>
+        requires std::is_constructible_v<std::string, WhichT>
+    constexpr expectation_failure(It where, WhichT&& which)
+        noexcept(std::is_nothrow_copy_constructible_v<It> && std::is_nothrow_constructible_v<std::string, WhichT>)
+        : where_(where)
+        , which_(std::forward<WhichT>(which))
     {
-        static constexpr bool is_unique = true;
-    };
+        if (which_.empty())
+        {
+            which_ = "(unknown location)";
+        }
+    }
 
-    template <std::forward_iterator It>
-    struct expectation_failure
+    [[nodiscard]]
+    constexpr It const& where() const noexcept
     {
-        constexpr expectation_failure() = default;
+        assert(this->has_value());
+        return where_;
+    }
 
-        template <typename WhichT>
-            requires std::is_constructible_v<std::string, WhichT>
-        constexpr expectation_failure(It where, WhichT&& which)
-            noexcept(std::is_nothrow_copy_constructible_v<It> && std::is_nothrow_constructible_v<std::string, WhichT>)
-            : where_(where)
-            , which_(std::forward<WhichT>(which))
-        {
-            if (which_.empty())
-            {
-                which_ = "(unknown location)";
-            }
-        }
+    [[nodiscard]]
+    constexpr std::string const& which() const noexcept
+    {
+        assert(this->has_value());
+        return which_;
+    }
 
-        [[nodiscard]]
-        constexpr It const& where() const noexcept
-        {
-            assert(this->has_value());
-            return where_;
-        }
+    constexpr void clear() noexcept
+    {
+        which_.clear();
+    }
 
-        [[nodiscard]]
-        constexpr std::string const& which() const noexcept
-        {
-            assert(this->has_value());
-            return which_;
-        }
+    template <typename WhichT>
+        requires std::is_constructible_v<std::string, WhichT>
+    constexpr void emplace(It where, WhichT&& which)
+        noexcept(std::is_nothrow_move_assignable_v<It> && std::is_nothrow_assignable_v<std::string&, WhichT>)
+    {
+        where_ = std::move(where);
+        which_ = std::forward<WhichT>(which);
+    }
 
-        constexpr void clear() noexcept
-        {
-            which_.clear();
-        }
+    [[nodiscard]] constexpr explicit operator bool() const noexcept { return !which_.empty(); }
+    [[nodiscard]] constexpr bool has_value() const noexcept { return !which_.empty(); }
 
-        template <typename WhichT>
-            requires std::is_constructible_v<std::string, WhichT>
-        constexpr void emplace(It where, WhichT&& which)
-            noexcept(std::is_nothrow_move_assignable_v<It> && std::is_nothrow_assignable_v<std::string&, WhichT>)
-        {
-            where_ = std::move(where);
-            which_ = std::forward<WhichT>(which);
-        }
-
-        [[nodiscard]] constexpr explicit operator bool() const noexcept { return !which_.empty(); }
-        [[nodiscard]] constexpr bool has_value() const noexcept { return !which_.empty(); }
-
-        constexpr void swap(expectation_failure& other)
-            noexcept(std::is_nothrow_swappable_v<It> && std::is_nothrow_swappable_v<std::string>)
-        {
-            using std::swap;
-            swap(where_, other.where_);
-            swap(which_, other.which_);
-        }
-
-    private:
-        It where_{};
-        std::string which_;
-    };
-
-    template <std::forward_iterator It>
-    constexpr void swap(expectation_failure<It>& a, expectation_failure<It>& b)
+    constexpr void swap(expectation_failure& other)
         noexcept(std::is_nothrow_swappable_v<It> && std::is_nothrow_swappable_v<std::string>)
     {
-        a.swap(b);
+        using std::swap;
+        swap(where_, other.where_);
+        swap(which_, other.which_);
     }
 
-    template <typename Context>
-    using expectation_failure_t = get_context_plain_t<expectation_failure_tag, Context>;
+private:
+    It where_{};
+    std::string which_;
+};
 
-    template <typename Context>
-    [[nodiscard]]
-    constexpr bool has_expectation_failure(Context const& context) noexcept
-    {
-        using T = expectation_failure_t<Context>;
-        static_assert(
-            !std::same_as<unused_type, T>,
-            "Context type was not specified for x4::expectation_failure_tag. "
-            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
-            "Note that you must also bind the context to your skipper."
-        );
-        return x4::get<expectation_failure_tag>(context).has_value();
-    }
+template <std::forward_iterator It>
+constexpr void swap(expectation_failure<It>& a, expectation_failure<It>& b)
+    noexcept(std::is_nothrow_swappable_v<It> && std::is_nothrow_swappable_v<std::string>)
+{
+    a.swap(b);
+}
 
-    //
-    // Creation of a brand-new expectation_failure instance.
-    // This is the primary overload.
-    //
-    template <std::forward_iterator It, typename Subject, typename Context>
-    constexpr void set_expectation_failure(
-        It where,
-        Subject const& subject,
-        Context const& context
-    )
-        noexcept(noexcept(x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject))))
-    {
-        using T = expectation_failure_t<Context>;
-        static_assert(
-            !std::same_as<unused_type, T>,
-            "Context type was not specified for x4::expectation_failure_tag. "
-            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
-            "Note that you must also bind the context to your skipper."
-        );
-        x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject));
-    }
+template <typename Context>
+using expectation_failure_t = get_context_plain_t<expectation_failure_tag, Context>;
 
-    template <typename Context>
-    [[nodiscard]]
-    constexpr decltype(auto) get_expectation_failure(Context const& context) noexcept
-    {
-        using T = expectation_failure_t<Context>;
-        static_assert(
-            !std::same_as<T, unused_type>,
-            "Context type was not specified for x4::expectation_failure_tag. "
-            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
-            "Note that you must also bind the context to your skipper."
-        );
+template <typename Context>
+[[nodiscard]]
+constexpr bool has_expectation_failure(Context const& context) noexcept
+{
+    using T = expectation_failure_t<Context>;
+    static_assert(
+        !std::same_as<unused_type, T>,
+        "Context type was not specified for x4::expectation_failure_tag. "
+        "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
+        "Note that you must also bind the context to your skipper."
+    );
+    return x4::get<expectation_failure_tag>(context).has_value();
+}
 
-        return x4::get<expectation_failure_tag>(context);
-    }
+//
+// Creation of a brand-new expectation_failure instance.
+// This is the primary overload.
+//
+template <std::forward_iterator It, typename Subject, typename Context>
+constexpr void set_expectation_failure(
+    It where,
+    Subject const& subject,
+    Context const& context
+)
+    noexcept(noexcept(x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject))))
+{
+    using T = expectation_failure_t<Context>;
+    static_assert(
+        !std::same_as<unused_type, T>,
+        "Context type was not specified for x4::expectation_failure_tag. "
+        "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
+        "Note that you must also bind the context to your skipper."
+    );
+    x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject));
+}
 
-    template <typename Context>
-    constexpr void clear_expectation_failure(Context const& context) noexcept
-    {
-        using T = expectation_failure_t<Context>;
-        static_assert(
-            !std::same_as<T, unused_type>,
-            "Context type was not specified for x4::expectation_failure_tag. "
-            "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
-            "Note that you must also bind the context to your skipper."
-        );
-        x4::get<expectation_failure_tag>(context).clear();
-    }
+template <typename Context>
+[[nodiscard]]
+constexpr decltype(auto) get_expectation_failure(Context const& context) noexcept
+{
+    using T = expectation_failure_t<Context>;
+    static_assert(
+        !std::same_as<T, unused_type>,
+        "Context type was not specified for x4::expectation_failure_tag. "
+        "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
+        "Note that you must also bind the context to your skipper."
+    );
+
+    return x4::get<expectation_failure_tag>(context);
+}
+
+template <typename Context>
+constexpr void clear_expectation_failure(Context const& context) noexcept
+{
+    using T = expectation_failure_t<Context>;
+    static_assert(
+        !std::same_as<T, unused_type>,
+        "Context type was not specified for x4::expectation_failure_tag. "
+        "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
+        "Note that you must also bind the context to your skipper."
+    );
+    x4::get<expectation_failure_tag>(context).clear();
+}
 
 } // boost::spirit::x4
 

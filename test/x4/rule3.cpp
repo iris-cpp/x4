@@ -32,8 +32,6 @@
 # pragma warning(disable: 4709) // comma operator within array index expression
 #endif
 
-namespace x4 = boost::spirit::x4;
-
 struct f
 {
     template <typename Context>
@@ -54,14 +52,14 @@ auto const b_def = a;
 BOOST_SPIRIT_X4_DEFINE(a)
 BOOST_SPIRIT_X4_DEFINE(b)
 
-}
+} // check_stationary
 
 namespace check_recursive {
 
 using node_t = boost::make_recursive_variant<
-                   int,
-                   std::vector<boost::recursive_variant_>
-               >::type;
+   int,
+   std::vector<boost::recursive_variant_>
+>::type;
 
 x4::rule<class recursive_grammar_r, node_t> const grammar;
 
@@ -69,7 +67,7 @@ auto const grammar_def = '[' >> grammar % ',' >> ']' | x4::int_;
 
 BOOST_SPIRIT_X4_DEFINE(grammar)
 
-}
+} // check_recursive
 
 namespace check_recursive_scoped {
 
@@ -78,15 +76,15 @@ using check_recursive::node_t;
 x4::rule<class intvec_r, node_t> const intvec;
 auto const grammar = intvec = '[' >> intvec % ',' >> ']' | x4::int_;
 
-}
+} // check_recursive_scoped
 
 struct recursive_tuple
 {
     int value;
     std::vector<recursive_tuple> children;
 };
-BOOST_FUSION_ADAPT_STRUCT(recursive_tuple,
-    value, children)
+
+BOOST_FUSION_ADAPT_STRUCT(recursive_tuple, value, children)
 
 // regression test for #461
 namespace check_recursive_tuple {
@@ -99,8 +97,7 @@ BOOST_SPIRIT_X4_DEFINE(grammar)
 
 BOOST_SPIRIT_X4_INSTANTIATE(decltype(grammar), iterator_type, x4::parse_context_for<iterator_type>)
 
-}
-
+} // check_recursive_tuple
 
 int main()
 {

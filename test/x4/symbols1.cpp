@@ -13,6 +13,8 @@
 #include <boost/spirit/x4/directive/no_case.hpp>
 #include <boost/spirit/x4/operator/sequence.hpp>
 
+namespace {
+
 // Custom string type with a C-style string conversion.
 struct custom_string_c
 {
@@ -24,6 +26,8 @@ struct custom_string_c
 private:
     char str[2];
 };
+
+} // anonymous
 
 int main()
 {

@@ -18,44 +18,45 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename Encoding, typename Attribute = typename Encoding::char_type>
-    struct literal_char : char_parser<literal_char<Encoding, Attribute>>
+template <typename Encoding, typename Attribute = typename Encoding::char_type>
+struct literal_char : char_parser<literal_char<Encoding, Attribute>>
+{
+    using char_type = typename Encoding::char_type;
+    using encoding = Encoding;
+    using attribute_type = Attribute;
+
+    static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
+
+    template <typename Char>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<Char>, literal_char>) &&
+            std::convertible_to<Char, char_type>
+    constexpr literal_char(Char ch) noexcept
+        : ch(static_cast<char_type>(ch))
     {
-        using char_type = typename Encoding::char_type;
-        using encoding = Encoding;
-        using attribute_type = Attribute;
+        static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
+    }
 
-        static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
-
-        template <typename Char>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<Char>, literal_char>) &&
-                std::convertible_to<Char, char_type>
-        constexpr literal_char(Char ch) noexcept
-            : ch(static_cast<char_type>(ch))
-        {
-            static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
-        }
-
-        template <typename Char, typename Context>
-        [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
-        {
-            static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
-            return x4::get_case_compare<encoding>(context)(ch, char_type(ch_)) == 0;
-        }
-
-        char_type ch;
-    };
-
-    template <typename Encoding, typename Attribute>
-    struct get_info<literal_char<Encoding, Attribute>>
+    template <typename Char, typename Context>
+    [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
-        using result_type = std::string;
-        [[nodiscard]] std::string operator()(literal_char<Encoding, Attribute> const& p) const
-        {
-            return '\'' + x4::to_utf8(Encoding::toucs4(p.ch)) + '\'';
-        }
-    };
+        static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
+        return x4::get_case_compare<encoding>(context)(ch, char_type(ch_)) == 0;
+    }
+
+    char_type ch;
+};
+
+template <typename Encoding, typename Attribute>
+struct get_info<literal_char<Encoding, Attribute>>
+{
+    using result_type = std::string;
+    [[nodiscard]] std::string operator()(literal_char<Encoding, Attribute> const& p) const
+    {
+        return '\'' + x4::to_utf8(Encoding::toucs4(p.ch)) + '\'';
+    }
+};
+
 } // boost::spirit::x4
 
 #endif

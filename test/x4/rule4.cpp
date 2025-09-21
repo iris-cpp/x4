@@ -26,8 +26,8 @@
 namespace x4 = boost::spirit::x4;
 
 namespace {
+
 int got_it = 0;
-}
 
 struct my_rule_class
 {
@@ -61,8 +61,10 @@ struct on_success_gets_preskipped_iterator
         ok = before_was_b && (++before == after);
     }
 };
+
 bool on_success_gets_preskipped_iterator::ok = false;
 
+} // anonymous
 
 int main()
 {

@@ -11,19 +11,19 @@
 
 namespace boost::spirit::x4 {
 
-    struct char_tag {};
-    struct alnum_tag {};
-    struct alpha_tag {};
-    struct blank_tag {};
-    struct cntrl_tag {};
-    struct digit_tag {};
-    struct graph_tag {};
-    struct print_tag {};
-    struct punct_tag {};
-    struct space_tag {};
-    struct xdigit_tag {};
-    struct lower_tag {};
-    struct upper_tag {};
+struct char_tag {};
+struct alnum_tag {};
+struct alpha_tag {};
+struct blank_tag {};
+struct cntrl_tag {};
+struct digit_tag {};
+struct graph_tag {};
+struct print_tag {};
+struct punct_tag {};
+struct space_tag {};
+struct xdigit_tag {};
+struct lower_tag {};
+struct upper_tag {};
 
 } // boost::spirit::x4
 

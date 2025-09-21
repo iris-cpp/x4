@@ -69,7 +69,7 @@ template <> struct digits<-9,  9>  { static constexpr int r2 = 3, r10 = 1; };
 template <> struct digits<-10, 10> { static constexpr int r2 = 3, r10 = 1; };
 template <> struct digits<-15, 15> { static constexpr int r2 = 3, r10 = 1; };
 
-}
+} // utils
 
 namespace std {
 
@@ -85,9 +85,9 @@ public:
     static constexpr int digits10 = utils::digits<Min, Max>::r10;
 };
 
-}
+} // std
 
-namespace x4 = boost::spirit::x4;
+namespace {
 
 template <typename T, int Base, int MaxDigits>
 void test_overflow_handling(char const* begin, char const* end, int i)
@@ -149,6 +149,8 @@ void run_tests(char const* begin, char const* end, int i)
     // Check that unparsed digits are not consumed
     test_unparsed_digits_are_not_consumed<T, Base>(begin, end, i);
 }
+
+} // anonymous
 
 int main()
 {

@@ -35,10 +35,14 @@ BOOST_FUSION_ADAPT_STRUCT(roman,
     a, b, c
 )
 
+namespace {
+
 int eval(roman const & c)
 {
     return c.a.value_or(0) + c.b.value_or(0) + c.c.value_or(0);
 }
+
+} // anonymous
 
 int main()
 {

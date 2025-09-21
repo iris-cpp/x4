@@ -18,60 +18,56 @@
 #include <cctype>
 #include <iostream>
 
-namespace
+namespace {
+
+template <typename TST, typename Char>
+void add(TST& tst, Char const* s, int data)
 {
-    namespace x4 = boost::spirit::x4;
+    Char const* last = s;
+    while (*last)
+        last++;
+    tst.add(s, last, data);
+}
 
-    template <typename TST, typename Char>
-    void add(TST& tst, Char const* s, int data)
+template <typename TST, typename Char>
+void remove(TST& tst, Char const* s)
+{
+    Char const* last = s;
+    while (*last)
+        last++;
+    tst.remove(s, last);
+}
+
+template <typename TST, typename Char, typename CaseCompare>
+void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool expected, int N = 0, int val = -1)
+{
+    Char const* first = s;
+    Char const* last = s;
+    while (*last)
+        last++;
+    int* r = tst.find(s, last,comp);
+    BOOST_TEST((r != 0) == expected);
+    if (r != 0)
+        BOOST_TEST((s-first) == N);
+    if (r)
+        BOOST_TEST(*r == val);
+}
+
+struct printer
+{
+    template <typename String, typename Data>
+    void operator()(String const& s, Data const& data)
     {
-        Char const* last = s;
-        while (*last)
-            last++;
-        tst.add(s, last, data);
+        std::cout << "    " << s << ": " << data << std::endl;
     }
+};
 
-    template <typename TST, typename Char>
-    void remove(TST& tst, Char const* s)
-    {
-        Char const* last = s;
-        while (*last)
-            last++;
-        tst.remove(s, last);
-    }
-
-    template <typename TST, typename Char, typename CaseCompare>
-    void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool expected, int N = 0, int val = -1)
-    {
-        Char const* first = s;
-        Char const* last = s;
-        while (*last)
-            last++;
-        int* r = tst.find(s, last,comp);
-        BOOST_TEST((r != 0) == expected);
-        if (r != 0)
-            BOOST_TEST((s-first) == N);
-        if (r)
-            BOOST_TEST(*r == val);
-    }
-
-    struct printer
-    {
-        template <typename String, typename Data>
-        void operator()(String const& s, Data const& data)
-        {
-            std::cout << "    " << s << ": " << data << std::endl;
-        }
-    };
-
-    template <typename TST>
-    void print(TST const& tst)
-    {
-        std::cout << '[' << std::endl;
-        tst.for_each(printer());
-        std::cout << ']' << std::endl;
-    }
-
+template <typename TST>
+void print(TST const& tst)
+{
+    std::cout << '[' << std::endl;
+    tst.for_each(printer());
+    std::cout << ']' << std::endl;
 }
 
 x4::case_compare<x4::char_encoding::standard> ncomp;
@@ -330,6 +326,8 @@ void tests()
         print(lookup);
     }
 }
+
+} // anonymous
 
 int main()
 {

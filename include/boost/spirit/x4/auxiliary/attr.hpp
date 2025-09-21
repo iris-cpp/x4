@@ -25,80 +25,80 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename T>
-    struct attr_parser : parser<attr_parser<T>>
+template <typename T>
+struct attr_parser : parser<attr_parser<T>>
+{
+    static_assert(X4Attribute<T>);
+    using attribute_type = T;
+
+    static constexpr bool has_attribute = !std::is_same_v<T, unused_type>;
+    static constexpr bool handles_container = traits::is_container_v<T>;
+
+    template <typename U>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<U>, attr_parser>) &&
+            std::is_constructible_v<T, U>
+    constexpr attr_parser(U&& value)
+        noexcept(std::is_nothrow_constructible_v<T, U>)
+        : value_(std::forward<U>(value))
+    {}
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It&, Se const&, Context const&, Attribute& attr_) const
+        noexcept(noexcept(x4::move_to(std::as_const(value_), attr_)))
     {
-        static_assert(X4Attribute<T>);
-        using attribute_type = T;
+        // Always copy (need reuse in repetitive invocations)
+        x4::move_to(std::as_const(value_), attr_);
+        return true;
+    }
 
-        static constexpr bool has_attribute = !std::is_same_v<T, unused_type>;
-        static constexpr bool handles_container = traits::is_container_v<T>;
+private:
+    T value_;
+};
 
-        template <typename U>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<U>, attr_parser>) &&
-                std::is_constructible_v<T, U>
-        constexpr attr_parser(U&& value)
-            noexcept(std::is_nothrow_constructible_v<T, U>)
-            : value_(std::forward<U>(value))
-        {}
+template <traits::CharArray R>
+attr_parser(R const&) -> attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It&, Se const&, Context const&, Attribute& attr_) const
-            noexcept(noexcept(x4::move_to(std::as_const(value_), attr_)))
-        {
-            // Always copy (need reuse in repetitive invocations)
-            x4::move_to(std::as_const(value_), attr_);
-            return true;
-        }
+template <typename T>
+struct get_info<attr_parser<T>>
+{
+    using result_type = std::string;
+    [[nodiscard]] constexpr std::string
+    operator()(attr_parser<T> const&) const
+    {
+        return "attr";
+    }
+};
 
-    private:
-        T value_;
-    };
+namespace detail {
+
+struct attr_gen
+{
+    template <typename T>
+    [[nodiscard]] static constexpr attr_parser<std::remove_cvref_t<T>>
+    operator()(T&& value)
+        noexcept(std::is_nothrow_constructible_v<attr_parser<std::remove_cvref_t<T>>, T>)
+    {
+        return { std::forward<T>(value) };
+    }
 
     template <traits::CharArray R>
-    attr_parser(R const&) -> attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>;
-
-    template <typename T>
-    struct get_info<attr_parser<T>>
+    [[nodiscard]] static constexpr attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>
+    operator()(R&& value)
+        noexcept(std::is_nothrow_constructible_v<attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>, R>)
     {
-        using result_type = std::string;
-        [[nodiscard]] constexpr std::string
-        operator()(attr_parser<T> const&) const
-        {
-            return "attr";
-        }
-    };
+        return { std::forward<R>(value) };
+    }
+};
 
-    namespace detail {
+} // detail
 
-        struct attr_gen
-        {
-            template <typename T>
-            [[nodiscard]] static constexpr attr_parser<std::remove_cvref_t<T>>
-            operator()(T&& value)
-                noexcept(std::is_nothrow_constructible_v<attr_parser<std::remove_cvref_t<T>>, T>)
-            {
-                return { std::forward<T>(value) };
-            }
+inline namespace cpos {
 
-            template <traits::CharArray R>
-            [[nodiscard]] static constexpr attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>
-            operator()(R&& value)
-                noexcept(std::is_nothrow_constructible_v<attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>, R>)
-            {
-                return { std::forward<R>(value) };
-            }
-        };
+inline constexpr detail::attr_gen attr{};
 
-    } // detail
-
-    inline namespace cpos {
-
-        inline constexpr detail::attr_gen attr{};
-
-    } // cpos
+} // cpos
 
 } // boost::spirit::x4
 

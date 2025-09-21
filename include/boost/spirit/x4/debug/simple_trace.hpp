@@ -36,159 +36,160 @@
 
 namespace boost::spirit::x4 {
 
-    namespace detail {
+namespace detail {
 
-        template <typename Char>
-        void token_printer(std::ostream& o, Char c)
+template <typename Char>
+void token_printer(std::ostream& o, Char c)
+{
+    // allow customization of the token printer routine
+    traits::print_token(o, c);
+}
+
+} // detail
+
+template <int IndentSpaces = 2, int CharsToPrint = 20>
+struct simple_trace
+{
+    explicit simple_trace(std::ostream& out) noexcept
+        : out(out)
+    {}
+
+    void print_indent(int n) const
+    {
+        n *= IndentSpaces;
+        for (int i = 0; i != n; ++i)
         {
-            // allow customization of the token printer routine
-            traits::print_token(o, c);
+            out << ' ';
         }
     }
 
-    template <int IndentSpaces = 2, int CharsToPrint = 20>
-    struct simple_trace
+    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    void print_some(
+        char const* tag,
+        It first, Se last
+    ) const
     {
-        explicit simple_trace(std::ostream& out) noexcept
-            : out(out)
-        {}
+        simple_trace::print_indent(indent);
 
-        void print_indent(int n) const
+        out << '<' << tag << '>';
+
+        for (int i = 0; first != last && i != CharsToPrint && *first; ++i, ++first)
         {
-            n *= IndentSpaces;
-            for (int i = 0; i != n; ++i)
-            {
-                out << ' ';
-            }
+            detail::token_printer(out, *first);
         }
+        out << "</" << tag << '>' << std::endl;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se>
-        void print_some(
-            char const* tag,
-            It first, Se last
-        ) const
+        // $$$ FIXME convert invalid xml characters (e.g. '<') to valid
+        // character entities. $$$
+    }
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    void operator()(
+        It first,
+        Se last,
+        Attribute const& attr,
+        debug_handler_state const state,
+        std::string const& rule_name
+    ) const
+    {
+        using enum debug_handler_state;
+        switch (state)
         {
-            simple_trace::print_indent(indent);
+            case pre_parse:
+                print_indent(indent++);
+                out
+                    << '<' << rule_name << '>'
+                    << std::endl;
+                print_some("try", first, last);
+                break;
 
-            out << '<' << tag << '>';
-
-            for (int i = 0; first != last && i != CharsToPrint && *first; ++i, ++first)
-            {
-                detail::token_printer(out, *first);
-            }
-            out << "</" << tag << '>' << std::endl;
-
-            // $$$ FIXME convert invalid xml characters (e.g. '<') to valid
-            // character entities. $$$
-        }
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
-        void operator()(
-            It first,
-            Se last,
-            Attribute const& attr,
-            debug_handler_state const state,
-            std::string const& rule_name
-        ) const
-        {
-            using enum debug_handler_state;
-            switch (state)
-            {
-                case pre_parse:
-                    print_indent(indent++);
-                    out
-                        << '<' << rule_name << '>'
-                        << std::endl;
-                    print_some("try", first, last);
-                    break;
-
-                case successful_parse:
-                    print_some("success", first, last);
-                    if constexpr (!std::is_same_v<Attribute, unused_type>)
-                    {
-                        print_indent(indent);
-                        out
-                            << "<attributes>";
-                        traits::print_attribute(out, attr);
-                        out
-                            << "</attributes>";
-                        out << std::endl;
-                    }
-                    print_indent(--indent);
-                    out
-                        << "</" << rule_name << '>'
-                        << std::endl;
-                    break;
-
-                case failed_parse:
+            case successful_parse:
+                print_some("success", first, last);
+                if constexpr (!std::is_same_v<Attribute, unused_type>)
+                {
                     print_indent(indent);
-                    out << "<fail/>" << std::endl;
-                    print_indent(--indent);
                     out
-                        << "</" << rule_name << '>'
-                        << std::endl;
-                    break;
-            }
+                        << "<attributes>";
+                    traits::print_attribute(out, attr);
+                    out
+                        << "</attributes>";
+                    out << std::endl;
+                }
+                print_indent(--indent);
+                out
+                    << "</" << rule_name << '>'
+                    << std::endl;
+                break;
+
+            case failed_parse:
+                print_indent(indent);
+                out << "<fail/>" << std::endl;
+                print_indent(--indent);
+                out
+                    << "</" << rule_name << '>'
+                    << std::endl;
+                break;
         }
+    }
 
-        std::ostream& out;
-        mutable int indent = 0;
-    };
+    std::ostream& out;
+    mutable int indent = 0;
+};
 
-    namespace detail {
+namespace detail {
 
-        using simple_trace_type = simple_trace<
-            BOOST_SPIRIT_X4_DEBUG_INDENT,
-            BOOST_SPIRIT_X4_DEBUG_PRINT_SOME
-        >;
+using simple_trace_type = simple_trace<
+    BOOST_SPIRIT_X4_DEBUG_INDENT,
+    BOOST_SPIRIT_X4_DEBUG_PRINT_SOME
+>;
 
-        [[nodiscard]] inline simple_trace_type&
-        get_simple_trace()
-        {
-            static simple_trace_type tracer(BOOST_SPIRIT_X4_DEBUG_OUT);
-            return tracer;
-        }
+[[nodiscard]] inline simple_trace_type&
+get_simple_trace()
+{
+    static simple_trace_type tracer(BOOST_SPIRIT_X4_DEBUG_OUT);
+    return tracer;
+}
 
 
-        // TODO: This should be customizable by users
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
-        struct [[nodiscard]] scoped_rule_debug
-        {
-            scoped_rule_debug(
-                char const* rule_name,
-                It const& first, Se const& last,
-                Attribute const& attr,
-                bool const* parse_ok
-            )
-                : parse_ok(parse_ok)
-                , rule_name(rule_name)
-                , first(first)
-                , last(last)
-                , attr(attr)
-                , f(detail::get_simple_trace())
-            {
-                f(first, last, attr, debug_handler_state::pre_parse, rule_name);
-            }
+// TODO: This should be customizable by users
+template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+struct [[nodiscard]] scoped_rule_debug
+{
+    scoped_rule_debug(
+        char const* rule_name,
+        It const& first, Se const& last,
+        Attribute const& attr,
+        bool const* parse_ok
+    )
+        : parse_ok(parse_ok)
+        , rule_name(rule_name)
+        , first(first)
+        , last(last)
+        , attr(attr)
+        , f(detail::get_simple_trace())
+    {
+        f(first, last, attr, debug_handler_state::pre_parse, rule_name);
+    }
 
-            ~scoped_rule_debug()
-            {
-                f(
-                    first, last,
-                    attr,
-                    *parse_ok ? debug_handler_state::successful_parse : debug_handler_state::failed_parse,
-                    rule_name
-                );
-            }
+    ~scoped_rule_debug()
+    {
+        f(
+            first, last,
+            attr,
+            *parse_ok ? debug_handler_state::successful_parse : debug_handler_state::failed_parse,
+            rule_name
+        );
+    }
 
-            bool const* parse_ok = nullptr;
-            char const* rule_name = nullptr;
-            It const& first;
-            Se const& last;
-            Attribute const& attr;
-            simple_trace_type& f;
-        };
+    bool const* parse_ok = nullptr;
+    char const* rule_name = nullptr;
+    It const& first;
+    Se const& last;
+    Attribute const& attr;
+    simple_trace_type& f;
+};
 
-    } // detail
+} // detail
 
 } // boost::spirit::x4
 

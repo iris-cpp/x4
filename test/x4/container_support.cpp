@@ -34,13 +34,16 @@ namespace x4 = boost::spirit::x4;
 
 // check if we did not break user defined specializations
 namespace check_substitute {
+
 template <typename T> struct foo {};
 template <typename T> struct bar { using type = T; };
 template <typename T> struct is_bar : std::false_type {};
 template <typename T> struct is_bar<bar<T>> : std::true_type {};
-}
+
+} // check_substitute
 
 namespace boost::spirit::x4::traits {
+
 using namespace check_substitute;
 
 template <typename T, typename U>
@@ -53,15 +56,18 @@ template <typename T, typename U>
 struct is_substitute<T, U>
     : is_substitute<typename T::type, typename U::type>
 {};
+
 } // boost::spirit::x4::traits
 
 namespace check_substitute {
+
 using x4::traits::is_substitute_v;
 static_assert( is_substitute_v<foo<int>, foo<int>>,  "is_substitute problem");
 static_assert(!is_substitute_v<foo<int>, foo<long>>, "is_substitute problem");
 static_assert( is_substitute_v<bar<int>, bar<int>>,  "is_substitute problem");
 static_assert(!is_substitute_v<bar<int>, bar<long>>, "is_substitute problem");
-}
+
+} // check_substitute
 
 namespace {
 

@@ -20,110 +20,110 @@
 
 namespace boost::spirit::x4 {
 
-    // Parser for a character range
-    template <typename Encoding, typename Attribute = typename Encoding::char_type>
-    struct char_range : char_parser<char_range<Encoding, Attribute>>
+// Parser for a character range
+template <typename Encoding, typename Attribute = typename Encoding::char_type>
+struct char_range : char_parser<char_range<Encoding, Attribute>>
+{
+    using char_type = typename Encoding::char_type;
+    using encoding = Encoding;
+    using attribute_type = Attribute;
+    static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
+
+    constexpr char_range(char_type from_, char_type to_) noexcept
+        : from(from_), to(to_)
+    {}
+
+    template <typename Char, typename Context>
+        requires (std::is_convertible_v<std::remove_cvref_t<Char>, char_type>)
+    [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
-        using char_type = typename Encoding::char_type;
-        using encoding = Encoding;
-        using attribute_type = Attribute;
-        static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
+        char_type ch = static_cast<char_type>(ch_);  // optimize for token based parsing
+        return (x4::get_case_compare<encoding>(context)(ch, from) >= 0)
+            && (x4::get_case_compare<encoding>(context)(ch , to) <= 0);
+    }
 
-        constexpr char_range(char_type from_, char_type to_) noexcept
-            : from(from_), to(to_)
-        {}
+    char_type from, to;
+};
 
-        template <typename Char, typename Context>
-            requires (std::is_convertible_v<std::remove_cvref_t<Char>, char_type>)
-        [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
-        {
-            char_type ch = static_cast<char_type>(ch_);  // optimize for token based parsing
-            return (x4::get_case_compare<encoding>(context)(ch, from) >= 0)
-                && (x4::get_case_compare<encoding>(context)(ch , to) <= 0);
-        }
+// Parser for a character set
+template <typename Encoding, typename Attribute = typename Encoding::char_type>
+struct char_set : char_parser<char_set<Encoding, Attribute>>
+{
+    using char_type = typename Encoding::char_type;
+    using encoding = Encoding;
+    using attribute_type = Attribute;
 
-        char_type from, to;
-    };
+    static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
-    // Parser for a character set
-    template <typename Encoding, typename Attribute = typename Encoding::char_type>
-    struct char_set : char_parser<char_set<Encoding, Attribute>>
+    template<std::ranges::forward_range R>
+    constexpr explicit char_set(R const& str)
+        noexcept(detail::cast_char_noexcept<std::ranges::range_value_t<R>, char_type>)
     {
-        using char_type = typename Encoding::char_type;
-        using encoding = Encoding;
-        using attribute_type = Attribute;
+        static_assert(detail::cast_char_viable<std::ranges::range_value_t<R>, char_type>);
 
-        static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
+        using detail::cast_char; // ADL introduction
 
-        template<std::ranges::forward_range R>
-        constexpr explicit char_set(R const& str)
-            noexcept(detail::cast_char_noexcept<std::ranges::range_value_t<R>, char_type>)
+        for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);)
         {
-            static_assert(detail::cast_char_viable<std::ranges::range_value_t<R>, char_type>);
-
-            using detail::cast_char; // ADL introduction
-
-            for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);)
+            auto const ch = *definition;
+            auto next_definition = std::next(definition);
+            if (next_definition == std::ranges::end(str))
             {
-                auto const ch = *definition;
-                auto next_definition = std::next(definition);
+                chset.set(cast_char<char_type>(ch));
+                break;
+            }
+            auto next_ch = *next_definition;
+            if (next_ch == '-')
+            {
+                next_definition = std::next(next_definition);
                 if (next_definition == std::ranges::end(str))
                 {
                     chset.set(cast_char<char_type>(ch));
+                    chset.set('-');
                     break;
                 }
-                auto next_ch = *next_definition;
-                if (next_ch == '-')
-                {
-                    next_definition = std::next(next_definition);
-                    if (next_definition == std::ranges::end(str))
-                    {
-                        chset.set(cast_char<char_type>(ch));
-                        chset.set('-');
-                        break;
-                    }
-                    chset.set(
-                        cast_char<char_type>(ch),
-                        cast_char<char_type>(*next_definition)
-                    );
-                }
-                else
-                {
-                    chset.set(cast_char<char_type>(ch));
-                }
-                definition = next_definition;
+                chset.set(
+                    cast_char<char_type>(ch),
+                    cast_char<char_type>(*next_definition)
+                );
             }
+            else
+            {
+                chset.set(cast_char<char_type>(ch));
+            }
+            definition = next_definition;
         }
+    }
 
-        template <typename Char, typename Context>
-        [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
-        {
-            return x4::get_case_compare<encoding>(context).in_set(ch_, chset);
-        }
-
-        detail::basic_chset<char_type> chset;
-    };
-
-    template <typename Encoding, typename Attribute>
-    struct get_info<char_set<Encoding, Attribute>>
+    template <typename Char, typename Context>
+    [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
-        using result_type = std::string;
-        [[nodiscard]] constexpr std::string operator()(char_set<Encoding, Attribute> const& /* p */) const
-        {
-            return "char-set"; // TODO: make more user-friendly
-        }
-    };
+        return x4::get_case_compare<encoding>(context).in_set(ch_, chset);
+    }
 
-    template <typename Encoding, typename Attribute>
-    struct get_info<char_range<Encoding, Attribute>>
+    detail::basic_chset<char_type> chset;
+};
+
+template <typename Encoding, typename Attribute>
+struct get_info<char_set<Encoding, Attribute>>
+{
+    using result_type = std::string;
+    [[nodiscard]] constexpr std::string operator()(char_set<Encoding, Attribute> const& /* p */) const
     {
-        using result_type = std::string;
-        [[nodiscard]] constexpr std::string operator()(char_range<Encoding, Attribute> const& p) const
-        {
-            // TODO: make more user-friendly && make the format consistent with above
-            return "char_range \"" + x4::to_utf8(Encoding::toucs4(p.from)) + '-' + x4::to_utf8(Encoding::toucs4(p.to))+ '"';
-        }
-    };
+        return "char-set"; // TODO: make more user-friendly
+    }
+};
+
+template <typename Encoding, typename Attribute>
+struct get_info<char_range<Encoding, Attribute>>
+{
+    using result_type = std::string;
+    [[nodiscard]] constexpr std::string operator()(char_range<Encoding, Attribute> const& p) const
+    {
+        // TODO: make more user-friendly && make the format consistent with above
+        return "char_range \"" + x4::to_utf8(Encoding::toucs4(p.from)) + '-' + x4::to_utf8(Encoding::toucs4(p.to))+ '"';
+    }
+};
 
 } // boost::spirit::x4
 

@@ -21,7 +21,6 @@
 
 int main()
 {
-    namespace x4 = boost::spirit::x4;
     // standard
     {
         (void)x4::lit('f'); // deprecated
@@ -152,5 +151,6 @@ int main()
         BOOST_TEST(parse("kimpo", x4::standard::string("kimpo"), s));
         BOOST_TEST(boost::fusion::at_c<0>(s) == "kimpo");
     }
+
     return boost::report_errors();
 }

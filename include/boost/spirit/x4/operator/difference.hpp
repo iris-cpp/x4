@@ -21,78 +21,78 @@
 
 namespace boost::spirit::x4 {
 
-    template <typename Left, typename Right>
-    struct difference : binary_parser<Left, Right, difference<Left, Right>>
+template <typename Left, typename Right>
+struct difference : binary_parser<Left, Right, difference<Left, Right>>
+{
+    using base_type = binary_parser<Left, Right, difference>;
+
+    static constexpr bool handles_container = Left::handles_container;
+
+    template <typename LeftT, typename RightT>
+        requires std::is_constructible_v<base_type, LeftT, RightT>
+    constexpr difference(LeftT&& left, RightT&& right)
+        noexcept(std::is_nothrow_constructible_v<base_type, LeftT, RightT>)
+        : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
+    {}
+
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
     {
-        using base_type = binary_parser<Left, Right, difference>;
-
-        static constexpr bool handles_container = Left::handles_container;
-
-        template <typename LeftT, typename RightT>
-            requires std::is_constructible_v<base_type, LeftT, RightT>
-        constexpr difference(LeftT&& left, RightT&& right)
-            noexcept(std::is_nothrow_constructible_v<base_type, LeftT, RightT>)
-            : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
-        {}
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+        // Try Right first
+        It start = first;
+        if (this->right.parse(first, last, context, unused))
         {
-            // Try Right first
-            It start = first;
-            if (this->right.parse(first, last, context, unused))
-            {
-                // Right succeeds, we fail.
-                first = start;
-                return false;
-            }
-
-            // In case of `Left - expect[r]`,
-            // if Right yielded expectation error,
-            // the whole difference expression (*this) should also yield error.
-            // In other words, when the THROW macro was 1 (i.e. traditional behavior),
-            // Right should already have thrown an exception.
-            if (x4::has_expectation_failure(context))
-            {
-                // don't rollback iterator (mimicking exception-like behavior)
-                return false;
-            }
-
-            // Right fails, now try Left
-            return this->left.parse(first, last, context, attr);
+            // Right succeeds, we fail.
+            first = start;
+            return false;
         }
-    };
 
-    template <X4Subject Left, X4Subject Right>
-    [[nodiscard]] constexpr difference<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
-    operator-(Left&& left, Right&& right)
-        noexcept(
-            is_parser_nothrow_castable_v<Left> &&
-            is_parser_nothrow_castable_v<Right> &&
-            std::is_nothrow_constructible_v<
-                difference<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
-                as_parser_t<Left>,
-                as_parser_t<Right>
-            >
-        )
-    {
-        return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
+        // In case of `Left - expect[r]`,
+        // if Right yielded expectation error,
+        // the whole difference expression (*this) should also yield error.
+        // In other words, when the THROW macro was 1 (i.e. traditional behavior),
+        // Right should already have thrown an exception.
+        if (x4::has_expectation_failure(context))
+        {
+            // don't rollback iterator (mimicking exception-like behavior)
+            return false;
+        }
+
+        // Right fails, now try Left
+        return this->left.parse(first, last, context, attr);
     }
+};
+
+template <X4Subject Left, X4Subject Right>
+[[nodiscard]] constexpr difference<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
+operator-(Left&& left, Right&& right)
+    noexcept(
+        is_parser_nothrow_castable_v<Left> &&
+        is_parser_nothrow_castable_v<Right> &&
+        std::is_nothrow_constructible_v<
+            difference<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
+            as_parser_t<Left>,
+            as_parser_t<Right>
+        >
+    )
+{
+    return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
+}
 
 } // boost::spirit::x4
 
 namespace boost::spirit::x4::traits {
 
-    template <typename Left, typename Right, typename Context>
-    struct attribute_of<x4::difference<Left, Right>, Context>
-        : attribute_of<Left, Context>
-    {};
+template <typename Left, typename Right, typename Context>
+struct attribute_of<x4::difference<Left, Right>, Context>
+    : attribute_of<Left, Context>
+{};
 
-    template <typename Left, typename Right, typename Context>
-    struct has_attribute<x4::difference<Left, Right>, Context>
-        : has_attribute<Left, Context>
-    {};
+template <typename Left, typename Right, typename Context>
+struct has_attribute<x4::difference<Left, Right>, Context>
+    : has_attribute<Left, Context>
+{};
 
 } // boost::spirit::x4::traits
 
