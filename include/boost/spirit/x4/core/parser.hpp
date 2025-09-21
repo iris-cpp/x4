@@ -96,7 +96,7 @@ struct parser : private detail::parser_base
             Action
         >)
     {
-        return { std::forward<Self>(self).derived(), std::forward<Action>(f) };
+        return {std::forward<Self>(self).derived(), std::forward<Action>(f)};
     }
 };
 

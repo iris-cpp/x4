@@ -52,7 +52,7 @@ template <typename Positive>
 operator~(char_parser<Positive> const& cp)
     noexcept(std::is_nothrow_constructible_v<negated_char_parser<Positive>, Positive const&>)
 {
-    return { cp.derived() };
+    return {cp.derived()};
 }
 
 template <typename Positive>

@@ -467,7 +467,7 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
             >
         )
     {
-        return { as_parser(std::forward<RHS>(rhs)), name };
+        return {as_parser(std::forward<RHS>(rhs)), name};
     }
 
     template <X4Subject RHS>
@@ -481,7 +481,7 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
             >
         )
     {
-        return { as_parser(std::forward<RHS>(rhs)), name };
+        return {as_parser(std::forward<RHS>(rhs)), name};
     }
 
     // When a rule placeholder constructed and immediately consumed it cannot be used recursively,
@@ -499,7 +499,7 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
             >
         )
     {
-        return { as_parser(std::forward<RHS>(rhs)), name };
+        return {as_parser(std::forward<RHS>(rhs)), name};
     }
 
     template <X4Subject RHS>
@@ -513,7 +513,7 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
             >
         )
     {
-        return { as_parser(std::forward<RHS>(rhs)), name };
+        return {as_parser(std::forward<RHS>(rhs)), name};
     }
 };
 

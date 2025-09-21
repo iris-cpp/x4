@@ -81,7 +81,7 @@ struct raw_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<raw_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return { as_parser(std::forward<Subject>(subject)) };
+        return {as_parser(std::forward<Subject>(subject))};
     }
 };
 
@@ -105,7 +105,7 @@ struct pseudo_attribute<Context, raw_attribute_type, It>
 
     [[nodiscard]] static constexpr type call(It& first, std::sentinel_for<It> auto const& last, raw_attribute_type)
     {
-        return { first, last };
+        return {first, last};
     }
 };
 

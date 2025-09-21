@@ -46,14 +46,14 @@ string(T&& string_like)
 [[nodiscard]] constexpr literal_char<char_encoding::standard, std::basic_string<char>>
 string(char ch) noexcept
 {
-    return { ch };
+    return {ch};
 }
 
 // Optimize `literal_string{"c"}` into `literal_char{'c'}`
 [[nodiscard]] constexpr literal_char<char_encoding::standard, std::basic_string<char>>
 string(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
 {
-    return { ch[0] };
+    return {ch[0]};
 }
 
 template <traits::CppStringLike<char> T>
@@ -92,14 +92,14 @@ string(T&& string_like)
 [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, std::basic_string<wchar_t>>
 string(wchar_t ch) noexcept
 {
-    return { ch };
+    return {ch};
 }
 
 // Optimize `literal_string{L"c"}` into `literal_char{L'c'}`
 [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, std::basic_string<wchar_t>>
 string(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
 {
-    return { ch[0] };
+    return {ch[0]};
 }
 
 template <traits::CppStringLike<wchar_t> T>
@@ -140,14 +140,14 @@ string(T&& string_like)
 [[nodiscard]] constexpr literal_char<char_encoding::unicode, std::basic_string<char32_t>>
 string(char32_t ch) noexcept
 {
-    return { ch };
+    return {ch};
 }
 
 // Optimize `literal_string{U"c"}` into `literal_char{U'c'}`
 [[nodiscard]] constexpr literal_char<char_encoding::unicode, std::basic_string<char32_t>>
 string(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
 {
-    return { ch[0] };
+    return {ch[0]};
 }
 
 template <traits::CppStringLike<char32_t> T>

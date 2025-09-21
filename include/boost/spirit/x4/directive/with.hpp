@@ -159,7 +159,7 @@ struct [[nodiscard]] with_gen
         )
     {
         // with rvalue `with_gen`, the held value can always be forwarded
-        return { as_parser(std::forward<Subject>(subject)), std::forward<T>(val) };
+        return {as_parser(std::forward<Subject>(subject)), std::forward<T>(val)};
     }
 
     template <X4Subject Subject>
@@ -181,7 +181,7 @@ struct [[nodiscard]] with_gen
             "If your type is move only, then apply `std::move` to your `x4::with<ID>(val)` "
             "instance."
         );
-        return { as_parser(std::forward<Subject>(subject)), val };
+        return {as_parser(std::forward<Subject>(subject)), val};
     }
 };
 
@@ -195,7 +195,7 @@ struct with_fn
             std::is_nothrow_move_constructible_v<T>
         )
     {
-        return { std::forward<T>(val) };
+        return {std::forward<T>(val)};
     }
 };
 

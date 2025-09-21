@@ -88,7 +88,7 @@ operator>>(Left&& left, Right&& right)
         >
     )
 {
-    return { as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)) };
+    return {as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right))};
 }
 
 template <X4Subject Left, X4Subject Right>

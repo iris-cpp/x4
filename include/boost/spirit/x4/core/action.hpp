@@ -222,7 +222,7 @@ operator/(Subject&& p, Action&& f)
         >
     )
 {
-    return { as_parser(std::forward<Subject>(p)), std::forward<Action>(f) };
+    return {as_parser(std::forward<Subject>(p)), std::forward<Action>(f)};
 }
 
 } // boost::spirit::x4

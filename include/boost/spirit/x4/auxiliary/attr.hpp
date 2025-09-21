@@ -80,7 +80,7 @@ struct attr_gen
     operator()(T&& value)
         noexcept(std::is_nothrow_constructible_v<attr_parser<std::remove_cvref_t<T>>, T>)
     {
-        return { std::forward<T>(value) };
+        return {std::forward<T>(value)};
     }
 
     template <traits::CharArray R>
@@ -88,7 +88,7 @@ struct attr_gen
     operator()(R&& value)
         noexcept(std::is_nothrow_constructible_v<attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>, R>)
     {
-        return { std::forward<R>(value) };
+        return {std::forward<R>(value)};
     }
 };
 

@@ -156,7 +156,7 @@ struct repeat_gen
                 >
             )
         {
-            return { as_parser(std::forward<Subject>(subject)), bounds };
+            return {as_parser(std::forward<Subject>(subject)), bounds};
         }
 
         Bounds bounds;
@@ -166,21 +166,21 @@ struct repeat_gen
     static constexpr repeat_gen_impl<exact_count<T>>
     operator()(T const exact) noexcept
     {
-        return { exact_count<T>{exact} };
+        return {exact_count<T>{exact}};
     }
 
     template <std::integral T>
     static constexpr repeat_gen_impl<finite_count<T>>
     operator()(T const min_val, T const max_val) noexcept
     {
-        return { finite_count<T>{min_val, max_val} };
+        return {finite_count<T>{min_val, max_val}};
     }
 
     template <std::integral T>
     static constexpr repeat_gen_impl<infinite_count<T>>
     operator()(T const min_val, repeat_inf_type const&) noexcept
     {
-        return { infinite_count<T>{min_val} };
+        return {infinite_count<T>{min_val}};
     }
 };
 

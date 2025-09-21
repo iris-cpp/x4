@@ -99,7 +99,7 @@ struct [[nodiscard]] confix_gen
             >
         )
     {
-        return { prefix, as_parser(std::forward<Subject>(subject)), postfix };
+        return {prefix, as_parser(std::forward<Subject>(subject)), postfix};
     }
 
     Prefix prefix;
@@ -120,7 +120,7 @@ struct confix_fn
             >
         )
     {
-        return { as_parser(std::forward<Prefix>(prefix)), as_parser(std::forward<Postfix>(postfix)) };
+        return {as_parser(std::forward<Prefix>(prefix)), as_parser(std::forward<Postfix>(postfix))};
     }
 };
 

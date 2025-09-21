@@ -66,7 +66,7 @@ struct no_case_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<no_case_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return { as_parser(std::forward<Subject>(subject)) };
+        return {as_parser(std::forward<Subject>(subject))};
     }
 };
 

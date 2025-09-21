@@ -91,7 +91,7 @@ struct no_skip_gen
     operator[](Subject&& subject) const // TODO: MSVC can't handle static operator[]
         noexcept(is_parser_nothrow_constructible_v<no_skip_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return { as_parser(std::forward<Subject>(subject)) };
+        return {as_parser(std::forward<Subject>(subject))};
     }
 };
 

@@ -34,38 +34,38 @@ struct any_char : char_parser<any_char<Encoding>>
     [[nodiscard]] static constexpr literal_char<Encoding>
     operator()(char_type ch) noexcept
     {
-        return { ch };
+        return {ch};
     }
 
     [[nodiscard]] static constexpr literal_char<Encoding>
     operator()(char_type const (&ch)[2]) noexcept
     {
-        return { ch[0] };
+        return {ch[0]};
     }
 
     template <std::size_t N>
     [[nodiscard]] static constexpr char_set<Encoding>
     operator()(char_type const (&ch)[N])
     {
-        return char_set<Encoding>{ ch };
+        return char_set<Encoding>{ch};
     }
 
     [[nodiscard]] static constexpr char_range<Encoding>
     operator()(char_type from, char_type to) noexcept
     {
-        return { from, to };
+        return {from, to};
     }
 
     [[nodiscard]] static constexpr char_range<Encoding>
     operator()(char_type const (&from)[2], char_type const (&to)[2]) noexcept
     {
-        return { static_cast<char_type>(from[0]), static_cast<char_type>(to[0]) };
+        return {static_cast<char_type>(from[0]), static_cast<char_type>(to[0])};
     }
 
     [[nodiscard]] static char_set<Encoding>
     operator()(std::basic_string_view<char_type> sv)
     {
-        return char_set<Encoding>{ std::move(sv) };
+        return char_set<Encoding>{std::move(sv)};
     }
 
     static constexpr void

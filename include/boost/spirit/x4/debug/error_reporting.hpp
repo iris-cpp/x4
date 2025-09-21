@@ -143,8 +143,8 @@ It error_handler<It>::get_line_start(It first, It pos) const
 template <std::forward_iterator It>
 std::size_t error_handler<It>::position(It i) const
 {
-    std::size_t line { 1 };
-    typename std::iterator_traits<It>::value_type prev { 0 };
+    std::size_t line {1};
+    typename std::iterator_traits<It>::value_type prev {0};
 
     for (It pos = pos_cache.first(); pos != i; ++pos) {
         auto c = *pos;

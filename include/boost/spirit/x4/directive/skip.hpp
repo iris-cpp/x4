@@ -139,7 +139,7 @@ struct skip_gen_impl
             >
         )
     {
-        return { as_parser(std::forward<Subject>(subject)), skipper_ };
+        return {as_parser(std::forward<Subject>(subject)), skipper_};
     }
 
 private:
@@ -157,7 +157,7 @@ struct skip_gen
             std::is_nothrow_constructible_v<skip_gen_impl<as_parser_t<Skipper>>, as_parser_t<Skipper>>
         )
     {
-        return { as_parser(std::forward<Skipper>(skipper)) };
+        return {as_parser(std::forward<Skipper>(skipper))};
     }
 
     template <typename Subject>
@@ -166,7 +166,7 @@ struct skip_gen
     operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode
         noexcept(is_parser_nothrow_constructible_v<reskip_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return { as_parser(std::forward<Subject>(subject)) };
+        return {as_parser(std::forward<Subject>(subject))};
     }
 };
 
@@ -178,7 +178,7 @@ struct reskip_gen
     operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode
         noexcept(is_parser_nothrow_constructible_v<reskip_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return { as_parser(std::forward<Subject>(subject)) };
+        return {as_parser(std::forward<Subject>(subject))};
     }
 };
 

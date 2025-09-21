@@ -57,7 +57,7 @@ template <X4Subject Subject>
 operator*(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<kleene<as_parser_plain_t<Subject>>, Subject>)
 {
-    return { as_parser(std::forward<Subject>(subject)) };
+    return {as_parser(std::forward<Subject>(subject))};
 }
 
 } // boost::spirit::x4

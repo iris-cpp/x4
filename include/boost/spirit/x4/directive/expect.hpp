@@ -61,7 +61,7 @@ struct expect_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<expect_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return { as_parser(std::forward<Subject>(subject)) };
+        return {as_parser(std::forward<Subject>(subject))};
     }
 };
 

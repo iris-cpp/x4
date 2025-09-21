@@ -34,13 +34,13 @@ inline namespace helpers {
 [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
 lit(char ch) noexcept
 {
-    return { ch };
+    return {ch};
 }
 
 [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
 lit(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
 {
-    return { ch[0] };
+    return {ch[0]};
 }
 
 } // helpers
@@ -69,13 +69,13 @@ inline namespace helpers {
 [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
 lit(wchar_t ch) noexcept
 {
-    return { ch };
+    return {ch};
 }
 
 [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
 lit(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
 {
-    return { ch[0] };
+    return {ch[0]};
 }
 
 } // helpers
@@ -101,13 +101,13 @@ inline namespace helpers {
 [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
 lit(char32_t ch) noexcept
 {
-    return { ch };
+    return {ch};
 }
 
 [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
 lit(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
 {
-    return { ch[0] };
+    return {ch[0]};
 }
 
 } // helpers
@@ -132,7 +132,7 @@ struct as_parser<char>
 
     [[nodiscard]] static constexpr type call(char ch) noexcept
     {
-        return { ch };
+        return {ch};
     }
 };
 
@@ -145,7 +145,7 @@ struct as_parser<wchar_t>
 
     [[nodiscard]] static constexpr type call(wchar_t ch) noexcept
     {
-        return { ch };
+        return {ch};
     }
 };
 #endif
@@ -158,7 +158,7 @@ struct as_parser<char [2]>
 
     [[nodiscard]] static constexpr type call(char const ch[]) noexcept
     {
-        return { ch[0] };
+        return {ch[0]};
     }
 };
 
@@ -171,7 +171,7 @@ struct as_parser<wchar_t [2]>
 
     [[nodiscard]] static constexpr type call(wchar_t const ch[]) noexcept
     {
-        return { ch[0] };
+        return {ch[0]};
     }
 };
 #endif // BOOST_SPIRIT_X4_NO_STANDARD_WIDE

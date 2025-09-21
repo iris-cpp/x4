@@ -108,7 +108,7 @@ struct eps_parser : parser<eps_parser>
     [[nodiscard]] static constexpr semantic_predicate
     operator()(bool predicate) noexcept
     {
-        return semantic_predicate{ predicate };
+        return semantic_predicate{predicate};
     }
 
     template <typename F>
@@ -116,7 +116,7 @@ struct eps_parser : parser<eps_parser>
     operator()(F&& f)
         noexcept(std::is_nothrow_constructible_v<lazy_semantic_predicate<std::remove_cvref_t<F>>, F>)
     {
-        return lazy_semantic_predicate<std::remove_cvref_t<F>>{ std::forward<F>(f) };
+        return lazy_semantic_predicate<std::remove_cvref_t<F>>{std::forward<F>(f)};
     }
 };
 
