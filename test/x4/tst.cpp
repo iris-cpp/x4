@@ -71,7 +71,7 @@ void print(TST const& tst)
 x4::case_compare<x4::char_encoding::standard> ncomp;
 x4::case_compare<x4::char_encoding::standard_wide> wcomp;
 x4::no_case_compare<x4::char_encoding::standard> nc_ncomp;
-x4::no_case_compare<x4::char_encoding::standard_wide> nc_wcomp;
+//x4::no_case_compare<x4::char_encoding::standard_wide> nc_wcomp;
 
 template<class Lookup, class WideLookup>
 void tests()

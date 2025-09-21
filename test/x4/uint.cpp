@@ -22,8 +22,8 @@
 namespace {
 
 //
-// BEWARE PLATFORM DEPENDENT!!! ***
-// The following assumes 32 bit integers and 64 bit long longs.
+// BEWARE PLATFORM DEPENDENT!!!
+// The following assumes 32-bit integers and 64-bit long longs.
 // Modify these constant strings when appropriate.
 //
 
@@ -47,8 +47,8 @@ struct custom_uint
     custom_uint() : n(0) {}
     explicit custom_uint(unsigned n_) : n(n_) {}
     custom_uint& operator=(unsigned n_) { n = n_; return *this; }
-    friend bool operator==(custom_uint a, custom_uint b) { return a.n == b.n; }
-    friend bool operator==(custom_uint a, unsigned b) { return a.n == b; }
+    //friend bool operator==(custom_uint a, custom_uint b) { return a.n == b.n; }
+    //friend bool operator==(custom_uint a, unsigned b) { return a.n == b; }
     friend custom_uint operator*(custom_uint a, custom_uint b) { return custom_uint(a.n * b.n); }
     friend custom_uint operator+(custom_uint a, custom_uint b) { return custom_uint(a.n + b.n); }
 };
