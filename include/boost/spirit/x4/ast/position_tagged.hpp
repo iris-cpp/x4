@@ -12,8 +12,8 @@
 #include <concepts>
 #include <ranges>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct position_tagged
     {
         // Use this to annotate an AST with the iterator position.

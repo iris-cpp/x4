@@ -28,12 +28,12 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
-    namespace standard
-    {
-        inline namespace helpers
-        {
+namespace boost::spirit::x4 {
+
+    namespace standard {
+
+        inline namespace helpers {
+
             template <traits::CppStringLike<char> T>
             [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::standard>
             string(T&& string_like)
@@ -74,10 +74,10 @@ namespace boost::spirit::x4
     using standard::helpers::lit;
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    namespace standard_wide
-    {
-        inline namespace helpers
-        {
+    namespace standard_wide {
+
+        inline namespace helpers {
+
             template <traits::CppStringLike<wchar_t> T>
             [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::standard_wide>
             string(T&& string_like)
@@ -119,10 +119,10 @@ namespace boost::spirit::x4
 #endif
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
-    namespace unicode
-    {
-        inline namespace helpers
-        {
+    namespace unicode {
+
+        inline namespace helpers {
+
             // TODO: add `char8_t` and `char16_t` overloads
             template <traits::CppStringLike<char32_t> T>
             [[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::unicode>
@@ -164,8 +164,8 @@ namespace boost::spirit::x4
     using unicode::helpers::lit;
 #endif
 
-    namespace extension
-    {
+    namespace extension {
+
         template <traits::CharLike CharT, std::size_t N>
         struct as_parser<CharT[N]>
         {

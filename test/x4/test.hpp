@@ -29,10 +29,10 @@ namespace x4 = boost::spirit::x4;
 using x4::unused_type;
 using x4::unused;
 
-namespace spirit_test
-{
-    namespace detail
-    {
+namespace spirit_test {
+
+    namespace detail {
+
         // Provide `x4::unused` default arg fallback
         struct parse_overloads : x4::detail::parse_fn_main
         {
@@ -113,8 +113,8 @@ namespace spirit_test
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::parse_overloads parse{};
 
     } // cpos

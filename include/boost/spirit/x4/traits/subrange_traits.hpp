@@ -13,8 +13,8 @@
 #include <ranges>
 #include <type_traits>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename T>
     struct is_subrange : std::false_type {};
 

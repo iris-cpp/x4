@@ -14,8 +14,8 @@
 #include <string>
 #include <string_view>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     using ucs4_char = char32_t;
     using utf8_char = char;
     using ucs4_string = std::basic_string<ucs4_char>;

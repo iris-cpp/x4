@@ -46,10 +46,10 @@
     "represent this trait, so the usage of the old API is strongly " \
     "discouraged."
 
-namespace boost::spirit::x4
-{
-namespace detail
-{
+namespace boost::spirit::x4 {
+
+namespace detail {
+
     template <typename Derived, bool IsShared, typename Encoding, typename T, typename Lookup>
     struct symbols_parser_impl : parser<Derived>
     {
@@ -383,8 +383,8 @@ namespace detail
         }
     };
 
-    namespace standard
-    {
+    namespace standard {
+
         template <typename T = unused_type>
         using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
             = shared_symbols_parser<char_encoding::standard, T>;
@@ -401,8 +401,8 @@ namespace detail
     using standard::unique_symbols;
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    namespace standard_wide
-    {
+    namespace standard_wide {
+
         template <typename T = unused_type>
         using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
             = shared_symbols_parser<char_encoding::standard_wide, T>;

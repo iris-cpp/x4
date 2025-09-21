@@ -18,8 +18,8 @@
 #include <string>
 #include <utility>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // This file contains low level TST routines, not for
     // public consumption.
 

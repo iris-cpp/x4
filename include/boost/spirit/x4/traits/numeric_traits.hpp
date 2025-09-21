@@ -12,8 +12,8 @@
 #include <limits>
 #include <type_traits>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     // Customization points for numeric operations
 
     template <typename T>

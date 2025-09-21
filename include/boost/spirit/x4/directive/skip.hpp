@@ -21,8 +21,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject>
     struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
     {
@@ -108,8 +108,8 @@ namespace boost::spirit::x4
         Skipper skipper_;
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         template <X4Subject Skipper>
         struct skip_gen_impl
         {
@@ -183,8 +183,8 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::skip_gen skip{};
         inline constexpr detail::reskip_gen reskip{};
     }

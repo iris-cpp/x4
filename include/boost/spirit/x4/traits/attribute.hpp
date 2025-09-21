@@ -17,8 +17,8 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     // Retrieve the attribute type to use from the given type.
     // This is needed to extract the correct attribute type from proxy classes
     // as utilized in `FUSION_ADAPT_ADT` et al.
@@ -130,8 +130,8 @@ namespace boost::spirit::x4::traits
 
 } // boost::spirit::x4::traits
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     template <typename... T>
     struct type_sequence
     {

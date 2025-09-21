@@ -24,8 +24,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject>
     struct optional : unary_parser<Subject, optional<Subject>>
     {
@@ -108,8 +108,8 @@ namespace boost::spirit::x4
     }
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Subject, typename Context>
     struct attribute_of<x4::optional<Subject>, Context>
         : build_optional<attribute_of_t<Subject, Context>>

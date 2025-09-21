@@ -16,8 +16,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // `omit_directive` forces the attribute of subject parser
     // to be `unused_type`
     template <typename Subject>
@@ -48,8 +48,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct omit_gen
         {
             template <X4Subject Subject>
@@ -62,8 +62,8 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         [[maybe_unused]] inline constexpr detail::omit_gen omit{};
     }
 } // boost::spirit::x4

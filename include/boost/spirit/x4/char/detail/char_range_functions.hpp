@@ -14,8 +14,8 @@
 #include <limits>
 #include <concepts>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     template <typename CharT>
     [[nodiscard]] constexpr bool
     is_valid(char_range<CharT> const& range) noexcept

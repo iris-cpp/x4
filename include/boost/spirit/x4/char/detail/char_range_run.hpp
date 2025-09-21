@@ -18,8 +18,8 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // An implementation of a sparse bit (boolean) set. The set uses
     // a sorted vector of disjoint ranges. This class implements the
     // bare minimum essentials from which the full range of set

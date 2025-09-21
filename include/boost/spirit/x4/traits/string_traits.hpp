@@ -32,8 +32,8 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x4::char_encoding
-{
+namespace boost::spirit::x4::char_encoding {
+
     struct standard;
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
@@ -45,8 +45,8 @@ namespace boost::spirit::x4::char_encoding
 #endif
 } // boost::spirit::x4::char_encoding
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename T>
     concept CharLike =
         std::same_as<std::remove_cvref_t<T>, char> ||

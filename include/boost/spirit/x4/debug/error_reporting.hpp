@@ -17,8 +17,8 @@
 
 // Clang-style error handling utilities
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // tag used to get our error handler from the context
     struct error_handler_tag;
 

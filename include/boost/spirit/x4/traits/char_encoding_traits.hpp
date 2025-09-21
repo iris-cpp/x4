@@ -18,10 +18,10 @@
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x4::traits
-{
-    namespace detail
-    {
+namespace boost::spirit::x4::traits {
+
+    namespace detail {
+
         template <typename Encoding>
         struct char_encoding_traits_impl
         {

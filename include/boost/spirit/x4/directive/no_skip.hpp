@@ -19,8 +19,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Same as `lexeme[...]`, but does not pre-skip
     template <typename Subject>
     struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
@@ -82,8 +82,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct no_skip_gen
         {
             template <X4Subject Subject>
@@ -97,8 +97,8 @@ namespace boost::spirit::x4
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::no_skip_gen no_skip{};
 
     } // cpos

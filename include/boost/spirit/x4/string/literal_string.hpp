@@ -23,8 +23,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename String, typename Encoding, typename Attribute = std::basic_string<typename Encoding::char_type>>
     struct literal_string : parser<literal_string<String, Encoding, Attribute>>
     {

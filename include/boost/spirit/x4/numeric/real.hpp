@@ -24,8 +24,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Default unsigned real number policies
     template <typename T>
     struct ureal_policies
@@ -234,8 +234,8 @@ namespace boost::spirit::x4
         BOOST_SPIRIT_NO_UNIQUE_ADDRESS RealPolicies policies_{};
     };
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         using float_type = real_parser<float>;
         inline constexpr float_type float_{};
 

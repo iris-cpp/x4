@@ -19,13 +19,13 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x4::unicode
-{
+namespace boost::spirit::x4::unicode {
+
     // This header provides Basic (Level 1) Unicode Support
     // See http://unicode.org/reports/tr18/ for details
 
-    namespace properties
-    {
+    namespace properties {
+
         // bit pattern: xxMMMCCC
         // MMM: major_category
         // CCC: category

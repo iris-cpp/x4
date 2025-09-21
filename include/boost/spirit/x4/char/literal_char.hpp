@@ -16,8 +16,8 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Encoding, typename Attribute = typename Encoding::char_type>
     struct literal_char : char_parser<literal_char<Encoding, Attribute>>
     {

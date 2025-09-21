@@ -18,8 +18,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct semantic_predicate : parser<semantic_predicate>
     {
         using attribute_type = unused_type;
@@ -120,8 +120,8 @@ namespace boost::spirit::x4
         }
     };
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         [[maybe_unused]] inline constexpr eps_parser eps{};
 
     } // cpos

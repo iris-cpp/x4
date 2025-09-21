@@ -26,8 +26,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     enum class root_skipper_flag : char
     {
         do_post_skip, // force post-skipping
@@ -41,8 +41,8 @@ namespace boost::spirit::x4
     // --------------------------------------------
     // Default parse context
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename ItOrRange>
         struct parse_context_for_impl;
 
@@ -93,8 +93,8 @@ namespace boost::spirit::x4
     using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename Parser, typename R>
         concept X4RangeParseParser =
             X4Parser<
@@ -392,8 +392,8 @@ namespace boost::spirit::x4
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::parse_fn parse{};
 
         [[maybe_unused, deprecated("Use `parse(...)`. Spirit can now dispatch overloads correctly.")]]

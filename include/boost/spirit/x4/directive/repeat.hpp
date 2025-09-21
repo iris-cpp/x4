@@ -21,8 +21,8 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     template <std::integral T>
     struct exact_count // handles repeat(exact)[p]
     {
@@ -55,10 +55,10 @@ namespace boost::spirit::x4::detail
     };
 } // boost::spirit::x4::detail
 
-namespace boost::spirit::x4
-{
-    namespace detail
-    {
+namespace boost::spirit::x4 {
+
+    namespace detail {
+
         template <typename Bounds>
         concept RepeatBounds = requires(std::remove_cvref_t<Bounds> const& bounds) {
             typename std::remove_cvref_t<Bounds>::value_type;
@@ -114,8 +114,8 @@ namespace boost::spirit::x4
         Bounds bounds_;
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         // Infinite loop tag type
         struct repeat_inf_type
         {
@@ -123,8 +123,8 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         // Infinite loop tag type
         [[deprecated("Use `x4::repeat_inf`")]]
         inline constexpr detail::repeat_inf_type inf{};
@@ -133,8 +133,8 @@ namespace boost::spirit::x4
         inline constexpr detail::repeat_inf_type repeat_inf{};
     }
 
-    namespace detail
-    {
+    namespace detail {
+
         struct repeat_gen
         {
             template <X4Subject Subject>
@@ -189,15 +189,15 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::repeat_gen repeat{};
     }
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Subject, typename Bounds, typename Context>
     struct attribute_of<x4::repeat_directive<Subject, Bounds>, Context>
         : build_container<attribute_of_t<Subject, Context>>

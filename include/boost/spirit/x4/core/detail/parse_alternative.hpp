@@ -24,14 +24,14 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Left, typename Right>
     struct alternative;
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     struct pass_variant_unused
     {
         using type = unused_type;

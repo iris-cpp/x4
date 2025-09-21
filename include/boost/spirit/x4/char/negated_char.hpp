@@ -15,8 +15,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
     template <typename Positive>
     struct negated_char_parser : char_parser<negated_char_parser<Positive>>
@@ -64,8 +64,8 @@ namespace boost::spirit::x4
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Positive, typename Context>
     struct attribute_of<negated_char_parser<Positive>, Context>
         : attribute_of<Positive, Context>

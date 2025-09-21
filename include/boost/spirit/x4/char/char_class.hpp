@@ -21,8 +21,8 @@
 # include <boost/spirit/x4/char_encoding/standard_wide.hpp>
 #endif
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Encoding>
     struct char_class_base
     {

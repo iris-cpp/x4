@@ -25,8 +25,8 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Identical types ---------------------------------------
     //
     // Note that these overloads must be strictly "more constrained"

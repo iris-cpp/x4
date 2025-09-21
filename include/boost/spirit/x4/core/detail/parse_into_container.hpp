@@ -31,8 +31,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     template <typename Attribute, typename Value>
     struct saver_visitor;
 

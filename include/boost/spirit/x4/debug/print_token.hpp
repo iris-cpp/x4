@@ -15,10 +15,10 @@
 
 #include <cctype>
 
-namespace boost::spirit::x4::traits
-{
-    namespace detail
-    {
+namespace boost::spirit::x4::traits {
+
+    namespace detail {
+
         // generate debug output for lookahead token (character) stream
         struct token_printer_debug_for_chars
         {

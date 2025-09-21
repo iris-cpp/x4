@@ -16,8 +16,8 @@
 
 #include <iterator>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct eol_parser : parser<eol_parser>
     {
         using attribute_type = unused_type;
@@ -58,8 +58,8 @@ namespace boost::spirit::x4
         [[nodiscard]] result_type operator()(eol_parser const &) const { return "eol"; }
     };
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr eol_parser eol{};
 
     } // cpos

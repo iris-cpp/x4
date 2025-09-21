@@ -38,15 +38,15 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename RuleID, typename Attribute = unused_type, bool ForceAttribute = false>
     struct rule;
 
     struct parse_pass_context_tag;
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename RuleID>
         struct rule_id
         {
@@ -517,8 +517,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct rule_get_info
         {
             using result_type = std::string;
@@ -606,8 +606,8 @@ namespace boost::spirit::x4
 
 // -------------------------------------------------------------
 
-    namespace detail
-    {
+    namespace detail {
+
         // New API
         template <typename RuleT, std::forward_iterator It, typename A, typename B = void>
         struct instantiate_macro_helper

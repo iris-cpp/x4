@@ -25,8 +25,8 @@
 #include <cstdint>
 #include <climits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename T, boost::endian::order endian, std::size_t bits>
     struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
     {
@@ -113,8 +113,8 @@ namespace boost::spirit::x4
         }
     };
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
     #define BOOST_SPIRIT_X4_BINARY_PARSER(name, endiantype, attrtype, bits) \
         using name##type = any_binary_parser<attrtype, boost::endian::order::endiantype, bits>; \
         inline constexpr name##type name{};

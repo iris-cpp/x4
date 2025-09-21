@@ -12,8 +12,8 @@
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/context.hpp>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct parse_pass_context_tag; // _pass
 
     // _val
@@ -25,8 +25,8 @@ namespace boost::spirit::x4
     struct where_context_tag; // _where
     struct attr_context_tag; // _attr
 
-    namespace detail
-    {
+    namespace detail {
+
         struct _pass_fn
         {
             template <typename Context>
@@ -81,8 +81,8 @@ namespace boost::spirit::x4
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::_pass_fn _pass{};
         inline constexpr detail::_val_fn _val{};
         inline constexpr detail::_where_fn _where{};

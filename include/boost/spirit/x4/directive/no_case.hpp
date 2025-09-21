@@ -18,8 +18,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // propagate no_case information through the context
     template <typename Subject>
     struct no_case_directive : unary_parser<Subject, no_case_directive<Subject>>
@@ -57,8 +57,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct no_case_gen
         {
             template <X4Subject Subject>
@@ -72,8 +72,8 @@ namespace boost::spirit::x4
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::no_case_gen no_case{};
 
     } // cpos

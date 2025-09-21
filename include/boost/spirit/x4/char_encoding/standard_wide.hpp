@@ -16,8 +16,8 @@
 #include <cstdint>
 #include <cwctype>
 
-namespace boost::spirit::x4::char_encoding
-{
+namespace boost::spirit::x4::char_encoding {
+
     // Test characters for specified conditions (using std wchar_t functions)
 
     struct standard_wide

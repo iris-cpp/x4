@@ -14,8 +14,8 @@
 #include <string_view>
 #include <iterator>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
     [[nodiscard]] constexpr bool
     string_parse(

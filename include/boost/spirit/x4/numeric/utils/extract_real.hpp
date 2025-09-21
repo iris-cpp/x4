@@ -28,8 +28,8 @@
 # pragma warning(disable: 4100)   // 'p': unreferenced formal parameter
 #endif
 
-namespace boost::spirit::x4::extension
-{
+namespace boost::spirit::x4::extension {
+
     template <typename T>
     [[nodiscard]] constexpr bool
     scale(int exp, T& n)
@@ -132,8 +132,8 @@ namespace boost::spirit::x4::extension
     }
 } // boost::spirit::x4::extension
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename T, typename RealPolicies>
     struct extract_real
     {

@@ -25,13 +25,13 @@
 #include <typeinfo>
 #endif
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject, typename Action>
     struct action;
 
-    namespace detail
-    {
+    namespace detail {
+
         struct parser_base {};
         struct parser_id;
 
@@ -144,8 +144,8 @@ namespace boost::spirit::x4
     };
 
     // as_parser: convert a type, T, into a parser.
-    namespace extension
-    {
+    namespace extension {
+
         // In short: if you want to customize the `as_parser(p)` behavior, just
         // specialize `x4::extension::as_parser` for your class.
         //
@@ -209,8 +209,8 @@ namespace boost::spirit::x4
         };
     }
 
-    namespace detail
-    {
+    namespace detail {
+
         struct as_parser_fn
         {
             template <typename T>
@@ -258,8 +258,8 @@ namespace boost::spirit::x4
         }; // as_parser_fn
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::as_parser_fn as_parser{};
     } // cpos
 
@@ -506,8 +506,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         // "what" is an extremely common identifier that can be defined in many user-specific
         // namespaces. We should avoid ADL usage for such generic names in the first place.
         // (Note: CPO inhibits ADL in general.)
@@ -521,15 +521,15 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::what_fn what{}; // no ADL
     } // cpos
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Subject, typename Derived, typename Context>
     struct has_attribute<unary_parser<Subject, Derived>, Context>
         : has_attribute<Subject, Context> {};

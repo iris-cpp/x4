@@ -13,8 +13,8 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // Here's the thing... typical encodings (except ASCII) deal with unsigned
     // integers > 127 (ASCII uses only 127). Yet, most char and wchar_t are signed.
     // Thus, a char with value > 127 is negative (e.g. char 233 is -23). When you

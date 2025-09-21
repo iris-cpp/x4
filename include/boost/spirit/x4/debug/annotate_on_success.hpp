@@ -15,8 +15,8 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct error_handler_tag;
 
     //  The on_success handler tags the AST with the iterator position

@@ -15,8 +15,8 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     // Note that these metafunctions MUST be explicitly derived from `std::bool_constant`,
     // because they are used for tag dispatch in some locations.
     // Beware that `std::conjunction` / `std::disjunction` is not guaranteed to derive

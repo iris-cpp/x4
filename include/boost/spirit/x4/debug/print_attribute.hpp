@@ -22,13 +22,13 @@
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Out, typename T>
     void print_attribute(Out& out, T const& val);
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename Out>
         struct print_fusion_sequence
         {

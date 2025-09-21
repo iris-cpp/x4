@@ -15,8 +15,8 @@
 #include <cctype>
 #include <climits>
 
-namespace boost::spirit::x4::char_encoding
-{
+namespace boost::spirit::x4::char_encoding {
+
     // Test characters for specified conditions (using std functions)
     struct standard
     {

@@ -17,8 +17,8 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Transformed, typename Exposed>
     struct transform_attribute
     {

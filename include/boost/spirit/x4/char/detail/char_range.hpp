@@ -12,8 +12,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // A closed range [first, last]
     template <typename CharT>
     struct char_range

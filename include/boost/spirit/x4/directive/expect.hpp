@@ -18,8 +18,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject>
     struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
     {
@@ -52,8 +52,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct expect_gen
         {
             template <X4Subject Subject>
@@ -66,15 +66,15 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::expect_gen expect{};
     } // cpos
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // Special case handling for expect expressions.
     template <typename Subject, typename Context>
     struct parse_into_container_impl<expect_directive<Subject>, Context>

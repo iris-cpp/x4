@@ -19,12 +19,12 @@
 #include <cfloat>
 #include <cmath>
 
-namespace boost::spirit::x4::traits
-{
-    namespace detail
-    {
-        namespace pow10_helper_impl
-        {
+namespace boost::spirit::x4::traits {
+
+    namespace detail {
+
+        namespace pow10_helper_impl {
+
             using namespace std; // fallback
 
             template <typename T>

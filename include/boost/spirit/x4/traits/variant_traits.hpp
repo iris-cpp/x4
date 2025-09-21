@@ -23,8 +23,8 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     // TODO: define a legit concept for determining variant-like types
 
     template <typename T>
@@ -90,8 +90,8 @@ namespace boost::spirit::x4::traits
     };
 
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename Variant, typename T>
         struct variant_has_substitute_impl
         {

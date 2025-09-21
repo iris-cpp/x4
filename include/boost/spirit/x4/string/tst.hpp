@@ -21,8 +21,8 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct tst_pass_through
     {
         template <typename Char>

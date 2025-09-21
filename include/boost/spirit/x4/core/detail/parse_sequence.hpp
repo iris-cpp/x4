@@ -29,14 +29,14 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Left, typename Right>
     struct sequence;
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     template <typename Parser, typename Context>
     struct sequence_size
     {

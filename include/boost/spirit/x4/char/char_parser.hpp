@@ -15,8 +15,8 @@
 
 #include <iterator>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Derived>
     struct char_parser : parser<Derived>
     {

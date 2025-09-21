@@ -23,8 +23,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     // Customization point
     template <typename T>
     struct is_associative : std::false_type
@@ -47,8 +47,8 @@ namespace boost::spirit::x4::traits
     constexpr bool is_associative_v = is_associative<T>::value;
 
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename T>
         struct remove_value_const
         {
@@ -133,8 +133,8 @@ namespace boost::spirit::x4::traits
     template <typename Container>
     struct push_back_container; // not defined
 
-    namespace detail
-    {
+    namespace detail {
+
         struct push_back_fn
         {
             template <typename Container>
@@ -180,8 +180,8 @@ namespace boost::spirit::x4::traits
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::push_back_fn push_back{};
     } // cpos
 
@@ -190,8 +190,8 @@ namespace boost::spirit::x4::traits
     template <typename Container>
     struct append_container; // not defined
 
-    namespace detail
-    {
+    namespace detail {
+
         struct append_fn
         {
             template <typename Container, std::forward_iterator It, std::sentinel_for<It> Se>
@@ -233,8 +233,8 @@ namespace boost::spirit::x4::traits
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::append_fn append{};
     } // cpos
 
@@ -243,8 +243,8 @@ namespace boost::spirit::x4::traits
     template <typename Container>
     struct is_empty_container; // not defined
 
-    namespace detail
-    {
+    namespace detail {
+
         struct is_empty_fn
         {
             template <typename Container>
@@ -275,8 +275,8 @@ namespace boost::spirit::x4::traits
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::is_empty_fn is_empty{};
     } // cpos
 
@@ -285,8 +285,8 @@ namespace boost::spirit::x4::traits
     template <typename Container>
     struct begin_container; // not defined
 
-    namespace detail
-    {
+    namespace detail {
+
         struct begin_fn
         {
             template <typename Container>
@@ -315,8 +315,8 @@ namespace boost::spirit::x4::traits
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::begin_fn begin{};
     } // cpos
 
@@ -324,8 +324,8 @@ namespace boost::spirit::x4::traits
     template <typename Container>
     struct end_container; // not defined
 
-    namespace detail
-    {
+    namespace detail {
+
         struct end_fn
         {
             template <typename Container>
@@ -354,8 +354,8 @@ namespace boost::spirit::x4::traits
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::end_fn end{};
     } // cpos
 

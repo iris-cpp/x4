@@ -23,8 +23,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Left, typename Right>
     struct list : binary_parser<Left, Right, list<Left, Right>>
     {
@@ -85,8 +85,8 @@ namespace boost::spirit::x4
     }
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Left, typename Right, typename Context>
     struct attribute_of<x4::list<Left, Right>, Context>
         : traits::build_container<attribute_of_t<Left, Context>>

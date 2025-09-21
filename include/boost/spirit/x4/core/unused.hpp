@@ -14,8 +14,8 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename ID, typename T, typename Next>
     struct context;
 
@@ -43,8 +43,8 @@ namespace boost::spirit::x4
         constexpr explicit unused_container_type() noexcept = default;
     };
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr unused_type unused{};
         inline constexpr unused_container_type unused_container{};
     } // cpos

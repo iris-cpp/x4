@@ -20,8 +20,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Pseudo attribute type indicating that the parser wants the
     // iterator range pointing to the [first, last) matching characters from
     // the input iterators.
@@ -72,8 +72,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct raw_gen
         {
             template <X4Subject Subject>
@@ -86,13 +86,13 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::raw_gen raw{};
     }
 
-    namespace traits
-    {
+    namespace traits {
+
         template <typename Context, std::forward_iterator It>
         struct pseudo_attribute<Context, raw_attribute_type, It>
         {

@@ -23,8 +23,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename T>
     struct attr_parser : parser<attr_parser<T>>
     {
@@ -71,8 +71,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct attr_gen
         {
             template <typename T>
@@ -94,8 +94,8 @@ namespace boost::spirit::x4
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::attr_gen attr{};
 
     } // cpos

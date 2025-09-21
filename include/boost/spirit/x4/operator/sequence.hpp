@@ -24,8 +24,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Left, typename Right>
     struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
     {
@@ -115,8 +115,8 @@ namespace boost::spirit::x4
     }
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Left, typename Right, typename Context>
     struct attribute_of<x4::sequence<Left, Right>, Context>
         : x4::detail::attribute_of_binary<fusion::deque, x4::sequence, Left, Right, Context> {};

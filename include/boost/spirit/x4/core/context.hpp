@@ -18,13 +18,13 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename ID, typename T, typename Next>
     struct context;
 
-    namespace detail
-    {
+    namespace detail {
+
         struct monostate_context_tag;
         using monostate_context = context<monostate_context_tag, void, unused_type>;
 
@@ -95,8 +95,8 @@ namespace boost::spirit::x4
     template <typename ID>
     concept UniqueContextID = !requires { ID::is_unique; } || requires { requires ID::is_unique; };
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename ID, typename Next>
         concept HasNoDuplicateContext = !UniqueContextID<ID> || !has_context_v<Next, ID>;
 

@@ -19,8 +19,8 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Tag used to find the skipper from the context
     struct skipper_tag
     {
@@ -47,8 +47,8 @@ namespace boost::spirit::x4
         x4::get<skipper_tag>(std::declval<Context const&>())
     )>>;
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename Skipper>
         struct is_unused_skipper : std::false_type
         {

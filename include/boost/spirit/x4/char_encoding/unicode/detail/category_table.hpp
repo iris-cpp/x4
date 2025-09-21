@@ -9,8 +9,8 @@
 ==============================================================================*/
 #include <cstdint>
 
-namespace boost::spirit::x4::unicode::detail
-{
+namespace boost::spirit::x4::unicode::detail {
+
     inline constexpr std::uint8_t category_stage1[] = {
 
       0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,

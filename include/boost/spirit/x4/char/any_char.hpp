@@ -13,8 +13,8 @@
 #include <boost/spirit/x4/char/char_set.hpp>
 #include <boost/spirit/x4/traits/string_traits.hpp>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Encoding>
     struct any_char : char_parser<any_char<Encoding>>
     {

@@ -36,8 +36,8 @@
 # define BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL 3
 #endif
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // The maximum radix digits that can be represented without
     // overflow:
     //
@@ -455,10 +455,10 @@ namespace boost::spirit::x4::detail
 
 } // detail
 
-namespace boost::spirit::x4
-{
-    namespace detail
-    {
+namespace boost::spirit::x4 {
+
+    namespace detail {
+
         //  Extract the prefix sign (- or +), return true if a '-' was found
         template <std::forward_iterator It, std::sentinel_for<It> Se>
         [[nodiscard]] constexpr bool

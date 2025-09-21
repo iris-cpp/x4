@@ -23,8 +23,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject>
     struct kleene : unary_parser<Subject, kleene<Subject>>
     {
@@ -61,8 +61,8 @@ namespace boost::spirit::x4
     }
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Subject, typename Context>
     struct attribute_of<x4::kleene<Subject>, Context>
         : build_container<attribute_of_t<Subject, Context>> {};

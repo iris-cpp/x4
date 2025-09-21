@@ -15,13 +15,13 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject, typename ID, typename T>
     struct with_directive;
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename Subject, typename ID, typename T>
         struct with_directive_impl
             : unary_parser<Subject, with_directive<Subject, ID, T>>
@@ -137,8 +137,8 @@ namespace boost::spirit::x4
         using base_type::val_;
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename ID, typename T>
         struct [[nodiscard]] with_gen
         {
@@ -199,8 +199,8 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         // `with` directive injects a value into the context prior to parsing.
         // Holds lvalue references by reference, holds rvalue reference by value.
         template <typename ID>

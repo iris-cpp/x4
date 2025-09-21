@@ -9,8 +9,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct char_tag {};
     struct alnum_tag {};
     struct alpha_tag {};

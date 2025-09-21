@@ -20,8 +20,8 @@
 
 struct x_attr {};
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <>
     struct container_value<x_attr>
     {

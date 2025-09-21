@@ -19,8 +19,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template<typename Prefix, typename Subject, typename Postfix>
     struct confix_directive :
         unary_parser<Subject, confix_directive<Prefix, Subject, Postfix>>
@@ -81,8 +81,8 @@ namespace boost::spirit::x4
         Postfix postfix_;
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         template <X4Subject Prefix, X4Subject Postfix>
         struct [[nodiscard]] confix_gen
         {
@@ -125,8 +125,8 @@ namespace boost::spirit::x4
         };
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::confix_fn confix{};
     } // cpos
 } // boost::spirit::x4

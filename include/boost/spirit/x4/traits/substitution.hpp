@@ -25,8 +25,8 @@
 #include <optional>
 #include <type_traits>
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename T>
     struct is_variant;
 
@@ -42,8 +42,8 @@ namespace boost::spirit::x4::traits
 
     // TODO: reduce MPL usage
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename T, typename Attribute>
         struct value_type_is_substitute
             : is_substitute<container_value_t<T>, container_value_t<Attribute>>
@@ -96,8 +96,8 @@ namespace boost::spirit::x4::traits
         : is_substitute<T, Attribute>
     {};
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename Key, typename Value, typename Map>
         struct has_fusion_kv_in_map : std::false_type {};
 

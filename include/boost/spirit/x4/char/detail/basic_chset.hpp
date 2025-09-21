@@ -15,8 +15,8 @@
 #include <bitset>
 #include <climits>
 
-namespace boost::spirit::x4::detail
-{
+namespace boost::spirit::x4::detail {
+
     // basic character set implementation using char_range_run
     template <typename CharT>
     struct basic_chset

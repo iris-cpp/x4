@@ -21,8 +21,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     //  Default boolean policies
     template <typename T = bool>
     struct bool_policies
@@ -162,8 +162,8 @@ namespace boost::spirit::x4
         T n_;
     };
 
-    namespace standard
-    {
+    namespace standard {
+
         using bool_type = bool_parser<bool, char_encoding::standard>;
         inline constexpr bool_type bool_{};
 
@@ -175,8 +175,8 @@ namespace boost::spirit::x4
     }
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    namespace standard_wide
-    {
+    namespace standard_wide {
+
         using bool_type = bool_parser<bool, char_encoding::standard_wide>;
         inline constexpr bool_type bool_{};
 

@@ -23,14 +23,14 @@
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x4
-{
-    namespace standard
-    {
+namespace boost::spirit::x4 {
+
+    namespace standard {
+
         inline constexpr any_char<char_encoding::standard> char_{};
 
-        inline namespace helpers
-        {
+        inline namespace helpers {
+
             [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
             lit(char ch) noexcept
             {
@@ -57,12 +57,12 @@ namespace boost::spirit::x4
     using standard::helpers::lit;
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    namespace standard_wide
-    {
+    namespace standard_wide {
+
         inline constexpr any_char<char_encoding::standard_wide> char_{};
 
-        inline namespace helpers
-        {
+        inline namespace helpers {
+
             [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
             lit(wchar_t ch) noexcept
             {
@@ -84,12 +84,12 @@ namespace boost::spirit::x4
 #endif
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
-    namespace unicode
-    {
+    namespace unicode {
+
         inline constexpr any_char<char_encoding::unicode> char_{};
 
-        inline namespace helpers
-        {
+        inline namespace helpers {
+
             // TODO: add `char8_t` and `char16_t` overloads
 
             [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
@@ -112,8 +112,8 @@ namespace boost::spirit::x4
     using unicode::helpers::lit;
 #endif
 
-    namespace extension
-    {
+    namespace extension {
+
         template <>
         struct as_parser<char>
         {

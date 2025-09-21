@@ -18,8 +18,8 @@
 #include <ranges>
 #include <type_traits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Parser for a character range
     template <typename Encoding, typename Attribute = typename Encoding::char_type>
     struct char_range : char_parser<char_range<Encoding, Attribute>>

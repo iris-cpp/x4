@@ -34,10 +34,10 @@
 #define BOOST_SPIRIT_X4_DEBUG_INDENT 2
 #endif
 
-namespace boost::spirit::x4
-{
-    namespace detail
-    {
+namespace boost::spirit::x4 {
+
+    namespace detail {
+
         template <typename Char>
         void token_printer(std::ostream& o, Char c)
         {
@@ -135,8 +135,8 @@ namespace boost::spirit::x4
         mutable int indent = 0;
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         using simple_trace_type = simple_trace<
             BOOST_SPIRIT_X4_DEBUG_INDENT,
             BOOST_SPIRIT_X4_DEBUG_PRINT_SOME

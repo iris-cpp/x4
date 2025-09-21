@@ -22,8 +22,8 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct expectation_failure_tag
     {
         static constexpr bool is_unique = true;

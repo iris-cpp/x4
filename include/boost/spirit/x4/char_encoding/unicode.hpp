@@ -14,8 +14,8 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x4::char_encoding
-{
+namespace boost::spirit::x4::char_encoding {
+
     struct unicode
     {
         using char_type = char32_t;

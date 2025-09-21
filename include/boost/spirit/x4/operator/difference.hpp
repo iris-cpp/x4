@@ -19,8 +19,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Left, typename Right>
     struct difference : binary_parser<Left, Right, difference<Left, Right>>
     {
@@ -82,8 +82,8 @@ namespace boost::spirit::x4
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Left, typename Right, typename Context>
     struct attribute_of<x4::difference<Left, Right>, Context>
         : attribute_of<Left, Context>

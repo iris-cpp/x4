@@ -21,8 +21,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct raw_attribute_type; // TODO: move this to detail
 
     // Ideally we should have a context-agnostic concept that can be used

@@ -22,8 +22,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Left, typename Right>
     struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
     {
@@ -80,8 +80,8 @@ namespace boost::spirit::x4
     }
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     template <typename Left, typename Right, typename Context>
     struct attribute_of<alternative<Left, Right>, Context>
         : x4::detail::attribute_of_binary<boost::variant, alternative, Left, Right, Context>

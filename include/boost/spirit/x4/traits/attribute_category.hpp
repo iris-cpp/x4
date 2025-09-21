@@ -19,15 +19,15 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     struct unused_type;
     struct unused_container_type;
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
+namespace boost::spirit::x4::traits {
+
     struct unused_attribute {};
     struct plain_attribute {};
     struct container_attribute {};

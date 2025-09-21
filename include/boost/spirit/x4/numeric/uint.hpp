@@ -17,8 +17,8 @@
 #include <iterator>
 #include <cstdint>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <
         typename T,
         unsigned Radix = 10,
@@ -47,8 +47,8 @@ namespace boost::spirit::x4
         }
     };
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         using ushort_type = uint_parser<unsigned short>;
         inline constexpr ushort_type ushort_{};
 

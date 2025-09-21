@@ -18,8 +18,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject>
     struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
     {
@@ -60,8 +60,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct seek_gen
         {
             template<typename Subject>
@@ -75,8 +75,8 @@ namespace boost::spirit::x4
 
     } // detail
 
-    inline namespace cpos
-    {
+    inline namespace cpos {
+
         inline constexpr detail::seek_gen seek{};
 
     } // cpos

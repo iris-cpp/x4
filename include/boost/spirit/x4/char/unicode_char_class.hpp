@@ -14,8 +14,8 @@
 #include <boost/spirit/x4/char/detail/cast_char.hpp>
 #include <boost/spirit/x4/char_encoding/unicode.hpp>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     // Unicode Major Categories
     struct letter_tag {};
     struct mark_tag {};
@@ -529,8 +529,8 @@ namespace boost::spirit::x4
     using name##_type = unicode_char_class<name##_tag>;                          \
     inline constexpr name##_type name{};
 
-    namespace unicode
-    {
+    namespace unicode {
+
     // Unicode Major Categories
         BOOST_SPIRIT_X4_CHAR_CLASS(alnum)
         BOOST_SPIRIT_X4_CHAR_CLASS(alpha)

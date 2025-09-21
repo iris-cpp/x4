@@ -25,8 +25,8 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Encoding>
     struct case_compare
     {
@@ -92,8 +92,8 @@ namespace boost::spirit::x4
         }
     };
 
-    namespace detail
-    {
+    namespace detail {
+
         struct case_compare_tag
         {
             static constexpr bool is_unique = false;

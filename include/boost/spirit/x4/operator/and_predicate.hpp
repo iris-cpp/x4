@@ -15,8 +15,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
-{
+namespace boost::spirit::x4 {
+
     template <typename Subject>
     struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
     {
