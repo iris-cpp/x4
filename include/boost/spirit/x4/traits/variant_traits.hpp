@@ -69,7 +69,7 @@ struct variant_find_substitute
 
     using iter = typename mpl::eval_if<
         std::is_same<iter_1, end>,
-        mpl::find_if<types, is_substitute<T, mpl::_1> >,
+        mpl::find_if<types, is_substitute<T, mpl::_1>>,
         std::type_identity<iter_1>
     >::type;
 

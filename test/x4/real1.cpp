@@ -38,7 +38,7 @@ int main()
         using x4::real_parser;
         using x4::ureal_policies;
 
-        constexpr real_parser<double, ureal_policies<double> > udouble;
+        constexpr real_parser<double, ureal_policies<double>> udouble;
         double d;
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(udouble);

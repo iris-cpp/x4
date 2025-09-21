@@ -340,7 +340,7 @@ int main()
 {
     using x4::tst;
 
-    tests<tst<char, int>, tst<wchar_t, int> >();
+    tests<tst<char, int>, tst<wchar_t, int>>();
 
     return boost::report_errors();
 }
