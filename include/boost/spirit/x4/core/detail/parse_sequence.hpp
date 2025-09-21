@@ -370,7 +370,7 @@ parse_sequence(
     Context const& ctx, traits::CategorizedAttr<traits::assoc_attr> auto& attr
 ) noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
-	return detail::parse_into_container(parser, first, last, ctx, attr);
+    return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
 template<

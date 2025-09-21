@@ -441,18 +441,18 @@ int main()
 
     // test that failing sequence leaves attribute consistent
     {
-	    std::string str;
-	    //no need to use omit[], but lit() is buggy ATM
-	    BOOST_TEST(parse("A\nB\nC", *(char_ >> omit[lit("\n")]), str).is_partial_match());
-	    BOOST_TEST(str == "AB");
+        std::string str;
+        //no need to use omit[], but lit() is buggy ATM
+        BOOST_TEST(parse("A\nB\nC", *(char_ >> omit[lit("\n")]), str).is_partial_match());
+        BOOST_TEST(str == "AB");
     }
 
     // test that sequence with only one parser producing attribute
     // makes it unwrapped
     {
-	    BOOST_TEST((std::is_same_v<
-		    attribute_of_t<decltype(lit("abc") >> attr(long())), unused_type>,
-		    long
+        BOOST_TEST((std::is_same_v<
+            attribute_of_t<decltype(lit("abc") >> attr(long())), unused_type>,
+            long
         >));
     }
 
