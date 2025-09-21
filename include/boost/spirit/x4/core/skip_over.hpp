@@ -42,26 +42,26 @@ struct [[nodiscard]] unused_skipper
     Skipper const& skipper;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
-template <typename Context>
+template <class Context>
 using unused_skipper_t = unused_skipper<std::remove_cvref_t<decltype(
     x4::get<skipper_tag>(std::declval<Context const&>())
 )>>;
 
 namespace detail {
 
-template <typename Skipper>
+template <class Skipper>
 struct is_unused_skipper : std::false_type
 {
     static_assert(X4Subject<Skipper>);
 };
 
-template <typename Skipper>
+template <class Skipper>
 struct is_unused_skipper<unused_skipper<Skipper>> : std::true_type {};
 
 template <>
 struct is_unused_skipper<unused_type> : std::true_type {};
 
-template <typename Skipper>
+template <class Skipper>
 [[nodiscard]] constexpr Skipper const&
 get_unused_skipper(Skipper const& skipper BOOST_SPIRIT_LIFETIMEBOUND) noexcept
 {
@@ -69,10 +69,10 @@ get_unused_skipper(Skipper const& skipper BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     return skipper;
 }
 
-template <typename Skipper>
+template <class Skipper>
 void get_unused_skipper(Skipper const&&) = delete; // dangling
 
-template <typename Skipper>
+template <class Skipper>
 [[nodiscard]] constexpr Skipper const&
 get_unused_skipper(unused_skipper<Skipper> const& unused_skipper) noexcept
 {
@@ -80,16 +80,16 @@ get_unused_skipper(unused_skipper<Skipper> const& unused_skipper) noexcept
     return unused_skipper.skipper;
 }
 
-template <typename Skipper>
+template <class Skipper>
 void get_unused_skipper(unused_skipper<Skipper> const&&) = delete;
 
-template <typename Context>
+template <class Context>
 struct skip_over_context
 {
     using type = unused_type;
 };
 
-template <typename Context>
+template <class Context>
     requires (!std::is_same_v<expectation_failure_t<Context>, unused_type>)
 struct skip_over_context<Context>
 {
@@ -98,7 +98,7 @@ struct skip_over_context<Context>
     ))>;
 };
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Subject Skipper>
+template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Subject Skipper>
 constexpr void skip_over(It& first, Se const& last, Context const& context, Skipper const& skipper)
     noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type>)
 {
@@ -154,29 +154,29 @@ constexpr void skip_over(It& first, Se const& last, Context const& context, Skip
     }
 }
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
 constexpr void skip_over(It&, Se const&, Context&, unused_type const&) noexcept
 {
 }
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Skipper>
+template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Skipper>
 constexpr void skip_over(It&, Se const&, Context&, unused_skipper<Skipper> const&) noexcept
 {
 }
 
 } // detail
 
-template <typename Context>
+template <class Context>
 struct has_skipper
   : std::bool_constant<!detail::is_unused_skipper<
         std::remove_cvref_t<decltype(x4::get<skipper_tag>(std::declval<Context const&>()))>
     >::value>
 {};
 
-template <typename Context>
+template <class Context>
 constexpr bool has_skipper_v = has_skipper<Context>::value;
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
 constexpr void skip_over(It& first, Se const& last, Context& context)
     noexcept(noexcept(detail::skip_over(first, last, context, x4::get<skipper_tag>(context))))
 {

@@ -21,7 +21,7 @@
 
 namespace boost::spirit::x4 {
 
-template<typename Prefix, typename Subject, typename Postfix>
+template<class Prefix, class Subject, class Postfix>
 struct confix_directive
     : unary_parser<Subject, confix_directive<Prefix, Subject, Postfix>>
 {
@@ -30,7 +30,7 @@ struct confix_directive
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = Subject::handles_container;
 
-    template <typename PrefixT, typename SubjectT, typename PostfixT>
+    template <class PrefixT, class SubjectT, class PostfixT>
         requires
             std::is_constructible_v<Prefix, PrefixT> &&
             std::is_constructible_v<base_type, SubjectT> &&
@@ -47,7 +47,7 @@ struct confix_directive
     {
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(

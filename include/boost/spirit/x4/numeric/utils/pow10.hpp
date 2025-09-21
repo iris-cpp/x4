@@ -27,7 +27,7 @@ namespace pow10_helper_impl {
 
 using namespace std; // fallback
 
-template <typename T>
+template <class T>
 concept HasPow = requires(T base_, T exp_) {
     { pow(base_, exp_) } -> std::convertible_to<T>;
 };
@@ -36,7 +36,7 @@ concept HasPow = requires(T base_, T exp_) {
 
 } // detail
 
-template <typename T>
+template <class T>
     requires detail::pow10_helper_impl::HasPow<T>
 struct pow10_helper<T>
 {
@@ -112,7 +112,7 @@ struct pow10_helper<float>
 };
 #endif // for IEEE-754
 
-template <typename T>
+template <class T>
 [[nodiscard]] constexpr T pow10(unsigned dim) noexcept
 {
     return pow10_helper<T>::call(dim);

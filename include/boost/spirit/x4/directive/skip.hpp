@@ -23,14 +23,14 @@
 
 namespace boost::spirit::x4 {
 
-template <typename Subject>
+template <class Subject>
 struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
 {
     using base_type = unary_parser<Subject, reskip_directive<Subject>>;
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = Subject::handles_container;
 
-    template <typename SubjectT>
+    template <class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, reskip_directive>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -39,7 +39,7 @@ struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
@@ -49,7 +49,7 @@ struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
     }
 
 private:
-    template <typename Context>
+    template <class Context>
     using context_t = context<
         skipper_tag,
         std::remove_cvref_t<decltype(detail::get_unused_skipper(
@@ -59,7 +59,7 @@ private:
     >;
 
 public:
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires (!has_skipper_v<Context>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
@@ -72,14 +72,14 @@ public:
     }
 };
 
-template <typename Subject, typename Skipper>
+template <class Subject, class Skipper>
 struct skip_directive : unary_parser<Subject, skip_directive<Subject, Skipper>>
 {
     using base_type = unary_parser<Subject, skip_directive<Subject, Skipper>>;
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = Subject::handles_container;
 
-    template <typename SubjectT, typename SkipperT>
+    template <class SubjectT, class SkipperT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Skipper, SkipperT>
     constexpr skip_directive(SubjectT&& subject, SkipperT&& skipper)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<Skipper, SkipperT>)
@@ -87,7 +87,7 @@ struct skip_directive : unary_parser<Subject, skip_directive<Subject, Skipper>>
         , skipper_(std::forward<SkipperT>(skipper))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, x4::context<skipper_tag, Skipper, Context>, Attribute>)
@@ -120,7 +120,7 @@ struct skip_gen_impl
         Skipper
     >;
 
-    template <typename SkipperT>
+    template <class SkipperT>
         requires std::same_as<std::remove_cvref_t<SkipperT>, std::remove_cvref_t<Skipper>>
     constexpr skip_gen_impl(SkipperT&& skipper)
         noexcept(std::is_nothrow_constructible_v<skipper_type, SkipperT>)
@@ -160,7 +160,7 @@ struct skip_gen
         return {as_parser(std::forward<Skipper>(skipper))};
     }
 
-    template <typename Subject>
+    template <class Subject>
     [[nodiscard, deprecated("Use `x4::reskip[p]`.")]]
     /* static */ constexpr reskip_directive<as_parser_plain_t<Subject>>
     operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode

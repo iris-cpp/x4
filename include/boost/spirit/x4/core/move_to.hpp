@@ -76,7 +76,7 @@ constexpr void move_to(T&, T&) noexcept
 }
 
 // unused_type -------------------------------------------
-template <typename Source, typename Dest>
+template <class Source, class Dest>
     requires
         std::same_as<std::remove_cvref_t<Source>, unused_type> ||
         std::same_as<std::remove_const_t<Dest>, unused_type> ||

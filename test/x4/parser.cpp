@@ -27,7 +27,7 @@ struct minimal_parser
     constexpr minimal_parser(minimal_parser&&) = default;
     constexpr minimal_parser& operator=(minimal_parser&&) = default;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, x4::X4Attribute Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attribute>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attribute&) const
     {
@@ -38,7 +38,7 @@ struct minimal_parser
 struct minimal_unary_parser
     : x4::unary_parser<minimal_parser, minimal_unary_parser>
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, x4::X4Attribute Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attribute>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attribute&) const
     {
@@ -49,7 +49,7 @@ struct minimal_unary_parser
 struct minimal_binary_parser
     : x4::binary_parser<minimal_parser, minimal_parser, minimal_binary_parser>
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, x4::X4Attribute Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attribute>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attribute&) const
     {
@@ -60,7 +60,7 @@ struct minimal_binary_parser
 struct minimal_unused_parser
     : x4::parser<minimal_unused_parser>
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, unused_type const&) const
     {
@@ -71,7 +71,7 @@ struct minimal_unused_parser
 struct minimal_unary_unused_parser
     : x4::unary_parser<minimal_unused_parser, minimal_unary_unused_parser>
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, unused_type const&) const
     {
@@ -82,7 +82,7 @@ struct minimal_unary_unused_parser
 struct minimal_binary_unused_parser
     : x4::binary_parser<minimal_unused_parser, minimal_unused_parser, minimal_binary_unused_parser>
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, unused_type const&) const
     {

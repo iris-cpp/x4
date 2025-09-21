@@ -24,7 +24,7 @@ namespace boost::spirit::x4::detail {
 // before casting to the target. {P.S. Don't worry about the code, the
 // optimizer will optimize the if-else branches}
 
-template <typename TargetChar, typename SourceChar>
+template <class TargetChar, class SourceChar>
 [[nodiscard]] constexpr TargetChar cast_char(SourceChar ch) noexcept
 {
     if constexpr (std::is_signed_v<TargetChar> != std::is_signed_v<SourceChar>) {
@@ -41,12 +41,12 @@ template <typename TargetChar, typename SourceChar>
     }
 }
 
-template <typename SourceChar, typename TargetChar>
+template <class SourceChar, class TargetChar>
 concept cast_char_viable = requires(SourceChar ch) {
     { cast_char<TargetChar>(ch) } -> std::convertible_to<TargetChar>;
 };
 
-template <typename SourceChar, typename TargetChar>
+template <class SourceChar, class TargetChar>
 concept cast_char_noexcept = requires(SourceChar ch) {
     { cast_char<TargetChar>(ch) } noexcept -> std::convertible_to<TargetChar>;
 };

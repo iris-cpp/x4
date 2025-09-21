@@ -30,7 +30,7 @@ namespace boost::spirit::x4::detail {
 // range_runs are very space-economical in situations where there
 // are lots of ranges and a few individual disjoint values.
 // Searching is O(log n) where n is the number of ranges.
-template <typename CharT>
+template <class CharT>
 class char_range_run
 {
 public:

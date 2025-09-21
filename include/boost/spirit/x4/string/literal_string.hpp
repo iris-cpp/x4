@@ -25,7 +25,7 @@
 
 namespace boost::spirit::x4 {
 
-template <typename String, typename Encoding, typename Attribute = std::basic_string<typename Encoding::char_type>>
+template <class String, class Encoding, class Attribute = std::basic_string<typename Encoding::char_type>>
 struct literal_string : parser<literal_string<String, Encoding, Attribute>>
 {
     static_assert(
@@ -47,7 +47,7 @@ struct literal_string : parser<literal_string<String, Encoding, Attribute>>
         : str(std::forward<Args>(args)...)
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute_>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute_>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute_& attr
     ) const
@@ -63,7 +63,7 @@ struct literal_string : parser<literal_string<String, Encoding, Attribute>>
     String str;
 };
 
-template <typename String, typename Encoding, typename Attribute>
+template <class String, class Encoding, class Attribute>
 struct get_info<literal_string<String, Encoding, Attribute>>
 {
     using result_type = std::string;

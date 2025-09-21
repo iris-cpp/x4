@@ -119,7 +119,7 @@ inline constexpr detail::parse_overloads parse{};
 
 } // cpos
 
-template <typename Parser>
+template <class Parser>
 [[nodiscard]] constexpr bool test_constexpr_copy_move_ctors(Parser const& p)
 {
     [[maybe_unused]] Parser copy_ctor(p);
@@ -147,7 +147,7 @@ struct move_only
     move_only& operator=(move_only&&) = default;
 };
 
-template <typename T>
+template <class T>
 struct synth_parser : x4::parser<synth_parser<T>>
 {
     using attribute_type = T;
@@ -155,7 +155,7 @@ struct synth_parser : x4::parser<synth_parser<T>>
     static constexpr bool has_attribute = true;
     static constexpr bool handles_container = false;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& iter, Se const& last, Context const&, Attribute& attr) const
     {
@@ -168,7 +168,7 @@ struct synth_parser : x4::parser<synth_parser<T>>
     }
 };
 
-template <typename T>
+template <class T>
 constexpr synth_parser<T> synth{};
 
 constexpr synth_parser<move_only> synth_move_only{};

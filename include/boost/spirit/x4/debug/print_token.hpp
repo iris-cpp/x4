@@ -22,7 +22,7 @@ namespace detail {
 // generate debug output for lookahead token (character) stream
 struct token_printer_debug_for_chars
 {
-    template<typename Out, typename Char>
+    template<class Out, class Char>
     static void print(Out& o, Char c)
     {
         using namespace std;    // allow for ADL to find the proper iscntrl
@@ -56,7 +56,7 @@ struct token_printer_debug_for_chars
 // for token types where the comparison with char constants wouldn't work
 struct token_printer_debug
 {
-    template<typename Out, typename T>
+    template<class Out, class T>
     static void print(Out& o, T const& val)
     {
         o << val;
@@ -65,7 +65,7 @@ struct token_printer_debug
 
 } // detail
 
-template <typename T>
+template <class T>
 struct token_printer_debug
     : std::conditional_t<
         std::is_convertible_v<T, char> && std::is_convertible_v<char, T>,
@@ -74,7 +74,7 @@ struct token_printer_debug
     >
 {};
 
-template <typename Out, typename T>
+template <class Out, class T>
 void print_token(Out& out, T const& val)
 {
     // allow to customize the token printer routine

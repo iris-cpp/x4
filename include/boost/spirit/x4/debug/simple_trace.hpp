@@ -38,7 +38,7 @@ namespace boost::spirit::x4 {
 
 namespace detail {
 
-template <typename Char>
+template <class Char>
 void token_printer(std::ostream& o, Char c)
 {
     // allow customization of the token printer routine
@@ -77,7 +77,7 @@ struct simple_trace
         // TODO: convert invalid xml characters (e.g. '<') to valid character entities
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     void operator()(
         It first,
         Se last,
@@ -136,7 +136,7 @@ get_simple_trace()
 
 
 // TODO: This should be customizable by users
-template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
 struct [[nodiscard]] scoped_rule_debug
 {
     scoped_rule_debug(

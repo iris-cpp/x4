@@ -20,7 +20,7 @@
 
 namespace {
 
-template <typename TST, typename Char>
+template <class TST, class Char>
 void add(TST& tst, Char const* s, int data)
 {
     Char const* last = s;
@@ -28,7 +28,7 @@ void add(TST& tst, Char const* s, int data)
     tst.add(s, last, data);
 }
 
-template <typename TST, typename Char>
+template <class TST, class Char>
 void remove(TST& tst, Char const* s)
 {
     Char const* last = s;
@@ -36,7 +36,7 @@ void remove(TST& tst, Char const* s)
     tst.remove(s, last);
 }
 
-template <typename TST, typename Char, typename CaseCompare>
+template <class TST, class Char, class CaseCompare>
 void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool const expected, int N = 0, int val = -1)
 {
     Char const* first = s;
@@ -51,14 +51,14 @@ void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool const 
 
 struct printer
 {
-    template <typename String, typename Data>
+    template <class String, class Data>
     void operator()(String const& s, Data const& data)
     {
         std::cout << "    " << s << ": " << data << std::endl;
     }
 };
 
-template <typename TST>
+template <class TST>
 void print(TST const& tst)
 {
     std::cout << '[' << std::endl;
@@ -71,7 +71,7 @@ x4::case_compare<x4::char_encoding::standard_wide> wcomp;
 x4::no_case_compare<x4::char_encoding::standard> nc_ncomp;
 x4::no_case_compare<x4::char_encoding::standard_wide> nc_wcomp;
 
-template <typename Lookup, typename WideLookup>
+template <class Lookup, class WideLookup>
 void tests()
 {
     {

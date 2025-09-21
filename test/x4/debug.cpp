@@ -33,7 +33,7 @@ namespace {
 
 struct my_error_handler
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
     void operator()(It const&, Se const& last, Exception const& x, Context const&) const
     {
         std::cout

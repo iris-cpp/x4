@@ -50,7 +50,7 @@ namespace boost::spirit::x4 {
 
 namespace detail {
 
-template <typename Derived, bool IsShared, typename Encoding, typename T, typename Lookup>
+template <class Derived, bool IsShared, class Encoding, class T, class Lookup>
 struct symbols_parser_impl : parser<Derived>
 {
     using char_type = typename Encoding::char_type; // the character type
@@ -197,13 +197,13 @@ struct symbols_parser_impl : parser<Derived>
         return sym.remove(s);
     }
 
-    template <typename F>
+    template <class F>
     constexpr void for_each(F&& f) const
     {
         lookup->for_each(std::forward<F>(f));
     }
 
-    template <typename F>
+    template <class F>
     constexpr void for_each(F&& f)
     {
         lookup->for_each(std::forward<F>(f));
@@ -236,7 +236,7 @@ struct symbols_parser_impl : parser<Derived>
         return this->find_impl(s.begin(), s.end());
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(
@@ -326,7 +326,7 @@ private:
 
 } // detail
 
-template <typename Encoding, typename T = unused_type, typename Lookup = tst<typename Encoding::char_type, T>>
+template <class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct shared_symbols_parser
     : detail::symbols_parser_impl<shared_symbols_parser<Encoding, T, Lookup>, true, Encoding, T, Lookup>
 {
@@ -335,7 +335,7 @@ struct shared_symbols_parser
     using base_type::operator=;
 };
 
-template <typename Encoding, typename T = unused_type, typename Lookup = tst<typename Encoding::char_type, T>>
+template <class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
 symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
 {
@@ -344,7 +344,7 @@ symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
     using base_type::operator=;
 };
 
-template <typename Encoding, typename T = unused_type, typename Lookup = tst<typename Encoding::char_type, T>>
+template <class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct unique_symbols_parser
     : detail::symbols_parser_impl<unique_symbols_parser<Encoding, T, Lookup>, false, Encoding, T, Lookup>
 {
@@ -353,7 +353,7 @@ struct unique_symbols_parser
     using base_type::operator=;
 };
 
-template <typename Encoding, typename T, typename Lookup>
+template <class Encoding, class T, class Lookup>
 struct get_info<shared_symbols_parser<Encoding, T, Lookup>>
 {
     using result_type = std::string const&;
@@ -364,7 +364,7 @@ struct get_info<shared_symbols_parser<Encoding, T, Lookup>>
     }
 };
 
-template <typename Encoding, typename T, typename Lookup>
+template <class Encoding, class T, class Lookup>
 struct get_info<unique_symbols_parser<Encoding, T, Lookup>>
 {
     using result_type = std::string const&;
@@ -377,14 +377,14 @@ struct get_info<unique_symbols_parser<Encoding, T, Lookup>>
 
 namespace standard {
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
     = shared_symbols_parser<char_encoding::standard, T>;
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using shared_symbols = shared_symbols_parser<char_encoding::standard, T>;
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::standard, T>;
 
 } // standard
@@ -396,14 +396,14 @@ using standard::unique_symbols;
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
     = shared_symbols_parser<char_encoding::standard_wide, T>;
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using shared_symbols = shared_symbols_parser<char_encoding::standard_wide, T>;
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::standard_wide, T>;
 
 } // standard_wide
@@ -412,10 +412,10 @@ using unique_symbols = unique_symbols_parser<char_encoding::standard_wide, T>;
 #ifdef BOOST_SPIRIT_X4_UNICODE
 namespace unicode {
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using shared_symbols = shared_symbols_parser<char_encoding::unicode, T>;
 
-template <typename T = unused_type>
+template <class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::unicode, T>;
 
 } // unicode

@@ -44,10 +44,10 @@ namespace detail {
 // The maximum radix digits that can be represented without
 // overflow:
 //
-//         template<typename T, unsigned Radix>
+//         template<class T, unsigned Radix>
 //         struct digits_traits::value;
 //
-template <typename T, unsigned Radix>
+template <class T, unsigned Radix>
 struct digits_traits;
 
 template <int Digits, unsigned Radix>
@@ -76,13 +76,13 @@ struct digits2_to_n;
 
 #undef BOOST_SPIRIT_X4_LOG2
 
-template <typename T, unsigned Radix>
+template <class T, unsigned Radix>
 struct digits_traits : digits2_to_n<std::numeric_limits<T>::digits, Radix>
 {
     static_assert(std::numeric_limits<T>::radix == 2, "Radix should be 2");
 };
 
-template <typename T>
+template <class T>
 struct digits_traits<T, 10>
 {
     static constexpr int value = std::numeric_limits<T>::digits10;
@@ -92,7 +92,7 @@ struct digits_traits<T, 10>
 template <unsigned Radix>
 struct radix_traits
 {
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr bool is_valid(Char ch) noexcept
     {
         return (ch >= '0' && ch <= (Radix > 10 ? '9' : static_cast<Char>('0' + Radix -1)))
@@ -100,7 +100,7 @@ struct radix_traits
             || (Radix > 10 && ch >= 'A' && ch <= static_cast<Char>('A' + Radix -10 -1));
     }
 
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr unsigned digit(Char ch)
         noexcept(noexcept(traits::char_encoding_traits<Char>::encoding_type::tolower(ch)))
     {
@@ -114,14 +114,14 @@ struct radix_traits
 template <unsigned Radix>
 struct positive_accumulator
 {
-    template <typename T, typename Char>
+    template <class T, class Char>
     static constexpr void unchecked_add(T& n, Char ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
         n = n * T(Radix) + T(radix_traits<Radix>::digit(ch));
     }
 
-    template <typename T, typename Char>
+    template <class T, class Char>
     [[nodiscard]] static constexpr bool checked_add(T& n, Char ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
@@ -145,14 +145,14 @@ struct positive_accumulator
 template <unsigned Radix>
 struct negative_accumulator
 {
-    template <typename T, typename Char>
+    template <class T, class Char>
     static constexpr void unchecked_add(T& n, Char ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
         n = n * T(Radix) - T(radix_traits<Radix>::digit(ch));
     }
 
-    template <typename T, typename Char>
+    template <class T, class Char>
     [[nodiscard]] static constexpr bool checked_add(T& n, Char ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
@@ -173,10 +173,10 @@ struct negative_accumulator
 };
 
 // Common code for `extract_int::parse` specializations
-template <unsigned Radix, typename Accumulator, int MaxDigits>
+template <unsigned Radix, class Accumulator, int MaxDigits>
 struct int_extractor
 {
-    template <typename T>
+    template <class T>
     static constexpr bool need_check_overflow =
         (
             MaxDigits < 0 ||
@@ -184,7 +184,7 @@ struct int_extractor
         ) &&
         traits::check_overflow<T>::value;
 
-    template <typename Char, typename T>
+    template <class Char, class T>
         requires need_check_overflow<T>
     [[nodiscard]] static constexpr bool
     call(Char ch, std::size_t count, T& n)
@@ -205,7 +205,7 @@ struct int_extractor
         return true;
     }
 
-    template <typename Char, typename T>
+    template <class Char, class T>
         requires (!need_check_overflow<T>)
     [[nodiscard]] static constexpr bool
     call(Char ch, std::size_t /*count*/, T& n)
@@ -215,7 +215,7 @@ struct int_extractor
         return true;
     }
 
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr bool
     call(Char /*ch*/, std::size_t /*count*/, unused_type const&) noexcept
     {
@@ -255,8 +255,8 @@ struct check_max_digits<-1>
     ++count;
 
 template <
-    typename T, unsigned Radix, unsigned MinDigits, int MaxDigits,
-    typename Accumulator = positive_accumulator<Radix>,
+    class T, unsigned Radix, unsigned MinDigits, int MaxDigits,
+    class Accumulator = positive_accumulator<Radix>,
     bool Accumulate = false
 >
 struct extract_int
@@ -266,7 +266,7 @@ struct extract_int
 # pragma warning(disable: 4127)   // conditional expression is constant
 # pragma warning(disable: 4459)   // declaration hides global declaration
 #endif
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse_main(It& first, Se const& last, Attribute& attr)
         // TODO: noexcept
@@ -321,7 +321,7 @@ struct extract_int
         }
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Attribute& attr)
         noexcept(noexcept(extract_int::parse_main(first, last, attr)))
@@ -341,7 +341,7 @@ struct extract_int
     ++it; \
     ++count;
 
-template <typename T, unsigned Radix, typename Accumulator, bool Accumulate>
+template <class T, unsigned Radix, class Accumulator, bool Accumulate>
 struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 {
 #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
@@ -350,7 +350,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 # pragma warning(disable: 4459)   // declaration hides global declaration
 #endif
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse_main(It& first, Se const& last, Attribute& attr)
         // TODO: noexcept
@@ -419,7 +419,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         }
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Attribute& attr)
         noexcept(noexcept(extract_int::parse_main(first, last, attr)))
@@ -454,7 +454,7 @@ extract_sign(It& first, Se const& last)
 } // detail
 
 // Low level unsigned integer parser
-template <typename T, unsigned Radix, unsigned MinDigits, int MaxDigits, bool Accumulate = false>
+template <class T, unsigned Radix, unsigned MinDigits, int MaxDigits, bool Accumulate = false>
 struct extract_uint
 {
     // check template parameter 'Radix' for validity
@@ -481,7 +481,7 @@ struct extract_uint
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     call(It& first, Se const& last, Attribute& attr)
         noexcept(
@@ -501,7 +501,7 @@ struct extract_uint
 };
 
 // Low level signed integer parser
-template <typename T, unsigned Radix, unsigned MinDigits, int MaxDigits>
+template <class T, unsigned Radix, unsigned MinDigits, int MaxDigits>
 struct extract_int
 {
     // check template parameter 'Radix' for validity
@@ -540,7 +540,7 @@ struct extract_int
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     call(It& first, Se const& last, Attribute& attr)
         noexcept(

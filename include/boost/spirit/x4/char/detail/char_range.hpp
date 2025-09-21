@@ -15,7 +15,7 @@
 namespace boost::spirit::x4::detail {
 
 // A closed range [first, last]
-template <typename CharT>
+template <class CharT>
 struct char_range
 {
     static_assert(std::is_default_constructible_v<CharT>);

@@ -27,33 +27,33 @@
 
 namespace boost::spirit::x4 {
 
-template <typename Encoding>
+template <class Encoding>
 struct case_compare
 {
-    template <typename Char, typename CharSet>
+    template <class Char, class CharSet>
     [[nodiscard]] static constexpr bool in_set(Char ch, CharSet const& set) noexcept
     {
         static_assert(noexcept(set.test(ch)));
         return set.test(ch);
     }
 
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr std::int32_t operator()(Char lc, Char rc) noexcept
     {
         return lc - rc;
     }
 
-    template <typename CharClassTag>
+    template <class CharClassTag>
     [[nodiscard]] static constexpr CharClassTag get_char_class_tag(CharClassTag tag) noexcept
     {
         return tag;
     }
 };
 
-template <typename Encoding>
+template <class Encoding>
 struct no_case_compare
 {
-    template <typename Char, typename CharSet>
+    template <class Char, class CharSet>
     [[nodiscard]] static constexpr bool in_set(Char ch_, CharSet const& set) noexcept
     {
         using classify_type = typename Encoding::classify_type;
@@ -65,7 +65,7 @@ struct no_case_compare
             );
     }
 
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr std::int32_t operator()(Char lc_, Char const rc_) noexcept
     {
         using classify_type = typename Encoding::classify_type;
@@ -75,7 +75,7 @@ struct no_case_compare
             ? Encoding::tolower(lc) - rc : Encoding::toupper(lc) - rc;
     }
 
-    template <typename CharClassTag>
+    template <class CharClassTag>
     [[nodiscard]] static constexpr CharClassTag get_char_class_tag(CharClassTag tag) noexcept
     {
         return tag;
@@ -104,7 +104,7 @@ inline constexpr case_compare_no_case_t case_compare_no_case{};
 
 } // detail
 
-template <typename Encoding, typename Context>
+template <class Encoding, class Context>
 [[nodiscard]] constexpr auto
 get_case_compare(Context const&) noexcept
 {

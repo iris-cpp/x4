@@ -27,10 +27,10 @@ namespace boost::spirit::x4::traits {
 
 // TODO: define a legit concept for determining variant-like types
 
-template <typename T>
+template <class T>
 struct is_variant : std::false_type {};
 
-template <typename T>
+template <class T>
 constexpr bool is_variant_v = is_variant<T>::value;
 
 // By declaring a nested struct named `adapted_variant_tag` in
@@ -42,20 +42,20 @@ constexpr bool is_variant_v = is_variant<T>::value;
 //
 // This is an intrusive interface. For a non-intrusive interface,
 // specialize the is_variant trait.
-template <typename T>
+template <class T>
     requires requires {
         typename T::adapted_variant_tag;
     }
 struct is_variant<T> : std::true_type
 {};
 
-template <BOOST_VARIANT_ENUM_PARAMS(typename T)>
+template <BOOST_VARIANT_ENUM_PARAMS(class T)>
 struct is_variant<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>>
     : std::true_type
 {};
 
 
-template <typename Variant, typename T>
+template <class Variant, class T>
 struct variant_find_substitute
 {
     // Get the type from the Variant that can be a substitute for T.
@@ -80,10 +80,10 @@ struct variant_find_substitute
     >::type;
 };
 
-template <typename Variant, typename T>
+template <class Variant, class T>
 using variant_find_substitute_t = typename variant_find_substitute<Variant, T>::type;
 
-template <typename Variant>
+template <class Variant>
 struct variant_find_substitute<Variant, Variant>
 {
     using type = Variant;
@@ -92,7 +92,7 @@ struct variant_find_substitute<Variant, Variant>
 
 namespace detail {
 
-template <typename Variant, typename T>
+template <class Variant, class T>
 struct variant_has_substitute_impl
 {
     // Find a type from the Variant that can be a substitute for T.
@@ -114,18 +114,18 @@ struct variant_has_substitute_impl
 
 } // detail
 
-template <typename Variant, typename T>
+template <class Variant, class T>
 struct variant_has_substitute
     : detail::variant_has_substitute_impl<Variant, T>::type
 {};
 
-template <typename Variant, typename T>
+template <class Variant, class T>
 constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, T>::value;
 
-template <typename T>
+template <class T>
 struct variant_has_substitute<unused_type, T> : std::true_type {};
 
-template <typename T>
+template <class T>
 struct variant_has_substitute<unused_type const, T> : std::true_type {};
 
 } // boost::spirit::x4::traits

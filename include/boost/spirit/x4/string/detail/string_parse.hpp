@@ -16,7 +16,7 @@
 
 namespace boost::spirit::x4::detail {
 
-template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
+template <class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string_view<CharT, CharTraitsT> const str,
@@ -39,7 +39,7 @@ string_parse(
     return true;
 }
 
-template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompareFunc>
+template <class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string<CharT, CharTraitsT> const& str,
@@ -50,7 +50,7 @@ string_parse(
     return detail::string_parse(std::basic_string_view{str}, first, last, attr, compare);
 }
 
-template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+template <class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string_view<CharT, CharTraitsT> const ucstr,
@@ -73,7 +73,7 @@ string_parse(
     return true;
 }
 
-template <typename CharT, typename CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+template <class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
 [[nodiscard]] constexpr bool
 string_parse(
     std::basic_string<CharT, CharTraitsT> const& ucstr,

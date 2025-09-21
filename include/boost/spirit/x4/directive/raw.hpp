@@ -27,7 +27,7 @@ namespace boost::spirit::x4 {
 // the input iterators.
 struct raw_attribute_type {}; // TODO: move this to detail
 
-template <typename Subject>
+template <class Subject>
 struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 {
     using base_type = unary_parser<Subject, raw_directive<Subject>>;
@@ -36,7 +36,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 
     static constexpr bool handles_container = true;
 
-    template <typename SubjectT>
+    template <class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, raw_directive>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -45,7 +45,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         // never noexcept; construction of `std::ranges::subrange` is never noexcept
@@ -61,7 +61,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, unused_type) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
@@ -95,7 +95,7 @@ inline constexpr detail::raw_gen raw{};
 
 namespace boost::spirit::x4::traits {
 
-template <typename Context, std::forward_iterator It>
+template <class Context, std::forward_iterator It>
 struct pseudo_attribute<Context, raw_attribute_type, It>
 {
     using attribute_type = raw_attribute_type;

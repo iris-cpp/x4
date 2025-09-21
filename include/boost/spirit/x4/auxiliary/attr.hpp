@@ -25,7 +25,7 @@
 
 namespace boost::spirit::x4 {
 
-template <typename T>
+template <class T>
 struct attr_parser : parser<attr_parser<T>>
 {
     static_assert(X4Attribute<T>);
@@ -34,7 +34,7 @@ struct attr_parser : parser<attr_parser<T>>
     static constexpr bool has_attribute = !std::is_same_v<T, unused_type>;
     static constexpr bool handles_container = traits::is_container_v<T>;
 
-    template <typename U>
+    template <class U>
         requires
             (!std::is_same_v<std::remove_cvref_t<U>, attr_parser>) &&
             std::is_constructible_v<T, U>
@@ -43,7 +43,7 @@ struct attr_parser : parser<attr_parser<T>>
         : value_(std::forward<U>(value))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attribute& attr_) const
         noexcept(noexcept(x4::move_to(std::as_const(value_), attr_)))
@@ -60,7 +60,7 @@ private:
 template <traits::CharArray R>
 attr_parser(R const&) -> attr_parser<std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>>;
 
-template <typename T>
+template <class T>
 struct get_info<attr_parser<T>>
 {
     using result_type = std::string;
@@ -75,7 +75,7 @@ namespace detail {
 
 struct attr_gen
 {
-    template <typename T>
+    template <class T>
     [[nodiscard]] static constexpr attr_parser<std::remove_cvref_t<T>>
     operator()(T&& value)
         noexcept(std::is_nothrow_constructible_v<attr_parser<std::remove_cvref_t<T>>, T>)

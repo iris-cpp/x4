@@ -18,7 +18,7 @@
 namespace boost::spirit::x4::detail {
 
 // basic character set implementation using `char_range_run`
-template <typename CharT>
+template <class CharT>
 struct basic_chset
 {
     [[nodiscard]] constexpr bool
@@ -126,7 +126,7 @@ private:
 #if (CHAR_BIT == 8)
 
 // Specializations for 8 bit chars using std::bitset
-template <typename CharT>
+template <class CharT>
 struct basic_chset_8bit
 {
     [[nodiscard]] constexpr bool

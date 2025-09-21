@@ -66,7 +66,7 @@ lit(T&& string_like)
 
 } // helpers
 
-template <typename T>
+template <class T>
     requires traits::CharIncompatibleWith<T, char> || traits::StringLikeIncompatibleWith<T, char>
 constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
 
@@ -112,7 +112,7 @@ lit(T&& string_like)
 
 } // helpers
 
-template <typename T>
+template <class T>
     requires traits::CharIncompatibleWith<T, wchar_t> || traits::StringLikeIncompatibleWith<T, wchar_t>
 constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
 
@@ -160,7 +160,7 @@ lit(T&& string_like)
 
 } // helpers
 
-template <typename T>
+template <class T>
     requires traits::CharIncompatibleWith<T, char32_t> || traits::StringLikeIncompatibleWith<T, char32_t>
 constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
 
@@ -205,7 +205,7 @@ struct as_parser<std::basic_string<CharT>>
     using type = literal_string<std::basic_string<CharT>, traits::char_encoding_for<CharT>, unused_type>;
     using value_type = type;
 
-    template <typename T>
+    template <class T>
     [[nodiscard]] static constexpr type call(T&& str)
         noexcept(std::is_nothrow_constructible_v<type, T>)
     {
@@ -219,7 +219,7 @@ struct as_parser<std::basic_string_view<CharT>>
     using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;
     using value_type = type;
 
-    template <typename T>
+    template <class T>
     [[nodiscard]] static constexpr type call(T&& str)
         noexcept(std::is_nothrow_constructible_v<type, T>)
     {

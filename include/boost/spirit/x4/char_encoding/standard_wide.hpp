@@ -25,14 +25,14 @@ struct standard_wide
     using char_type = wchar_t;
     using classify_type = wchar_t;
 
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr typename std::char_traits<Char>::int_type
     to_int_type(Char ch) noexcept
     {
         return std::char_traits<Char>::to_int_type(ch);
     }
 
-    template <typename Char>
+    template <class Char>
     [[nodiscard]] static constexpr Char
     to_char_type(typename std::char_traits<Char>::int_type ch) noexcept
     {

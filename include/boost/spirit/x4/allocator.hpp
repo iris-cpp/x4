@@ -18,10 +18,10 @@
 
 namespace boost::spirit::x4 {
 
-template <typename Klass>
+template <class Klass>
 struct allocator_ops
 {
-    template <typename... Allocs>
+    template <class... Allocs>
     static constexpr bool move_assign_noexcept = std::conjunction_v<
         std::disjunction<
             typename std::allocator_traits<Allocs>::propagate_on_container_move_assignment,

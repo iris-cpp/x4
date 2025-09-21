@@ -20,7 +20,7 @@ namespace {
 struct backwards_bool_policies : x4::bool_policies<>
 {
     // we want to interpret a 'true' spelled backwards as 'false'
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompare>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompare>
     [[nodiscard]] static constexpr bool
     parse_false(It& first, Se const& last, Attribute& attr, CaseCompare const& case_compare)
     {

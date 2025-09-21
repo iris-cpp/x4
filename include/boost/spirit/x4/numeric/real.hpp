@@ -29,7 +29,7 @@
 namespace boost::spirit::x4 {
 
 // Default unsigned real number policies
-template <typename T>
+template <class T>
 struct ureal_policies
 {
     // trailing dot policy suggested by Gustavo Guerra
@@ -44,7 +44,7 @@ struct ureal_policies
         return false;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse_n(It& first, Se const& last, Attribute& attr_)
         noexcept(noexcept(extract_uint<T, 10, 1, -1>::call(first, last, attr_)))
@@ -64,7 +64,7 @@ struct ureal_policies
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse_frac_n(It& first, Se const& last, Attribute& attr_)
         noexcept(noexcept(extract_uint<T, 10, 1, -1, true>::call(first, last, attr_)))
@@ -104,7 +104,7 @@ struct ureal_policies
     // and Inf as mandated by the C99 Standard and as proposed for
     // inclusion into the C++0x Standard: nan, nan(...), inf and infinity
     // (the matching is performed case-insensitively).
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse_nan(It& first, Se const& last, Attribute& attr_)
     {
@@ -132,7 +132,7 @@ struct ureal_policies
         return false;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse_inf(It& first, Se const& last, Attribute& attr_)
     {
@@ -153,7 +153,7 @@ struct ureal_policies
 };
 
 // Default signed real number policies
-template <typename T>
+template <class T>
 struct real_policies : ureal_policies<T>
 {
     template <std::forward_iterator It, std::sentinel_for<It> Se>
@@ -165,19 +165,19 @@ struct real_policies : ureal_policies<T>
     }
 };
 
-template <typename T>
+template <class T>
 struct strict_ureal_policies : ureal_policies<T>
 {
     static constexpr bool expect_dot = true;
 };
 
-template <typename T>
+template <class T>
 struct strict_real_policies : real_policies<T>
 {
     static constexpr bool expect_dot = true;
 };
 
-template <typename T, typename RealPolicies = real_policies<T>>
+template <class T, class RealPolicies = real_policies<T>>
 struct real_parser : parser<real_parser<T, RealPolicies>>
 {
     using attribute_type = T;
@@ -187,7 +187,7 @@ struct real_parser : parser<real_parser<T, RealPolicies>>
 
     constexpr real_parser() = default;
 
-    template <typename RealPoliciesT>
+    template <class RealPoliciesT>
         requires
             (!std::is_same_v<std::remove_cvref_t<RealPoliciesT>, real_parser>) &&
             std::is_constructible_v<RealPolicies, RealPoliciesT>
@@ -196,7 +196,7 @@ struct real_parser : parser<real_parser<T, RealPolicies>>
         : policies_(std::forward<RealPoliciesT>(policies))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, T& attr_) const
         noexcept(
@@ -208,7 +208,7 @@ struct real_parser : parser<real_parser<T, RealPolicies>>
         return extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
         noexcept(

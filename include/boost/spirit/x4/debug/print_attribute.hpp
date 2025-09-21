@@ -24,12 +24,12 @@
 
 namespace boost::spirit::x4::traits {
 
-template <typename Out, typename T>
+template <class Out, class T>
 void print_attribute(Out& out, T const& val);
 
 namespace detail {
 
-template <typename Out>
+template <class Out>
 struct print_fusion_sequence
 {
     print_fusion_sequence(Out& out)
@@ -39,7 +39,7 @@ struct print_fusion_sequence
 
     using result_type = void;
 
-    template <typename T>
+    template <class T>
     void operator()(T const& val) const
     {
         if (is_first) {
@@ -55,14 +55,14 @@ struct print_fusion_sequence
 };
 
 // print elements in a variant
-template <typename Out>
+template <class Out>
 struct print_visitor : static_visitor<>
 {
     print_visitor(Out& out)
         : out(out)
     {}
 
-    template <typename T>
+    template <class T>
     void operator()(T const& val) const
     {
         traits::print_attribute(out, val);
@@ -73,7 +73,7 @@ struct print_visitor : static_visitor<>
 
 } // detail
 
-template <typename Out, typename T>
+template <class Out, class T>
 struct print_attribute_debug
 {
     static void call(Out& out, unused_type const&)
@@ -156,7 +156,7 @@ struct print_attribute_debug
     }
 };
 
-template <typename Out, typename T>
+template <class Out, class T>
 void print_attribute(Out& out, T const& val)
 {
     print_attribute_debug<Out, T>::call(out, val);

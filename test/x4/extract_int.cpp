@@ -49,7 +49,7 @@ struct custom_int
     bool operator==(custom_int x) const { return value_ == x.value_; }
     bool operator!=(custom_int x) const { return value_ != x.value_; }
 
-    template <typename Char, typename Traits>
+    template <class Char, class Traits>
     friend std::basic_ostream<Char, Traits>&
     operator<<(std::basic_ostream<Char, Traits>& os, custom_int x) {
         return os << x.value_;
@@ -89,7 +89,7 @@ public:
 
 namespace {
 
-template <typename T, int Base, int MaxDigits>
+template <class T, int Base, int MaxDigits>
 void test_overflow_handling(char const* begin, char const* end, int i)
 {
     // Check that parser fails on overflow
@@ -115,7 +115,7 @@ void test_overflow_handling(char const* begin, char const* end, int i)
     }
 }
 
-template <typename T, int Base>
+template <class T, int Base>
 void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int i)
 {
     // Check that unparsed digits are not consumed
@@ -138,7 +138,7 @@ void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int 
     }
 }
 
-template <typename T, int Base>
+template <class T, int Base>
 void run_tests(char const* begin, char const* end, int i)
 {
     // Check that parser fails on overflow

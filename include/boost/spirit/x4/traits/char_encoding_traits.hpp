@@ -22,7 +22,7 @@ namespace boost::spirit::x4::traits {
 
 namespace detail {
 
-template <typename Encoding>
+template <class Encoding>
 struct char_encoding_traits_impl
 {
     using encoding_type = Encoding;

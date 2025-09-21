@@ -16,7 +16,7 @@
 
 namespace boost::spirit::x4::detail {
 
-template <typename CharT>
+template <class CharT>
 [[nodiscard]] constexpr bool
 is_valid(char_range<CharT> const& range) noexcept
 {
@@ -24,7 +24,7 @@ is_valid(char_range<CharT> const& range) noexcept
     return range.first <= range.last;
 }
 
-template <typename CharT>
+template <class CharT>
 [[nodiscard]] constexpr bool
 includes(char_range<CharT> const& range, char_range<CharT> const& other) noexcept
 {
@@ -32,7 +32,7 @@ includes(char_range<CharT> const& range, char_range<CharT> const& other) noexcep
     return range.first <= other.first && range.last >= other.last;
 }
 
-template <typename CharT>
+template <class CharT>
 [[nodiscard]] constexpr bool
 includes(char_range<CharT> const& range, CharT val) noexcept
 {
@@ -40,7 +40,7 @@ includes(char_range<CharT> const& range, CharT val) noexcept
     return range.first <= val && range.last >= val;
 }
 
-template <typename CharT>
+template <class CharT>
 [[nodiscard]] constexpr bool
 can_merge(char_range<CharT> const& range, char_range<CharT> const& other) noexcept
 {
@@ -60,7 +60,7 @@ can_merge(char_range<CharT> const& range, char_range<CharT> const& other) noexce
     return decr_first <= other.last && incr_last >= other.first;
 }
 
-template <typename CharT>
+template <class CharT>
 constexpr void
 merge(char_range<CharT>& result, char_range<CharT> const& other) noexcept
 {
@@ -77,19 +77,19 @@ struct char_range_compare
 {
     using is_transparent = int;
 
-    template <typename CharT>
+    template <class CharT>
     [[nodiscard]] constexpr bool operator()(char_range<CharT> const& x, CharT const y) const noexcept
     {
         return x.first < y;
     }
 
-    template <typename CharT>
+    template <class CharT>
     [[nodiscard]] constexpr bool operator()(CharT const x, char_range<CharT> const& y) const noexcept
     {
         return x < y.first;
     }
 
-    template <typename CharT>
+    template <class CharT>
     [[nodiscard]] constexpr bool operator()(char_range<CharT> const& x, char_range<CharT> const& y) const noexcept
     {
         return x.first < y.first;

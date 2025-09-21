@@ -21,21 +21,21 @@
 
 namespace boost::spirit::x4 {
 
-template <typename Left, typename Right>
+template <class Left, class Right>
 struct difference : binary_parser<Left, Right, difference<Left, Right>>
 {
     using base_type = binary_parser<Left, Right, difference>;
 
     static constexpr bool handles_container = Left::handles_container;
 
-    template <typename LeftT, typename RightT>
+    template <class LeftT, class RightT>
         requires std::is_constructible_v<base_type, LeftT, RightT>
     constexpr difference(LeftT&& left, RightT&& right)
         noexcept(std::is_nothrow_constructible_v<base_type, LeftT, RightT>)
         : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
     {
@@ -82,12 +82,12 @@ operator-(Left&& left, Right&& right)
 
 namespace boost::spirit::x4::traits {
 
-template <typename Left, typename Right, typename Context>
+template <class Left, class Right, class Context>
 struct attribute_of<x4::difference<Left, Right>, Context>
     : attribute_of<Left, Context>
 {};
 
-template <typename Left, typename Right, typename Context>
+template <class Left, class Right, class Context>
 struct has_attribute<x4::difference<Left, Right>, Context>
     : has_attribute<Left, Context>
 {};

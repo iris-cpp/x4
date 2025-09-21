@@ -50,7 +50,7 @@ constexpr void utf8_put_encode(utf8_string& out, ucs4_char x) noexcept
 
 } // detail
 
-template <typename Char>
+template <class Char>
 [[nodiscard]] constexpr utf8_string to_utf8(Char value)
 {
     utf8_string result;
@@ -59,35 +59,35 @@ template <typename Char>
     return result;
 }
 
-template <typename Char>
+template <class Char>
 [[nodiscard]] constexpr utf8_string to_utf8(Char const* str)
 {
     utf8_string result;
-    using UChar = typename std::make_unsigned<Char>::type;
+    using UChar = std::make_unsigned_t<Char>;
     while (*str) {
         detail::utf8_put_encode(result, static_cast<UChar>(*str++));
     }
     return result;
 }
 
-template <typename Char, typename Traits>
+template <class Char, class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string_view<Char, Traits> const str)
 {
     utf8_string result;
-    using UChar = typename std::make_unsigned<Char>::type;
+    using UChar = std::make_unsigned_t<Char>;
     for (Char ch : str) {
         detail::utf8_put_encode(result, static_cast<UChar>(ch));
     }
     return result;
 }
 
-template <typename Char, typename Traits>
+template <class Char, class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string<Char, Traits> const& str)
 {
     utf8_string result;
-    using UChar = typename std::make_unsigned<Char>::type;
+    using UChar = std::make_unsigned_t<Char>;
     for (Char ch : str) {
         detail::utf8_put_encode(result, static_cast<UChar>(ch));
     }
@@ -109,7 +109,7 @@ template <std::forward_iterator It>
     requires std::is_same_v<std::remove_const_t<std::iter_value_t<It>>, wchar_t>
 [[nodiscard]] constexpr ucs4_char decode_utf16(It& s) noexcept
 {
-    using uwchar_t = std::make_unsigned<wchar_t>::type;
+    using uwchar_t = std::make_unsigned_t<wchar_t>;
 
     uwchar_t x(*s);
     if (x < 0xD800ul || x > 0xDFFFul) {
@@ -132,7 +132,7 @@ template <std::forward_iterator It>
 
 } // detail
 
-template <typename Traits>
+template <class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string_view<wchar_t, Traits> const str)
 {
@@ -148,7 +148,7 @@ to_utf8(std::basic_string_view<wchar_t, Traits> const str)
     return x4::to_utf8(std::basic_string_view(str));
 }
 
-template <typename Traits>
+template <class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string<wchar_t, Traits> const& str)
 {

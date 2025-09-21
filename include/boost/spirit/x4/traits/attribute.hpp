@@ -22,13 +22,13 @@ namespace boost::spirit::x4::traits {
 // Retrieve the attribute type to use from the given type.
 // This is needed to extract the correct attribute type from proxy classes
 // as utilized in `FUSION_ADAPT_ADT` et al.
-template <typename Attribute>
+template <class Attribute>
 struct attribute_type
 {
     using type = Attribute;
 };
 
-template <typename Attribute>
+template <class Attribute>
 using attribute_type_t = typename attribute_type<Attribute>::type;
 
 
@@ -36,7 +36,7 @@ using attribute_type_t = typename attribute_type<Attribute>::type;
 // its actual attribute at parse time. This trait customization point
 // provides a mechanism to convert the trait to the actual trait at
 // parse time.
-template <typename Context, typename Attribute, std::forward_iterator It, std::sentinel_for<It> Se = It>
+template <class Context, class Attribute, std::forward_iterator It, std::sentinel_for<It> Se = It>
 struct pseudo_attribute
 {
     using attribute_type = Attribute;
@@ -48,7 +48,7 @@ struct pseudo_attribute
     }
 };
 
-template <typename Context, typename Attribute, std::forward_iterator It, std::sentinel_for<It> Se>
+template <class Context, class Attribute, std::forward_iterator It, std::sentinel_for<It> Se>
 using pseudo_attribute_t = typename pseudo_attribute<Context, Attribute, It, Se>::type;
 
 
@@ -56,13 +56,13 @@ using pseudo_attribute_t = typename pseudo_attribute<Context, Attribute, It, Se>
 // Component's `::attribute_type` or instantiates a nested attribute
 // metafunction. Components may specialize this if such an attribute_type
 // is not readily available (e.g. expensive to compute at compile time).
-template <typename Component, typename Context>
+template <class Component, class Context>
 struct attribute_of;
 
-template <typename Component, typename Context>
+template <class Component, class Context>
 using attribute_of_t = typename attribute_of<Component, Context>::type;
 
-template <typename Component, typename Context>
+template <class Component, class Context>
     requires requires {
         typename Component::attribute_type;
     }
@@ -71,7 +71,7 @@ struct attribute_of<Component, Context>
     using type = typename Component::attribute_type;
 };
 
-template <typename Component, typename Context>
+template <class Component, class Context>
     requires requires {
         typename Component::template attribute<Context>::type;
     }
@@ -80,7 +80,7 @@ struct attribute_of<Component, Context>
     using type = typename Component::template attribute<Context>::type;
 };
 
-template <typename Component, typename Context>
+template <class Component, class Context>
     requires Component::is_pass_through_unary
 struct attribute_of<Component, Context>
 {
@@ -98,19 +98,19 @@ struct attribute_of<Component, Context>
 // component attribute against unused_type. If the component provides a
 // nested constant expression has_attribute as a hint, that value is used
 // instead. Components may specialize this.
-template <typename Component, typename Context>
+template <class Component, class Context>
 struct has_attribute
 {
     static_assert(requires {
         typename attribute_of<Component, Context>::type;
     });
-    static constexpr bool value = !std::is_same_v<attribute_of_t<Component, Context>, unused_type>;
+    static constexpr bool value = !std::same_as<attribute_of_t<Component, Context>, unused_type>;
 };
 
-template <typename Component, typename Context>
+template <class Component, class Context>
 constexpr bool has_attribute_v = has_attribute<Component, Context>::value;
 
-template <typename Component, typename Context>
+template <class Component, class Context>
     requires requires {
         { Component::has_attribute } -> std::same_as<bool>;
     }
@@ -118,7 +118,7 @@ struct has_attribute<Component, Context>
     : std::bool_constant<Component::has_attribute>
 {};
 
-template <typename Component, typename Context>
+template <class Component, class Context>
     requires Component::is_pass_through_unary
 struct has_attribute<Component, Context>
 {
@@ -132,27 +132,27 @@ struct has_attribute<Component, Context>
 
 namespace boost::spirit::x4::detail {
 
-template <typename... T>
+template <class... T>
 struct type_sequence
 {
     using type = type_sequence;
 
     static constexpr std::size_t size = sizeof...(T);
 
-    template <typename... U>
+    template <class... U>
     using append = type_sequence<T..., U...>;
 
-    template <typename... U>
+    template <class... U>
     using prepend = type_sequence<U..., T...>;
 
-    template <typename U>
+    template <class U>
     using extend = typename U::template prepend<T...>;
 
-    template <template <typename...> class U>
+    template <template <class...> class U>
     using transfer_to = U<T...>;
 };
 
-template <typename Attribute>
+template <class Attribute>
 struct types_of_binary_init : type_sequence<Attribute>
 {};
 
@@ -164,37 +164,37 @@ template <>
 struct types_of_binary_init<unused_type const> : type_sequence<>
 {};
 
-template <template <typename, typename> class B, typename P, typename C>
+template <template <class, class> class B, class P, class C>
 struct get_types_of_binary
     : types_of_binary_init<typename traits::attribute_of<P, C>::type>
 {};
 
-template <template <typename, typename> class B, typename L, typename R, typename C>
+template <template <class, class> class B, class L, class R, class C>
 struct get_types_of_binary<B, B<L, R>, C>
     : get_types_of_binary<B, L, C>::template extend<get_types_of_binary<B, R, C>>
 {};
 
-template <template <typename...> class A, typename T, int = T::size>
+template <template <class...> class A, class T, int = T::size>
 struct type_sequence_to_attribute
 {
     using type = typename T::template transfer_to<A>;
 };
 
-template <template <typename...> class A, typename T>
+template <template <class...> class A, class T>
 struct type_sequence_to_attribute<A, T, 1>
     : T::template transfer_to<std::type_identity>
 {};
 
-template <template <typename...> class A, typename T>
+template <template <class...> class A, class T>
 struct type_sequence_to_attribute<A, T, 0>
 {
     using type = unused_type;
 };
 
 template <
-    template <typename...> class A,
-    template <typename, typename> class B,
-    typename L, typename R, typename C
+    template <class...> class A,
+    template <class, class> class B,
+    class L, class R, class C
 >
 using attribute_of_binary = type_sequence_to_attribute<
     A,

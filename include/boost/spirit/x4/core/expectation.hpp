@@ -34,7 +34,7 @@ struct expectation_failure
 {
     constexpr expectation_failure() = default;
 
-    template <typename WhichT>
+    template <class WhichT>
         requires std::is_constructible_v<std::string, WhichT>
     constexpr expectation_failure(It where, WhichT&& which)
         noexcept(std::is_nothrow_copy_constructible_v<It> && std::is_nothrow_constructible_v<std::string, WhichT>)
@@ -65,7 +65,7 @@ struct expectation_failure
         which_.clear();
     }
 
-    template <typename WhichT>
+    template <class WhichT>
         requires std::is_constructible_v<std::string, WhichT>
     constexpr void emplace(It where, WhichT&& which)
         noexcept(std::is_nothrow_move_assignable_v<It> && std::is_nothrow_assignable_v<std::string&, WhichT>)
@@ -97,10 +97,10 @@ constexpr void swap(expectation_failure<It>& a, expectation_failure<It>& b)
     a.swap(b);
 }
 
-template <typename Context>
+template <class Context>
 using expectation_failure_t = get_context_plain_t<expectation_failure_tag, Context>;
 
-template <typename Context>
+template <class Context>
 [[nodiscard]]
 constexpr bool has_expectation_failure(Context const& context) noexcept
 {
@@ -118,7 +118,7 @@ constexpr bool has_expectation_failure(Context const& context) noexcept
 // Creation of a brand-new expectation_failure instance.
 // This is the primary overload.
 //
-template <std::forward_iterator It, typename Subject, typename Context>
+template <std::forward_iterator It, class Subject, class Context>
 constexpr void set_expectation_failure(
     It where,
     Subject const& subject,
@@ -136,7 +136,7 @@ constexpr void set_expectation_failure(
     x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject));
 }
 
-template <typename Context>
+template <class Context>
 [[nodiscard]]
 constexpr decltype(auto) get_expectation_failure(Context const& context) noexcept
 {
@@ -151,7 +151,7 @@ constexpr decltype(auto) get_expectation_failure(Context const& context) noexcep
     return x4::get<expectation_failure_tag>(context);
 }
 
-template <typename Context>
+template <class Context>
 constexpr void clear_expectation_failure(Context const& context) noexcept
 {
     using T = expectation_failure_t<Context>;

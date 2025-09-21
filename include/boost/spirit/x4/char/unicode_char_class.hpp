@@ -245,7 +245,7 @@ struct unicode_char_class_base
     using char_type = char_encoding::unicode::char_type;
 
 #define BOOST_SPIRIT_X4_BASIC_CLASSIFY(name) \
-    template <typename Char> \
+    template <class Char> \
     static constexpr bool \
     is(name##_tag, Char ch) noexcept \
     { \
@@ -253,7 +253,7 @@ struct unicode_char_class_base
     }
 
 #define BOOST_SPIRIT_X4_CLASSIFY(name) \
-    template <typename Char> \
+    template <class Char> \
     static constexpr bool \
     is(name##_tag, Char ch) noexcept \
     { \
@@ -503,7 +503,7 @@ struct unicode_char_class_base
 #undef BOOST_SPIRIT_X4_CLASSIFY
 };
 
-template <typename Tag>
+template <class Tag>
 struct unicode_char_class
     : char_parser<unicode_char_class<Tag>>
 {
@@ -514,7 +514,7 @@ struct unicode_char_class
 
     static constexpr bool has_attribute = true;
 
-    template <typename Char, typename Context>
+    template <class Char, class Context>
     [[nodiscard]] static constexpr bool test(Char ch, Context const&) noexcept
     {
         return encoding::ischar(ch) && unicode_char_class_base::is(tag{}, ch);

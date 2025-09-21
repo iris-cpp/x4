@@ -12,7 +12,7 @@
 
 namespace {
 
-template <typename T, typename P>
+template <class T, class P>
 void basic_real_parser_test(P parser)
 {
     T attr;

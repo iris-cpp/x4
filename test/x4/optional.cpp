@@ -40,7 +40,7 @@ namespace {
 
 struct test_attribute_type
 {
-    template <typename Context>
+    template <class Context>
     void operator()(Context& ctx) const
     {
         BOOST_TEST(typeid(decltype(x4::_attr(ctx))).name() == typeid(std::optional<int>).name());

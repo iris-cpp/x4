@@ -25,14 +25,14 @@
 
 namespace boost::spirit::x4 {
 
-template <typename Subject>
+template <class Subject>
 struct plus : unary_parser<Subject, plus<Subject>>
 {
     using base_type = unary_parser<Subject, plus>;
 
     static constexpr bool handles_container = true;
 
-    template <typename SubjectT>
+    template <class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, plus>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -41,7 +41,7 @@ struct plus : unary_parser<Subject, plus<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))))
@@ -69,7 +69,7 @@ operator+(Subject&& subject)
 
 namespace boost::spirit::x4::traits {
 
-template <typename Subject, typename Context>
+template <class Subject, class Context>
 struct attribute_of<x4::plus<Subject>, Context>
     : build_container<attribute_of_t<Subject, Context>>
 {};

@@ -24,10 +24,10 @@
 namespace boost::spirit::x4 {
 
 //  Default boolean policies
-template <typename T = bool>
+template <class T = bool>
 struct bool_policies
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompare>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompare>
     [[nodiscard]] static constexpr bool
     parse_true(It& first, Se const& last, Attribute& attr_, CaseCompare const& case_compare)
         noexcept(std::is_nothrow_constructible_v<Attribute, T>)
@@ -40,7 +40,7 @@ struct bool_policies
         return false;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompare>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class CaseCompare>
     [[nodiscard]] static constexpr bool
     parse_false(It& first, Se const& last, Attribute& attr_, CaseCompare const& case_compare)
         noexcept(std::is_nothrow_constructible_v<Attribute, T>)
@@ -54,7 +54,7 @@ struct bool_policies
     }
 };
 
-template <typename T, typename Encoding, typename BoolPolicies = bool_policies<T>>
+template <class T, class Encoding, class BoolPolicies = bool_policies<T>>
 struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
 {
     using encoding = Encoding;
@@ -64,7 +64,7 @@ struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
 
     constexpr bool_parser() = default;
 
-    template <typename BoolPoliciesT>
+    template <class BoolPoliciesT>
         requires
             (!std::is_same_v<std::remove_cvref_t<BoolPoliciesT>, bool_parser>) &&
             std::is_constructible_v<BoolPolicies, BoolPoliciesT>
@@ -73,7 +73,7 @@ struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
         : policies_(std::forward<BoolPoliciesT>(policies))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, T& attr) const
         // TODO: noexcet
@@ -83,7 +83,7 @@ struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
             || policies_.parse_false(first, last, attr, get_case_compare<encoding>(context));
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
         // TODO: noexcept
@@ -101,7 +101,7 @@ private:
     BOOST_SPIRIT_NO_UNIQUE_ADDRESS BoolPolicies policies_{};
 };
 
-template <typename T, typename Encoding, typename BoolPolicies = bool_policies<T>>
+template <class T, class Encoding, class BoolPolicies = bool_policies<T>>
 struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicies>>
 {
     using encoding = Encoding;
@@ -109,7 +109,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicie
 
     static constexpr bool has_attribute = true;
 
-    template <typename Value>
+    template <class Value>
         requires
             (!std::is_same_v<std::remove_cvref_t<Value>, literal_bool_parser>) &&
             std::is_constructible_v<T, Value>
@@ -119,7 +119,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicie
         , n_(std::forward<Value>(n))
     {}
 
-    template <typename Value, typename BoolPoliciesT>
+    template <class Value, class BoolPoliciesT>
         requires
             std::is_constructible_v<T, Value> &&
             std::is_constructible_v<BoolPolicies, BoolPoliciesT>
@@ -129,7 +129,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicie
         , n_(std::forward<Value>(n))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, T& attr) const
         // TODO: noexcept
@@ -139,7 +139,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicie
             || (!n_ && policies_.parse_false(first, last, attr, x4::get_case_compare<encoding>(context)));
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
         // TODO: noexcept

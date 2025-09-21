@@ -43,7 +43,7 @@ using skip_flag [[deprecated("Use `root_skipper_flag`")]] = root_skipper_flag;
 
 namespace detail {
 
-template <typename ItOrRange>
+template <class ItOrRange>
 struct parse_context_for_impl;
 
 template <std::forward_iterator It>
@@ -60,10 +60,10 @@ struct parse_context_for_impl<R>
     : parse_context_for_impl<std::ranges::iterator_t<R const>>
 {};
 
-template <typename Skipper, typename ItOrRange, typename SeOrRange = ItOrRange>
+template <class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 struct phrase_parse_context_for_impl;
 
-template <typename Skipper, std::forward_iterator It, std::sentinel_for<It> Se>
+template <class Skipper, std::forward_iterator It, std::sentinel_for<It> Se>
 struct phrase_parse_context_for_impl<Skipper, It, Se>
 {
     static_assert(X4ExplicitParser<Skipper, It, Se>);
@@ -75,7 +75,7 @@ struct phrase_parse_context_for_impl<Skipper, It, Se>
     >;
 };
 
-template <typename Skipper, std::ranges::forward_range R>
+template <class Skipper, std::ranges::forward_range R>
 struct phrase_parse_context_for_impl<Skipper, R>
     : phrase_parse_context_for_impl<Skipper, std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>
 {};
@@ -85,17 +85,17 @@ struct phrase_parse_context_for_impl<Skipper, R>
 // Used for determining the context type required in `BOOST_SPIRIT_X4_INSTANTIATE`.
 // Note that sentinel is not required, because only the iterator is needed for error info.
 // We keep the empty parameter as the noop placeholder to make the interface consistent with `phrase_parse_context_for`.
-template <typename ItOrRange, typename = void>
+template <class ItOrRange, class = void>
 using parse_context_for = typename detail::parse_context_for_impl<ItOrRange>::type;
 
 // Used for determining the context type required in `BOOST_SPIRIT_X4_INSTANTIATE`.
-template <typename Skipper, typename ItOrRange, typename SeOrRange = ItOrRange>
+template <class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 
 namespace detail {
 
-template <typename Parser, typename R>
+template <class Parser, class R>
 concept X4RangeParseParser =
     X4Parser<
         Parser,
@@ -103,7 +103,7 @@ concept X4RangeParseParser =
         typename detail::range_parse_parser_impl<R>::sentinel_type
     >;
 
-template <typename Skipper, typename R>
+template <class Skipper, class R>
 concept X4RangeParseSkipper =
     X4ExplicitParser<
         Skipper,

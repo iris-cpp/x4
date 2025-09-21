@@ -27,14 +27,14 @@
 
 namespace boost::spirit::x4 {
 
-template <typename T, boost::endian::order endian, std::size_t bits>
+template <class T, boost::endian::order endian, std::size_t bits>
 struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
 {
     using attribute_type = unused_type;
 
     static constexpr bool has_attribute = false;
 
-    template <typename U>
+    template <class U>
         requires
             (!std::is_same_v<std::remove_cvref_t<U>, binary_lit_parser>) &&
             std::is_constructible_v<T, U>
@@ -43,7 +43,7 @@ struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
         : n_(std::forward<U>(n))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
         // TODO: noexcept
@@ -68,7 +68,7 @@ private:
     boost::endian::endian_arithmetic<endian, T, bits> n_;
 };
 
-template <typename T, boost::endian::order endian, std::size_t bits>
+template <class T, boost::endian::order endian, std::size_t bits>
 struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
 {
     static_assert(std::is_trivially_copyable_v<T>);
@@ -77,7 +77,7 @@ struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, T>;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
         // TODO: noexcept
@@ -143,7 +143,7 @@ BOOST_SPIRIT_X4_BINARY_PARSER(little_bin_double, little, double, sizeof(double) 
 
 } // cpos
 
-template <typename T, std::size_t bits>
+template <class T, std::size_t bits>
 struct get_info<any_binary_parser<T, endian::order::little, bits>>
 {
     using result_type = std::string;
@@ -155,7 +155,7 @@ struct get_info<any_binary_parser<T, endian::order::little, bits>>
     }
 };
 
-template <typename T, std::size_t bits>
+template <class T, std::size_t bits>
 struct get_info<any_binary_parser<T, endian::order::big, bits>>
 {
     using result_type = std::string;
@@ -167,7 +167,7 @@ struct get_info<any_binary_parser<T, endian::order::big, bits>>
     }
 };
 
-template <typename T, std::size_t bits>
+template <class T, std::size_t bits>
 struct get_info<binary_lit_parser<T, endian::order::little, bits>>
 {
     using result_type = std::string;
@@ -179,7 +179,7 @@ struct get_info<binary_lit_parser<T, endian::order::little, bits>>
     }
 };
 
-template <typename T, std::size_t bits>
+template <class T, std::size_t bits>
 struct get_info<binary_lit_parser<T, endian::order::big, bits>>
 {
     using result_type = std::string;

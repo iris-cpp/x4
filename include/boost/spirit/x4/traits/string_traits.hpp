@@ -48,7 +48,7 @@ struct unicode;
 
 namespace boost::spirit::x4::traits {
 
-template <typename T>
+template <class T>
 concept CharLike =
     std::same_as<std::remove_cvref_t<T>, char> ||
     std::same_as<std::remove_cvref_t<T>, wchar_t> ||
@@ -56,7 +56,7 @@ concept CharLike =
     std::same_as<std::remove_cvref_t<T>, char16_t> ||
     std::same_as<std::remove_cvref_t<T>, char32_t>;
 
-template <typename T>
+template <class T>
 concept CharArray =
     std::is_array_v<std::remove_cvref_t<T>> &&
     CharLike<std::remove_extent_t<std::remove_cvref_t<T>>>;
@@ -75,7 +75,7 @@ concept CharArray =
 //
 // However, if compelling use cases emerge, we may revise these
 // semantics. Versioned as `X4` for forward compatibility.
-template <typename T, typename CharT>
+template <class T, class CharT>
 concept X4VagueArrayOf2Chars =
     std::same_as<std::remove_extent_t<std::remove_cvref_t<T>>, CharT> &&
     std::is_bounded_array_v<std::remove_cvref_t<T>> &&
@@ -86,7 +86,7 @@ concept X4VagueArrayOf2Chars =
 //
 // This may also be used in other codes which require the same
 // semantics.
-template <typename T, typename CharT>
+template <class T, class CharT>
 concept CppStringLike =
     // This avoids converting `CharT[2]` to `std::basic_string_view`.
     (!X4VagueArrayOf2Chars<T, CharT>) &&
@@ -95,14 +95,14 @@ concept CppStringLike =
 
 // Mixing incompatible character types is semantically wrong.
 // Don't do that. It may even lead to security vulnerabilities.
-template <typename T, typename ExpectedCharT>
+template <class T, class ExpectedCharT>
 concept CharIncompatibleWith =
     CharLike<T> &&
     !std::same_as<std::remove_cvref_t<T>, ExpectedCharT>;
 
 // Mixing incompatible character types is semantically wrong.
 // Don't do that. It may even lead to security vulnerabilities.
-template <typename T, typename ExpectedCharT>
+template <class T, class ExpectedCharT>
 concept StringLikeIncompatibleWith =
     CharLike<std::remove_const_t<std::remove_pointer_t<std::decay_t<T>>>> &&
     !std::convertible_to<T, std::basic_string_view<ExpectedCharT>>;

@@ -16,7 +16,7 @@
 
 namespace boost::spirit::x4::detail {
 
-template <typename ID, typename It, typename Se, typename Context>
+template <class ID, class It, class Se, class Context>
 concept HasImmutableOnErrorOverload =
     std::forward_iterator<It> &&
     std::sentinel_for<Se, It> &&
@@ -29,7 +29,7 @@ concept HasImmutableOnErrorOverload =
         );
     };
 
-template <typename ID, typename It, typename Se, typename Context>
+template <class ID, class It, class Se, class Context>
 concept HasMutableOnErrorOverload =
     std::forward_iterator<It> &&
     std::sentinel_for<Se, It> &&
@@ -42,10 +42,10 @@ concept HasMutableOnErrorOverload =
         );
     };
 
-template <typename ID, std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+template <class ID, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
 struct has_on_error : std::false_type {};
 
-template <typename ID, std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+template <class ID, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     requires HasImmutableOnErrorOverload<ID, It, Se, Context>
 struct has_on_error<ID, It, Se, Context> : std::true_type
 {
@@ -63,7 +63,7 @@ struct has_on_error<ID, It, Se, Context> : std::true_type
     );
 };
 
-template <typename ID, std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
+template <class ID, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     requires
         (!HasImmutableOnErrorOverload<ID, It, Se, Context>) &&
         HasMutableOnErrorOverload<ID, It, Se, Context>
@@ -84,7 +84,7 @@ struct has_on_error<ID, It, Se, Context> : std::false_type
     );
 };
 
-template <typename ID, typename It, typename Se, typename Attribute, typename Context>
+template <class ID, class It, class Se, class Attribute, class Context>
 concept HasImmutableOnSuccessOverload =
     std::forward_iterator<It> &&
     std::sentinel_for<Se, It> &&
@@ -97,7 +97,7 @@ concept HasImmutableOnSuccessOverload =
         );
     };
 
-template <typename ID, typename It, typename Se, typename Attribute, typename Context>
+template <class ID, class It, class Se, class Attribute, class Context>
 concept HasMutableOnSuccessOverload =
     std::forward_iterator<It> &&
     std::sentinel_for<Se, It> &&
@@ -110,10 +110,10 @@ concept HasMutableOnSuccessOverload =
         );
     };
 
-template <typename ID, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
+template <class ID, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
 struct has_on_success : std::false_type {};
 
-template <typename ID, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
+template <class ID, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
     requires HasImmutableOnSuccessOverload<ID, It, Se, Attribute, Context>
 struct has_on_success<ID, It, Se, Attribute, Context> : std::true_type
 {
@@ -131,7 +131,7 @@ struct has_on_success<ID, It, Se, Attribute, Context> : std::true_type
     );
 };
 
-template <typename ID, std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
+template <class ID, std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
     requires
         (!HasImmutableOnSuccessOverload<ID, It, Se, Attribute, Context>) &&
         HasMutableOnSuccessOverload<ID, It, Se, Attribute, Context>

@@ -48,7 +48,7 @@ public:
         (*this)(where.begin(), where.end(), message);
     }
 
-    template <typename AST>
+    template <class AST>
     void tag(AST& ast, It first, It last)
     {
         return pos_cache.annotate(ast, first, last);
