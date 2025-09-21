@@ -42,8 +42,8 @@ namespace boost::spirit::x4
 
     template <typename T>
     concept X4Attribute =
-        std::is_same_v<std::remove_const_t<T>, unused_type> ||
-        std::is_same_v<std::remove_const_t<T>, unused_container_type> ||
+        std::same_as<std::remove_const_t<T>, unused_type> ||
+        std::same_as<std::remove_const_t<T>, unused_container_type> ||
         (
             std::is_object_v<T> && // implies not reference
             !std::is_base_of_v<detail::parser_base, std::remove_const_t<T>> &&
