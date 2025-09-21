@@ -58,8 +58,7 @@ struct allocator_ops
 
         using Alloc = std::remove_reference_t<decltype(self.*AllocMem)>;
         constexpr bool pocca = std::allocator_traits<Alloc>::propagate_on_container_copy_assignment::value;
-        if constexpr (pocca)
-        {
+        if constexpr (pocca) {
             self.*AllocMem = other.*AllocMem;
         }
     }
@@ -74,8 +73,7 @@ struct allocator_ops
 
         using Alloc = std::remove_reference_t<decltype(self.*AllocMem)>;
         constexpr bool pocca = std::allocator_traits<Alloc>::propagate_on_container_move_assignment::value;
-        if constexpr (pocca)
-        {
+        if constexpr (pocca) {
             self.*AllocMem = std::move(other.*AllocMem);
         }
     }
@@ -106,71 +104,53 @@ private:
         auto const& other_data = other.*Mem;
         auto const& other_alloc = other.*AllocMem;
 
-        if (other_data)
-        {
-            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value)
-            {
-                if (data)
-                {
+        if (other_data) {
+            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value) {
+                if (data) {
                     *data = *other_data;
                     return;
                 }
-                if constexpr (pocca)
-                {
+                if constexpr (pocca) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, *other_data);
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, *other_data);
                 }
                 return;
-            }
-            else if (alloc == other_alloc)
-            {
-                if (data)
-                {
+
+            } else if (alloc == other_alloc) {
+                if (data) {
                     *data = *other_data;
                     return;
                 }
-                if constexpr (pocca)
-                {
+                if constexpr (pocca) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, *other_data);
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, *other_data);
                 }
                 return;
-            }
-            else
-            {
-                if (data)
-                {
+
+            } else {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                     data = nullptr;
                 }
-                if constexpr (pocca)
-                {
+                if constexpr (pocca) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, *other_data);
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, *other_data);
                 }
                 return;
             }
-        }
-        else // !other_data
-        {
-            if (data)
-            {
+
+        } else { // !other_data
+            if (data) {
                 std::allocator_traits<Alloc>::destroy(alloc, data);
                 std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 data = nullptr;
@@ -192,42 +172,32 @@ private:
         auto& other_data = other.*Mem;
         auto& other_alloc = other.*AllocMem;
 
-        if (other_data)
-        {
-            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value)
-            {
-                if (data)
-                {
+        if (other_data) {
+            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value) {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 }
                 data = std::exchange(other_data, nullptr);
                 return;
-            }
-            else if (alloc == other_alloc)
-            {
-                if (data)
-                {
+
+            } else if (alloc == other_alloc) {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 }
                 data = std::exchange(other_data, nullptr);
                 return;
-            }
-            else
-            {
-                if (data)
-                {
+
+            } else {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 }
-                if constexpr (pocma)
-                {
+                if constexpr (pocma) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, std::move(*other_data));
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, std::move(*other_data));
                 }
@@ -236,11 +206,9 @@ private:
                 std::allocator_traits<Alloc>::deallocate(other_alloc, other_data, 1);
                 return;
             }
-        }
-        else // !other_data
-        {
-            if (data)
-            {
+
+        } else { // !other_data
+            if (data) {
                 std::allocator_traits<Alloc>::destroy(alloc, data);
                 std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 data = nullptr;

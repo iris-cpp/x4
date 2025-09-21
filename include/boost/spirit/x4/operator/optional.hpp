@@ -47,9 +47,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
         std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute // unconstrained
     >
     [[nodiscard]] constexpr bool
-    parse(
-        It& first, Se const& last, Context const& context, Attribute& attr
-    ) const
+    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
     {
         static_assert(Parsable<Subject, It, Se, Context, Attribute>);
@@ -88,8 +86,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
         value_type val; // default-initialize
 
         static_assert(Parsable<Subject, It, Se, Context, value_type>);
-        if (this->subject.parse(first, last, context, val))
-        {
+        if (this->subject.parse(first, last, context, val)) {
             // assign the parsed value into our attribute
             x4::move_to(std::move(val), attr);
             return true;

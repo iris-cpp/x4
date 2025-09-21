@@ -204,12 +204,9 @@ parse_alternative(
     using pseudo = traits::pseudo_attribute<Context, typename pass::type, It, Se>;
     typename pseudo::type attr_ = pseudo::call(first, last, pass::call(attribute));
 
-    if (p.parse(first, last, context, attr_))
-    {
-        x4::move_to(std::move(attr_), attribute);
-        return true;
-    }
-    return false;
+    if (!p.parse(first, last, context, attr_)) return false;
+    x4::move_to(std::move(attr_), attribute);
+    return true;
 }
 
 template <typename Subject>

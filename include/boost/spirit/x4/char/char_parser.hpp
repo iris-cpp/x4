@@ -26,8 +26,8 @@ struct char_parser : parser<Derived>
         // TODO: noexcept
     {
         x4::skip_over(first, last, context);
-        if (first != last && this->derived().test(*first, context))
-        {
+
+        if (first != last && this->derived().test(*first, context)) {
             x4::move_to(std::iter_value_t<It>{*first}, attr);
             ++first;
             return true;

@@ -15,6 +15,7 @@
 
 #include <boost/spirit/x4/numeric/utils/pow10.hpp>
 
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 #include <limits>
@@ -37,41 +38,33 @@ scale(int exp, T& n)
     constexpr auto max_exp = std::numeric_limits<T>::max_exponent10;
     constexpr auto min_exp = std::numeric_limits<T>::min_exponent10;
 
-    if (exp >= 0)
-    {
+    if (exp >= 0) {
         // return false if exp exceeds the max_exp
         // do this check only for primitive types!
-        if constexpr (std::is_floating_point_v<T>)
-        {
-            if (exp > max_exp)
-            {
+        if constexpr (std::is_floating_point_v<T>) {
+            if (exp > max_exp) {
                 return false;
             }
         }
         n *= traits::pow10<T>(exp);
-    }
-    else
-    {
-        if (exp < min_exp)
-        {
+
+    } else {
+        if (exp < min_exp) {
             n /= traits::pow10<T>(-min_exp);
 
             // return false if exp still exceeds the min_exp
             // do this check only for primitive types!
             exp += -min_exp;
 
-            if constexpr (std::is_floating_point_v<T>)
-            {
-                if (exp < min_exp)
-                {
+            if constexpr (std::is_floating_point_v<T>) {
+                if (exp < min_exp) {
                     return false;
                 }
             }
 
             n /= traits::pow10<T>(-exp);
-        }
-        else
-        {
+
+        } else {
             n /= traits::pow10<T>(-exp);
         }
     }
@@ -151,16 +144,15 @@ struct extract_real
 
         // Now attempt to parse an integer
         T n = 0;
-        bool got_a_number = p.parse_n(first, last, n);
+        bool const got_a_number = p.parse_n(first, last, n);
 
         // If we did not get a number it might be a NaN, Inf or a leading
         // dot.
-        if (!got_a_number)
-        {
+        if (!got_a_number) {
             // Check whether the number to parse is a NaN or Inf
             if (p.parse_nan(first, last, n) ||
-                p.parse_inf(first, last, n))
-            {
+                p.parse_inf(first, last, n)
+            ) {
                 // If we got a negative sign, negate the number
                 x4::move_to(extension::negate(neg, n), attr);
                 return true;    // got a NaN or Inf, return early
@@ -168,8 +160,7 @@ struct extract_real
 
             // If we did not get a number and our policies do not
             // allow a leading dot, fail and return early (no-match)
-            if (!p.allow_leading_dot)
-            {
+            if (!p.allow_leading_dot) {
                 first = save;
                 return false;
             }
@@ -180,24 +171,20 @@ struct extract_real
         int frac_digits = 0;
 
         // Try to parse the dot ('.' decimal point)
-        if (p.parse_dot(first, last))
-        {
+        if (p.parse_dot(first, last)) {
             // We got the decimal point. Now we will try to parse
             // the fraction if it is there. If not, it defaults
             // to zero (0) only if we already got a number.
             It savef = first;
-            if (p.parse_frac_n(first, last, n))
-            {
+            if (p.parse_frac_n(first, last, n)) {
                 // Optimization note: don't compute frac_digits if T is
                 // an unused_type. This should be optimized away by the compiler.
-                if constexpr (!std::is_same_v<T, unused_type>)
-                {
+                if constexpr (!std::same_as<T, unused_type>) {
                     frac_digits = static_cast<int>(std::distance(savef, first));
                 }
                 assert(frac_digits >= 0);
-            }
-            else if (!got_a_number || !p.allow_trailing_dot)
-            {
+
+            } else if (!got_a_number || !p.allow_trailing_dot) {
                 // We did not get a fraction. If we still haven't got a
                 // number and our policies do not allow a trailing dot,
                 // return no-match.
@@ -208,12 +195,10 @@ struct extract_real
             // Now, let's see if we can parse the exponent prefix
             e_pos = first;
             e_hit = p.parse_exp(first, last);
-        }
-        else
-        {
+
+        } else {
             // No dot and no number! Return no-match.
-            if (!got_a_number)
-            {
+            if (!got_a_number) {
                 first = save;
                 return false;
             }
@@ -222,44 +207,41 @@ struct extract_real
             // prefix, return no-match.
             e_pos = first;
             e_hit = p.parse_exp(first, last);
-            if constexpr(p.expect_dot)
-            {
-                if (!e_hit)
-                {
+            if constexpr(p.expect_dot) {
+                if (!e_hit) {
                     first = save;
                     return false;
                 }
             }
         }
 
-        if (e_hit)
-        {
+        if (e_hit) {
             // We got the exponent prefix. Now we will try to parse the
             // actual exponent. It is an error if it is not there.
             int exp = 0;
-            if (p.parse_exp_n(first, last, exp))
-            {
+            if (p.parse_exp_n(first, last, exp)) {
                 // Got the exponent value. Scale the number by
                 // exp-frac_digits.
-                if (!extension::scale(exp, frac_digits, n))
+                if (!extension::scale(exp, frac_digits, n)) {
                     return false;
-            }
-            else
-            {
+                }
+
+            } else {
                 // If there is no number, disregard the exponent altogether.
                 // by resetting 'first' prior to the exponent prefix (e|E)
                 first = e_pos;
 
                 // Scale the number by -frac_digits.
-                if (!extension::scale(-frac_digits, n))
+                if (!extension::scale(-frac_digits, n)) {
                     return false;
+                }
             }
-        }
-        else if (frac_digits)
-        {
+
+        } else if (frac_digits) {
             // No exponent found. Scale the number by -frac_digits.
-            if (!extension::scale(-frac_digits, n))
+            if (!extension::scale(-frac_digits, n)) {
                 return false;
+            }
         }
 
         // If we got a negative sign, negate the number

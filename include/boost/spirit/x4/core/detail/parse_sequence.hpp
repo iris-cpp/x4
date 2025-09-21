@@ -260,8 +260,7 @@ parse_sequence(
 
     if (parser.left.parse(first, last, context, l_attr) &&
         parser.right.parse(first, last, context, r_attr)
-    )
-    {
+    ) {
         return true;
     }
     first = first_saved;
@@ -325,8 +324,7 @@ parse_sequence(
     It const first_saved = first;
     if (detail::parse_sequence_container(parser.left, first, last, context, attr) &&
         detail::parse_sequence_container(parser.right, first, last, context, attr)
-    )
-    {
+    ) {
         return true;
     }
     first = first_saved;
@@ -385,8 +383,7 @@ parse_sequence(
     It const first_saved = first;
     if (parser.left.parse(first, last, context, attr) &&
         parser.right.parse(first, last, context, attr)
-    )
-    {
+    ) {
         return true;
     }
     first = first_saved;
@@ -444,15 +441,12 @@ struct parse_into_container_impl<sequence<Left, Right>, Context>
         if constexpr (
             std::is_same_v<std::remove_const_t<Attribute>, unused_type> ||
             std::is_same_v<std::remove_const_t<Attribute>, unused_container_type>
-        )
-        {
+        ) {
             return detail::parse_sequence(parser, first, last, context, x4::assume_container(attr));
-        }
-        else
-        {
+
+        } else {
             Attribute attr_;
-            if (!detail::parse_sequence(parser, first, last, context, attr_))
-            {
+            if (!detail::parse_sequence(parser, first, last, context, attr_)) {
                 return false;
             }
             traits::append(

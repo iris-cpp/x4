@@ -162,8 +162,7 @@ int main()
         using attr_type = deque<char, int>;
         attr_type fv;
 
-        auto r = rule<class r_id, attr_type>()
-            = char_ >> ',' >> int_;
+        auto r = rule<class r_id, attr_type>{} = char_ >> ',' >> int_;
 
         BOOST_TEST((parse("test:x,1", "test:" >> r, fv) &&
             fv == attr_type('x', 1)));
@@ -177,8 +176,7 @@ int main()
         using attr_type = deque<int>;
         attr_type fv;
 
-        auto r = rule<class r_id, attr_type>()
-            = int_;
+        auto r = rule<class r_id, attr_type>{} = int_;
 
         BOOST_TEST((parse("test:1", "test:" >> r, fv) &&
             fv == attr_type(1)));
@@ -195,7 +193,8 @@ int main()
         BOOST_TEST(!parse("BEGIN END", no_case[lit("begin") >> "nend"], space));
     }
 
-    { // check attribute is passed through unary to another sequence
+    {
+        // check attribute is passed through unary to another sequence
         using x4::eps;
         std::string s;
         BOOST_TEST(parse("ab", eps >> no_case[char_ >> char_], s));
@@ -212,13 +211,8 @@ int main()
     }
 
     {
-#ifdef SPIRIT_NO_COMPILE_CHECK
-        char_ >> char_ = char_ >> char_; // disallow this!
-#endif
-    }
-
-    { // alternative forms of attributes. Allow sequences to take in
-      // stl containers.
+        // alternative forms of attributes. Allow sequences to take in
+        // stl containers.
 
         std::vector<char> v;
         BOOST_TEST(parse("abc", char_ >> char_ >> char_, v));
@@ -228,8 +222,9 @@ int main()
         BOOST_TEST(v[2] == 'c');
     }
 
-    { // alternative forms of attributes. Allow sequences to take in
-      // stl containers.
+    {
+        // alternative forms of attributes. Allow sequences to take in
+        // stl containers.
 
         std::vector<char> v;
         BOOST_TEST(parse("a,b,c", char_ >> *(',' >> char_), v));
@@ -239,8 +234,9 @@ int main()
         BOOST_TEST(v[2] == 'c');
     }
 
-    { // alternative forms of attributes. Allow sequences to take in
-      // stl containers.
+    {
+        // alternative forms of attributes. Allow sequences to take in
+        // stl containers.
 
         std::vector<char> v;
         BOOST_TEST(parse("abc", char_ >> *char_, v));
@@ -250,8 +246,9 @@ int main()
         BOOST_TEST(v[2] == 'c');
     }
 
-    { // alternative forms of attributes. Allow sequences to take in
-      // stl containers.
+    {
+        // alternative forms of attributes. Allow sequences to take in
+        // stl containers.
         //~ using x4::hold;
 
         std::vector<char> v;
@@ -283,8 +280,9 @@ int main()
         BOOST_TEST(v[2] == 'c');
     }
 
-    { // alternative forms of attributes. Allow sequences to take in
-      // stl containers.
+    {
+        // alternative forms of attributes. Allow sequences to take in
+        // stl containers.
 
         std::vector<char> v;
         BOOST_TEST(parse("abc", char_ >> -(+char_), v));
@@ -294,8 +292,9 @@ int main()
         BOOST_TEST(v[2] == 'c');
     }
 
-    { // alternative forms of attributes. Allow sequences to take in
-      // stl containers.
+    {
+        // alternative forms of attributes. Allow sequences to take in
+        // stl containers.
 
         std::string s;
         BOOST_TEST(parse("foobar", string("foo") >> string("bar"), s));
@@ -324,19 +323,15 @@ int main()
     // stl containers of stl containers.
     {
         std::vector<std::string> v;
-        BOOST_TEST(parse("abc1,abc2",
-            *~char_(',') >> *(',' >> *~char_(',')), v));
+        BOOST_TEST(parse("abc1,abc2", *~char_(',') >> *(',' >> *~char_(',')), v));
         BOOST_TEST(v.size() == 2 && v[0] == "abc1" && v[1] == "abc2");
     }
 
     {
         std::vector<std::string> v;
 
-        auto e = rule<class e_id, std::string>()
-            = *~char_(',');
-
-        auto l = rule<class l_id, std::vector<std::string>>()
-            = e >> *(',' >> e);
+        auto e = rule<class e_id, std::string>{} = *~char_(',');
+        auto l = rule<class l_id, std::vector<std::string>>{} = e >> *(',' >> e);
 
         BOOST_TEST(parse("abc1,abc2,abc3", l, v));
         BOOST_TEST(v.size() == 3);
@@ -348,18 +343,14 @@ int main()
     // do the same with a plain string object
     {
         std::string s;
-        BOOST_TEST(parse("abc1,abc2",
-            *~char_(',') >> *(',' >> *~char_(',')), s));
+        BOOST_TEST(parse("abc1,abc2", *~char_(',') >> *(',' >> *~char_(',')), s));
         BOOST_TEST(s == "abc1abc2");
     }
 
     {
         std::string s;
-        auto e = rule<class e_id, std::string>()
-            = *~char_(',');
-
-        auto l = rule<class l_id, std::string>()
-            = e >> *(',' >> e);
+        auto e = rule<class e_id, std::string>{} = *~char_(',');
+        auto l = rule<class l_id, std::string>{} = e >> *(',' >> e);
 
         BOOST_TEST(parse("abc1,abc2,abc3", l, s));
         BOOST_TEST(s == "abc1abc2abc3");
@@ -421,14 +412,16 @@ int main()
         BOOST_TEST(at_c<0>(vec)[1] == 456);
     }
 
-    { // non-flat optional
+    {
+        // non-flat optional
         vector<int, std::optional<vector<int, int>>> v;
         auto const p = int_ >> -(':' >> int_ >> '-' >> int_);
         BOOST_TEST(parse("1:2-3", p, v))
             && BOOST_TEST(at_c<1>(v)) && BOOST_TEST_EQ(at_c<0>(*at_c<1>(v)), 2);
     }
 
-    { // optional with container attribute
+    {
+        // optional with container attribute
         vector<char, std::optional<std::string>> v;
         auto const p = char_ >> -(':' >> +char_);
         BOOST_TEST(parse("x", p, v))
@@ -468,11 +461,10 @@ int main()
 
         char c = 0;
         int n = 0;
-        auto f = [&](auto& ctx)
-            {
-                c = at_c<0>(_attr(ctx));
-                n = at_c<1>(_attr(ctx));
-            };
+        auto f = [&](auto& ctx) {
+            c = at_c<0>(_attr(ctx));
+            n = at_c<1>(_attr(ctx));
+        };
 
         BOOST_TEST(parse("x123\"a string\"", (char_ >> int_ >> "\"a string\"")[f]));
         BOOST_TEST(c == 'x');
@@ -483,23 +475,14 @@ int main()
         // test action
         char c = 0;
         int n = 0;
-        auto f = [&](auto& ctx)
-            {
-                c = at_c<0>(_attr(ctx));
-                n = at_c<1>(_attr(ctx));
-            };
+        auto f = [&](auto& ctx) {
+            c = at_c<0>(_attr(ctx));
+            n = at_c<1>(_attr(ctx));
+        };
 
         BOOST_TEST(parse("x 123 \"a string\"", (char_ >> int_ >> "\"a string\"")[f], space));
         BOOST_TEST(c == 'x');
         BOOST_TEST(n == 123);
-    }
-
-    {
-#ifdef SPIRIT_NO_COMPILE_CHECK
-        char const* const s = "";
-        int i;
-        parse(s, s, int_ >> int_, i);
-#endif
     }
 
     {

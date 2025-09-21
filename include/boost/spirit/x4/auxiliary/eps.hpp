@@ -65,21 +65,18 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
     {
         x4::skip_over(first, last, context);
 
-        if constexpr (std::invocable<F const&, Context const&>)
-        {
+        if constexpr (std::invocable<F const&, Context const&>) {
             static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
             return f_(context);
-        }
-        else if constexpr (std::invocable<F const&, unused_type const&>)
-        {
+
+        } else if constexpr (std::invocable<F const&, unused_type const&>) {
             static_assert(
                 false,
                 "We no longer accept a lazy semantic predicate that expects a single `unused_type`. "
                 "Just make your functor take no arguments instead."
             );
-        }
-        else
-        {
+
+        } else {
             static_assert(std::invocable<F const&>);
             static_assert(std::same_as<std::invoke_result_t<F const&>, bool>);
             return f_();

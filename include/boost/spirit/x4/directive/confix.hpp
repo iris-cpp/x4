@@ -63,8 +63,7 @@ struct confix_directive
               this->subject.parse(first, last, context, attr) &&
               postfix_.parse(first, last, context, unused))
         ) {
-            if (x4::has_expectation_failure(context))
-            {
+            if (x4::has_expectation_failure(context)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 return false;
             }

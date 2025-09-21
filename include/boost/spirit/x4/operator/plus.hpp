@@ -46,8 +46,7 @@ struct plus : unary_parser<Subject, plus<Subject>>
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))))
     {
-        if (!detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr)))
-        {
+        if (!detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))) {
             return false;
         }
 

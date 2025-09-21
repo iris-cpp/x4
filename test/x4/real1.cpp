@@ -72,27 +72,19 @@ int main()
         BOOST_TEST(parse("INF", udouble));
         BOOST_TEST(parse("INFINITY", udouble));
 
-        BOOST_TEST(parse("inf", udouble, d)
-                && std::isinf(d));
-        BOOST_TEST(parse("INF", udouble, d)
-                && std::isinf(d));
-        BOOST_TEST(parse("infinity", udouble, d)
-                && std::isinf(d));
-        BOOST_TEST(parse("INFINITY", udouble, d)
-                && std::isinf(d));
+        BOOST_TEST(parse("inf", udouble, d) && std::isinf(d));
+        BOOST_TEST(parse("INF", udouble, d) && std::isinf(d));
+        BOOST_TEST(parse("infinity", udouble, d) && std::isinf(d));
+        BOOST_TEST(parse("INFINITY", udouble, d) && std::isinf(d));
 
         BOOST_TEST(parse("nan", udouble));
-        BOOST_TEST(parse("nan", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("nan", udouble, d) && std::isnan(d));
         BOOST_TEST(parse("NAN", udouble));
-        BOOST_TEST(parse("NAN", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("NAN", udouble, d) && std::isnan(d));
         BOOST_TEST(parse("nan(...)", udouble));
-        BOOST_TEST(parse("nan(...)", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("nan(...)", udouble, d) && std::isnan(d));
         BOOST_TEST(parse("NAN(...)", udouble));
-        BOOST_TEST(parse("NAN(...)", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("NAN(...)", udouble, d) && std::isnan(d));
 
         BOOST_TEST(!parse("e3", udouble));
         BOOST_TEST(!parse("e3", udouble, d));

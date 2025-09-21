@@ -129,10 +129,10 @@ int main()
     {
         // injecting data into the context in the grammar
         int val = 0;
-        auto r = rule<my_rule_class, char const*>() =
+        auto r = rule<my_rule_class, char const*>{} =
             '(' > int_ > ',' > int_ > ')';
 
-        auto start = with<my_tag>(std::ref(val)) [ r ];
+        auto start = with<my_tag>(std::ref(val))[r];
 
         BOOST_TEST(parse("(123,456)", start));
         BOOST_TEST(!parse("(abc,def)", start));
@@ -165,11 +165,14 @@ int main()
 
     {
         // injecting const/non-const lvalue and rvalue into the context
-        struct functor {
-            int operator()(int& val) {
+        struct functor
+        {
+            int operator()(int& val)
+            {
                 return val * 10; // non-const ref returns 10 * injected val
             }
-            int operator()(int const& val) {
+            int operator()(int const& val)
+            {
                 return val; // const ref returns injected val
             }
         };

@@ -50,13 +50,11 @@ public:
         // collapse all subsequent ranges that can merge with *iter:
         auto it = std::next(iter);
         // 1. skip subsequent ranges completely included in *iter
-        while (it != run.end() && it->last <= iter->last)
-        {
+        while (it != run.end() && it->last <= iter->last) {
             ++it;
         }
         // 2. collapse next range if adjacent or overlapping with *iter
-        if (it != run.end() && it->first-1 <= iter->last)
-        {
+        if (it != run.end() && it->first-1 <= iter->last) {
             iter->last = it->last;
             ++it;
         }
@@ -88,8 +86,7 @@ public:
     constexpr void set(range_type const& range)
     {
         assert(detail::is_valid(range));
-        if (run_.empty())
-        {
+        if (run_.empty()) {
             // the vector is empty, insert 'range'
             run_.emplace_back(range);
             return;
@@ -98,24 +95,20 @@ public:
         // search the ranges for one that potentially includes 'range'
         auto iter = std::ranges::upper_bound(run_, range, char_range_compare{});
 
-        if (iter != run_.begin())
-        {
+        if (iter != run_.begin()) {
             // if *(iter-1) includes 'range', return early
-            if (detail::includes(*std::prev(iter), range))
-            {
+            if (detail::includes(*std::prev(iter), range)) {
                 return;
             }
 
             // if *(iter-1) can merge with 'range', merge them and return
-            if (this->try_merge(run_, std::prev(iter), range))
-            {
+            if (this->try_merge(run_, std::prev(iter), range)) {
                 return;
             }
         }
 
         // if *iter can merge with with 'range', merge them
-        if (iter == run_.end() || !this->try_merge(run_, iter, range))
-        {
+        if (iter == run_.end() || !this->try_merge(run_, iter, range)) {
             // no overlap, insert 'range'
             run_.insert(iter, range);
         }
@@ -130,17 +123,14 @@ public:
         auto iter = std::ranges::upper_bound(run_, range, char_range_compare{});
 
         // 'range' starts with or after another range:
-        if (iter != run_.begin())
-        {
+        if (iter != run_.begin()) {
             auto const left_iter = std::prev(iter);
 
             // 'range' starts after '*left_iter':
-            if (left_iter->first < range.first)
-            {
+            if (left_iter->first < range.first) {
                 // if 'range' is completely included inside '*left_iter':
                 // need to break it apart into two ranges (punch a hole),
-                if (left_iter->last > range.last)
-                {
+                if (left_iter->last > range.last) {
                     auto const last_save = left_iter->last;
                     left_iter->last = range.first-1;
                     run_.insert(iter, range_type(range.last+1, last_save));
@@ -148,16 +138,12 @@ public:
                 }
                 // if 'range' contains 'left_iter->last':
                 // truncate '*left_iter' (clip its right)
-                else if (left_iter->last >= range.first)
-                {
+                if (left_iter->last >= range.first) {
                     left_iter->last = range.first-1;
                 }
-            }
-
-            // 'range' has the same left bound as '*left_iter': it
-            // must be removed or truncated by the code below
-            else
-            {
+            } else {
+                // 'range' has the same left bound as '*left_iter': it
+                // must be removed or truncated by the code below
                 iter = left_iter;
             }
         }
@@ -165,13 +151,11 @@ public:
         // remove or truncate subsequent ranges that overlap with 'range':
         auto it = iter;
         // 1. skip subsequent ranges completely included in 'range'
-        while (it != run_.end() && it->last <= range.last)
-        {
+        while (it != run_.end() && it->last <= range.last) {
             ++it;
         }
         // 2. clip left of next range if overlapping with 'range'
-        if (it != run_.end() && it->first <= range.last)
-        {
+        if (it != run_.end() && it->first <= range.last) {
             it->first = range.last+1;
         }
 

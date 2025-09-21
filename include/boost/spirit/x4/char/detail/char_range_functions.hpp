@@ -29,7 +29,7 @@ template <typename CharT>
 includes(char_range<CharT> const& range, char_range<CharT> const& other) noexcept
 {
     // see if two ranges intersect
-    return (range.first <= other.first) && (range.last >= other.last);
+    return range.first <= other.first && range.last >= other.last;
 }
 
 template <typename CharT>
@@ -37,7 +37,7 @@ template <typename CharT>
 includes(char_range<CharT> const& range, CharT val) noexcept
 {
     // see if val is in range
-    return (range.first <= val) && (range.last >= val);
+    return range.first <= val && range.last >= val;
 }
 
 template <typename CharT>
@@ -57,7 +57,7 @@ can_merge(char_range<CharT> const& range, char_range<CharT> const& other) noexce
         range.last == (limits::max)()
         ? range.last : range.last+1;
 
-    return (decr_first <= other.last) && (incr_last >= other.first);
+    return decr_first <= other.last && incr_last >= other.first;
 }
 
 template <typename CharT>
@@ -65,12 +65,10 @@ constexpr void
 merge(char_range<CharT>& result, char_range<CharT> const& other) noexcept
 {
     // merge two ranges
-    if (result.first > other.first)
-    {
+    if (result.first > other.first) {
         result.first = other.first;
     }
-    if (result.last < other.last)
-    {
+    if (result.last < other.last) {
         result.last = other.last;
     }
 }

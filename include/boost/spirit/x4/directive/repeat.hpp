@@ -104,20 +104,16 @@ struct repeat_directive : unary_parser<Subject, repeat_directive<Subject, Bounds
     {
         It local_it = first;
         typename Bounds::value_type i{};
-        for (; !bounds_.got_min(i); ++i)
-        {
-            if (!detail::parse_into_container(this->subject, local_it, last, context, x4::assume_container(attr)))
-            {
+        for (; !bounds_.got_min(i); ++i) {
+            if (!detail::parse_into_container(this->subject, local_it, last, context, x4::assume_container(attr))) {
                 return false;
             }
         }
 
         first = local_it;
         // parse some more up to the maximum specified
-        for (; !bounds_.got_max(i); ++i)
-        {
-            if (!detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr)))
-            {
+        for (; !bounds_.got_max(i); ++i) {
+            if (!detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))) {
                 break;
             }
         }

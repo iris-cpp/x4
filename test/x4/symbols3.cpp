@@ -49,21 +49,19 @@ int main()
     namespace x4 = boost::spirit::x4;
     using x4::shared_symbols;
 
-    { // construction from initializer-list
-        shared_symbols<int> const ones =
-        {
+    {
+        // construction from initializer-list
+        shared_symbols<int> const ones = {
             {"I", 1}, {"II", 2}, {"III", 3}, {"IV", 4},
             {"V", 5}, {"VI", 6}, {"VII", 7}, {"VIII", 8},
             {"IX", 9}
         };
-        shared_symbols<int> const tens =
-        {
+        shared_symbols<int> const tens = {
             {"X", 10}, {"XX", 20}, {"XXX", 30}, {"XL", 40},
             {"L", 50}, {"LX", 60}, {"LXX", 70}, {"LXXX", 80},
             {"XC", 90}
         };
-        shared_symbols<int> const hundreds
-        {
+        shared_symbols<int> const hundreds {
             {"C", 100}, {"CC", 200}, {"CCC", 300}, {"CD", 400},
             {"D", 500}, {"DC", 600}, {"DCC", 700}, {"DCCC", 800},
             {"CM", 900}
@@ -76,20 +74,23 @@ int main()
         BOOST_TEST(eval(r) == 442);
     }
 
-    { // construction from initializer-list without attribute
+    {
+        // construction from initializer-list without attribute
         shared_symbols<> foo = {"a1", "a2", "a3"};
 
         BOOST_TEST(parse("a3", foo));
     }
 
-    { // assignment from initializer-list
+    {
+        // assignment from initializer-list
         shared_symbols<> foo;
         foo = {"a1", "a2", "a3"};
 
         BOOST_TEST(parse("a3", foo));
     }
 
-    { // unicode | construction from initializer-list
+    {
+        // unicode | construction from initializer-list
         x4::shared_symbols_parser<x4::char_encoding::unicode, int> foo = {{U"a1", 1}, {U"a2", 2}, {U"a3", 3}};
 
         int r = 0;

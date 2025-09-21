@@ -94,8 +94,7 @@ struct tst
     constexpr T* add(Iterator first, Iterator last, Val&& val)
     {
         if (first == last) return nullptr;
-        if (!root_)
-        {
+        if (!root_) {
             root_ = std::allocator_traits<node_allocator_type>::allocate(node_alloc_, 1);
             std::allocator_traits<node_allocator_type>::construct(node_alloc_, root_, *first, alloc_);
         }
@@ -136,16 +135,12 @@ private:
         node** pp = &root;
         auto c = *first;
 
-        while (true)
-        {
+        while (true) {
             node* const p = *pp;
 
-            if (c == p->id)
-            {
-                if (++first == last)
-                {
-                    if (!p->data)
-                    {
+            if (c == p->id) {
+                if (++first == last) {
+                    if (!p->data) {
                         p->data = std::allocator_traits<Alloc>::allocate(alloc_, 1);
                         std::allocator_traits<Alloc>::construct(alloc_, p->data, std::forward<Val>(val));
                     }
@@ -153,18 +148,14 @@ private:
                 }
                 pp = &p->eq;
                 c = *first;
-            }
-            else if (c < p->id)
-            {
+
+            } else if (c < p->id) {
                 pp = &p->lt;
-            }
-            else
-            {
+            } else {
                 pp = &p->gt;
             }
 
-            if (!*pp)
-            {
+            if (!*pp) {
                 *pp = std::allocator_traits<node_allocator_type>::allocate(node_alloc_, 1);
                 std::allocator_traits<node_allocator_type>::construct(node_alloc_, *pp, c);
             }
@@ -179,30 +170,23 @@ private:
 
         auto c = *first;
 
-        if (c == p->id)
-        {
-            if (++first == last)
-            {
-                if (p->data)
-                {
+        if (c == p->id) {
+            if (++first == last) {
+                if (p->data) {
                     std::allocator_traits<Alloc>::destroy(alloc_, p->data);
                     std::allocator_traits<Alloc>::deallocate(alloc_, p->data, 1);
                     p->data = nullptr;
                 }
             }
             this->remove(p->eq, first, last);
-        }
-        else if (c < p->id)
-        {
+
+        } else if (c < p->id) {
             this->remove(p->lt, first, last);
-        }
-        else
-        {
+        } else {
             this->remove(p->gt, first, last);
         }
 
-        if (!p->data && !p->lt && !p->eq && !p->gt)
-        {
+        if (!p->data && !p->lt && !p->eq && !p->gt) {
             std::allocator_traits<node_allocator_type>::destroy(node_alloc_, p);
             std::allocator_traits<node_allocator_type>::deallocate(node_alloc_, p, 1);
             p = nullptr;

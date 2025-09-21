@@ -28,9 +28,12 @@ string_parse(
     auto stri = str.begin();
     auto str_last = str.end();
 
-    for (; stri != str_last; ++stri, ++i)
-        if (i == last || (compare(*stri, *i) != 0))
+    for (; stri != str_last; ++stri, ++i) {
+        if (i == last || compare(*stri, *i) != 0) {
             return false;
+        }
+    }
+
     x4::move_to(first, i, x4::assume_container(attr));
     first = i;
     return true;
@@ -60,9 +63,11 @@ string_parse(
     auto lc_i = lcstr.begin();
     It i = first;
 
-    for (; uc_i != uc_last; ++uc_i, ++lc_i, ++i)
-        if (i == last || ((*uc_i != *i) && (*lc_i != *i)))
+    for (; uc_i != uc_last; ++uc_i, ++lc_i, ++i) {
+        if (i == last || (*uc_i != *i && *lc_i != *i)) {
             return false;
+        }
+    }
     x4::move_to(first, i, x4::assume_container(attr));
     first = i;
     return true;

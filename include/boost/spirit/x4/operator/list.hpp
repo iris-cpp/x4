@@ -49,8 +49,7 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
         )
     {
         // In order to succeed we need to match at least one element
-        if (!detail::parse_into_container(this->left, first, last, context, x4::assume_container(attr)))
-        {
+        if (!detail::parse_into_container(this->left, first, last, context, x4::assume_container(attr))) {
             return false;
         }
 
@@ -58,8 +57,7 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
         while (
             this->right.parse(last_parse_it, last, context, unused) &&
             detail::parse_into_container(this->left, last_parse_it, last, context, x4::assume_container(attr))
-        )
-        {
+        ) {
             // TODO: can we reduce this copy assignment?
             first = last_parse_it;
         }

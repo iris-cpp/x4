@@ -107,10 +107,7 @@ struct parse_into_container_base_impl
         value_type val; // default-initialize
 
         static_assert(Parsable<Parser, It, Se, Context, value_type>);
-        if (!parser.parse(first, last, context, val))
-        {
-            return false;
-        }
+        if (!parser.parse(first, last, context, val)) return false;
 
         // push the parsed value into our attribute
         traits::push_back(attr, std::move(val));
@@ -191,10 +188,7 @@ struct parse_into_container_base_impl
 
         attribute_type attr_; // default-initialize
         static_assert(Parsable<Parser, It, Se, Context, attribute_type>);
-        if (!parser.parse(first, last, context, attr_))
-        {
-            return false;
-        }
+        if (!parser.parse(first, last, context, attr_)) return false;
 
         // Use the type of first element of attribute as key
         using key = std::remove_reference_t<
@@ -281,16 +275,13 @@ struct parse_into_container_impl<Parser, Context>
 
         static_assert(Parsable<Parser, It, Se, Context, Attribute>);
 
-        if (traits::is_empty(attr))
-        {
+        if (traits::is_empty(attr)) {
             return parser.parse(first, last, context, attr);
         }
 
         Attribute rest; // default-initialize
-        if (!parser.parse(first, last, context, rest))
-        {
-            return false;
-        }
+        if (!parser.parse(first, last, context, rest)) return false;
+
         traits::append(
             attr,
             std::make_move_iterator(std::ranges::begin(rest)),

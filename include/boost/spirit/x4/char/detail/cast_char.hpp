@@ -27,21 +27,15 @@ namespace boost::spirit::x4::detail {
 template <typename TargetChar, typename SourceChar>
 [[nodiscard]] constexpr TargetChar cast_char(SourceChar ch) noexcept
 {
-    if constexpr (std::is_signed_v<TargetChar> != std::is_signed_v<SourceChar>)
-    {
-        if constexpr (std::is_signed_v<SourceChar>)
-        {
+    if constexpr (std::is_signed_v<TargetChar> != std::is_signed_v<SourceChar>) {
+        if constexpr (std::is_signed_v<SourceChar>) {
             // source is signed, target is unsigned
             return TargetChar(static_cast<std::make_unsigned_t<SourceChar>>(ch));
-        }
-        else
-        {
+        } else {
             // source is unsigned, target is signed
             return TargetChar(static_cast<std::make_signed_t<SourceChar>>(ch));
         }
-    }
-    else
-    {
+    } else {
         // source and target has same signedness
         return TargetChar(ch); // just cast
     }

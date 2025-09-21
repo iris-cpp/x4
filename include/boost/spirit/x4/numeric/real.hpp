@@ -24,6 +24,8 @@
 #include <type_traits>
 #include <utility>
 
+// TODO: use `std::from_chars`
+
 namespace boost::spirit::x4 {
 
 // Default unsigned real number policies
@@ -55,8 +57,7 @@ struct ureal_policies
     parse_dot(It& first, Se const& last)
         noexcept(noexcept(*first) && noexcept(++first))
     {
-        if (first == last || *first != '.')
-        {
+        if (first == last || *first != '.') {
             return false;
         }
         ++first;
@@ -76,8 +77,7 @@ struct ureal_policies
     parse_exp(It& first, Se const& last)
         noexcept(noexcept(*first) && noexcept(++first))
     {
-        if (first == last || (*first != 'e' && *first != 'E'))
-        {
+        if (first == last || (*first != 'e' && *first != 'E')) {
             return false;
         }
         ++first;
@@ -114,17 +114,15 @@ struct ureal_policies
         if (*first != 'n' && *first != 'N') return false;   // not "nan"
 
         // nan[(...)] ?
-        if (detail::string_parse("nan"sv, "NAN"sv, first, last, unused))
-        {
-            if (first != last && *first == '(')
-            {
+        if (detail::string_parse("nan"sv, "NAN"sv, first, last, unused)) {
+            if (first != last && *first == '(') {
                 // skip trailing (...) part
                 It i = first;
 
                 while (++i != last && *i != ')')
-                    ;
-                if (i == last)
-                    return false;     // no trailing ')' found, give up
+                    /* loop */;
+
+                if (i == last) return false;     // no trailing ')' found, give up
 
                 first = ++i;
             }
@@ -144,8 +142,7 @@ struct ureal_policies
         if (*first != 'i' && *first != 'I') return false;   // not "inf"
 
         // inf or infinity ?
-        if (detail::string_parse("inf"sv, "INF"sv, first, last, unused))
-        {
+        if (detail::string_parse("inf"sv, "INF"sv, first, last, unused)) {
             // skip allowed 'inity' part of infinity
             (void)detail::string_parse("inity"sv, "INITY"sv, first, last, unused);
             attr_ = std::numeric_limits<T>::infinity();
@@ -222,8 +219,7 @@ struct real_parser : parser<real_parser<T, RealPolicies>>
     {
         // this case is called when Attribute is not T
         T attr_;
-        if (this->parse(first, last, context, attr_))
-        {
+        if (this->parse(first, last, context, attr_)) {
             x4::move_to(std::move(attr_), attr_param);
             return true;
         }

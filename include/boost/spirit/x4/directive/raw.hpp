@@ -54,13 +54,11 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 
         x4::skip_over(first, last, context);
         It local_it = first;
-        if (this->subject.parse(local_it, last, context, unused))
-        {
-            x4::move_to(first, local_it, attr);
-            first = local_it;
-            return true;
-        }
-        return false;
+        if (!this->subject.parse(local_it, last, context, unused)) return false;
+
+        x4::move_to(first, local_it, attr);
+        first = local_it;
+        return true;
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>

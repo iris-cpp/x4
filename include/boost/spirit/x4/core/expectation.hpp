@@ -41,8 +41,7 @@ struct expectation_failure
         : where_(where)
         , which_(std::forward<WhichT>(which))
     {
-        if (which_.empty())
-        {
+        if (which_.empty()) {
             which_ = "(unknown location)";
         }
     }

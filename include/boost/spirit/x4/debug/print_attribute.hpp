@@ -42,15 +42,12 @@ struct print_fusion_sequence
     template <typename T>
     void operator()(T const& val) const
     {
-        if (is_first)
-        {
+        if (is_first) {
             is_first = false;
-        }
-        else
-        {
+        } else {
             out << ", ";
         }
-        x4::traits::print_attribute(out, val);
+        traits::print_attribute(out, val);
     }
 
     Out& out;
@@ -68,7 +65,7 @@ struct print_visitor : static_visitor<>
     template <typename T>
     void operator()(T const& val) const
     {
-        x4::traits::print_attribute(out, val);
+        traits::print_attribute(out, val);
     }
 
     Out& out;
@@ -97,17 +94,18 @@ struct print_attribute_debug
 #ifdef BOOST_SPIRIT_X4_UNICODE
     static void call(Out& out, char_encoding::unicode::char_type const& val)
     {
-        if (val >= 0 && val < 127)
-        {
-          if (iscntrl(val)) // TODO
-            out << "\\" << std::oct << int(val) << std::dec;
-          else if (isprint(val))
-            out << char(val);
-          else
-            out << "\\x" << std::hex << int(val) << std::dec;
-        }
-        else
+        if (val >= 0 && val < 127) {
+            if (iscntrl(val)) { // TODO
+                out << "\\" << std::oct << int(val) << std::dec;
+            } else if (isprint(val)) {
+                out << char(val);
+            } else {
+                out << "\\x" << std::hex << int(val) << std::dec;
+            }
+
+        } else {
           out << "\\x" << std::hex << int(val) << std::dec;
+        }
     }
 
     static void call(Out& out, char const& val)
@@ -131,17 +129,13 @@ struct print_attribute_debug
         out << '[';
         bool is_first = true;
         auto last = traits::end(val);
-        for (auto it = traits::begin(val); it != last; ++it)
-        {
-            if (is_first)
-            {
+        for (auto it = traits::begin(val); it != last; ++it) {
+            if (is_first) {
                 is_first = false;
-            }
-            else
-            {
+            } else {
                 out << ", ";
             }
-            x4::traits::print_attribute(out, *it);
+            traits::print_attribute(out, *it);
         }
         out << ']';
     }
@@ -154,12 +148,9 @@ struct print_attribute_debug
 
     static void call(Out& out, CategorizedAttr<optional_attribute> auto const& val)
     {
-        if (val)
-        {
-            x4::traits::print_attribute(out, *val);
-        }
-        else
-        {
+        if (val) {
+            traits::print_attribute(out, *val);
+        } else {
             out << "[empty]";
         }
     }

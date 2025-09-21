@@ -113,9 +113,7 @@ int main()
         std::string s;
         using rule_type = rule<class r, std::string>;
 
-        auto rdef = rule_type()
-            = alpha                 [f()]
-            ;
+        auto rdef = rule_type{} = alpha [f()];
 
         BOOST_TEST(parse("abcdef", +rdef, s));
         BOOST_TEST(s == "abcdef");
@@ -129,8 +127,7 @@ int main()
         auto rdef = rule_type() =
             alpha[([](auto& ctx) {
                 _val(ctx) += _attr(ctx);
-            })]
-            ;
+            })];
 
         BOOST_TEST(parse("abcdef", +rdef, s));
         BOOST_TEST(s == "abcdef");

@@ -93,7 +93,7 @@ int main()
         BOOST_TEST(parse("Kim Kim Kim", +lit("Kim"), space));
     }
 
-    // FIXME
+    // TODO
     /*{
         // The following 2 tests show that omit does not inhibit explicit attributes
 

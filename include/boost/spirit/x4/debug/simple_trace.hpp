@@ -16,8 +16,8 @@
 #include <boost/spirit/x4/debug/print_attribute.hpp>
 #include <boost/spirit/x4/debug/debug_handler_state.hpp>
 
+#include <concepts>
 #include <iostream>
-#include <type_traits>
 
 //  The stream to use for debug output
 #ifndef BOOST_SPIRIT_X4_DEBUG_OUT
@@ -57,30 +57,24 @@ struct simple_trace
     void print_indent(int n) const
     {
         n *= IndentSpaces;
-        for (int i = 0; i != n; ++i)
-        {
+        for (int i = 0; i != n; ++i) {
             out << ' ';
         }
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se>
-    void print_some(
-        char const* tag,
-        It first, Se last
-    ) const
+    void print_some(char const* tag, It first, Se last) const
     {
         simple_trace::print_indent(indent);
 
         out << '<' << tag << '>';
 
-        for (int i = 0; first != last && i != CharsToPrint && *first; ++i, ++first)
-        {
+        for (int i = 0; first != last && i != CharsToPrint && *first; ++i, ++first) {
             detail::token_printer(out, *first);
         }
         out << "</" << tag << '>' << std::endl;
 
-        // $$$ FIXME convert invalid xml characters (e.g. '<') to valid
-        // character entities. $$$
+        // TODO: convert invalid xml characters (e.g. '<') to valid character entities
     }
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
@@ -93,42 +87,32 @@ struct simple_trace
     ) const
     {
         using enum debug_handler_state;
-        switch (state)
-        {
-            case pre_parse:
-                print_indent(indent++);
-                out
-                    << '<' << rule_name << '>'
-                    << std::endl;
-                print_some("try", first, last);
-                break;
+        switch (state) {
+        case pre_parse:
+            simple_trace::print_indent(indent++);
+            out << '<' << rule_name << '>' << std::endl;
+            simple_trace::print_some("try", first, last);
+            break;
 
-            case successful_parse:
-                print_some("success", first, last);
-                if constexpr (!std::is_same_v<Attribute, unused_type>)
-                {
-                    print_indent(indent);
-                    out
-                        << "<attributes>";
-                    traits::print_attribute(out, attr);
-                    out
-                        << "</attributes>";
-                    out << std::endl;
-                }
-                print_indent(--indent);
-                out
-                    << "</" << rule_name << '>'
-                    << std::endl;
-                break;
+        case successful_parse:
+            simple_trace::print_some("success", first, last);
+            if constexpr (!std::same_as<Attribute, unused_type>) {
+                simple_trace::print_indent(indent);
+                out << "<attributes>";
+                traits::print_attribute(out, attr);
+                out << "</attributes>";
+                out << std::endl;
+            }
+            simple_trace::print_indent(--indent);
+            out << "</" << rule_name << '>' << std::endl;
+            break;
 
-            case failed_parse:
-                print_indent(indent);
-                out << "<fail/>" << std::endl;
-                print_indent(--indent);
-                out
-                    << "</" << rule_name << '>'
-                    << std::endl;
-                break;
+        case failed_parse:
+            simple_trace::print_indent(indent);
+            out << "<fail/>" << std::endl;
+            simple_trace::print_indent(--indent);
+            out << "</" << rule_name << '>' << std::endl;
+            break;
         }
     }
 

@@ -66,8 +66,7 @@
 #define TEST_FAILURE_IMPL_4(tester, input, parser, catch_stmt) \
     BOOST_TEST_NO_THROW( \
         { \
-            do \
-            { \
+            do { \
                 auto const res = parse(input, parser); \
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
@@ -82,8 +81,7 @@
 #define TEST_FAILURE_IMPL_5(tester, input, parser, arg0, catch_stmt) \
     BOOST_TEST_NO_THROW( \
         { \
-            do \
-            { \
+            do { \
                 auto const res = parse(input, parser, arg0); \
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
@@ -98,8 +96,7 @@
 #define TEST_FAILURE_IMPL_6(tester, input, parser, arg0, arg1, catch_stmt) \
     BOOST_TEST_NO_THROW( \
         { \
-            do \
-            { \
+            do { \
                 auto const res = parse(input, parser, arg0, arg1); \
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \

@@ -119,7 +119,8 @@ int main()
         (void)parse("abcde", *char_, x);
     }
 
-    { // test move only types
+    {
+        // test move only types
         std::vector<spirit_test::move_only> v;
         BOOST_TEST(parse("sss", *spirit_test::synth_move_only, v));
         BOOST_TEST_EQ(v.size(), 3);

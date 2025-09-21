@@ -27,27 +27,28 @@ struct token_printer_debug_for_chars
     {
         using namespace std;    // allow for ADL to find the proper iscntrl
 
-        switch (c)
-        {
-            case '\a': o << "\\a"; break;
-            case '\b': o << "\\b"; break;
-            case '\f': o << "\\f"; break;
-            case '\n': o << "\\n"; break;
-            case '\r': o << "\\r"; break;
-            case '\t': o << "\\t"; break;
-            case '\v': o << "\\v"; break;
-            default:
-                if (c >= 0 && c < 127)
-                {
-                  if (iscntrl(c))
+        switch (c) {
+        case '\a': o << "\\a"; break;
+        case '\b': o << "\\b"; break;
+        case '\f': o << "\\f"; break;
+        case '\n': o << "\\n"; break;
+        case '\r': o << "\\r"; break;
+        case '\t': o << "\\t"; break;
+        case '\v': o << "\\v"; break;
+        default:
+            if (c >= 0 && c < 127) {
+                if (iscntrl(c)) {
                     o << "\\" << std::oct << int(c);
-                  else if (isprint(c))
+                } else if (isprint(c)) {
                     o << char(c);
-                  else
+                } else {
                     o << "\\x" << std::hex << int(c);
                 }
-                else
-                  o << "\\x" << std::hex << int(c);
+
+            } else {
+                o << "\\x" << std::hex << int(c);
+            }
+            break;
         }
     }
 };

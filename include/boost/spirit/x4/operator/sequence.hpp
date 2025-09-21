@@ -50,13 +50,12 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
         It const first_saved = first;
 
         if (this->left.parse(first, last, context, unused)
-            && this->right.parse(first, last, context, unused))
-        {
+            && this->right.parse(first, last, context, unused)
+        ) {
             return true;
         }
 
-        if (x4::has_expectation_failure(context))
-        {
+        if (x4::has_expectation_failure(context)) {
             // don't rollback iterator (mimicking exception-like behavior)
             return false;
         }

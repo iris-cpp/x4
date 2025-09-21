@@ -47,14 +47,10 @@ struct custom_uint
     custom_uint() : n(0) {}
     explicit custom_uint(unsigned n_) : n(n_) {}
     custom_uint& operator=(unsigned n_) { n = n_; return *this; }
-    friend bool operator==(custom_uint a, custom_uint b)
-        { return a.n == b.n; }
-    friend bool operator==(custom_uint a, unsigned b)
-        { return a.n == b; }
-    friend custom_uint operator*(custom_uint a, custom_uint b)
-        { return custom_uint(a.n * b.n); }
-    friend custom_uint operator+(custom_uint a, custom_uint b)
-        { return custom_uint(a.n + b.n); }
+    friend bool operator==(custom_uint a, custom_uint b) { return a.n == b.n; }
+    friend bool operator==(custom_uint a, unsigned b) { return a.n == b; }
+    friend custom_uint operator*(custom_uint a, custom_uint b) { return custom_uint(a.n * b.n); }
+    friend custom_uint operator+(custom_uint a, custom_uint b) { return custom_uint(a.n + b.n); }
 };
 
 } // anonymous
@@ -64,7 +60,7 @@ int main()
     // unsigned tests
     {
         using x4::uint_;
-        unsigned u;
+        unsigned u = 0;
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(uint_);
 
@@ -83,7 +79,7 @@ int main()
     // binary tests
     {
         using x4::bin;
-        unsigned u;
+        unsigned u = 0;
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bin);
 
@@ -102,7 +98,7 @@ int main()
     // octal tests
     {
         using x4::oct;
-        unsigned u;
+        unsigned u = 0;
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(oct);
 
@@ -121,7 +117,7 @@ int main()
     // hex tests
     {
         using x4::hex;
-        unsigned u;
+        unsigned u = 0;
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(hex);
 
@@ -211,21 +207,21 @@ int main()
     // Check overflow is parse error
     {
         x4::uint_parser<std::uint8_t> uint8_;
-        std::uint8_t u8;
+        std::uint8_t u8 = 0;
 
         BOOST_TEST(!parse("999", uint8_, u8));
         BOOST_TEST(!parse("256", uint8_, u8));
         BOOST_TEST(parse("255", uint8_, u8));
 
         x4::uint_parser<std::uint16_t> uint16_;
-        std::uint16_t u16;
+        std::uint16_t u16 = 0;
 
         BOOST_TEST(!parse("99999", uint16_, u16));
         BOOST_TEST(!parse("65536", uint16_, u16));
         BOOST_TEST(parse("65535", uint16_, u16));
 
         x4::uint_parser<std::uint32_t> uint32_;
-        std::uint32_t u32;
+        std::uint32_t u32 = 0;
 
         BOOST_TEST(!parse("9999999999", uint32_, u32));
         BOOST_TEST(!parse("4294967296", uint32_, u32));
@@ -260,7 +256,7 @@ int main()
     {
         using x4::uint_;
         using x4::uint_parser;
-        custom_uint u;
+        custom_uint u{};
 
         BOOST_TEST(parse("123456", uint_, u));
         uint_parser<custom_uint, 10, 1, 2> uint2;

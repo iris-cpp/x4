@@ -177,17 +177,14 @@ private:
     )
     {
         It const saved_first = first;
-        if (this->subject.parse(first, last, context, attr))
-        {
-            if (this->call_action(first, last, context, attr))
-            {
-                return true;
-            }
+        if (!this->subject.parse(first, last, context, attr)) return false;
 
-            // reset iterators if semantic action failed the match
-            // retrospectively
-            first = saved_first;
+        if (this->call_action(first, last, context, attr)) {
+            return true;
         }
+        // reset iterators if semantic action failed the match
+        // retrospectively
+        first = saved_first;
         return false;
     }
 

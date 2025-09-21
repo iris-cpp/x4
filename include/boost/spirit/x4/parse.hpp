@@ -198,8 +198,7 @@ struct parse_fn_main
         auto const ctx = x4::make_context<expectation_failure_tag>(expect_failure, skipper_ctx);
 
         bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
-        if (ok && flag == root_skipper_flag::do_post_skip)
-        {
+        if (ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             // ReSharper disable once CppAssignedValueIsNeverUsed
             if (expect_failure) [[unlikely]] ok = false;
@@ -228,8 +227,7 @@ struct parse_fn_main
         auto const ctx = x4::make_context<expectation_failure_tag>(res.expect_failure, skipper_ctx);
 
         res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
-        if (res.ok && flag == root_skipper_flag::do_post_skip)
-        {
+        if (res.ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             if (res.expect_failure) [[unlikely]] res.ok = false;
         }
@@ -301,8 +299,7 @@ struct parse_fn_main
         auto const ctx = x4::make_context<expectation_failure_tag>(expect_failure, skipper_ctx);
 
         bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
-        if (ok && flag == root_skipper_flag::do_post_skip)
-        {
+        if (ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             // ReSharper disable once CppAssignedValueIsNeverUsed
             if (expect_failure) [[unlikely]] ok = false;
@@ -325,8 +322,7 @@ struct parse_fn_main
         auto const ctx = x4::make_context<expectation_failure_tag>(res.expect_failure, skipper_ctx);
 
         res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
-        if (res.ok && flag == root_skipper_flag::do_post_skip)
-        {
+        if (res.ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             if (res.expect_failure) [[unlikely]] res.ok = false;
         }

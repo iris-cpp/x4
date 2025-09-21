@@ -322,23 +322,25 @@ enum script
 {
     switch (ch)
     {
-        case '\n': case '\v': case '\f': case '\r':
-            return false;
-        default:
-            return unicode::is_white_space(ch)
-            && !(   unicode::get_category(ch) == properties::line_separator
-                ||  unicode::get_category(ch) == properties::paragraph_separator
-                );
+    case '\n': case '\v': case '\f': case '\r':
+        return false;
+    default:
+        return unicode::is_white_space(ch) &&
+            !(
+                unicode::get_category(ch) == properties::line_separator ||
+                unicode::get_category(ch) == properties::paragraph_separator
+            );
     }
 }
 
 [[nodiscard]] constexpr bool is_graph(std::uint32_t ch) noexcept
 {
-    return !(   unicode::is_white_space(ch)
-            ||  unicode::get_category(ch) == properties::control
-            ||  unicode::get_category(ch) == properties::surrogate
-            ||  unicode::get_category(ch) == properties::unassigned
-            );
+    return !(
+        unicode::is_white_space(ch) ||
+        unicode::get_category(ch) == properties::control ||
+        unicode::get_category(ch) == properties::surrogate ||
+        unicode::get_category(ch) == properties::unassigned
+    );
 }
 
 [[nodiscard]] constexpr bool is_print(std::uint32_t ch) noexcept
@@ -364,15 +366,15 @@ enum script
 [[nodiscard]] constexpr std::uint32_t to_lowercase(std::uint32_t ch) noexcept
 {
     // The table returns 0 to signal that this code maps to itself
-    std::uint32_t r = detail::lowercase_lookup(ch);
-    return (r == 0)? ch : r;
+    std::uint32_t const r = detail::lowercase_lookup(ch);
+    return r == 0 ? ch : r;
 }
 
 [[nodiscard]] constexpr std::uint32_t to_uppercase(std::uint32_t ch) noexcept
 {
     // The table returns 0 to signal that this code maps to itself
-    std::uint32_t r = detail::uppercase_lookup(ch);
-    return (r == 0)? ch : r;
+    std::uint32_t const r = detail::uppercase_lookup(ch);
+    return r == 0 ? ch : r;
 }
 
 } // boost::spirit::x4::unicode

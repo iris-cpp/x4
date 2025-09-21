@@ -88,8 +88,7 @@ int main()
 
         {
             rule<class start> start("start");
-            auto start_def =
-                start = (a | b) >> (start | b);
+            auto start_def = start = (a | b) >> (start | b);
 
             BOOST_TEST(parse("aaaabababaaabbb", start_def));
             BOOST_TEST(parse("aaaabababaaabba", start_def).is_partial_match());
@@ -110,8 +109,7 @@ int main()
 
         {
             rule<class start> start("start");
-            auto start_def =
-                start = (a | b) >> (start | b);
+            auto start_def = start = (a | b) >> (start | b);
 
             BOOST_TEST(parse(" a a a a b a b a b a a a b b b ", start_def, space));
             BOOST_TEST(parse(" a a a a b a b a b a a a b b a ", start_def, space).is_partial_match());
@@ -123,8 +121,7 @@ int main()
 
         using fs = boost::fusion::vector<int, char>;
         rule<class start, std::vector<fs>> start("start");
-        auto start_def =
-            start = *(int_ >> alpha);
+        auto start_def = start = *(int_ >> alpha);
 
         BOOST_TEST(parse("1 a 2 b 3 c", start_def, space));
     }

@@ -113,30 +113,26 @@ struct tst_node
         tst_node* p = start;
         T* found = nullptr;
 
-        while (p && i != last)
-        {
+        while (p && i != last) {
             auto c = comp(*i,p->id);
+
             if (c == 0) {
-                if (p->data)
-                {
+                if (p->data) {
                     found = p->data;
                     latest = i;
                 }
                 p = p->eq;
                 ++i;
-            }
-            else if (c < 0)
-            {
+
+            } else if (c < 0) {
                 p = p->lt;
-            }
-            else
-            {
+
+            } else {
                 p = p->gt;
             }
         }
 
-        if (found)
-        {
+        if (found) {
             first = ++latest; // one past the last matching char
         }
         return found;
@@ -151,10 +147,7 @@ struct tst_node
         tst_node::for_each(p->lt, prefix, f);
         std::basic_string<Char> s = std::basic_string<Char>(prefix) + p->id;
         tst_node::for_each(p->eq, s, f);
-        if (p->data)
-        {
-            f(s, *p->data);
-        }
+        if (p->data) f(s, *p->data);
         tst_node::for_each(p->gt, prefix, f);
     }
 

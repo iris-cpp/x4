@@ -105,10 +105,7 @@ int main()
     {
         std::vector<std::ranges::subrange<std::string::iterator>> attr;
         std::string str("123abcd");
-        (void)parse(str.begin(), str.end()
-          , (raw[int_] >> raw[*char_])
-          , attr
-        );
+        (void)parse(str.begin(), str.end(), raw[int_] >> raw[*char_], attr);
         BOOST_TEST(attr.size() == 2);
         BOOST_TEST(std::string(attr[0].begin(), attr[0].end()) == "123");
         BOOST_TEST(std::string(attr[1].begin(), attr[1].end()) == "abcd");
@@ -117,10 +114,7 @@ int main()
     {
         std::pair<int, std::ranges::subrange<std::string::iterator>> attr;
         std::string str("123abcd");
-        (void)parse(str.begin(), str.end()
-          , (int_ >> raw[*char_])
-          , attr
-        );
+        (void)parse(str.begin(), str.end(), int_ >> raw[*char_], attr);
         BOOST_TEST(attr.first == 123);
         BOOST_TEST(std::string(attr.second.begin(), attr.second.end()) == "abcd");
     }

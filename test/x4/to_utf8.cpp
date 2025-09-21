@@ -20,22 +20,19 @@ int main()
     BOOST_TEST_CSTR_EQ("\xED\x9F\xBF", to_utf8(0xD7FFul).c_str());
     BOOST_TEST_CSTR_EQ("\xEE\x80\x80", to_utf8(0xE000ul).c_str());
 
-    if constexpr (sizeof(L"\u00FF") == 2)
-    {
+    if constexpr (sizeof(L"\u00FF") == 2) {
         BOOST_TEST_CSTR_EQ("\xC3\xBF", to_utf8(L"\u00FF"[0]).c_str());
     }
 
     BOOST_TEST_CSTR_EQ("\xC3\xBF", to_utf8(U'\u00FF').c_str());
 
-    if constexpr (sizeof(L"\uFFE1") == 2)
-    {
+    if constexpr (sizeof(L"\uFFE1") == 2) {
         BOOST_TEST_CSTR_EQ("\xEF\xBF\xA1", to_utf8(L"\uFFE1"[0]).c_str());
     }
 
     BOOST_TEST_CSTR_EQ("\xEF\xBF\xA1", to_utf8(U'\uFFE1').c_str());
 
-    if constexpr(sizeof(L"\U0001F9D0") == 2)
-    {
+    if constexpr(sizeof(L"\U0001F9D0") == 2) {
         BOOST_TEST_CSTR_EQ("\xF0\x9F\xA7\x90", to_utf8(L"\U0001F9D0"[0]).c_str());
     }
 

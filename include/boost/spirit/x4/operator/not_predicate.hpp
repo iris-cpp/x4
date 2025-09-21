@@ -46,7 +46,7 @@ struct not_predicate : unary_parser<Subject, not_predicate<Subject>>
     {
         It local_first = first;
         return !this->subject.parse(local_first, last, context, unused)
-            && !has_expectation_failure(context);
+            && !x4::has_expectation_failure(context);
     }
 };
 

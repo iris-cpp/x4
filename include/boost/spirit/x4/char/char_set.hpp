@@ -38,8 +38,8 @@ struct char_range : char_parser<char_range<Encoding, Attribute>>
     [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
         char_type ch = static_cast<char_type>(ch_);  // optimize for token based parsing
-        return (x4::get_case_compare<encoding>(context)(ch, from) >= 0)
-            && (x4::get_case_compare<encoding>(context)(ch , to) <= 0);
+        return x4::get_case_compare<encoding>(context)(ch, from) >= 0
+            && x4::get_case_compare<encoding>(context)(ch , to) <= 0;
     }
 
     char_type from, to;
@@ -63,21 +63,18 @@ struct char_set : char_parser<char_set<Encoding, Attribute>>
 
         using detail::cast_char; // ADL introduction
 
-        for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);)
-        {
+        for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);) {
             auto const ch = *definition;
             auto next_definition = std::next(definition);
-            if (next_definition == std::ranges::end(str))
-            {
+            if (next_definition == std::ranges::end(str)) {
                 chset.set(cast_char<char_type>(ch));
                 break;
             }
+
             auto next_ch = *next_definition;
-            if (next_ch == '-')
-            {
+            if (next_ch == '-') {
                 next_definition = std::next(next_definition);
-                if (next_definition == std::ranges::end(str))
-                {
+                if (next_definition == std::ranges::end(str)) {
                     chset.set(cast_char<char_type>(ch));
                     chset.set('-');
                     break;
@@ -86,11 +83,10 @@ struct char_set : char_parser<char_set<Encoding, Attribute>>
                     cast_char<char_type>(ch),
                     cast_char<char_type>(*next_definition)
                 );
-            }
-            else
-            {
+            } else {
                 chset.set(cast_char<char_type>(ch));
             }
+
             definition = next_definition;
         }
     }

@@ -41,16 +41,13 @@ struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
     {
-        for (It current(first); ; ++current)
-        {
-            if (this->subject.parse(current, last, context, attr))
-            {
+        for (It current(first); ; ++current) {
+            if (this->subject.parse(current, last, context, attr)) {
                 first = current;
                 return true;
             }
 
-            if (x4::has_expectation_failure(context))
-            {
+            if (x4::has_expectation_failure(context)) {
                 return false;
             }
 

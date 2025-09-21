@@ -26,23 +26,21 @@ namespace detail {
 constexpr void utf8_put_encode(utf8_string& out, ucs4_char x) noexcept
 {
     // https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf D90
-    if (x > 0x10FFFFul || (0xD7FFul < x && x < 0xE000ul)) [[unlikely]]
+    if (x > 0x10FFFFul || (0xD7FFul < x && x < 0xE000ul)) [[unlikely]] {
         x = 0xFFFDul;
+    }
 
     // Table 3-6. UTF-8 Bit Distribution
     if (x < 0x80ul) {
         out.push_back(static_cast<unsigned char>(x));
-    }
-    else if (x < 0x800ul) {
+    } else if (x < 0x800ul) {
         out.push_back(static_cast<unsigned char>(0xC0ul + (x >> 6)));
         out.push_back(static_cast<unsigned char>(0x80ul + (x & 0x3Ful)));
-    }
-    else if (x < 0x10000ul) {
+    } else if (x < 0x10000ul) {
         out.push_back(static_cast<unsigned char>(0xE0ul + (x >> 12)));
         out.push_back(static_cast<unsigned char>(0x80ul + ((x >> 6) & 0x3Ful)));
         out.push_back(static_cast<unsigned char>(0x80ul + (x & 0x3Ful)));
-    }
-    else {
+    } else {
         out.push_back(static_cast<unsigned char>(0xF0ul + (x >> 18)));
         out.push_back(static_cast<unsigned char>(0x80ul + ((x >> 12) & 0x3Ful)));
         out.push_back(static_cast<unsigned char>(0x80ul + ((x >> 6) & 0x3Ful)));
@@ -66,8 +64,7 @@ template <typename Char>
 {
     utf8_string result;
     using UChar = typename std::make_unsigned<Char>::type;
-    while (*str)
-    {
+    while (*str) {
         detail::utf8_put_encode(result, static_cast<UChar>(*str++));
     }
     return result;
@@ -79,8 +76,7 @@ to_utf8(std::basic_string_view<Char, Traits> const str)
 {
     utf8_string result;
     using UChar = typename std::make_unsigned<Char>::type;
-    for (Char ch : str)
-    {
+    for (Char ch : str) {
         detail::utf8_put_encode(result, static_cast<UChar>(ch));
     }
     return result;
@@ -92,8 +88,7 @@ to_utf8(std::basic_string<Char, Traits> const& str)
 {
     utf8_string result;
     using UChar = typename std::make_unsigned<Char>::type;
-    for (Char ch : str)
-    {
+    for (Char ch : str) {
         detail::utf8_put_encode(result, static_cast<UChar>(ch));
     }
     return result;
@@ -117,21 +112,18 @@ template <std::forward_iterator It>
     using uwchar_t = std::make_unsigned<wchar_t>::type;
 
     uwchar_t x(*s);
-    if (x < 0xD800ul || x > 0xDFFFul)
-    {
+    if (x < 0xD800ul || x > 0xDFFFul) {
         return x;
     }
 
     // expected high-surrogate
-    if ((x >> 10) != 0b110110ul) [[unlikely]]
-    {
+    if ((x >> 10) != 0b110110ul) [[unlikely]] {
         return 0xFFFDul;
     }
 
     uwchar_t y(*++s);
     // expected low-surrogate
-    if ((y >> 10) != 0b110111ul) [[unlikely]]
-    {
+    if ((y >> 10) != 0b110111ul) [[unlikely]] {
         return 0xFFFDul;
     }
 
@@ -145,8 +137,7 @@ template <typename Traits>
 to_utf8(std::basic_string_view<wchar_t, Traits> const str)
 {
     utf8_string result;
-    for (auto it = str.begin(); it != str.end(); ++it)
-    {
+    for (auto it = str.begin(); it != str.end(); ++it) {
         detail::utf8_put_encode(result, detail::decode_utf16(it));
     }
     return result;
@@ -162,8 +153,7 @@ template <typename Traits>
 to_utf8(std::basic_string<wchar_t, Traits> const& str)
 {
     utf8_string result;
-    for (auto it = str.begin(); it != str.end(); ++it)
-    {
+    for (auto it = str.begin(); it != str.end(); ++it) {
         detail::utf8_put_encode(result, detail::decode_utf16(it));
     }
     return result;

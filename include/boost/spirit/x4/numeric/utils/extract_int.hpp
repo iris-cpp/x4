@@ -25,6 +25,7 @@
 #include <boost/preprocessor/comparison/less.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
 
+#include <concepts>
 #include <limits>
 #include <iterator>
 #include <type_traits>
@@ -178,8 +179,8 @@ struct int_extractor
     template <typename T>
     static constexpr bool need_check_overflow =
         (
-            (MaxDigits < 0) ||
-            (MaxDigits > digits_traits<T, Radix>::value)
+            MaxDigits < 0 ||
+            MaxDigits > digits_traits<T, Radix>::value
         ) &&
         traits::check_overflow<T>::value;
 
@@ -194,14 +195,10 @@ struct int_extractor
     {
         constexpr std::size_t overflow_free = digits_traits<T, Radix>::value - 1;
 
-        if (count < overflow_free)
-        {
+        if (count < overflow_free) {
             Accumulator::unchecked_add(n, ch);
-        }
-        else
-        {
-            if (!Accumulator::checked_add(n, ch))
-            {
+        } else {
+            if (!Accumulator::checked_add(n, ch)) {
                 return false; // overflow/underflow
             }
         }
@@ -235,7 +232,7 @@ struct check_max_digits
     [[nodiscard]] static constexpr bool
     call(std::size_t count) noexcept
     {
-        return count < MaxDigits; // bounded
+        return count < static_cast<std::size_t>(MaxDigits); // bounded
     }
 };
 
@@ -280,11 +277,9 @@ struct extract_int
 
         It it = first;
         std::size_t leading_zeros = 0;
-        if constexpr (!Accumulate)
-        {
+        if constexpr (!Accumulate) {
             // skip leading zeros
-            while (it != last && *it == '0' && leading_zeros < MaxDigits)
-            {
+            while (it != last && *it == '0' && leading_zeros < static_cast<std::size_t>(MaxDigits)) {
                 ++it;
                 ++leading_zeros;
             }
@@ -295,13 +290,11 @@ struct extract_int
         std::size_t count = 0;
         char_type ch;
 
-        while (true)
-        {
+        while (true) {
             BOOST_PP_REPEAT(BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP, _)
         }
 
-        if (count + leading_zeros >= MinDigits)
-        {
+        if (count + leading_zeros >= MinDigits) {
             x4::move_to(std::move(val), attr);
             first = it;
             return true;
@@ -320,12 +313,9 @@ struct extract_int
             noexcept(extract_int::parse_main(first, last, std::declval<T&>()))
         )
     {
-        if constexpr (std::is_same_v<T, unused_type>)
-        {
+        if constexpr (std::same_as<T, unused_type>) {
             return extract_int::parse_main(first, last, unused);
-        }
-        else
-        {
+        } else {
             T n(0); // must calculate value to detect over/underflow
             return extract_int::parse_main(first, last, n);
         }
@@ -371,20 +361,16 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 
         It it = first;
         std::size_t count = 0;
-        if constexpr (!Accumulate)
-        {
+        if constexpr (!Accumulate) {
             // skip leading zeros
-            while (it != last && *it == '0')
-            {
+            while (it != last && *it == '0') {
                 ++it;
                 ++count;
             }
 
-            if (it == last)
-            {
+            if (it == last) {
                 if (count == 0) return false; // must have at least one digit
-                if constexpr (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
-                {
+                if constexpr (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>) {
                     attr = 0;
                 }
                 first = it;
@@ -396,8 +382,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         attribute_type val = Accumulate ? attr : attribute_type{};
 
         char_type ch = *it;
-        if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val))
-        {
+        if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val)) {
             if (count == 0) return false; // must have at least one digit
             x4::move_to(std::move(val), attr);
             first = it;
@@ -406,8 +391,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 
         count = 0;
         ++it;
-        while (true)
-        {
+        while (true) {
             BOOST_PP_REPEAT(BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP, _)
         }
 
@@ -427,12 +411,9 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
             noexcept(extract_int::parse_main(first, last, std::declval<T&>()))
         )
     {
-        if constexpr (std::is_same_v<T, unused_type>)
-        {
+        if constexpr (std::same_as<T, unused_type>) {
             return extract_int::parse_main(first, last, unused);
-        }
-        else
-        {
+        } else {
             T n(0); // must calculate value to detect over/underflow
             return extract_int::parse_main(first, last, n);
         }
@@ -463,8 +444,7 @@ extract_sign(It& first, Se const& last)
 
     // Extract the sign
     bool const neg = *first == '-';
-    if (neg || (*first == '+'))
-    {
+    if (neg || *first == '+') {
         ++first;
         return neg;
     }
@@ -494,8 +474,7 @@ struct extract_uint
         if (first == last) return false;
 
         It const save = first;
-        if (!extract_type::parse(first, last, attr))
-        {
+        if (!extract_type::parse(first, last, attr)) {
             first = save;
             return false;
         }
@@ -513,8 +492,7 @@ struct extract_uint
     {
         // this case is called when Attribute is not T
         T tmp_attr; // default initialize
-        if (extract_uint::call(first, last, tmp_attr))
-        {
+        if (extract_uint::call(first, last, tmp_attr)) {
             x4::move_to(std::move(tmp_attr), attr);
             return true;
         }
@@ -546,20 +524,16 @@ struct extract_int
         )
     {
         if (first == last) return false;
-
         It const save = first;
+
         bool hit = detail::extract_sign(first, last);
-        if (hit)
-        {
+        if (hit) {
             hit = extract_neg_type::parse(first, last, attr);
-        }
-        else
-        {
+        } else {
             hit = extract_pos_type::parse(first, last, attr);
         }
 
-        if (!hit)
-        {
+        if (!hit) {
             first = save;
             return false;
         }
@@ -577,8 +551,7 @@ struct extract_int
     {
         // this case is called when Attribute is not T
         T tmp_attr; // default initialize
-        if (extract_int::call(first, last, tmp_attr))
-        {
+        if (extract_int::call(first, last, tmp_attr)) {
             x4::move_to(std::move(tmp_attr), attr);
             return true;
         }

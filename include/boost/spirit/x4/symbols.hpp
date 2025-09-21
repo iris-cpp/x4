@@ -104,8 +104,7 @@ struct symbols_parser_impl : parser<Derived>
     constexpr symbols_parser_impl(Symbols const& syms, std::string const& name = "symbols")
         : symbols_parser_impl(name)
     {
-        for (auto const& sym : syms)
-        {
+        for (auto const& sym : syms) {
             this->add(sym);
         }
     }
@@ -120,8 +119,7 @@ struct symbols_parser_impl : parser<Derived>
         : symbols_parser_impl(name)
     {
         auto di = std::ranges::begin(data);
-        for (auto const& sym : syms)
-        {
+        for (auto const& sym : syms) {
             this->add(sym, *di++);
         }
     }
@@ -132,8 +130,7 @@ struct symbols_parser_impl : parser<Derived>
     )
         : symbols_parser_impl(name)
     {
-        for (auto const& sym : syms)
-        {
+        for (auto const& sym : syms) {
             add(sym.first, sym.second);
         }
     }
@@ -144,8 +141,7 @@ struct symbols_parser_impl : parser<Derived>
     )
         : symbols_parser_impl(name)
     {
-        for (auto const& str : syms)
-        {
+        for (auto const& str : syms) {
             add(str);
         }
     }
@@ -153,12 +149,9 @@ struct symbols_parser_impl : parser<Derived>
     constexpr symbols_parser_impl& operator=(symbols_parser_impl const& rhs)
     {
         name_ = rhs.name_;
-        if constexpr (IsShared)
-        {
+        if constexpr (IsShared) {
             lookup = rhs.lookup;
-        }
-        else
-        {
+        } else {
             *lookup = *rhs.lookup;
         }
         return *this;
@@ -178,8 +171,7 @@ struct symbols_parser_impl : parser<Derived>
     {
         lookup->clear();
 
-        for (auto const& sym : syms)
-        {
+        for (auto const& sym : syms) {
             this->add(sym);
         }
 
@@ -254,8 +246,7 @@ struct symbols_parser_impl : parser<Derived>
     {
         x4::skip_over(first, last, context);
 
-        if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(context)))
-        {
+        if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(context))) {
             x4::move_to(*val_ptr, attr);
             return true;
         }

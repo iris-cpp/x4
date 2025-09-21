@@ -118,12 +118,10 @@ struct rule_impl
         It start = first; // backup
 
         bool ok;
-        if constexpr (SkipDefinitionInjection || !is_default_parse_rule)
-        {
+        if constexpr (SkipDefinitionInjection || !is_default_parse_rule) {
             ok = rhs.parse(first, last, context, attr);
-        }
-        else
-        {
+
+        } else {
             // If there is no `BOOST_SPIRIT_X4_DEFINE` for this rule,
             // we'll make a context for this rule tagged by its `RuleID`
             // so we can extract the rule later on in the default
@@ -133,8 +131,7 @@ struct rule_impl
         }
 
         // Note: this check uses `It, It` because the value is actually iterator-iterator pair
-        if constexpr (has_on_success<RuleID, It, It, Exposed, Context>::value)
-        {
+        if constexpr (has_on_success<RuleID, It, It, Exposed, Context>::value) {
             if (!ok) return false;
 
             x4::skip_over(start, first, context);
@@ -144,9 +141,8 @@ struct rule_impl
                 x4::make_context<parse_pass_context_tag>(pass, context)
             );
             return pass;
-        }
-        else
-        {
+
+        } else { // don't have on_success
             return ok;
         }
     }
@@ -161,10 +157,8 @@ struct rule_impl
         Context const& context, Exposed& attr
     ) // never noexcept; requires complex handling
     {
-        while (true)
-        {
-            if (rule_impl::parse_rhs(rhs, first, last, context, attr))
-            {
+        while (true) {
+            if (rule_impl::parse_rhs(rhs, first, last, context, attr)) {
                 return true;
             }
 
@@ -240,31 +234,22 @@ struct rule_impl
 
             // The existence of semantic action inhibits attribute materialization
             // _unless_ it is explicitly required by the user (primarily via `%=`).
-            if constexpr (RHS::has_action && !ForceAttribute)
-            {
-                if constexpr (rhs_has_on_error)
-                {
+            if constexpr (RHS::has_action && !ForceAttribute) {
+                if constexpr (rhs_has_on_error) {
                     parse_ok = rule_impl::parse_rhs_with_on_error(
                         rhs, first, last, rcontext, unused
                     );
-                }
-                else
-                {
+                } else {
                     parse_ok = rule_impl::parse_rhs(
                         rhs, first, last, rcontext, unused
                     );
                 }
-            }
-            else // attribute is required
-            {
-                if constexpr (rhs_has_on_error)
-                {
+            } else { // attribute is required
+                if constexpr (rhs_has_on_error) {
                     parse_ok = rule_impl::parse_rhs_with_on_error(
                         rhs, first, last, rcontext, attr_
                     );
-                }
-                else
-                {
+                } else {
                     parse_ok = rule_impl::parse_rhs(
                         rhs, first, last, rcontext, attr_
                     );
@@ -272,8 +257,7 @@ struct rule_impl
             }
         }
 
-        if (parse_ok)
-        {
+        if (parse_ok) {
             // Integrate the results back into the original attribute value, if appropriate
             transform::post(attr, std::forward<transform_attr>(attr_));
         }
@@ -409,19 +393,16 @@ struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
 
         using detail::parse_rule;
 
-        if constexpr (std::same_as<std::remove_const_t<Exposed>, Attribute>)
-        {
+        if constexpr (std::same_as<std::remove_const_t<Exposed>, Attribute>) {
             return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));
-        }
-        else
-        {
+
+        } else {
             static_assert(detail::RuleAttrTransformable<Exposed, Attribute>);
             static_assert(std::is_assignable_v<Exposed&, Attribute>);
             static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>);
 
             Attribute attr;
-            if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, attr)))
-            {
+            if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, attr))) {
                 return false;
             }
 

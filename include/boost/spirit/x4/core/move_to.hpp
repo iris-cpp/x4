@@ -142,12 +142,9 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::is_rvalue_reference_v<Source&&>)
-    {
+    if constexpr (std::is_rvalue_reference_v<Source&&>) {
         fusion::move(std::move(src), dest);
-    }
-    else
-    {
+    } else {
         fusion::copy(src, dest);
     }
 }
@@ -213,12 +210,13 @@ move_to(It first, Se last, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
 
-    if (traits::is_empty(dest))
-    {
+    // Be careful, this may lead to converting surprisingly incompatible types,
+    // for example, `std::vector<int>` and `std::set<int>`. Such types must be
+    // handled *before* invoking `move_to`.
+
+    if (traits::is_empty(dest)) {
         dest = Dest(first, last);
-    }
-    else
-    {
+    } else {
         traits::append(dest, first, last);
     }
 }
@@ -246,12 +244,9 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::is_rvalue_reference_v<Source&&>)
-    {
+    if constexpr (std::is_rvalue_reference_v<Source&&>) {
         x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
-    }
-    else
-    {
+    } else {
         x4::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
     }
 }

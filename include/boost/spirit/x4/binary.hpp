@@ -53,10 +53,8 @@ struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
         unsigned char const* bytes = n_.data();
 
         It it = first;
-        for (unsigned int i = 0; i < sizeof(n_); ++i)
-        {
-            if (it == last || *bytes++ != static_cast<unsigned char>(*it++))
-            {
+        for (unsigned int i = 0; i < sizeof(n_); ++i) {
+            if (it == last || *bytes++ != static_cast<unsigned char>(*it++)) {
                 return false;
             }
         }
@@ -73,6 +71,8 @@ private:
 template <typename T, boost::endian::order endian, std::size_t bits>
 struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
 {
+    static_assert(std::is_trivially_copyable_v<T>);
+
     using attribute_type = T;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, T>;
@@ -89,8 +89,7 @@ struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
         unsigned char* bytes = buf;
 
         It it = first;
-        for (unsigned int i = 0; i < sizeof(T); ++i)
-        {
+        for (unsigned int i = 0; i < sizeof(T); ++i) {
             if (it == last) return false;
             *bytes++ = *it++;
         }

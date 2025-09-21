@@ -33,8 +33,7 @@ struct bool_policies
         noexcept(std::is_nothrow_constructible_v<Attribute, T>)
     {
         using namespace std::string_view_literals;
-        if (detail::string_parse("true"sv, first, last, unused, case_compare))
-        {
+        if (detail::string_parse("true"sv, first, last, unused, case_compare)) {
             x4::move_to(T(true), attr_);    // result is true
             return true;
         }
@@ -47,8 +46,7 @@ struct bool_policies
         noexcept(std::is_nothrow_constructible_v<Attribute, T>)
     {
         using namespace std::string_view_literals;
-        if (detail::string_parse("false"sv, first, last, unused, case_compare))
-        {
+        if (detail::string_parse("false"sv, first, last, unused, case_compare)) {
             x4::move_to(T(false), attr_);   // result is false
             return true;
         }
@@ -92,8 +90,7 @@ struct bool_parser : parser<bool_parser<T, Encoding, BoolPolicies>>
     {
         // this case is called when Attribute is not T
         T attr_;
-        if (bool_parser::parse(first, last, context, attr_))
-        {
+        if (bool_parser::parse(first, last, context, attr_)) {
             x4::move_to(std::move(attr_), attr_param);
             return true;
         }
@@ -149,8 +146,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, BoolPolicie
     {
         // this case is called when Attribute is not T
         T attr_;
-        if (literal_bool_parser::parse(first, last, context, attr_))
-        {
+        if (literal_bool_parser::parse(first, last, context, attr_)) {
             x4::move_to(std::move(attr_), attr_param);
             return true;
         }

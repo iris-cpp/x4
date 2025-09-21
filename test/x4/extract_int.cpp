@@ -95,23 +95,21 @@ void test_overflow_handling(char const* begin, char const* end, int i)
     // Check that parser fails on overflow
     static_assert(std::numeric_limits<T>::is_bounded, "tests prerequest");
 
-    if constexpr (MaxDigits != -1)
-    {
+    if constexpr (MaxDigits != -1) {
         assert(static_cast<int>(std::pow(float(Base), MaxDigits)) > T::max && "tests prerequest");
     }
 
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
     char const* it = begin;
-    bool r = x4::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
+    bool const r = x4::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
+
     if (T::min <= i && i <= T::max) {
         BOOST_TEST(r);
         BOOST_TEST(it == end);
         BOOST_TEST_EQ(x, i);
-    }
-    else
-        if (MaxDigits == -1) // TODO: Looks like a regression. See #430
-    {
+
+    } else if (MaxDigits == -1) { // TODO: Looks like a regression. See #430
         BOOST_TEST(!r);
         BOOST_TEST(it == begin);
     }
@@ -127,13 +125,14 @@ void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int 
     auto len = end - it;
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
-    bool r = x4::extract_int<T, Base, 1, 1>::call(it, end, x);
+    bool const r = x4::extract_int<T, Base, 1, 1>::call(it, end, x);
     BOOST_TEST(r);
+
     if (-Base < i && i < Base) {
         BOOST_TEST(it == end);
         BOOST_TEST_EQ(x, i);
-    }
-    else {
+
+    } else {
         BOOST_TEST_EQ(end - it, len - 1 - int(has_sign));
         BOOST_TEST_EQ(x, i / Base);
     }

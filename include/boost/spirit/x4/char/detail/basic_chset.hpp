@@ -80,8 +80,9 @@ struct basic_chset
     operator|=(basic_chset const& x)
     {
         using const_iterator = typename char_range_run<CharT>::const_iterator;
-        for (const_iterator iter = x.rr.begin(); iter != x.rr.end(); ++iter)
+        for (const_iterator iter = x.rr.begin(); iter != x.rr.end(); ++iter) {
             rr.set(*iter);
+        }
         return *this;
     }
 
@@ -102,8 +103,9 @@ struct basic_chset
     operator-=(basic_chset const& x)
     {
         using const_iterator = typename char_range_run<CharT>::const_iterator;
-        for (const_iterator iter = x.rr.begin(); iter != x.rr.end(); ++iter)
+        for (const_iterator iter = x.rr.begin(); iter != x.rr.end(); ++iter) {
             rr.clear(*iter);
+        }
         return *this;
     }
 

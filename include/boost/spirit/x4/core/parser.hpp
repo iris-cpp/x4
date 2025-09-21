@@ -379,8 +379,7 @@ struct is_parsable
     static_assert(!std::is_reference_v<Attr>);
     static_assert(X4Attribute<Attr>);
 
-    static constexpr bool value = requires(Parser const& p) // mutable parser use case is currently unknown
-    {
+    static constexpr bool value = requires(Parser const& p) { // mutable parser use case is currently unknown
         {
             p.parse(
                 std::declval<It&>(), // first
@@ -391,8 +390,7 @@ struct is_parsable
         } -> std::same_as<bool>;
     };
 
-    static_assert(!requires(Parser const& p)
-    {
+    static_assert(!requires(Parser const& p) {
         {
             p.parse(
                 std::declval<It&>(), // first
@@ -423,8 +421,7 @@ struct is_nothrow_parsable
     static_assert(!std::is_reference_v<Attr>);
     static_assert(X4Attribute<Attr>);
 
-    static constexpr bool value = requires(Parser const& p) // mutable parser use case is currently unknown
-    {
+    static constexpr bool value = requires(Parser const& p) { // mutable parser use case is currently unknown
         {
             p.parse(
                 std::declval<It&>(), // first
@@ -435,8 +432,7 @@ struct is_nothrow_parsable
         } noexcept -> std::same_as<bool>;
     };
 
-    static_assert(!requires(Parser const& p)
-    {
+    static_assert(!requires(Parser const& p) {
         {
             p.parse(
                 std::declval<It&>(), // first
@@ -493,12 +489,10 @@ struct get_info
     {
         if constexpr (requires {
             { subject.get_x4_info() } -> std::convertible_to<std::string>;
-        })
-        {
+        }) {
             return subject.get_x4_info();
-        }
-        else
-        {
+
+        } else {
             (void)subject;
     #ifndef BOOST_SPIRIT_X4_NO_RTTI
             return typeid(Subject).name();

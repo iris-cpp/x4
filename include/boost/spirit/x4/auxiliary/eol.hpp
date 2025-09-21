@@ -35,13 +35,11 @@ struct eol_parser : parser<eol_parser>
 
         using iter_value_type = std::iter_value_t<It>;
 
-        if (iter != last && *iter == static_cast<iter_value_type>('\r'))
-        {
+        if (iter != last && *iter == static_cast<iter_value_type>('\r')) {
             matched = true;
             ++iter;
         }
-        if (iter != last && *iter == static_cast<iter_value_type>('\n'))
-        {
+        if (iter != last && *iter == static_cast<iter_value_type>('\n')) {
             matched = true;
             ++iter;
         }

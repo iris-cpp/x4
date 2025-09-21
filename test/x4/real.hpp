@@ -61,14 +61,12 @@ struct ts_real_policies : x4::ureal_policies<T>
         constexpr uint_parser<unsigned, 10, 1, 3> uint3;
         constexpr uint_parser<unsigned, 10, 3, 3> uint3_3;
 
-        if (auto res = parse(first, last, uint3, result); res.ok)
-        {
+        if (auto res = parse(first, last, uint3, result); res.ok) {
             Accumulator n;
             It iter = res.remainder.begin();
             first = iter;
 
-            while (true)
-            {
+            while (true) {
                 parse(res, iter, last, ',');
                 if (!res.ok) break;
                 iter = res.remainder.begin();
@@ -110,20 +108,32 @@ bool compare(T n, std::type_identity_t<T> expected)
     return (delta >= -eps) && (delta <= eps);
 }
 
-// A custom real type
 struct custom_real
 {
     double n;
+
     custom_real() : n(0) {}
     custom_real(double n_) : n(n_) {}
+
     friend bool operator==(custom_real a, custom_real b)
-        { return a.n == b.n; }
+    {
+        return a.n == b.n;
+    }
+
     friend custom_real operator*(custom_real a, custom_real b)
-        { return custom_real(a.n * b.n); }
+    {
+        return custom_real(a.n * b.n);
+    }
+
     friend custom_real operator+(custom_real a, custom_real b)
-        { return custom_real(a.n + b.n); }
+    {
+        return custom_real(a.n + b.n);
+    }
+
     friend custom_real operator-(custom_real a, custom_real b)
-        { return custom_real(a.n - b.n); }
+    {
+        return custom_real(a.n - b.n);
+    }
 };
 
 #endif

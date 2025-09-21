@@ -83,12 +83,9 @@ private:
 template <std::forward_iterator It>
 void error_handler<It>::print_file_line(std::size_t line) const
 {
-    if (file != "")
-    {
+    if (file != "") {
         err_out << "In file " << file << ", ";
-    }
-    else
-    {
+    } else {
         err_out << "In ";
     }
 
@@ -99,13 +96,10 @@ template <std::forward_iterator It>
 void error_handler<It>::print_line(It start, It last) const
 {
     auto end = start;
-    while (end != last)
-    {
+    while (end != last) {
         auto c = *end;
-        if (c == '\r' || c == '\n')
-            break;
-        else
-            ++end;
+        if (c == '\r' || c == '\n') break;
+        ++end;
     }
     using char_type = typename std::iterator_traits<It>::value_type;
     std::basic_string<char_type> line{start, end};
@@ -115,16 +109,16 @@ void error_handler<It>::print_line(It start, It last) const
 template <std::forward_iterator It>
 void error_handler<It>::print_indicator(It& start, It last, char ind) const
 {
-    for (; start != last; ++start)
-    {
+    for (; start != last; ++start) {
         auto c = *start;
-        if (c == '\r' || c == '\n')
-            break;
-        else if (c == '\t')
-            for (int i = 0; i < tabs; ++i)
+        if (c == '\r' || c == '\n') break;
+        if (c == '\t') {
+            for (int i = 0; i < tabs; ++i) {
                 err_out << ind;
-        else
+            }
+        } else {
             err_out << ind;
+        }
     }
 }
 
@@ -132,11 +126,13 @@ template <std::forward_iterator It>
 It error_handler<It>::get_line_start(It first, It pos) const
 {
     It latest = first;
-    for (It i = first; i != pos;)
-        if (*i == '\r' || *i == '\n')
+    for (It i = first; i != pos;) {
+        if (*i == '\r' || *i == '\n') {
             latest = ++i;
-        else
+        } else {
             ++i;
+        }
+    }
     return latest;
 }
 
@@ -165,8 +161,7 @@ std::size_t error_handler<It>::position(It i) const
 }
 
 template <std::forward_iterator It>
-void error_handler<It>::operator()(
-    It err_pos, std::string const& error_message) const
+void error_handler<It>::operator()(It err_pos, std::string const& error_message) const
 {
     It first = pos_cache.first();
     It last = pos_cache.last();
@@ -181,8 +176,7 @@ void error_handler<It>::operator()(
 }
 
 template <std::forward_iterator It>
-void error_handler<It>::operator()(
-    It err_first, It err_last, std::string const& error_message) const
+void error_handler<It>::operator()(It err_first, It err_last, std::string const& error_message) const
 {
     It first = pos_cache.first();
     It last = pos_cache.last();

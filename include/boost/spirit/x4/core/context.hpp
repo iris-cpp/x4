@@ -287,31 +287,25 @@ replace_first_context(
     static_assert(!is_ttp_specialization_of_v<std::remove_const_t<NewVal>, context>, "context's value type cannot be context");
     static_assert(!std::same_as<ID_To_Replace, detail::monostate_context_tag>);
 
-    if constexpr (std::same_as<ID, ID_To_Replace>) // match
-    {
-        if constexpr (std::same_as<Next, unused_type>)
-        {
+    if constexpr (std::same_as<ID, ID_To_Replace>) { // Match
+        if constexpr (std::same_as<Next, unused_type>) {
             // Existing context found; replace it and end the search.
             return context<ID, NewVal, Next>{new_val};
-        }
-        else
-        {
+
+        } else {
             // Existing context found; replace it and end the search.
             //
             // This implementation does not replace succeeding (duplicate) entries,
             // because it is `replace_*first*_context`.
             return context<ID, NewVal, Next>{new_val, ctx.next};
         }
-    }
-    else // No match
-    {
-        if constexpr (std::same_as<ID, detail::monostate_context_tag>)
-        {
+
+    } else { // No match
+        if constexpr (std::same_as<ID, detail::monostate_context_tag>) {
             // No match at all. Create a brand-new context.
             return context<ID_To_Replace, NewVal>{new_val};
-        }
-        else if constexpr (std::same_as<Next, unused_type>)
-        {
+
+        } else if constexpr (std::same_as<Next, unused_type>) {
             // No match at all. Append a new one and return.
             // Since we're doing the search from left to right,
             // this branch means there was no existing context
@@ -320,9 +314,8 @@ replace_first_context(
             return context<ID, T, owning_context<NewContext>>{
                 ctx.val, NewContext{new_val}
             };
-        }
-        else
-        {
+
+        } else {
             // No match. Continue the replacement recursively.
             using NewNext = decltype(x4::replace_first_context<ID_To_Replace>(ctx.next, new_val));
             return context<ID, T, owning_context<NewNext>>{
@@ -376,57 +369,45 @@ remove_first_context(context<ID, T, Next> const& ctx) noexcept
     // is essentially equal to `remove_*all*_context`, which is our intention.
     static_assert(UniqueContextID<ID_To_Remove>);
 
-    if constexpr (std::same_as<ID, ID_To_Remove>) // match
-    {
-        if constexpr (std::same_as<Next, unused_type>)
-        {
+    if constexpr (std::same_as<ID, ID_To_Remove>) { // Match
+        if constexpr (std::same_as<Next, unused_type>) {
             // Existing context found; removing it will result in an
             // empty context, so create a monostate placeholder.
             return detail::monostate_context{};
-        }
-        else
-        {
+
+        } else {
             // Existing context found; remove it and end the search.
             return ctx.next;
         }
-    }
-    else // No match
-    {
-        if constexpr (std::same_as<ID, detail::monostate_context_tag> || std::same_as<Next, unused_type>)
-        {
+
+    } else { // No match
+        if constexpr (std::same_as<ID, detail::monostate_context_tag> || std::same_as<Next, unused_type>) {
             // No match at all. Return as-is.
             return ctx;
-        }
-        else
-        {
+
+        } else {
             // No match. Continue the replacement recursively.
             using NewNext = decltype(x4::remove_first_context<ID_To_Remove>(ctx.next));
 
             // If the recursive replacement resulted in a monostate context,
             // prevent appending it; return the context without `next`.
-            if constexpr (std::same_as<NewNext, detail::monostate_context>)
-            {
+            if constexpr (std::same_as<NewNext, detail::monostate_context>) {
                 return context<ID, T>{ctx.val};
-            }
-            else if constexpr (std::is_reference_v<NewNext>)
-            {
+
+            } else if constexpr (std::is_reference_v<NewNext>) {
                 // Assert `decltype(auto)` is working as intended; i.e., no dangling reference
                 static_assert(std::is_lvalue_reference_v<NewNext>);
 
-                if constexpr (std::same_as<Next, std::remove_cvref_t<NewNext>>)
-                {
+                if constexpr (std::same_as<Next, std::remove_cvref_t<NewNext>>) {
                     // Avoid creating copy on exact same type
                     return ctx;
-                }
-                else
-                {
+                } else {
                     return context<ID, T, std::remove_cvref_t<NewNext>>{
                         ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
                     };
                 }
-            }
-            else // prvalue context
-            {
+
+            } else { // prvalue context
                 return context<ID, T, owning_context<NewNext>>{
                     ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
                 };

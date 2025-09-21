@@ -44,8 +44,7 @@ struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
         bool const r = this->subject.parse(first, last, context, attr);
 
         // only the first failure is needed
-        if (!r && !x4::has_expectation_failure(context))
-        {
+        if (!r && !x4::has_expectation_failure(context)) {
             x4::set_expectation_failure(first, this->subject, context);
         }
         return r;
@@ -88,12 +87,10 @@ struct parse_into_container_impl<expect_directive<Subject>, Context>
         It& first, Se const& last, Context const& context, Attribute& attr
     ) // never noexcept; expectation failure requires construction of debug information
     {
-        bool const r = detail::parse_into_container(
-            parser.subject, first, last, context, attr);
+        bool const r = detail::parse_into_container(parser.subject, first, last, context, attr);
 
         // only the first error is needed
-        if (!r && !x4::has_expectation_failure(context))
-        {
+        if (!r && !x4::has_expectation_failure(context)) {
             x4::set_expectation_failure(first, parser.subject, context);
         }
         return r;

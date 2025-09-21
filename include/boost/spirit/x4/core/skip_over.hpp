@@ -102,8 +102,7 @@ template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, 
 constexpr void skip_over(It& first, Se const& last, Context const& context, Skipper const& skipper)
     noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type>)
 {
-    if constexpr (std::is_same_v<expectation_failure_t<Context>, unused_type>)
-    {
+    if constexpr (std::is_same_v<expectation_failure_t<Context>, unused_type>) {
         // The context given by parent was truly `unused_type`.
         // There exists only one such case in core; that is
         // `x4::phrase_parse(...)` which creates a fresh context
@@ -120,9 +119,8 @@ constexpr void skip_over(It& first, Se const& last, Context const& context, Skip
 
         while (skipper.parse(first, last, unused, unused))
             /* loop */;
-    }
-    else
-    {
+
+    } else {
         // In order to cut the template instantiation chain,
         // we must *forget* the original context at least once
         // during the (recursive) invocation of skippers.

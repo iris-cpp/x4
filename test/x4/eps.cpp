@@ -19,7 +19,7 @@ int main()
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps);
         BOOST_TEST(parse("", eps));
         BOOST_TEST(parse("xxx", eps).is_partial_match());
-        //~ BOOST_TEST(!parse("", !eps)); // not predicate $$$ Implement me! $$$
+        BOOST_TEST(!parse("", !eps));
     }
 
     {   // test non-lazy semantic predicate
@@ -35,7 +35,6 @@ int main()
         auto true_ = [] { return true; };
         auto false_ = [] { return false; };
 
-        // cannot use lambda in constant expression before C++17
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps(std::true_type{}));
         BOOST_TEST(parse("", eps(true_)));
         BOOST_TEST(!parse("", eps(false_)));

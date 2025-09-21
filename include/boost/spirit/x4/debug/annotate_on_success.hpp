@@ -36,6 +36,7 @@ struct annotate_on_success
     on_success(It const& first, Se const& last, T& ast, Context const& context)
     {
         auto&& error_handler_ref = x4::get<error_handler_tag>(context);
+
         static_assert(
             !std::is_same_v<std::remove_cvref_t<decltype(error_handler_ref)>, unused_type>,
             "This rule is derived from `x4::annotate_on_success`, but no reference was bound to "
@@ -45,12 +46,10 @@ struct annotate_on_success
         // unwrap `reference_wrapper` if neccessary
         if constexpr (requires {
             error_handler_ref.get().tag(ast, first, last);
-        })
-        {
+        }) {
             error_handler_ref.get().tag(ast, first, last);
-        }
-        else
-        {
+
+        } else {
             error_handler_ref.tag(ast, first, last);
         }
     }

@@ -17,6 +17,8 @@
 #include <iterator>
 #include <cstdint>
 
+// TODO: use `std::from_chars`
+
 namespace boost::spirit::x4 {
 
 template <
@@ -35,8 +37,8 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
     static constexpr bool has_attribute = true;
 
     template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+    [[nodiscard]] static constexpr bool
+    parse(It& first, Se const& last, Context const& context, Attribute& attr)
         noexcept(
             noexcept(x4::skip_over(first, last, context)) &&
             noexcept(extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
