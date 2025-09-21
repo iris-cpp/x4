@@ -238,15 +238,15 @@ struct symbols_parser_impl : parser<Derived>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
-            noexcept(x4::skip_over(first, last, context)) &&
+            noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(x4::move_to(std::declval<value_type const&>(), attr))
         )
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
 
-        if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(context))) {
+        if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(ctx))) {
             x4::move_to(*val_ptr, attr);
             return true;
         }

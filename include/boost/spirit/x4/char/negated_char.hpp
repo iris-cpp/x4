@@ -32,10 +32,10 @@ struct negated_char_parser : char_parser<negated_char_parser<Positive>>
 
     template<class CharParam, class Context>
     [[nodiscard]] constexpr bool
-    test(CharParam ch, Context const& context) const noexcept
+    test(CharParam ch, Context const& ctx) const noexcept
     {
-        static_assert(noexcept(!positive_.test(ch, context)));
-        return !positive_.test(ch, context);
+        static_assert(noexcept(!positive_.test(ch, ctx)));
+        return !positive_.test(ch, ctx);
     }
 
     [[nodiscard]] constexpr Positive const& positive() const noexcept

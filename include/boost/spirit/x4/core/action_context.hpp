@@ -31,9 +31,9 @@ struct _pass_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr bool&
-    operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::get<parse_pass_context_tag>(context);
+        return x4::get<parse_pass_context_tag>(ctx);
     }
 
     template<class Context>
@@ -44,9 +44,9 @@ struct _val_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
-    operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::get<rule_val_context_tag>(context);
+        return x4::get<rule_val_context_tag>(ctx);
     }
 
     template<class Context>
@@ -57,9 +57,9 @@ struct _where_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
-    operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::get<where_context_tag>(context);
+        return x4::get<where_context_tag>(ctx);
     }
 
     template<class Context>
@@ -70,9 +70,9 @@ struct _attr_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
-    operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::get<attr_context_tag>(context);
+        return x4::get<attr_context_tag>(ctx);
     }
 
     template<class Context>

@@ -198,28 +198,28 @@ struct real_parser : parser<real_parser<T, RealPolicies>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, T& attr_) const
+    parse(It& first, Se const& last, Context const& ctx, T& attr_) const
         noexcept(
-            noexcept(x4::skip_over(first, last, context)) &&
+            noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
         )
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
         return extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr_param) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr_param) const
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
-            noexcept(this->parse(first, last, context, std::declval<T&>())) &&
+            noexcept(this->parse(first, last, ctx, std::declval<T&>())) &&
             noexcept(x4::move_to(std::declval<T&&>(), attr_param))
         )
     {
         // this case is called when Attribute is not T
         T attr_;
-        if (this->parse(first, last, context, attr_)) {
+        if (this->parse(first, last, ctx, attr_)) {
             x4::move_to(std::move(attr_), attr_param);
             return true;
         }

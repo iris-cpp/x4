@@ -38,15 +38,15 @@ struct not_predicate : unary_parser<Subject, not_predicate<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& /*attr*/) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& /*attr*/) const
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
             is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
         )
     {
         It local_first = first;
-        return !this->subject.parse(local_first, last, context, unused)
-            && !x4::has_expectation_failure(context);
+        return !this->subject.parse(local_first, last, ctx, unused)
+            && !x4::has_expectation_failure(ctx);
     }
 };
 

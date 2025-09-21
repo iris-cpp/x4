@@ -123,13 +123,13 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
         static_assert(Parsable<Subject, It, Se, context_t<Context>, Attr>);
         return this->subject.parse(
             first, last,
-            x4::make_context<ID>(this->val_, context),
+            x4::make_context<ID>(this->val_, ctx),
             attr
         );
     }

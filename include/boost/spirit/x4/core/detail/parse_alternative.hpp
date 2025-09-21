@@ -166,7 +166,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 [[nodiscard]] constexpr bool
 parse_alternative(
     Parser const& p, It& first, Se const& last,
-    Context const& context, Attr& attribute
+    Context const& ctx, Attr& attribute
 ) noexcept(
     noexcept(parse_alternative_pseudo_t<Parser, It, Se, Context, Attr>::call(
         first, last, pass_variant_attribute<Parser, Attr, Context>::call(attribute)
@@ -179,7 +179,7 @@ parse_alternative(
     using pass = pass_variant_attribute<Parser, Attr, Context>;
     using pseudo = traits::pseudo_attribute<Context, typename pass::type, It, Se>;
     typename pseudo::type attr_ = pseudo::call(first, last, pass::call(attribute));
-    return p.parse(first, last, context, attr_);
+    return p.parse(first, last, ctx, attr_);
 }
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -187,7 +187,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 [[nodiscard]] constexpr bool
 parse_alternative(
     Parser const& p, It& first, Se const& last,
-    Context const& context, Attr& attribute
+    Context const& ctx, Attr& attribute
 ) noexcept(
     noexcept(parse_alternative_pseudo_t<Parser, It, Se, Context, Attr>::call(
         first, last, pass_variant_attribute<Parser, Attr, Context>::call(attribute)
@@ -205,7 +205,7 @@ parse_alternative(
     using pseudo = traits::pseudo_attribute<Context, typename pass::type, It, Se>;
     typename pseudo::type attr_ = pseudo::call(first, last, pass::call(attribute));
 
-    if (!p.parse(first, last, context, attr_)) return false;
+    if (!p.parse(first, last, ctx, attr_)) return false;
     x4::move_to(std::move(attr_), attribute);
     return true;
 }
@@ -219,10 +219,10 @@ struct alternative_helper : unary_parser<Subject, alternative_helper<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
-        noexcept(noexcept(detail::parse_alternative(this->subject, first, last, context, attr)))
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(noexcept(detail::parse_alternative(this->subject, first, last, ctx, attr)))
     {
-        return detail::parse_alternative(this->subject, first, last, context, attr);
+        return detail::parse_alternative(this->subject, first, last, ctx, attr);
     }
 };
 
@@ -236,11 +236,11 @@ struct parse_into_container_impl<alternative<Left, Right>, Context>
     [[nodiscard]] static constexpr bool
     call(
         parser_type const& parser,
-        It& first, Se const& last, Context const& context, Attr& attribute
+        It& first, Se const& last, Context const& ctx, Attr& attribute
     )
     {
-        return detail::parse_into_container(alternative_helper<Left>{parser.left}, first, last, context, attribute)
-            || detail::parse_into_container(alternative_helper<Right>{parser.right}, first, last, context, attribute);
+        return detail::parse_into_container(alternative_helper<Left>{parser.left}, first, last, ctx, attribute)
+            || detail::parse_into_container(alternative_helper<Right>{parser.right}, first, last, ctx, attribute);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
@@ -249,11 +249,11 @@ struct parse_into_container_impl<alternative<Left, Right>, Context>
     call(
         parser_type const& parser,
         It& first, Se const& last,
-        Context const& context, Attr& attribute
+        Context const& ctx, Attr& attribute
     )
     {
-        return detail::parse_into_container(parser.left, first, last, context, attribute)
-            || detail::parse_into_container(parser.right, first, last, context, attribute);
+        return detail::parse_into_container(parser.left, first, last, ctx, attribute)
+            || detail::parse_into_container(parser.right, first, last, ctx, attribute);
     }
 };
 

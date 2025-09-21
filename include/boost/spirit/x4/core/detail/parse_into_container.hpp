@@ -98,7 +98,7 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
         static_assert(!std::same_as<std::remove_const_t<Attr>, unused_container_type>);
@@ -107,7 +107,7 @@ struct parse_into_container_base_impl
         value_type val; // default-initialize
 
         static_assert(Parsable<Parser, It, Se, Context, value_type>);
-        if (!parser.parse(first, last, context, val)) return false;
+        if (!parser.parse(first, last, ctx, val)) return false;
 
         // push the parsed value into our attribute
         traits::push_back(attr, std::move(val));
@@ -119,11 +119,11 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, unused_container_type const&
+        Context const& ctx, unused_container_type const&
     ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_type>)
     {
         static_assert(Parsable<Parser, It, Se, Context, unused_type>);
-        return parser.parse(first, last, context, unused);
+        return parser.parse(first, last, ctx, unused);
     }
 
     // Parser has attribute (synthesize; Attribute is a container)
@@ -132,11 +132,11 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
     {
         static_assert(Parsable<Parser, It, Se, Context, Attr>);
-        return parser.parse(first, last, context, attr);
+        return parser.parse(first, last, ctx, attr);
     }
 
     // Parser has attribute && it is NOT fusion sequence
@@ -147,11 +147,11 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     )
     {
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, context, attr);
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, attr);
     }
 
     // Parser has attribute && it is fusion sequence (NOT associative)
@@ -163,12 +163,12 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
-    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, context, fusion::front(attr))))
+        Context const& ctx, Attr& attr
+    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, fusion::front(attr))))
     {
         static_assert(traits::has_size_v<Attr, 1>, "Expecting a single element fusion sequence");
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, context, fusion::front(attr));
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, fusion::front(attr));
     }
 
     // Parser has attribute && it is fusion sequence (associative)
@@ -180,7 +180,7 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
         using attribute_type = traits::attribute_of_t<Parser, Context>;
@@ -188,7 +188,7 @@ struct parse_into_container_base_impl
 
         attribute_type attr_; // default-initialize
         static_assert(Parsable<Parser, It, Se, Context, attribute_type>);
-        if (!parser.parse(first, last, context, attr_)) return false;
+        if (!parser.parse(first, last, ctx, attr_)) return false;
 
         // Use the type of first element of attribute as key
         using key = std::remove_reference_t<
@@ -205,11 +205,11 @@ struct parse_into_container_base_impl
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& /* attr */
+        Context const& ctx, Attr& /* attr */
     ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_container_type>)
     {
         // static_assert(Parsable<Parser, It, Se, Context, unused_container_type>);
-        return parser.parse(first, last, context, unused_container);
+        return parser.parse(first, last, ctx, unused_container);
     }
 };
 
@@ -240,13 +240,13 @@ struct parse_into_container_impl<Parser, Context>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) noexcept(noexcept(parse_into_container_base_impl<Parser>::call(
-        parser, first, last, context, attr
+        parser, first, last, ctx, attr
     )))
     {
         return parse_into_container_base_impl<Parser>::call(
-            parser, first, last, context, attr
+            parser, first, last, ctx, attr
         );
     }
 
@@ -255,11 +255,11 @@ struct parse_into_container_impl<Parser, Context>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, unused_container_type
+        Context const& ctx, unused_container_type
     ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_container_type>)
     {
         static_assert(Parsable<Parser, It, Se, Context, unused_container_type>);
-        return parser.parse(first, last, context, unused_container);
+        return parser.parse(first, last, ctx, unused_container);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
@@ -267,7 +267,7 @@ struct parse_into_container_impl<Parser, Context>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
         static_assert(!std::is_same_v<std::remove_const_t<Attr>, unused_type>);
@@ -276,11 +276,11 @@ struct parse_into_container_impl<Parser, Context>
         static_assert(Parsable<Parser, It, Se, Context, Attr>);
 
         if (traits::is_empty(attr)) {
-            return parser.parse(first, last, context, attr);
+            return parser.parse(first, last, ctx, attr);
         }
 
         Attr rest; // default-initialize
-        if (!parser.parse(first, last, context, rest)) return false;
+        if (!parser.parse(first, last, ctx, rest)) return false;
 
         traits::append(
             attr,
@@ -298,9 +298,9 @@ template<
 [[nodiscard]] constexpr bool
 parse_into_container(
     Parser const& parser, It& first, Se const& last,
-    Context const& context, Attr& attr
+    Context const& ctx, Attr& attr
 ) noexcept(noexcept(parse_into_container_impl<Parser, Context>::call(
-    parser, first, last, context, attr
+    parser, first, last, ctx, attr
 )))
 {
     static_assert(
@@ -309,7 +309,7 @@ parse_into_container(
     );
 
     return parse_into_container_impl<Parser, Context>::call(
-        parser, first, last, context, attr
+        parser, first, last, ctx, attr
     );
 }
 

@@ -48,14 +48,14 @@ struct optional : unary_parser<Subject, optional<Subject>>
         class Attr // unconstrained
     >
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
         static_assert(Parsable<Subject, It, Se, Context, Attr>);
 
         // discard [[nodiscard]]
-        (void)this->subject.parse(first, last, context, attr);
-        return !x4::has_expectation_failure(context);
+        (void)this->subject.parse(first, last, ctx, attr);
+        return !x4::has_expectation_failure(ctx);
     }
 
     // container attribute
@@ -64,12 +64,12 @@ struct optional : unary_parser<Subject, optional<Subject>>
         traits::CategorizedAttr<traits::container_attr> Attr
     >
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
-        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, attr)))
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, ctx, attr)))
     {
         // discard [[nodiscard]]
-        (void)detail::parse_into_container(this->subject, first, last, context, attr);
-        return !x4::has_expectation_failure(context);
+        (void)detail::parse_into_container(this->subject, first, last, ctx, attr);
+        return !x4::has_expectation_failure(ctx);
     }
 
     // optional attribute
@@ -78,7 +78,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
         traits::CategorizedAttr<traits::optional_attr> Attr
     >
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
             std::is_nothrow_default_constructible_v<x4::traits::optional_value_t<Attr>> &&
             is_nothrow_parsable_v<Subject, It, Se, Context, x4::traits::optional_value_t<Attr>> &&
@@ -89,13 +89,13 @@ struct optional : unary_parser<Subject, optional<Subject>>
         value_type val; // default-initialize
 
         static_assert(Parsable<Subject, It, Se, Context, value_type>);
-        if (this->subject.parse(first, last, context, val)) {
+        if (this->subject.parse(first, last, ctx, val)) {
             // assign the parsed value into our attribute
             x4::move_to(std::move(val), attr);
             return true;
         }
 
-        return !x4::has_expectation_failure(context);
+        return !x4::has_expectation_failure(ctx);
     }
 };
 

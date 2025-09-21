@@ -35,11 +35,11 @@ struct char_range : char_parser<char_range<Encoding, Attr>>
 
     template<class Char, class Context>
         requires (std::is_convertible_v<std::remove_cvref_t<Char>, char_type>)
-    [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
+    [[nodiscard]] constexpr bool test(Char ch_, Context const& ctx) const noexcept
     {
         char_type ch = static_cast<char_type>(ch_);  // optimize for token based parsing
-        return x4::get_case_compare<encoding>(context)(ch, from) >= 0
-            && x4::get_case_compare<encoding>(context)(ch , to) <= 0;
+        return x4::get_case_compare<encoding>(ctx)(ch, from) >= 0
+            && x4::get_case_compare<encoding>(ctx)(ch , to) <= 0;
     }
 
     char_type from, to;
@@ -92,9 +92,9 @@ struct char_set : char_parser<char_set<Encoding, Attr>>
     }
 
     template<class Char, class Context>
-    [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
+    [[nodiscard]] constexpr bool test(Char ch_, Context const& ctx) const noexcept
     {
-        return x4::get_case_compare<encoding>(context).in_set(ch_, chset);
+        return x4::get_case_compare<encoding>(ctx).in_set(ch_, chset);
     }
 
     detail::basic_chset<char_type> chset;

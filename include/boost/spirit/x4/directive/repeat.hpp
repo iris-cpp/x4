@@ -99,13 +99,13 @@ struct repeat_directive : unary_parser<Subject, repeat_directive<Subject, Bounds
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         // never noexcept (requires container insertion)
     {
         It local_it = first;
         typename Bounds::value_type i{};
         for (; !bounds_.got_min(i); ++i) {
-            if (!detail::parse_into_container(this->subject, local_it, last, context, x4::assume_container(attr))) {
+            if (!detail::parse_into_container(this->subject, local_it, last, ctx, x4::assume_container(attr))) {
                 return false;
             }
         }
@@ -113,12 +113,12 @@ struct repeat_directive : unary_parser<Subject, repeat_directive<Subject, Bounds
         first = local_it;
         // parse some more up to the maximum specified
         for (; !bounds_.got_max(i); ++i) {
-            if (!detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))) {
+            if (!detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(attr))) {
                 break;
             }
         }
 
-        return !x4::has_expectation_failure(context);
+        return !x4::has_expectation_failure(ctx);
     }
 
 private:

@@ -42,13 +42,13 @@ struct kleene : unary_parser<Subject, kleene<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
-        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))))
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(attr))))
     {
-        while (detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr)))
+        while (detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(attr)))
             /* loop */;
 
-        return !x4::has_expectation_failure(context);
+        return !x4::has_expectation_failure(ctx);
     }
 };
 

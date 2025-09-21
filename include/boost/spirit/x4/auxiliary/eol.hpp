@@ -26,10 +26,10 @@ struct eol_parser : parser<eol_parser>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr&) const
+    parse(It& first, Se const& last, Context const& ctx, Attr&) const
         // TODO: noexcept
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
         It iter = first;
         bool matched = false;
 

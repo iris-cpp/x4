@@ -36,14 +36,14 @@ struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& /*attr*/) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& /*attr*/) const
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
             is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
         )
     {
         It it = first;
-        return this->subject.parse(it, last, context, unused);
+        return this->subject.parse(it, last, ctx, unused);
     }
 };
 

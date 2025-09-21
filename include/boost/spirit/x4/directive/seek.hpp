@@ -39,15 +39,15 @@ struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
         for (It current(first); ; ++current) {
-            if (this->subject.parse(current, last, context, attr)) {
+            if (this->subject.parse(current, last, ctx, attr)) {
                 first = current;
                 return true;
             }
 
-            if (x4::has_expectation_failure(context)) {
+            if (x4::has_expectation_failure(ctx)) {
                 return false;
             }
 

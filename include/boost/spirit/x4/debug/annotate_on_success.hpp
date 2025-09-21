@@ -33,9 +33,9 @@ struct annotate_on_success
     // Catch-all default overload
     template<std::forward_iterator It, std::sentinel_for<It> Se, class T, class Context>
     constexpr void
-    on_success(It const& first, Se const& last, T& ast, Context const& context)
+    on_success(It const& first, Se const& last, T& ast, Context const& ctx)
     {
-        auto&& error_handler_ref = x4::get<error_handler_tag>(context);
+        auto&& error_handler_ref = x4::get<error_handler_tag>(ctx);
 
         static_assert(
             !std::is_same_v<std::remove_cvref_t<decltype(error_handler_ref)>, unused_type>,
@@ -43,7 +43,7 @@ struct annotate_on_success
             "`x4::error_handler_tag`. You must provide a viable error handler via `x4::with`."
         );
 
-        // unwrap `reference_wrapper` if neccessary
+        // unwrap `reference_wrapper` if necessary
         if constexpr (requires {
             error_handler_ref.get().tag(ast, first, last);
         }) {

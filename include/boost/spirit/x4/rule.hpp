@@ -71,13 +71,13 @@ template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class
 parse_rule(
     rule_id<RuleID>,
     It& first, Se const& last,
-    Context const& context, Attr& attr
+    Context const& ctx, Attr& attr
 )
 {
-    auto&& rule_ = x4::get<RuleID>(context);
+    auto&& rule_ = x4::get<RuleID>(ctx);
 
     return static_cast<default_parse_rule_result>(
-        rule_.parse(first, last, context, attr)
+        rule_.parse(first, last, ctx, attr)
     );
 }
 
@@ -102,14 +102,14 @@ struct rule_impl
     [[nodiscard]] static constexpr bool
     parse_rhs(
         RHS const& rhs, It& first, Se const& last,
-        Context const& context, Exposed& attr
+        Context const& ctx, Exposed& attr
     ) // never noexcept; requires complex handling
     {
         // See if the user has `BOOST_SPIRIT_X4_DEFINE` for this rule
         constexpr bool is_default_parse_rule = std::same_as<
             decltype(parse_rule( // ADL
                 std::declval<rule_id<RuleID>>(), first, last,
-                std::declval<decltype(x4::make_context<RuleID>(rhs, context))>(),
+                std::declval<decltype(x4::make_context<RuleID>(rhs, ctx))>(),
                 std::declval<Attr&>()
             )),
             default_parse_rule_result
@@ -119,14 +119,14 @@ struct rule_impl
 
         bool ok;
         if constexpr (SkipDefinitionInjection || !is_default_parse_rule) {
-            ok = rhs.parse(first, last, context, attr);
+            ok = rhs.parse(first, last, ctx, attr);
 
         } else {
             // If there is no `BOOST_SPIRIT_X4_DEFINE` for this rule,
             // we'll make a context for this rule tagged by its `RuleID`
             // so we can extract the rule later on in the default
             // `parse_rule` overload.
-            auto rule_id_context = x4::make_context<RuleID>(rhs, context);
+            auto rule_id_context = x4::make_context<RuleID>(rhs, ctx);
             ok = rhs.parse(first, last, rule_id_context, attr);
         }
 
@@ -134,11 +134,11 @@ struct rule_impl
         if constexpr (has_on_success<RuleID, It, It, Exposed, Context>::value) {
             if (!ok) return false;
 
-            x4::skip_over(start, first, context);
+            x4::skip_over(start, first, ctx);
             bool pass = true;
             RuleID{}.on_success(
                 std::as_const(start), std::as_const(first), attr,
-                x4::make_context<parse_pass_context_tag>(pass, context)
+                x4::make_context<parse_pass_context_tag>(pass, ctx)
             );
             return pass;
 
@@ -154,21 +154,21 @@ struct rule_impl
     [[nodiscard]] static constexpr bool
     parse_rhs_with_on_error(
         RHS const& rhs, It& first, Se const& last,
-        Context const& context, Exposed& attr
+        Context const& ctx, Exposed& attr
     ) // never noexcept; requires complex handling
     {
         while (true) {
-            if (rule_impl::parse_rhs(rhs, first, last, context, attr)) {
+            if (rule_impl::parse_rhs(rhs, first, last, ctx, attr)) {
                 return true;
             }
 
-            if (x4::has_expectation_failure(context)) {
-                auto const& x = x4::get_expectation_failure(context);
+            if (x4::has_expectation_failure(ctx)) {
+                auto const& x = x4::get_expectation_failure(ctx);
                 static_assert(
-                    std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), x, context))>,
+                    std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), x, ctx))>,
                     "error handler should not return a value"
                 );
-                RuleID{}.on_error(std::as_const(first), std::as_const(last), x, context);
+                RuleID{}.on_error(std::as_const(first), std::as_const(last), x, ctx);
                 return false;
             }
             return false;
@@ -184,7 +184,7 @@ struct rule_impl
     call_rule_definition(
         RHS const& rhs, char const* rule_name,
         It& first, Se const& last,
-        Context const& context, Exposed& attr
+        Context const& ctx, Exposed& attr
     )
     {
         // Do down-stream transformation, provide attribute for `rhs` parser
@@ -227,7 +227,7 @@ struct rule_impl
             //   You have discovered the deepest wizardry of X4...
             //   You win!!
             //
-            auto rcontext = x4::replace_first_context<rule_val_context_tag>(context, attr_);
+            auto rcontext = x4::replace_first_context<rule_val_context_tag>(ctx, attr_);
             using RContext = decltype(rcontext);
 
             constexpr bool rhs_has_on_error = has_on_error<RuleID, It, Se, RContext>::value;
@@ -288,12 +288,12 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, Attr, ForceAttr, Sk
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr_& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr_& attr) const
         // never noexcept; requires very complex implementation details
     {
         return rule_impl<attribute_type, RuleID, SkipDefinitionInjection>
             ::template call_rule_definition<ForceAttr>(
-                rhs, name, first, last, context, attr
+                rhs, name, first, last, ctx, attr
             );
     }
 
@@ -375,7 +375,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
             detail::RuleAttrCompatible<Exposed, RuleAttr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Exposed& exposed_attr) const
+    parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
         // never noexcept; requires very complex implementation details
     {
         static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
@@ -389,7 +389,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         // Note that this removal is possible only because the actual invocation of
         // `parse_rule` *ALWAYS* results in subsequent invocation of `call_rule_definition`,
         // which resets the `_val` context to the appropriate reference.
-        auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
+        auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(ctx);
 
         using detail::parse_rule;
 
@@ -423,14 +423,14 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, unused_type const&) const
+    parse(It& first, Se const& last, Context const& ctx, unused_type const&) const
         // never noexcept; requires very complex implementation details
     {
         // make sure we pass exactly the rule attribute type
         attribute_type no_attr; // default-initialize
 
         // See the comments on the primary overload of `rule::parse(...)`
-        auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
+        auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(ctx);
 
         // ADL
         using detail::parse_rule;
@@ -531,7 +531,7 @@ struct get_info<detail::rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefini
     parse_rule( \
         ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
         It& first, Se const& last, \
-        Context const& context, \
+        Context const& ctx, \
         typename std::remove_cvref_t<rule_type>::attribute_type& attr \
     );
 
@@ -558,7 +558,7 @@ struct get_info<detail::rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefini
     parse_rule( \
         ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<decltype(rule_name)>::id>, \
         It& first, Se const& last, \
-        Context const& context, \
+        Context const& ctx, \
         typename std::remove_cvref_t<decltype(rule_name)>::attribute_type& attr \
     ) { \
         using rule_t = std::remove_cvref_t<decltype(rule_name)>; \
@@ -566,7 +566,7 @@ struct get_info<detail::rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefini
             typename rule_t::attribute_type, typename rule_t::id, true \
         >::call_rule_definition<rule_t::force_attribute>( \
             BOOST_SPIRIT_CONCAT(rule_name, _def), rule_name.name, \
-            first, last, context, attr \
+            first, last, ctx, attr \
         ); \
     }
 

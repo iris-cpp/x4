@@ -241,7 +241,7 @@ template<
 parse_sequence(
     Parser const& parser,
     It& first, Se const& last,
-    Context const& context,
+    Context const& ctx,
     Attr& attr
 )
 {
@@ -260,8 +260,8 @@ parse_sequence(
 
     It const first_saved = first;
 
-    if (parser.left.parse(first, last, context, l_attr) &&
-        parser.right.parse(first, last, context, r_attr)
+    if (parser.left.parse(first, last, ctx, l_attr) &&
+        parser.right.parse(first, last, ctx, r_attr)
     ) {
         return true;
     }
@@ -283,13 +283,13 @@ template<
 parse_sequence_container(
     Parser const& parser,
     It& first, Se const& last,
-    Context const& context,
+    Context const& ctx,
     Attr& attr
 )
     noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
     static_assert(Parsable<Parser, It, Se, Context, Attr>);
-    return parser.parse(first, last, context, attr);
+    return parser.parse(first, last, ctx, attr);
 }
 
 template<
@@ -303,12 +303,12 @@ template<
 parse_sequence_container(
     Parser const& parser,
     It& first, Se const& last,
-    Context const& context,
+    Context const& ctx,
     Attr& attr
 )
-    noexcept(noexcept(detail::parse_into_container(parser, first, last, context, attr)))
+    noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
-    return detail::parse_into_container(parser, first, last, context, attr);
+    return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
 template<
@@ -320,18 +320,18 @@ template<
 parse_sequence(
     Parser const& parser,
     It& first, Se const& last,
-    Context const& context,
+    Context const& ctx,
     traits::CategorizedAttr<traits::container_attr> auto& attr
 )
     noexcept(
         std::is_nothrow_copy_assignable_v<It> &&
-        noexcept(detail::parse_sequence_container(parser.left, first, last, context, attr)) &&
-        noexcept(detail::parse_sequence_container(parser.right, first, last, context, attr))
+        noexcept(detail::parse_sequence_container(parser.left, first, last, ctx, attr)) &&
+        noexcept(detail::parse_sequence_container(parser.right, first, last, ctx, attr))
     )
 {
     It const first_saved = first;
-    if (detail::parse_sequence_container(parser.left, first, last, context, attr) &&
-        detail::parse_sequence_container(parser.right, first, last, context, attr)
+    if (detail::parse_sequence_container(parser.left, first, last, ctx, attr) &&
+        detail::parse_sequence_container(parser.right, first, last, ctx, attr)
     ) {
         return true;
     }
@@ -367,10 +367,10 @@ template<
 parse_sequence(
     Parser const& parser,
     It& first, Se const& last,
-    Context const& context, traits::CategorizedAttr<traits::assoc_attr> auto& attr
-) noexcept(noexcept(detail::parse_into_container(parser, first, last, context, attr)))
+    Context const& ctx, traits::CategorizedAttr<traits::assoc_attr> auto& attr
+) noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
-	return detail::parse_into_container(parser, first, last, context, attr);
+	return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
 template<
@@ -383,16 +383,16 @@ template<
 parse_sequence(
     Parser const& parser,
     It& first, Se const& last,
-    Context const& context, traits::CategorizedAttr<traits::assoc_attr> auto& attr
+    Context const& ctx, traits::CategorizedAttr<traits::assoc_attr> auto& attr
 ) noexcept(
     std::is_nothrow_copy_assignable_v<It> &&
-    noexcept(parser.left.parse(first, last, context, attr)) &&
-    noexcept(parser.right.parse(first, last, context, attr))
+    noexcept(parser.left.parse(first, last, ctx, attr)) &&
+    noexcept(parser.right.parse(first, last, ctx, attr))
 )
 {
     It const first_saved = first;
-    if (parser.left.parse(first, last, context, attr) &&
-        parser.right.parse(first, last, context, attr)
+    if (parser.left.parse(first, last, ctx, attr) &&
+        parser.right.parse(first, last, ctx, attr)
     ) {
         return true;
     }
@@ -416,13 +416,13 @@ struct parse_into_container_impl<sequence<Left, Right>, Context>
     [[nodiscard]] static constexpr bool
     call(
         parser_type const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) noexcept(noexcept(parse_into_container_base_impl<parser_type>::call(
-        parser, first, last, context, attr
+        parser, first, last, ctx, attr
     )))
     {
         return parse_into_container_base_impl<parser_type>::call(
-            parser, first, last, context, attr
+            parser, first, last, ctx, attr
         );
     }
 
@@ -431,7 +431,7 @@ struct parse_into_container_impl<sequence<Left, Right>, Context>
     [[nodiscard]] static constexpr bool
     call(
         parser_type const& parser, It& first, Se const& last,
-        Context const& context, Attr& attr
+        Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
         // inform user what went wrong if we jumped here in attempt to
@@ -452,11 +452,11 @@ struct parse_into_container_impl<sequence<Left, Right>, Context>
             std::is_same_v<std::remove_const_t<Attr>, unused_type> ||
             std::is_same_v<std::remove_const_t<Attr>, unused_container_type>
         ) {
-            return detail::parse_sequence(parser, first, last, context, x4::assume_container(attr));
+            return detail::parse_sequence(parser, first, last, ctx, x4::assume_container(attr));
 
         } else {
             Attr attr_;
-            if (!detail::parse_sequence(parser, first, last, context, attr_)) {
+            if (!detail::parse_sequence(parser, first, last, ctx, attr_)) {
                 return false;
             }
             traits::append(

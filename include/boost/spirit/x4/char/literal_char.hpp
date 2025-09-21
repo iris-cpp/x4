@@ -38,10 +38,10 @@ struct literal_char : char_parser<literal_char<Encoding, Attr>>
     }
 
     template<class Char, class Context>
-    [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
+    [[nodiscard]] constexpr bool test(Char ch_, Context const& ctx) const noexcept
     {
         static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
-        return x4::get_case_compare<encoding>(context)(ch, char_type(ch_)) == 0;
+        return x4::get_case_compare<encoding>(ctx)(ch, char_type(ch_)) == 0;
     }
 
     char_type ch;

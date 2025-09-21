@@ -102,7 +102,7 @@ using expectation_failure_t = get_context_plain_t<expectation_failure_tag, Conte
 
 template<class Context>
 [[nodiscard]]
-constexpr bool has_expectation_failure(Context const& context) noexcept
+constexpr bool has_expectation_failure(Context const& ctx) noexcept
 {
     using T = expectation_failure_t<Context>;
     static_assert(
@@ -111,7 +111,7 @@ constexpr bool has_expectation_failure(Context const& context) noexcept
         "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
     );
-    return x4::get<expectation_failure_tag>(context).has_value();
+    return x4::get<expectation_failure_tag>(ctx).has_value();
 }
 
 //
@@ -122,9 +122,9 @@ template<std::forward_iterator It, class Subject, class Context>
 constexpr void set_expectation_failure(
     It where,
     Subject const& subject,
-    Context const& context
+    Context const& ctx
 )
-    noexcept(noexcept(x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject))))
+    noexcept(noexcept(x4::get<expectation_failure_tag>(ctx).emplace(std::move(where), x4::what(subject))))
 {
     using T = expectation_failure_t<Context>;
     static_assert(
@@ -133,12 +133,12 @@ constexpr void set_expectation_failure(
         "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
     );
-    x4::get<expectation_failure_tag>(context).emplace(std::move(where), x4::what(subject));
+    x4::get<expectation_failure_tag>(ctx).emplace(std::move(where), x4::what(subject));
 }
 
 template<class Context>
 [[nodiscard]]
-constexpr decltype(auto) get_expectation_failure(Context const& context) noexcept
+constexpr decltype(auto) get_expectation_failure(Context const& ctx) noexcept
 {
     using T = expectation_failure_t<Context>;
     static_assert(
@@ -148,11 +148,11 @@ constexpr decltype(auto) get_expectation_failure(Context const& context) noexcep
         "Note that you must also bind the context to your skipper."
     );
 
-    return x4::get<expectation_failure_tag>(context);
+    return x4::get<expectation_failure_tag>(ctx);
 }
 
 template<class Context>
-constexpr void clear_expectation_failure(Context const& context) noexcept
+constexpr void clear_expectation_failure(Context const& ctx) noexcept
 {
     using T = expectation_failure_t<Context>;
     static_assert(
@@ -161,7 +161,7 @@ constexpr void clear_expectation_failure(Context const& context) noexcept
         "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
     );
-    x4::get<expectation_failure_tag>(context).clear();
+    x4::get<expectation_failure_tag>(ctx).clear();
 }
 
 } // boost::spirit::x4

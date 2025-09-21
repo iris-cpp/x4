@@ -128,6 +128,8 @@ template<class Parser>
 
 struct stationary
 {
+    stationary() = default;
+
     explicit stationary(int i) : val{i} {}
     stationary(stationary const&) = delete;
     stationary(stationary&&) = default;

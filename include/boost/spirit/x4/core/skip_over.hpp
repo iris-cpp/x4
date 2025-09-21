@@ -99,7 +99,7 @@ struct skip_over_context<Context>
 };
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Subject Skipper>
-constexpr void skip_over(It& first, Se const& last, Context const& context, Skipper const& skipper)
+constexpr void skip_over(It& first, Se const& last, Context const& ctx, Skipper const& skipper)
     noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type>)
 {
     if constexpr (std::is_same_v<expectation_failure_t<Context>, unused_type>) {
@@ -144,10 +144,10 @@ constexpr void skip_over(It& first, Se const& last, Context const& context, Skip
         // But how can we propagate that error without throwing?
         //
         // For this reason we're going to cherry-pick the reference
-        // and repack it into a brand new context.
+        // and repack it into a brand-new context.
 
         auto const local_ctx = x4::make_context<expectation_failure_tag>(
-            x4::get<expectation_failure_tag>(context));
+            x4::get<expectation_failure_tag>(ctx));
 
         while (skipper.parse(first, last, local_ctx, unused))
             /* loop */;
@@ -155,12 +155,12 @@ constexpr void skip_over(It& first, Se const& last, Context const& context, Skip
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-constexpr void skip_over(It&, Se const&, Context&, unused_type const&) noexcept
+constexpr void skip_over(It&, Se const&, Context const&, unused_type const&) noexcept
 {
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Skipper>
-constexpr void skip_over(It&, Se const&, Context&, unused_skipper<Skipper> const&) noexcept
+constexpr void skip_over(It&, Se const&, Context const&, unused_skipper<Skipper> const&) noexcept
 {
 }
 
@@ -177,10 +177,10 @@ template<class Context>
 constexpr bool has_skipper_v = has_skipper<Context>::value;
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-constexpr void skip_over(It& first, Se const& last, Context& context)
-    noexcept(noexcept(detail::skip_over(first, last, context, x4::get<skipper_tag>(context))))
+constexpr void skip_over(It& first, Se const& last, Context const& ctx)
+    noexcept(noexcept(detail::skip_over(first, last, ctx, x4::get<skipper_tag>(ctx))))
 {
-    detail::skip_over(first, last, context, x4::get<skipper_tag>(context));
+    detail::skip_over(first, last, ctx, x4::get<skipper_tag>(ctx));
 }
 
 } // boost::spirit::x4

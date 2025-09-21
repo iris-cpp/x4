@@ -37,11 +37,11 @@ struct difference : binary_parser<Left, Right, difference<Left, Right>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
         // Try Right first
         It start = first;
-        if (this->right.parse(first, last, context, unused)) {
+        if (this->right.parse(first, last, ctx, unused)) {
             // Right succeeds, we fail.
             first = start;
             return false;
@@ -52,13 +52,13 @@ struct difference : binary_parser<Left, Right, difference<Left, Right>>
         // the whole difference expression (*this) should also yield error.
         // In other words, when the THROW macro was 1 (i.e. traditional behavior),
         // Right should already have thrown an exception.
-        if (x4::has_expectation_failure(context)) {
+        if (x4::has_expectation_failure(ctx)) {
             // don't rollback iterator (mimicking exception-like behavior)
             return false;
         }
 
         // Right fails, now try Left
-        return this->left.parse(first, last, context, attr);
+        return this->left.parse(first, last, ctx, attr);
     }
 };
 

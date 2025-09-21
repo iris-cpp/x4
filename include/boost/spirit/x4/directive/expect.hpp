@@ -38,14 +38,14 @@ struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         // never noexcept; expectation failure requires construction of debug information
     {
-        bool const r = this->subject.parse(first, last, context, attr);
+        bool const r = this->subject.parse(first, last, ctx, attr);
 
         // only the first failure is needed
-        if (!r && !x4::has_expectation_failure(context)) {
-            x4::set_expectation_failure(first, this->subject, context);
+        if (!r && !x4::has_expectation_failure(ctx)) {
+            x4::set_expectation_failure(first, this->subject, ctx);
         }
         return r;
     }
@@ -84,14 +84,14 @@ struct parse_into_container_impl<expect_directive<Subject>, Context>
     [[nodiscard]] static constexpr bool
     call(
         expect_directive<Subject> const& parser,
-        It& first, Se const& last, Context const& context, Attr& attr
+        It& first, Se const& last, Context const& ctx, Attr& attr
     ) // never noexcept; expectation failure requires construction of debug information
     {
-        bool const r = detail::parse_into_container(parser.subject, first, last, context, attr);
+        bool const r = detail::parse_into_container(parser.subject, first, last, ctx, attr);
 
         // only the first error is needed
-        if (!r && !x4::has_expectation_failure(context)) {
-            x4::set_expectation_failure(first, parser.subject, context);
+        if (!r && !x4::has_expectation_failure(ctx)) {
+            x4::set_expectation_failure(first, parser.subject, ctx);
         }
         return r;
     }

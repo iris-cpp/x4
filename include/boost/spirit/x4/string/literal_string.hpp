@@ -49,14 +49,14 @@ struct literal_string : parser<literal_string<String, Encoding, Attr>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr_& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr_& attr) const
         noexcept(
-            noexcept(x4::skip_over(first, last, context)) &&
-            noexcept(detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context)))
+            noexcept(x4::skip_over(first, last, ctx)) &&
+            noexcept(detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(ctx)))
         )
     {
-        x4::skip_over(first, last, context);
-        return detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(context));
+        x4::skip_over(first, last, ctx);
+        return detail::string_parse(str, first, last, attr, x4::get_case_compare<encoding>(ctx));
     }
 
     String str;

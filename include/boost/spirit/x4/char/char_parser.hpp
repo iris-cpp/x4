@@ -22,12 +22,12 @@ struct char_parser : parser<Derived>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         // TODO: noexcept
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
 
-        if (first != last && this->derived().test(*first, context)) {
+        if (first != last && this->derived().test(*first, ctx)) {
             x4::move_to(std::iter_value_t<It>{*first}, attr);
             ++first;
             return true;

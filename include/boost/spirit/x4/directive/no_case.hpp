@@ -40,18 +40,18 @@ struct no_case_directive : unary_parser<Subject, no_case_directive<Subject>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(noexcept(
             this->subject.parse(
                 first, last,
-                x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, context),
+                x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx),
                 attr
             )
         ))
     {
         return this->subject.parse(
             first, last,
-            x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, context),
+            x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx),
             attr
         );
     }

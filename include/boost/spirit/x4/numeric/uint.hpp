@@ -38,13 +38,13 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr)
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr)
         noexcept(
-            noexcept(x4::skip_over(first, last, context)) &&
+            noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
         )
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
         return extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
     }
 };

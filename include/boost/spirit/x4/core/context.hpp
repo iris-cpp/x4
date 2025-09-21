@@ -40,9 +40,9 @@ struct owning_context<context<ID, T, Next>> {};
 // TODO: Rename. `get` is too generic name.
 template<class ID, class Context>
 [[nodiscard]] constexpr decltype(auto)
-get(Context const& context) noexcept
+get(Context const& ctx) noexcept
 {
-    return context.get(std::type_identity<ID>{});
+    return ctx.get(std::type_identity<ID>{});
 }
 
 template<class ID, class Context>

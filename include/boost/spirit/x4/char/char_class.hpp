@@ -63,11 +63,11 @@ struct char_class : char_parser<char_class<Encoding, Tag>>
     static constexpr bool has_attribute = true;
 
     template<class Char, class Context>
-    [[nodiscard]] static constexpr bool test(Char ch, Context const& context) noexcept
+    [[nodiscard]] static constexpr bool test(Char ch, Context const& ctx) noexcept
     {
         return encoding::ischar(ch)
             && char_class_base<Encoding>::is(
-                x4::get_case_compare<Encoding>(context).get_char_class_tag(tag()), ch);
+                x4::get_case_compare<Encoding>(ctx).get_char_class_tag(tag()), ch);
     }
 };
 

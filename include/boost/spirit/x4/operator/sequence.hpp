@@ -41,7 +41,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, unused_type) const
+    parse(It& first, Se const& last, Context const& ctx, unused_type) const
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
             is_nothrow_parsable_v<Left, It, Se, Context, unused_type> &&
@@ -50,13 +50,13 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
     {
         It const first_saved = first;
 
-        if (this->left.parse(first, last, context, unused)
-            && this->right.parse(first, last, context, unused)
+        if (this->left.parse(first, last, ctx, unused)
+            && this->right.parse(first, last, ctx, unused)
         ) {
             return true;
         }
 
-        if (x4::has_expectation_failure(context)) {
+        if (x4::has_expectation_failure(ctx)) {
             // don't rollback iterator (mimicking exception-like behavior)
             return false;
         }
@@ -68,10 +68,10 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
         requires (!std::same_as<std::remove_const_t<Attr>, unused_type>)
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
-        noexcept(noexcept(detail::parse_sequence(*this, first, last, context, attr)))
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(noexcept(detail::parse_sequence(*this, first, last, ctx, attr)))
     {
-        return detail::parse_sequence(*this, first, last, context, attr);
+        return detail::parse_sequence(*this, first, last, ctx, attr);
     }
 };
 

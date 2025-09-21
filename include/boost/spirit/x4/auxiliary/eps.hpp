@@ -32,10 +32,10 @@ struct semantic_predicate : parser<semantic_predicate>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr&) const
-        noexcept(noexcept(x4::skip_over(first, last, context)))
+    parse(It& first, Se const& last, Context const& ctx, Attr&) const
+        noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
         return predicate_;
     }
 
@@ -61,13 +61,13 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr&) const
+    parse(It& first, Se const& last, Context const& ctx, Attr&) const
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
 
         if constexpr (std::invocable<F const&, Context const&>) {
             static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
-            return f_(context);
+            return f_(ctx);
 
         } else if constexpr (std::invocable<F const&, unused_type const&>) {
             static_assert(
@@ -75,6 +75,7 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
                 "We no longer accept a lazy semantic predicate that expects a single `unused_type`. "
                 "Just make your functor take no arguments instead."
             );
+            return false; // silence linter warning
 
         } else {
             static_assert(std::invocable<F const&>);
@@ -95,10 +96,10 @@ struct eps_parser : parser<eps_parser>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr&) const
-        noexcept(noexcept(x4::skip_over(first, last, context)))
+    parse(It& first, Se const& last, Context const& ctx, Attr&) const
+        noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
-        x4::skip_over(first, last, context);
+        x4::skip_over(first, last, ctx);
         return true;
     }
 

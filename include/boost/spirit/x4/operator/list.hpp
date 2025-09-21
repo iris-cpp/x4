@@ -41,28 +41,28 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& context, Attr& attr) const
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
-            noexcept(detail::parse_into_container(this->left, first, last, context, x4::assume_container(attr))) &&
+            noexcept(detail::parse_into_container(this->left, first, last, ctx, x4::assume_container(attr))) &&
             std::is_nothrow_copy_assignable_v<It> &&
             is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
         )
     {
         // In order to succeed we need to match at least one element
-        if (!detail::parse_into_container(this->left, first, last, context, x4::assume_container(attr))) {
+        if (!detail::parse_into_container(this->left, first, last, ctx, x4::assume_container(attr))) {
             return false;
         }
 
         It last_parse_it = first;
         while (
-            this->right.parse(last_parse_it, last, context, unused) &&
-            detail::parse_into_container(this->left, last_parse_it, last, context, x4::assume_container(attr))
+            this->right.parse(last_parse_it, last, ctx, unused) &&
+            detail::parse_into_container(this->left, last_parse_it, last, ctx, x4::assume_container(attr))
         ) {
             // TODO: can we reduce this copy assignment?
             first = last_parse_it;
         }
 
-        return !x4::has_expectation_failure(context);
+        return !x4::has_expectation_failure(ctx);
     }
 };
 
