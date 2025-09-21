@@ -43,10 +43,10 @@ using skip_flag [[deprecated("Use `root_skipper_flag`")]] = root_skipper_flag;
 
 namespace detail {
 
-template <class ItOrRange>
+template<class ItOrRange>
 struct parse_context_for_impl;
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 struct parse_context_for_impl<It>
 {
     using type = context<
@@ -55,15 +55,15 @@ struct parse_context_for_impl<It>
     >;
 };
 
-template <std::ranges::forward_range R>
+template<std::ranges::forward_range R>
 struct parse_context_for_impl<R>
     : parse_context_for_impl<std::ranges::iterator_t<R const>>
 {};
 
-template <class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
+template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 struct phrase_parse_context_for_impl;
 
-template <class Skipper, std::forward_iterator It, std::sentinel_for<It> Se>
+template<class Skipper, std::forward_iterator It, std::sentinel_for<It> Se>
 struct phrase_parse_context_for_impl<Skipper, It, Se>
 {
     static_assert(X4ExplicitParser<Skipper, It, Se>);
@@ -75,7 +75,7 @@ struct phrase_parse_context_for_impl<Skipper, It, Se>
     >;
 };
 
-template <class Skipper, std::ranges::forward_range R>
+template<class Skipper, std::ranges::forward_range R>
 struct phrase_parse_context_for_impl<Skipper, R>
     : phrase_parse_context_for_impl<Skipper, std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>
 {};
@@ -85,17 +85,17 @@ struct phrase_parse_context_for_impl<Skipper, R>
 // Used for determining the context type required in `BOOST_SPIRIT_X4_INSTANTIATE`.
 // Note that sentinel is not required, because only the iterator is needed for error info.
 // We keep the empty parameter as the noop placeholder to make the interface consistent with `phrase_parse_context_for`.
-template <class ItOrRange, class = void>
+template<class ItOrRange, class = void>
 using parse_context_for = typename detail::parse_context_for_impl<ItOrRange>::type;
 
 // Used for determining the context type required in `BOOST_SPIRIT_X4_INSTANTIATE`.
-template <class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
+template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 
 namespace detail {
 
-template <class Parser, class R>
+template<class Parser, class R>
 concept X4RangeParseParser =
     X4Parser<
         Parser,
@@ -103,7 +103,7 @@ concept X4RangeParseParser =
         typename detail::range_parse_parser_impl<R>::sentinel_type
     >;
 
-template <class Skipper, class R>
+template<class Skipper, class R>
 concept X4RangeParseSkipper =
     X4ExplicitParser<
         Skipper,
@@ -117,7 +117,7 @@ struct parse_fn_main
     // parse(range)
 
     // R + Parser + Attribute
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
         requires (!traits::CharArray<R>)
     static constexpr parse_result_for<R>
     operator()(R const& range, Parser&& p, ParseAttr& attr)
@@ -143,7 +143,7 @@ struct parse_fn_main
     }
 
     // parse_result + R + Parser + Attribute
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
         requires (!traits::CharArray<R>)
     static constexpr void
     operator()(parse_result_for<R>& res, R const& range, Parser&& p, ParseAttr& attr)
@@ -163,7 +163,7 @@ struct parse_fn_main
     }
 
     // "str" + Parser + Attribute
-    template <traits::CharArray R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
+    template<traits::CharArray R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
     static constexpr parse_result_for<R>
     operator()(R const& str, Parser&& p, ParseAttr& attr)
     {
@@ -171,7 +171,7 @@ struct parse_fn_main
     }
 
     // parse_result + "str" + Parser + Attribute
-    template <traits::CharArray R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
+    template<traits::CharArray R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
     static constexpr void
     operator()(parse_result_for<R>& res, R const& str, Parser&& p, ParseAttr& attr)
     {
@@ -182,7 +182,7 @@ struct parse_fn_main
     // phrase_parse(range)
 
     // R + Parser + Skipper + Attribute + (root_skipper_flag)
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
         requires (!traits::CharArray<R>)
     static constexpr parse_result_for<R>
     operator()(R const& range, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
@@ -211,7 +211,7 @@ struct parse_fn_main
     }
 
     // parse_result + R + Parser + Skipper + Attribute
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
         requires (!traits::CharArray<R>)
     static constexpr void
     operator()(parse_result_for<R>& res, R const& range, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
@@ -235,7 +235,7 @@ struct parse_fn_main
     }
 
     // "str" + Parser + Skipper + Attribute + (root_skipper_flag)
-    template <traits::CharArray R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
+    template<traits::CharArray R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
     static constexpr parse_result_for<R>
     operator()(R const& str, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
@@ -243,7 +243,7 @@ struct parse_fn_main
     }
 
     // parse_result + "str" + Parser + Attribute + Skipper
-    template <traits::CharArray R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
+    template<traits::CharArray R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
     static constexpr void
     operator()(parse_result_for<R>& res, R const& str, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
@@ -254,7 +254,7 @@ struct parse_fn_main
     // parse(it/se)
 
     // It/Se + Parser + Attribute
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute ParseAttr>
     static constexpr parse_result<It, Se>
     operator()(It first, Se last, Parser&& p, ParseAttr& attr)
     {
@@ -272,7 +272,7 @@ struct parse_fn_main
     }
 
     // parse_result + It/Se + Parser + Attribute
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute ParseAttr>
     static constexpr void
     operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, ParseAttr& attr)
     {
@@ -289,7 +289,7 @@ struct parse_fn_main
     // phrase_parse(it/se)
 
     // It/Se + Parser + Skipper + Attribute + (root_skipper_flag)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute ParseAttr>
     static constexpr parse_result<It, Se>
     operator()(It first, Se last, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
@@ -312,7 +312,7 @@ struct parse_fn_main
     }
 
     // parse_result + It/Se + Parser + Skipper + Attribute + (root_skipper_flag)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute ParseAttr>
     static constexpr void
     operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
@@ -337,22 +337,22 @@ struct parse_fn_deprecated
     // deprecated `parse`
 
     // It/Se + Parser
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
     static constexpr void
     operator()(It, Se, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
     // parse_result + It/Se + Parser
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
     static constexpr void
     operator()(parse_result<It, Se>&, It, Se, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
     // R + Parser
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser>
     static constexpr void
     operator()(R&&, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
     // parse_result + R + Parser
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser>
     static constexpr void
     operator()(parse_result_for<R>&, R&&, Parser&&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
@@ -360,22 +360,22 @@ struct parse_fn_deprecated
     // deprecated `phrase_parse`
 
     // It/Se + Parser + Skipper
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
     static constexpr void
     operator()(It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
     // parse_result + It/Se + Parser + Skipper
-    template <std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
     static constexpr void
     operator()(parse_result<It, Se>&, It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
     // R + Parser + Skipper
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
     static constexpr void
     operator()(R&&, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 
     // parse_result + R + Parser + Skipper
-    template <std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
     static constexpr void
     operator()(parse_result_for<R>&, R&&, Parser&&, Skipper const&) = delete; // If you don't need Attribute, explicitly pass `x4::unused`.
 };

@@ -16,7 +16,7 @@
 
 namespace {
 
-template <std::size_t N, class... Args>
+template<std::size_t N, class... Args>
 constexpr auto binary_test(char const (&binstr)[N], Args&&... args)
 {
     return spirit_test::parse(std::string_view{binstr, N - 1}, std::forward<Args>(args)...);

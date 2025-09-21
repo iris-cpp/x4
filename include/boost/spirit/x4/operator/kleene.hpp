@@ -25,13 +25,13 @@
 
 namespace boost::spirit::x4 {
 
-template <class Subject>
+template<class Subject>
 struct kleene : unary_parser<Subject, kleene<Subject>>
 {
     using base_type = unary_parser<Subject, kleene>;
     static constexpr bool handles_container = true;
 
-    template <class SubjectT>
+    template<class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, kleene>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -40,7 +40,7 @@ struct kleene : unary_parser<Subject, kleene<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(noexcept(detail::parse_into_container(this->subject, first, last, context, x4::assume_container(attr))))
@@ -52,7 +52,7 @@ struct kleene : unary_parser<Subject, kleene<Subject>>
     }
 };
 
-template <X4Subject Subject>
+template<X4Subject Subject>
 [[nodiscard]] constexpr kleene<as_parser_plain_t<Subject>>
 operator*(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<kleene<as_parser_plain_t<Subject>>, Subject>)
@@ -64,7 +64,7 @@ operator*(Subject&& subject)
 
 namespace boost::spirit::x4::traits {
 
-template <class Subject, class Context>
+template<class Subject, class Context>
 struct attribute_of<x4::kleene<Subject>, Context>
     : build_container<attribute_of_t<Subject, Context>> {};
 

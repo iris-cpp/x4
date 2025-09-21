@@ -31,7 +31,7 @@ struct error_handler_tag;
 struct annotate_on_success
 {
     // Catch-all default overload
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class T, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class T, class Context>
     constexpr void
     on_success(It const& first, Se const& last, T& ast, Context const& context)
     {

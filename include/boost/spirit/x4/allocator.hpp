@@ -18,10 +18,10 @@
 
 namespace boost::spirit::x4 {
 
-template <class Klass>
+template<class Klass>
 struct allocator_ops
 {
-    template <class... Allocs>
+    template<class... Allocs>
     static constexpr bool move_assign_noexcept = std::conjunction_v<
         std::disjunction<
             typename std::allocator_traits<Allocs>::propagate_on_container_move_assignment,
@@ -29,7 +29,7 @@ struct allocator_ops
         >...
     >;
 
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     [[nodiscard]] static constexpr auto copy_construct(Klass& self, Klass const& other)
         -> std::remove_reference_t<decltype(self.*Mem)>
     {
@@ -42,14 +42,14 @@ struct allocator_ops
         return data;
     }
 
-    template <auto AllocMem, auto... Mems>
+    template<auto AllocMem, auto... Mems>
     static constexpr void destroy_deallocate(Klass& self) noexcept
     {
         static_assert(sizeof...(Mems) > 0);
         (allocator_ops::destroy_deallocate_impl<AllocMem, Mems>(self), ...);
     }
 
-    template <auto AllocMem, auto... Mems>
+    template<auto AllocMem, auto... Mems>
     static constexpr void copy_assign(Klass& self, Klass const& other)
     {
         assert(std::addressof(self) != std::addressof(other));
@@ -63,7 +63,7 @@ struct allocator_ops
         }
     }
 
-    template <auto AllocMem, auto... Mems>
+    template<auto AllocMem, auto... Mems>
     static constexpr void move_assign(Klass& self, Klass&& other)
         noexcept(move_assign_noexcept<decltype(self.*AllocMem)>)
     {
@@ -80,7 +80,7 @@ struct allocator_ops
 
 
 private:
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     static constexpr void destroy_deallocate_impl(Klass& self) noexcept
     {
         auto& data = self.*Mem;
@@ -92,7 +92,7 @@ private:
         std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
     }
 
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     static constexpr void copy_assign_impl(Klass& self, Klass const& other)
     {
         using Alloc = std::remove_reference_t<decltype(self.*AllocMem)>;
@@ -159,7 +159,7 @@ private:
         }
     }
 
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     static constexpr void move_assign_impl(Klass& self, Klass&& other)
         noexcept(move_assign_noexcept<std::remove_reference_t<decltype(self.*AllocMem)>>)
     {

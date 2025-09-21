@@ -30,7 +30,7 @@ struct semantic_predicate : parser<semantic_predicate>
         : predicate_(predicate)
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute&) const
         noexcept(noexcept(x4::skip_over(first, last, context)))
@@ -43,14 +43,14 @@ private:
     bool predicate_;
 };
 
-template <class F>
+template<class F>
 struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
 {
     using attribute_type = unused_type;
 
     static constexpr bool has_attribute = false;
 
-    template <class F_>
+    template<class F_>
         requires
             (!std::is_same_v<std::remove_cvref_t<F_>, lazy_semantic_predicate>) &&
             std::is_constructible_v<F, F_>
@@ -59,7 +59,7 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
         : f_(std::forward<F_>(f))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute&) const
     {
@@ -93,7 +93,7 @@ struct eps_parser : parser<eps_parser>
 
     static constexpr bool has_attribute = false;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute&) const
         noexcept(noexcept(x4::skip_over(first, last, context)))
@@ -108,7 +108,7 @@ struct eps_parser : parser<eps_parser>
         return semantic_predicate{predicate};
     }
 
-    template <class F>
+    template<class F>
     [[nodiscard]] static constexpr lazy_semantic_predicate<std::remove_cvref_t<F>>
     operator()(F&& f)
         noexcept(std::is_nothrow_constructible_v<lazy_semantic_predicate<std::remove_cvref_t<F>>, F>)

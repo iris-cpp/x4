@@ -22,13 +22,13 @@ struct x_attr {};
 
 namespace boost::spirit::x4::traits {
 
-template <>
+template<>
 struct container_value<x_attr>
 {
     using type = char; // value type of container
 };
 
-template <>
+template<>
 struct push_back_container<x_attr>
 {
     static constexpr void call(x_attr& /*c*/, char /*val*/) noexcept

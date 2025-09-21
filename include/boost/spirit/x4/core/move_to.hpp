@@ -36,28 +36,28 @@ namespace boost::spirit::x4 {
 // constraint that checks `std::is_same_v<Source, Dest>`, thanks to
 // the ordinary overload resolution rules of C++.
 
-template <traits::NonUnusedAttr T>
+template<traits::NonUnusedAttr T>
 constexpr void move_to(T const&& src, T& dest)
     noexcept(std::is_nothrow_assignable_v<T&, T const&&>)
 {
     dest = std::move(src);
 }
 
-template <traits::NonUnusedAttr T>
+template<traits::NonUnusedAttr T>
 constexpr void move_to(T&& src, T& dest)
     noexcept(std::is_nothrow_assignable_v<T&, T&&>)
 {
     dest = std::move(src);
 }
 
-template <traits::NonUnusedAttr T>
+template<traits::NonUnusedAttr T>
 constexpr void move_to(T const& src, T& dest)
     noexcept(std::is_nothrow_copy_assignable_v<T>)
 {
     dest = src;
 }
 
-template <traits::NonUnusedAttr T>
+template<traits::NonUnusedAttr T>
 constexpr void move_to(T&, T&) noexcept
 {
     static_assert(
@@ -76,7 +76,7 @@ constexpr void move_to(T&, T&) noexcept
 }
 
 // unused_type -------------------------------------------
-template <class Source, class Dest>
+template<class Source, class Dest>
     requires
         std::same_as<std::remove_cvref_t<Source>, unused_type> ||
         std::same_as<std::remove_const_t<Dest>, unused_type> ||
@@ -87,27 +87,27 @@ constexpr void move_to(Source&&, Dest&) noexcept
     // unused attribute
 }
 
-template <std::forward_iterator It, std::sentinel_for<It> Se>
+template<std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void move_to(It const&, Se const&, unused_container_type const&)
 {
     // unused attribute
 }
 
-template <std::forward_iterator It, std::sentinel_for<It> Se>
+template<std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void move_to(It const&, Se const&, unused_type&) = delete; // the call site is lacking `x4::assume_container`
 
-template <std::forward_iterator It, std::sentinel_for<It> Se>
+template<std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void move_to(It const&, Se const&, unused_type const&) = delete; // the call site is lacking `x4::assume_container`
 
-template <std::forward_iterator It, std::sentinel_for<It> Se>
+template<std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void move_to(It const&, Se const&, unused_type&&) = delete; // the call site is lacking `x4::assume_container`
 
-template <std::forward_iterator It, std::sentinel_for<It> Se>
+template<std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // the call site is lacking `x4::assume_container`
 
 // Category specific --------------------------------------
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attribute> Dest>
     requires traits::is_size_one_sequence_v<Source>
 constexpr void
 move_to(Source&& src, Dest& dest)
@@ -117,7 +117,7 @@ move_to(Source&& src, Dest& dest)
     dest = std::forward_like<Source>(fusion::front(std::forward<Source>(src)));
 }
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attribute> Dest>
     requires (!traits::is_size_one_sequence_v<Source>)
 constexpr void
 move_to(Source&& src, Dest& dest)
@@ -128,7 +128,7 @@ move_to(Source&& src, Dest& dest)
     dest = std::forward<Source>(src);
 }
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attribute> Dest>
     requires
         traits::is_same_size_sequence_v<Dest, Source> &&
         (!traits::is_size_one_sequence_v<Dest>)
@@ -149,7 +149,7 @@ move_to(Source&& src, Dest& dest)
     }
 }
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attribute> Dest>
     requires traits::is_size_one_sequence_v<Source> && traits::variant_has_substitute_v<Dest, Source>
 constexpr void
 move_to(Source&& src, Dest& dest)
@@ -162,7 +162,7 @@ move_to(Source&& src, Dest& dest)
     dest = std::forward<Source>(src);
 }
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attribute> Dest>
     requires traits::is_size_one_sequence_v<Source> && (!traits::variant_has_substitute_v<Dest, Source>)
 constexpr void
 move_to(Source&& src, Dest& dest)
@@ -182,7 +182,7 @@ move_to(Source&& src, Dest& dest)
     dest = std::forward_like<Source>(fusion::front(std::forward<Source>(src)));
 }
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attribute> Dest>
     requires (!traits::is_size_one_sequence_v<Source>)
 constexpr void
 move_to(Source&& src, Dest& dest)
@@ -192,7 +192,7 @@ move_to(Source&& src, Dest& dest)
     dest = std::forward<Source>(src);
 }
 
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::optional_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::optional_attribute> Dest>
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -203,7 +203,7 @@ move_to(Source&& src, Dest& dest)
 
 // Containers -------------------------------------------------
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::container_attribute> Dest>
+template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::container_attribute> Dest>
 constexpr void
 move_to(It first, Se last, Dest& dest)
     // never noexcept, requires container insertion
@@ -221,14 +221,14 @@ move_to(It first, Se last, Dest& dest)
     }
 }
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
+template<std::forward_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
 constexpr void
 move_to(It first, Se last, std::ranges::subrange<It, Se, Kind>& rng)
 {
     rng = std::ranges::subrange<It, Se, Kind>(std::move(first), std::move(last));
 }
 
-template <std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::tuple_attribute> Dest>
+template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::tuple_attribute> Dest>
     requires traits::is_size_one_sequence_v<Dest>
 constexpr void
 move_to(It first, Se last, Dest& dest)
@@ -237,7 +237,7 @@ move_to(It first, Se last, Dest& dest)
     x4::move_to(first, last, fusion::front(dest));
 }
 
-template <traits::ContainerAttr Source, traits::CategorizedAttr<traits::container_attribute> Dest>
+template<traits::ContainerAttr Source, traits::CategorizedAttr<traits::container_attribute> Dest>
 constexpr void
 move_to(Source&& src, Dest& dest)
     // TODO: noexcept
@@ -252,7 +252,7 @@ move_to(Source&& src, Dest& dest)
 }
 
 // Size-one fusion tuple forwarding
-template <traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attribute> Dest>
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attribute> Dest>
     requires traits::is_size_one_sequence_v<Dest>
 constexpr void
 move_to(Source&& src, Dest& dest)

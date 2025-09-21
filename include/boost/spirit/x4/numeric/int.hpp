@@ -20,7 +20,7 @@
 
 namespace boost::spirit::x4 {
 
-template <
+template<
     class T,
     unsigned Radix = 10,
     unsigned MinDigits = 1,
@@ -37,7 +37,7 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
     using attribute_type = T;
     static constexpr bool has_attribute = true;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr)
         noexcept(

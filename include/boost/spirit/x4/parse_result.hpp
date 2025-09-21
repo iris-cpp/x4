@@ -19,7 +19,7 @@
 
 namespace boost::spirit::x4 {
 
-template <std::forward_iterator It, std::sentinel_for<It> Se = It>
+template<std::forward_iterator It, std::sentinel_for<It> Se = It>
 struct [[nodiscard]] parse_result
 {
     using iterator_type = It;
@@ -87,13 +87,13 @@ struct [[nodiscard]] parse_result
 
 namespace detail {
 
-template <std::ranges::forward_range R>
+template<std::ranges::forward_range R>
 struct parse_result_for_impl
 {
     using type = parse_result<std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>;
 };
 
-template <std::ranges::forward_range R>
+template<std::ranges::forward_range R>
     requires traits::CharArray<R>
 struct parse_result_for_impl<R>
 {
@@ -107,14 +107,14 @@ struct parse_result_for_impl<R>
     >;
 };
 
-template <std::ranges::forward_range R>
+template<std::ranges::forward_range R>
 struct range_parse_parser_impl
 {
     using iterator_type = std::ranges::iterator_t<R const>;
     using sentinel_type = std::ranges::sentinel_t<R const>;
 };
 
-template <std::ranges::forward_range R>
+template<std::ranges::forward_range R>
     requires traits::CharArray<R>
 struct range_parse_parser_impl<R>
 {
@@ -128,7 +128,7 @@ struct range_parse_parser_impl<R>
 
 } // detail
 
-template <std::ranges::forward_range R>
+template<std::ranges::forward_range R>
 using parse_result_for = typename detail::parse_result_for_impl<R>::type;
 
 } // boost::spirit::x4

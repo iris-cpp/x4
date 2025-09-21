@@ -24,19 +24,19 @@
 
 namespace boost::spirit::x4 {
 
-template <class Left, class Right>
+template<class Left, class Right>
 struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
 {
     using base_type = binary_parser<Left, Right, alternative>;
 
-    template <class LeftT, class RightT>
+    template<class LeftT, class RightT>
         requires std::is_constructible_v<base_type, LeftT, RightT>
     constexpr alternative(LeftT&& left, RightT&& right)
         noexcept(std::is_nothrow_constructible_v<base_type, LeftT, RightT>)
         : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, unused_type) const
         noexcept(
@@ -49,7 +49,7 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
                 && this->right.parse(first, last, context, unused));
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(
@@ -63,7 +63,7 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
     }
 };
 
-template <X4Subject Left, X4Subject Right>
+template<X4Subject Left, X4Subject Right>
 [[nodiscard]] constexpr alternative<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
 operator|(Left&& left, Right&& right)
     noexcept(
@@ -83,7 +83,7 @@ operator|(Left&& left, Right&& right)
 
 namespace boost::spirit::x4::traits {
 
-template <class Left, class Right, class Context>
+template<class Left, class Right, class Context>
 struct attribute_of<alternative<Left, Right>, Context>
     : x4::detail::attribute_of_binary<boost::variant, alternative, Left, Right, Context>
 {};

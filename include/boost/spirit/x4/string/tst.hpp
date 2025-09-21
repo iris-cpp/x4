@@ -25,14 +25,14 @@ namespace boost::spirit::x4 {
 
 struct tst_pass_through
 {
-    template <class Char>
+    template<class Char>
     [[nodiscard]] constexpr Char operator()(Char ch) const noexcept
     {
         return ch;
     }
 };
 
-template <class Char, class T, class Alloc = std::allocator<T>>
+template<class Char, class T, class Alloc = std::allocator<T>>
 struct tst
 {
     using char_type = Char; // the character type
@@ -84,13 +84,13 @@ struct tst
         return *this;
     }
 
-    template <std::forward_iterator Iterator, class CaseCompare>
+    template<std::forward_iterator Iterator, class CaseCompare>
     [[nodiscard]] constexpr T* find(Iterator& first, Iterator last, CaseCompare caseCompare) const noexcept
     {
         return node::find(root_, first, last, caseCompare);
     }
 
-    template <std::forward_iterator Iterator, class Val>
+    template<std::forward_iterator Iterator, class Val>
     constexpr T* add(Iterator first, Iterator last, Val&& val)
     {
         if (first == last) return nullptr;
@@ -102,7 +102,7 @@ struct tst
         return this->add(root_, first, last, std::forward<Val>(val));
     }
 
-    template <std::forward_iterator Iterator>
+    template<std::forward_iterator Iterator>
     constexpr void remove(Iterator first, Iterator last) noexcept
     {
         this->remove(root_, first, last);
@@ -116,7 +116,7 @@ struct tst
         root_ = nullptr;
     }
 
-    template <class F>
+    template<class F>
     constexpr void for_each(F&& f) const
     {
         node::for_each(root_, {}, std::forward<F>(f));
@@ -125,7 +125,7 @@ struct tst
     friend struct allocator_ops<tst>;
 
 private:
-    template <std::forward_iterator Iterator, class Val>
+    template<std::forward_iterator Iterator, class Val>
     [[nodiscard]] constexpr T*
     add(node* root, Iterator first, Iterator last, Val&& val)
     {
@@ -162,7 +162,7 @@ private:
         }
     }
 
-    template <std::forward_iterator Iterator>
+    template<std::forward_iterator Iterator>
     constexpr void
     remove(node*& p, Iterator first, Iterator last) noexcept
     {

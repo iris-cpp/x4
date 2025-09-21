@@ -16,7 +16,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 struct context;
 
 struct unused_type
@@ -25,7 +25,7 @@ struct unused_type
 
     // unused_type can masquerade as an empty context (see context.hpp)
 
-    template <class ID, class T, class Next>
+    template<class ID, class T, class Next>
     [[deprecated("If your parser don't need a `context`, just accept it by `auto const&` and discard it.")]]
     /* not explicit */ constexpr unused_type(context<ID, T, Next> const&) noexcept
     {}
@@ -50,7 +50,7 @@ inline constexpr unused_container_type unused_container{};
 
 } // cpos
 
-template <class T>
+template<class T>
     requires (!std::is_same_v<std::remove_const_t<T>, unused_type>)
 [[nodiscard]] constexpr T&
 assume_container(T& attr) noexcept

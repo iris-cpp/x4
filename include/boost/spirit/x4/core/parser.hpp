@@ -27,7 +27,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class Subject, class Action>
+template<class Subject, class Action>
 struct action;
 
 namespace detail {
@@ -40,7 +40,7 @@ using arbitrary_context_type = context<arbitrary_context_tag, int>;
 
 } // detail
 
-template <class T>
+template<class T>
 concept X4Attribute =
     std::same_as<std::remove_const_t<T>, unused_type> ||
     std::same_as<std::remove_const_t<T>, unused_container_type> ||
@@ -52,7 +52,7 @@ concept X4Attribute =
         std::assignable_from<T&, T>
     );
 
-template <class Derived>
+template<class Derived>
 struct parser : private detail::parser_base
 {
     static_assert(!std::is_reference_v<Derived>);
@@ -82,7 +82,7 @@ struct parser : private detail::parser_base
         return static_cast<Derived const&&>(*this);
     }
 
-    template <class Self, class Action>
+    template<class Self, class Action>
         requires std::is_constructible_v<
             action<Derived, std::remove_cvref_t<Action>>,
             decltype(std::declval<Self>().derived()),
@@ -100,7 +100,7 @@ struct parser : private detail::parser_base
     }
 };
 
-template <class Subject, class Derived>
+template<class Subject, class Derived>
 struct unary_parser : parser<Derived>
 {
     using subject_type = Subject;
@@ -109,7 +109,7 @@ struct unary_parser : parser<Derived>
 
     constexpr unary_parser() = default;
 
-    template <class SubjectT>
+    template<class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, unary_parser>) &&
             std::is_constructible_v<Subject, SubjectT>
@@ -121,7 +121,7 @@ struct unary_parser : parser<Derived>
     BOOST_SPIRIT_NO_UNIQUE_ADDRESS Subject subject;
 };
 
-template <class Left, class Right, class Derived>
+template<class Left, class Right, class Derived>
 struct binary_parser : parser<Derived>
 {
     using left_type = Left;
@@ -131,7 +131,7 @@ struct binary_parser : parser<Derived>
 
     constexpr binary_parser() = default;
 
-    template <class LeftT, class RightT>
+    template<class LeftT, class RightT>
         requires std::is_constructible_v<Left, LeftT> && std::is_constructible_v<Right, RightT>
     constexpr binary_parser(LeftT&& left, RightT&& right)
         noexcept(std::is_nothrow_constructible_v<Left, LeftT> && std::is_nothrow_constructible_v<Right, RightT>)
@@ -168,40 +168,40 @@ namespace extension {
 // `x4::as_parser` (not to be confused with `x4::extension::as_parser`) to
 // model a C++20-ish CPO to inhibit undesired ADL in the first place.
 
-template <class T>
+template<class T>
 struct as_parser; // not defined
 
-template <>
+template<>
 struct as_parser<unused_type>
 {
     using value_type [[deprecated("Use x4::as_parser_plain_t")]] = unused_type;
 
-    template <class T>
+    template<class T>
     [[nodiscard]] static constexpr auto&& call(T&& unused_) noexcept
     {
         return std::forward<T>(unused_);
     }
 };
 
-template <class Derived>
+template<class Derived>
     requires std::is_base_of_v<detail::parser_base, std::remove_cvref_t<Derived>>
 struct as_parser<Derived>
 {
     using value_type [[deprecated("Use x4::as_parser_plain_t")]] = std::remove_cvref_t<Derived>;
 
-    template <class T>
+    template<class T>
     [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
     {
         return std::forward<T>(p);
     }
 };
 
-template <class Derived>
+template<class Derived>
 struct as_parser<parser<Derived>>
 {
     using value_type [[deprecated("Use x4::as_parser_plain_t")]] = Derived;
 
-    template <class T>
+    template<class T>
     [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
     {
         return std::forward<T>(p).derived();
@@ -214,11 +214,11 @@ namespace detail {
 
 struct as_parser_fn
 {
-    template <class T>
+    template<class T>
     static void operator()(T&&) = delete; // If you reach here, your specialization of `x4::extension::as_parser` has a wrong signature, or the type is simply incompatible.
 
     // catch-all default fallback
-    template <class T>
+    template<class T>
         requires std::is_base_of_v<
             parser_base,
             std::remove_cvref_t<decltype(extension::as_parser<std::remove_cvref_t<T>>::call(std::declval<T>()))>
@@ -229,28 +229,28 @@ struct as_parser_fn
         return extension::as_parser<std::remove_cvref_t<T>>::call(std::forward<T>(x));
     }
 
-    template <class Derived>
+    template<class Derived>
     [[nodiscard]] static constexpr auto&&
     operator()(parser<Derived>& p) noexcept
     {
         return p.derived();
     }
 
-    template <class Derived>
+    template<class Derived>
     [[nodiscard]] static constexpr auto&&
     operator()(parser<Derived> const& p) noexcept
     {
         return p.derived();
     }
 
-    template <class Derived>
+    template<class Derived>
     [[nodiscard]] static constexpr auto&&
     operator()(parser<Derived>&& p) noexcept
     {
         return std::move(p).derived();
     }
 
-    template <class Derived>
+    template<class Derived>
     [[nodiscard]] static constexpr auto&&
     operator()(parser<Derived> const&& p) noexcept
     {
@@ -266,17 +266,17 @@ inline constexpr detail::as_parser_fn as_parser{};
 
 } // cpos
 
-template <class T>
+template<class T>
 using as_parser_t = decltype(as_parser(std::declval<T>())); // If you see an error here, your `T` is not castable to X4's parser type.
 
-template <class T>
+template<class T>
 using as_parser_plain_t = std::remove_cvref_t<as_parser_t<T>>;
 
 
 // This is a very low level API provided for consistency with
 // `is_parser_nothrow_castable`. Most users should use `X4Subject`
 // instead.
-template <class T>
+template<class T>
 struct is_parser_castable
 {
     static constexpr bool value = requires {
@@ -284,7 +284,7 @@ struct is_parser_castable
     };
 };
 
-template <class T>
+template<class T>
 constexpr bool is_parser_castable_v = is_parser_castable<T>::value;
 
 // This trait can be used primarily for multi-parameter constructors.
@@ -293,7 +293,7 @@ constexpr bool is_parser_castable_v = is_parser_castable<T>::value;
 //    is_parser_nothrow_castable_v<A> &&
 //    is_parser_nothrow_castable_v<B> &&
 //    std::is_nothrow_constructible_v<op_parser, as_parser_t<A>, as_parser_t<B>>
-template <class T>
+template<class T>
 struct is_parser_nothrow_castable
 {
     static constexpr bool value = requires {
@@ -301,11 +301,11 @@ struct is_parser_nothrow_castable
     };
 };
 
-template <class T>
+template<class T>
 constexpr bool is_parser_nothrow_castable_v = is_parser_nothrow_castable<T>::value;
 
 
-template <class T>
+template<class T>
 concept X4ExplicitSubject =
     std::is_base_of_v<detail::parser_base, std::remove_cvref_t<T>> &&
     std::move_constructible<std::remove_cvref_t<T>>;
@@ -313,7 +313,7 @@ concept X4ExplicitSubject =
     // thus requiring move assignable here would make such `x4::action` to
     // not satisfy this trait; we consider it too strict for now.
 
-template <class T>
+template<class T>
 concept X4ImplicitSubject =
     !std::is_base_of_v<detail::parser_base, std::remove_cvref_t<T>> &&
     is_parser_castable_v<T> && // `as_parser(t)` is valid?
@@ -326,7 +326,7 @@ concept X4ImplicitSubject =
 // well-formed NOT predicate in X4's domain (with "NOT predicate"
 // referring to that of the PEG semantics) if and only if `T`
 // models `X4Subject`.
-template <class T>
+template<class T>
 concept X4Subject = X4ExplicitSubject<T> || X4ImplicitSubject<T>;
 
 
@@ -340,14 +340,14 @@ concept X4Subject = X4ExplicitSubject<T> || X4ImplicitSubject<T>;
 // This interface can only be used to check whether `Parser`'s single-parameter
 // constructor is available. For multi-parameter construction, manually combine
 // `is_parser_castable` with `std::is_constructible`.
-template <X4Subject Parser, X4Subject T>
+template<X4Subject Parser, X4Subject T>
 struct is_parser_constructible : std::false_type {};
 
-template <X4Subject Parser, X4Subject T>
+template<X4Subject Parser, X4Subject T>
     requires std::is_constructible_v<Parser, as_parser_t<T>>
 struct is_parser_constructible<Parser, T> : std::true_type {};
 
-template <X4Subject Parser, X4Subject T>
+template<X4Subject Parser, X4Subject T>
 constexpr bool is_parser_constructible_v = is_parser_constructible<Parser, T>::value;
 
 // Checks whether `Parser(as_parser(t))` is noexcept.
@@ -355,20 +355,20 @@ constexpr bool is_parser_constructible_v = is_parser_constructible<Parser, T>::v
 // This interface can only be used to check whether `Parser`'s single-parameter
 // constructor is available. For multi-parameter construction, manually combine
 // `is_parser_nothrow_castable` with `std::is_nothrow_constructible`.
-template <X4Subject Parser, X4Subject T>
+template<X4Subject Parser, X4Subject T>
 struct is_parser_nothrow_constructible : std::false_type {};
 
-template <X4Subject Parser, X4Subject T>
+template<X4Subject Parser, X4Subject T>
     requires
         is_parser_nothrow_castable_v<T> &&
         std::is_nothrow_constructible_v<Parser, as_parser_t<T>>
 struct is_parser_nothrow_constructible<Parser, T> : std::true_type {};
 
-template <X4Subject Parser, X4Subject T>
+template<X4Subject Parser, X4Subject T>
 constexpr bool is_parser_nothrow_constructible_v = is_parser_nothrow_constructible<Parser, T>::value;
 
 
-template <class Parser, class It, class Se, class Context, class Attr>
+template<class Parser, class It, class Se, class Context, class Attr>
 struct is_parsable
 {
     static_assert(X4ExplicitSubject<Parser>);
@@ -403,14 +403,14 @@ struct is_parsable
     }, "X4 can now determine `RContext` automatically. Remove `RContext` from your parser.");
 };
 
-template <class Parser, class It, class Se, class Context, class Attr>
+template<class Parser, class It, class Se, class Context, class Attr>
 constexpr bool is_parsable_v = is_parsable<Parser, It, Se, Context, Attr>::value;
 
-template <class Parser, class It, class Se, class Context, class Attr>
+template<class Parser, class It, class Se, class Context, class Attr>
 concept Parsable = is_parsable<Parser, It, Se, Context, Attr>::value;
 // ^^^ this must be concept in order to provide better diagnostics (e.g. on MSVC)
 
-template <class Parser, class It, class Se, class Context, class Attr>
+template<class Parser, class It, class Se, class Context, class Attr>
 struct is_nothrow_parsable
 {
     static_assert(X4ExplicitSubject<Parser>);
@@ -445,16 +445,16 @@ struct is_nothrow_parsable
     }, "X4 can now determine `RContext` automatically. Remove `RContext` from your parser.");
 };
 
-template <class Parser, class It, class Se, class Context, class Attr>
+template<class Parser, class It, class Se, class Context, class Attr>
 constexpr bool is_nothrow_parsable_v = is_nothrow_parsable<Parser, It, Se, Context, Attr>::value;
 
 
-template <class Parser, class It, class Se>
+template<class Parser, class It, class Se>
 concept X4ExplicitParser =
     X4ExplicitSubject<Parser> &&
     is_parsable_v<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type>;
 
-template <class Parser, class It, class Se>
+template<class Parser, class It, class Se>
 concept X4ImplicitParser =
     X4ImplicitSubject<Parser> &&
     is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type>;
@@ -475,12 +475,12 @@ concept X4ImplicitParser =
 // accept `unused_type` for `Context` and `Attribute`. This is because
 // core parsers of Spirit have historically been assuming natural use of `unused_type`
 // in many locations.
-template <class Parser, class It, class Se>
+template<class Parser, class It, class Se>
 concept X4Parser = X4ExplicitParser<Parser, It, Se> || X4ImplicitParser<Parser, It, Se>;
 
 
 // The runtime type info that can be obtained via `x4::what(p)`.
-template <class Subject>
+template<class Subject>
 struct get_info
 {
     static_assert(X4Subject<Subject>);
@@ -510,7 +510,7 @@ namespace detail {
 // (Note: CPO inhibits ADL in general.)
 struct what_fn
 {
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] static constexpr std::string operator()(Subject const& p)
     {
         return get_info<Subject>{}(p);
@@ -529,11 +529,11 @@ inline constexpr detail::what_fn what{}; // no ADL
 
 namespace boost::spirit::x4::traits {
 
-template <class Subject, class Derived, class Context>
+template<class Subject, class Derived, class Context>
 struct has_attribute<unary_parser<Subject, Derived>, Context>
     : has_attribute<Subject, Context> {};
 
-template <class Left, class Right, class Derived, class Context>
+template<class Left, class Right, class Derived, class Context>
 struct has_attribute<binary_parser<Left, Right, Derived>, Context>
     : std::disjunction<has_attribute<Left, Context>, has_attribute<Right, Context>> {};
 

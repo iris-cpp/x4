@@ -22,7 +22,7 @@
 namespace boost::spirit::x4 {
 
 // Same as `lexeme[...]`, but does not pre-skip
-template <class Subject>
+template<class Subject>
 struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
 {
     using base_type = unary_parser<Subject, no_skip_directive<Subject>>;
@@ -30,7 +30,7 @@ struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = Subject::handles_container;
 
-    template <class SubjectT>
+    template<class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, no_skip_directive>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -40,7 +40,7 @@ struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
     {}
 
 private:
-    template <class Context>
+    template<class Context>
     using unused_skipper_context_t = x4::context<
         skipper_tag,
         unused_skipper<
@@ -50,7 +50,7 @@ private:
     >;
 
 public:
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
@@ -72,7 +72,7 @@ public:
         );
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires (!has_skipper_v<Context>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
@@ -86,7 +86,7 @@ namespace detail {
 
 struct no_skip_gen
 {
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] constexpr no_skip_directive<as_parser_plain_t<Subject>>
     operator[](Subject&& subject) const // TODO: MSVC can't handle static operator[]
         noexcept(is_parser_nothrow_constructible_v<no_skip_directive<as_parser_plain_t<Subject>>, Subject>)

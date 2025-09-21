@@ -20,7 +20,7 @@
 
 namespace boost::spirit::x4::detail {
 
-template <class Char, class T, class Alloc = std::allocator<T>>
+template<class Char, class T, class Alloc = std::allocator<T>>
 struct tst_node
 {
     using allocator_type = Alloc;
@@ -102,7 +102,7 @@ struct tst_node
         >(*this, std::move(rhs));
     }
 
-    template <std::forward_iterator Iterator, class CaseCompare>
+    template<std::forward_iterator Iterator, class CaseCompare>
     [[nodiscard]] static constexpr T*
     find(tst_node* start, Iterator& first, Iterator last, CaseCompare const& comp) noexcept
     {
@@ -138,7 +138,7 @@ struct tst_node
         return found;
     }
 
-    template <class F>
+    template<class F>
     static void
     for_each(tst_node* const p, std::basic_string_view<Char> const prefix, F&& f)
     {

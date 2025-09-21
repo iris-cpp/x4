@@ -31,7 +31,7 @@ struct repeat_inf_type
     constexpr explicit repeat_inf_type() noexcept = default;
 };
 
-template <std::integral T>
+template<std::integral T>
 struct exact_count // handles repeat(exact)[p]
 {
     using value_type = T;
@@ -41,7 +41,7 @@ struct exact_count // handles repeat(exact)[p]
     T exact_value;
 };
 
-template <std::integral T>
+template<std::integral T>
 struct finite_count // handles repeat(min, max)[p]
 {
     using value_type = T;
@@ -52,7 +52,7 @@ struct finite_count // handles repeat(min, max)[p]
     T max_value;
 };
 
-template <std::integral T>
+template<std::integral T>
 struct infinite_count // handles repeat(min, inf)[p]
 {
     using value_type = T;
@@ -62,7 +62,7 @@ struct infinite_count // handles repeat(min, inf)[p]
     T min_value;
 };
 
-template <class Bounds>
+template<class Bounds>
 concept RepeatBounds = requires(std::remove_cvref_t<Bounds> const& bounds) {
     typename std::remove_cvref_t<Bounds>::value_type;
     { bounds.got_max(std::declval<typename std::remove_cvref_t<Bounds>::value_type>()) } -> std::same_as<bool>;
@@ -82,14 +82,14 @@ inline constexpr detail::repeat_inf_type repeat_inf{};
 
 } // cpos
 
-template <class Subject, detail::RepeatBounds Bounds>
+template<class Subject, detail::RepeatBounds Bounds>
 struct repeat_directive : unary_parser<Subject, repeat_directive<Subject, Bounds>>
 {
     using base_type = unary_parser<Subject, repeat_directive<Subject, Bounds>>;
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = true;
 
-    template <class SubjectT, detail::RepeatBounds BoundsT>
+    template<class SubjectT, detail::RepeatBounds BoundsT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Bounds, BoundsT>
     constexpr repeat_directive(SubjectT&& subject, BoundsT&& bounds)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<Bounds, BoundsT>)
@@ -129,7 +129,7 @@ namespace detail {
 
 struct repeat_gen
 {
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard, deprecated("`repeat[p]` has the exact same meaning as `*p`. Use `*p` instead.")]]
     constexpr auto operator[](Subject&& subject) const
         noexcept(noexcept(*as_parser(std::forward<Subject>(subject))))
@@ -137,10 +137,10 @@ struct repeat_gen
         return *as_parser(std::forward<Subject>(subject));
     }
 
-    template <RepeatBounds Bounds>
+    template<RepeatBounds Bounds>
     struct [[nodiscard]] repeat_gen_impl
     {
-        template <X4Subject Subject>
+        template<X4Subject Subject>
         [[nodiscard]] constexpr repeat_directive<as_parser_plain_t<Subject>, Bounds>
         operator[](Subject&& subject) const
             noexcept(
@@ -158,21 +158,21 @@ struct repeat_gen
         Bounds bounds;
     };
 
-    template <std::integral T>
+    template<std::integral T>
     static constexpr repeat_gen_impl<exact_count<T>>
     operator()(T const exact) noexcept
     {
         return {exact_count<T>{exact}};
     }
 
-    template <std::integral T>
+    template<std::integral T>
     static constexpr repeat_gen_impl<finite_count<T>>
     operator()(T const min_val, T const max_val) noexcept
     {
         return {finite_count<T>{min_val, max_val}};
     }
 
-    template <std::integral T>
+    template<std::integral T>
     static constexpr repeat_gen_impl<infinite_count<T>>
     operator()(T const min_val, repeat_inf_type const&) noexcept
     {
@@ -192,7 +192,7 @@ inline constexpr detail::repeat_gen repeat{};
 
 namespace boost::spirit::x4::traits {
 
-template <class Subject, class Bounds, class Context>
+template<class Subject, class Bounds, class Context>
 struct attribute_of<x4::repeat_directive<Subject, Bounds>, Context>
     : build_container<attribute_of_t<Subject, Context>>
 {};

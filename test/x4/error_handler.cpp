@@ -27,7 +27,7 @@ namespace {
 
 struct error_handler_base
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
     void on_error(It const&, Se const&, Exception const& x, Context const& context) const
     {
         std::string message = "Error! Expecting: " + x.which() + " here:";

@@ -17,19 +17,19 @@
 
 namespace boost::spirit::x4 {
 
-template <class Subject, class ID, class T>
+template<class Subject, class ID, class T>
 struct with_directive;
 
 namespace detail {
 
-template <class Subject, class ID, class T>
+template<class Subject, class ID, class T>
 struct with_directive_impl
     : unary_parser<Subject, with_directive<Subject, ID, T>>
 {
     using base_type = unary_parser<Subject, with_directive<Subject, ID, T>>;
     mutable T val_;
 
-    template <class SubjectT, class U>
+    template<class SubjectT, class U>
         requires
             std::is_constructible_v<base_type, SubjectT> &&
             std::is_constructible_v<T, U>
@@ -43,14 +43,14 @@ struct with_directive_impl
     {}
 };
 
-template <class Subject, class ID, class T>
+template<class Subject, class ID, class T>
 struct with_directive_impl<Subject, ID, T const>
     : unary_parser<Subject, with_directive<Subject, ID, T const>>
 {
     using base_type = unary_parser<Subject, with_directive<Subject, ID, T const>>;
     /* not mutable */ T const val_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-    template <class SubjectT, class U>
+    template<class SubjectT, class U>
         requires
             std::is_constructible_v<base_type, SubjectT> &&
             std::is_constructible_v<T const, U>
@@ -64,14 +64,14 @@ struct with_directive_impl<Subject, ID, T const>
     {}
 };
 
-template <class Subject, class ID, class T>
+template<class Subject, class ID, class T>
 struct with_directive_impl<Subject, ID, T&>
     : unary_parser<Subject, with_directive<Subject, ID, T&>>
 {
     using base_type = unary_parser<Subject, with_directive<Subject, ID, T&>>;
     T& val_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-    template <class SubjectT, class U>
+    template<class SubjectT, class U>
         requires
             std::is_constructible_v<base_type, SubjectT> &&
             std::is_constructible_v<T&, U&>
@@ -86,7 +86,7 @@ struct with_directive_impl<Subject, ID, T&>
 
 // `with` directive injects a value into the context prior to parsing.
 // Holds lvalue references by reference, holds rvalue reference by value.
-template <class Subject, class ID, class T>
+template<class Subject, class ID, class T>
 struct with_directive : detail::with_directive_impl<Subject, ID, T>
 {
     static_assert(
@@ -108,7 +108,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = Subject::handles_container;
 
-    template <class SubjectT, class U>
+    template<class SubjectT, class U>
         requires std::is_constructible_v<base_type, SubjectT, U>
     constexpr with_directive(SubjectT&& subject, U&& val)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT, U>)
@@ -118,10 +118,10 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     // The internal context type. This can be used to determine the composed
     // context type used in `x4::parse`/`x4::phrase_parse`. It is required for
     // the argument of `BOOST_SPIRIT_X4_INSTANTIATE`.
-    template <class Context>
+    template<class Context>
     using context_t = context<ID, std::remove_reference_t<T>, Context>;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attribute>)
@@ -140,13 +140,13 @@ private:
 
 namespace detail {
 
-template <class ID, class T>
+template<class ID, class T>
 struct [[nodiscard]] with_gen
 {
     static_assert(!std::is_rvalue_reference_v<T>);
     T val;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] constexpr with_directive<as_parser_plain_t<Subject>, ID, T>
     operator[](Subject&& subject) &&
         noexcept(
@@ -162,7 +162,7 @@ struct [[nodiscard]] with_gen
         return {as_parser(std::forward<Subject>(subject)), std::forward<T>(val)};
     }
 
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] constexpr with_directive<as_parser_plain_t<Subject>, ID, T>
     operator[](Subject&& subject) const&
         noexcept(
@@ -185,10 +185,10 @@ struct [[nodiscard]] with_gen
     }
 };
 
-template <class ID>
+template<class ID>
 struct with_fn
 {
-    template <class T>
+    template<class T>
     static constexpr with_gen<ID, T> operator()(T&& val)
         noexcept(
             std::is_lvalue_reference_v<T> ||
@@ -205,7 +205,7 @@ inline namespace cpos {
 
 // `with` directive injects a value into the context prior to parsing.
 // Holds lvalue references by reference, holds rvalue reference by value.
-template <class ID>
+template<class ID>
 inline constexpr detail::with_fn<ID> with{};
 
 } // cpos

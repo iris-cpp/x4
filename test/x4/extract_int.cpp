@@ -19,7 +19,7 @@
 # pragma warning(disable: 4127)   // conditional expression is constant
 #endif
 
-template <int Min, int Max>
+template<int Min, int Max>
 struct custom_int
 {
     custom_int() = default;
@@ -49,7 +49,7 @@ struct custom_int
     bool operator==(custom_int x) const { return value_ == x.value_; }
     bool operator!=(custom_int x) const { return value_ != x.value_; }
 
-    template <class Char, class Traits>
+    template<class Char, class Traits>
     friend std::basic_ostream<Char, Traits>&
     operator<<(std::basic_ostream<Char, Traits>& os, custom_int x) {
         return os << x.value_;
@@ -64,16 +64,16 @@ private:
 
 namespace utils {
 
-template <int Min, int Max> struct digits;
-template <> struct digits<-9,  9>  { static constexpr int r2 = 3, r10 = 1; };
-template <> struct digits<-10, 10> { static constexpr int r2 = 3, r10 = 1; };
-template <> struct digits<-15, 15> { static constexpr int r2 = 3, r10 = 1; };
+template<int Min, int Max> struct digits;
+template<> struct digits<-9,  9>  { static constexpr int r2 = 3, r10 = 1; };
+template<> struct digits<-10, 10> { static constexpr int r2 = 3, r10 = 1; };
+template<> struct digits<-15, 15> { static constexpr int r2 = 3, r10 = 1; };
 
 } // utils
 
 namespace std {
 
-template <int Min, int Max>
+template<int Min, int Max>
 class numeric_limits<custom_int<Min, Max>> : public numeric_limits<int>
 {
 public:
@@ -89,7 +89,7 @@ public:
 
 namespace {
 
-template <class T, int Base, int MaxDigits>
+template<class T, int Base, int MaxDigits>
 void test_overflow_handling(char const* begin, char const* end, int i)
 {
     // Check that parser fails on overflow
@@ -115,7 +115,7 @@ void test_overflow_handling(char const* begin, char const* end, int i)
     }
 }
 
-template <class T, int Base>
+template<class T, int Base>
 void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int i)
 {
     // Check that unparsed digits are not consumed
@@ -138,7 +138,7 @@ void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int 
     }
 }
 
-template <class T, int Base>
+template<class T, int Base>
 void run_tests(char const* begin, char const* end, int i)
 {
     // Check that parser fails on overflow

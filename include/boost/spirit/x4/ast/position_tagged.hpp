@@ -23,7 +23,7 @@ struct position_tagged
     int id_last = -1;
 };
 
-template <class Container>
+template<class Container>
 class position_cache
 {
 public:
@@ -34,7 +34,7 @@ public:
         , last_(last)
     {}
 
-    template <class AST>
+    template<class AST>
         requires std::derived_from<AST, position_tagged>
     [[nodiscard]] std::ranges::subrange<iterator_type>
     position_of(AST const& ast) const
@@ -45,7 +45,7 @@ public:
         };
     }
 
-    template <class AST>
+    template<class AST>
         requires (!std::derived_from<AST, position_tagged>)
     [[nodiscard]] std::ranges::subrange<iterator_type>
     position_of(AST const&) const
@@ -55,14 +55,14 @@ public:
     }
 
     // This will catch all nodes except those inheriting from position_tagged
-    template <class AST>
+    template<class AST>
         requires (!std::derived_from<AST, position_tagged>)
     void annotate(AST&, iterator_type const&, iterator_type const&)
     {
         // (no-op) no need for tags
     }
 
-    template <class AST>
+    template<class AST>
         requires std::derived_from<AST, position_tagged>
     void annotate(AST& ast, iterator_type first, iterator_type last)
     {

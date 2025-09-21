@@ -39,7 +39,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     using x4::detail::parse_fn_main::operator();
 
     // It/Se + Parser
-    template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>
     static constexpr x4::parse_result<It, Se>
     operator()(It first, Se last, Parser&& p)
     {
@@ -47,7 +47,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // parse_result + It/Se + Parser
-    template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>
     static constexpr void
     operator()(x4::parse_result<It, Se>& res, It first, Se last, Parser&& p)
     {
@@ -55,7 +55,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // R + Parser
-    template <std::ranges::forward_range R, x4::detail::X4RangeParseParser<R> Parser>
+    template<std::ranges::forward_range R, x4::detail::X4RangeParseParser<R> Parser>
     static constexpr x4::parse_result_for<R>
     operator()(R const& r, Parser&& p)
     {
@@ -63,7 +63,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // parse_result + R + Parser
-    template <std::ranges::forward_range R, x4::detail::X4RangeParseParser<R> Parser>
+    template<std::ranges::forward_range R, x4::detail::X4RangeParseParser<R> Parser>
     static constexpr void
     operator()(x4::parse_result_for<R>& res, R const& r, Parser&& p)
     {
@@ -71,7 +71,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // It/Se + Parser + Skipper
-    template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser, x4::X4ExplicitParser<It, Se> Skipper>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser, x4::X4ExplicitParser<It, Se> Skipper>
     static constexpr x4::parse_result<It, Se>
     operator()(It first, Se last, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
     {
@@ -79,7 +79,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // parse_result + It/Se + Parser + Skipper
-    template <std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser, x4::X4ExplicitParser<It, Se> Skipper>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser, x4::X4ExplicitParser<It, Se> Skipper>
     static constexpr void
     operator()(x4::parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper&& s, x4::root_skipper_flag flag = x4::root_skipper_flag::do_post_skip)
     {
@@ -87,7 +87,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // R + Parser + Skipper
-    template <
+    template<
         std::ranges::forward_range R,
         x4::detail::X4RangeParseParser<R> Parser,
         x4::detail::X4RangeParseSkipper<R> Skipper
@@ -99,7 +99,7 @@ struct parse_overloads : x4::detail::parse_fn_main
     }
 
     // parse_result + R + Parser + Skipper
-    template <
+    template<
         std::ranges::forward_range R,
         x4::detail::X4RangeParseParser<R> Parser,
         x4::detail::X4RangeParseSkipper<R> Skipper
@@ -119,7 +119,7 @@ inline constexpr detail::parse_overloads parse{};
 
 } // cpos
 
-template <class Parser>
+template<class Parser>
 [[nodiscard]] constexpr bool test_constexpr_copy_move_ctors(Parser const& p)
 {
     [[maybe_unused]] Parser copy_ctor(p);
@@ -147,7 +147,7 @@ struct move_only
     move_only& operator=(move_only&&) = default;
 };
 
-template <class T>
+template<class T>
 struct synth_parser : x4::parser<synth_parser<T>>
 {
     using attribute_type = T;
@@ -155,7 +155,7 @@ struct synth_parser : x4::parser<synth_parser<T>>
     static constexpr bool has_attribute = true;
     static constexpr bool handles_container = false;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& iter, Se const& last, Context const&, Attribute& attr) const
     {
@@ -168,7 +168,7 @@ struct synth_parser : x4::parser<synth_parser<T>>
     }
 };
 
-template <class T>
+template<class T>
 constexpr synth_parser<T> synth{};
 
 constexpr synth_parser<move_only> synth_move_only{};

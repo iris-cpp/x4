@@ -20,7 +20,7 @@ namespace boost::spirit::x4 {
 // Tag used to get our error handler from the context
 struct error_handler_tag;
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 class error_handler
 {
 public:
@@ -48,7 +48,7 @@ public:
         (*this)(where.begin(), where.end(), message);
     }
 
-    template <class AST>
+    template<class AST>
     void tag(AST& ast, It first, It last)
     {
         return pos_cache.annotate(ast, first, last);
@@ -80,7 +80,7 @@ private:
     position_cache<std::vector<It>> pos_cache;
 };
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 void error_handler<It>::print_file_line(std::size_t line) const
 {
     if (file != "") {
@@ -92,7 +92,7 @@ void error_handler<It>::print_file_line(std::size_t line) const
     err_out << "line " << line << ':' << '\n';
 }
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 void error_handler<It>::print_line(It start, It last) const
 {
     auto end = start;
@@ -106,7 +106,7 @@ void error_handler<It>::print_line(It start, It last) const
     err_out << x4::to_utf8(line) << '\n';
 }
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 void error_handler<It>::print_indicator(It& start, It last, char ind) const
 {
     for (; start != last; ++start) {
@@ -122,7 +122,7 @@ void error_handler<It>::print_indicator(It& start, It last, char ind) const
     }
 }
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 It error_handler<It>::get_line_start(It first, It pos) const
 {
     It latest = first;
@@ -136,7 +136,7 @@ It error_handler<It>::get_line_start(It first, It pos) const
     return latest;
 }
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 std::size_t error_handler<It>::position(It i) const
 {
     std::size_t line {1};
@@ -160,7 +160,7 @@ std::size_t error_handler<It>::position(It i) const
     return line;
 }
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 void error_handler<It>::operator()(It err_pos, std::string const& error_message) const
 {
     It first = pos_cache.first();
@@ -175,7 +175,7 @@ void error_handler<It>::operator()(It err_pos, std::string const& error_message)
     err_out << "^_" << '\n';
 }
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
 void error_handler<It>::operator()(It err_first, It err_last, std::string const& error_message) const
 {
     It first = pos_cache.first();

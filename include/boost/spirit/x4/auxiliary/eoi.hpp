@@ -24,7 +24,7 @@ struct eoi_parser : parser<eoi_parser>
 
     static constexpr bool has_attribute = false;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute&) const
         noexcept(

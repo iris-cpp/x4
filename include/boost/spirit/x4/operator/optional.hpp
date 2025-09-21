@@ -26,14 +26,14 @@
 
 namespace boost::spirit::x4 {
 
-template <class Subject>
+template<class Subject>
 struct optional : unary_parser<Subject, optional<Subject>>
 {
     using base_type = unary_parser<Subject, optional>;
     static constexpr bool is_pass_through_unary = false;
     static constexpr bool handles_container = true;
 
-    template <class SubjectT>
+    template<class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, optional>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -43,7 +43,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
     {}
 
     // catch-all overload
-    template <
+    template<
         std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute // unconstrained
     >
     [[nodiscard]] constexpr bool
@@ -58,7 +58,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
     }
 
     // container attribute
-    template <
+    template<
         std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::CategorizedAttr<traits::container_attribute> Attribute
     >
     [[nodiscard]] constexpr bool
@@ -71,7 +71,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
     }
 
     // optional attribute
-    template <
+    template<
         std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::CategorizedAttr<traits::optional_attribute> Attribute
     >
     [[nodiscard]] constexpr bool
@@ -96,7 +96,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
     }
 };
 
-template <X4Subject Subject>
+template<X4Subject Subject>
 [[nodiscard]] constexpr optional<as_parser_plain_t<Subject>>
 operator-(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<optional<as_parser_plain_t<Subject>>, Subject>)
@@ -108,7 +108,7 @@ operator-(Subject&& subject)
 
 namespace boost::spirit::x4::traits {
 
-template <class Subject, class Context>
+template<class Subject, class Context>
 struct attribute_of<x4::optional<Subject>, Context>
     : build_optional<attribute_of_t<Subject, Context>>
 {};

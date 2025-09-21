@@ -26,14 +26,14 @@
 namespace boost::spirit::x4::traits {
 
 // Customization point
-template <class T>
+template<class T>
 struct is_associative : std::false_type
 {
     static_assert(!std::is_reference_v<T>);
     static_assert(!std::is_const_v<T>);
 };
 
-template <class T>
+template<class T>
     requires requires {
         typename T::key_type;
     }
@@ -43,23 +43,23 @@ struct is_associative<T> : std::true_type
     static_assert(!std::is_const_v<T>);
 };
 
-template <class T>
+template<class T>
 constexpr bool is_associative_v = is_associative<T>::value;
 
 
 namespace detail {
 
-template <class T>
+template<class T>
 struct remove_value_const
 {
     using type = T;
 };
 
-template <class T>
+template<class T>
 struct remove_value_const<T const> : remove_value_const<T>
 {};
 
-template <class F, class S>
+template<class F, class S>
 struct remove_value_const<std::pair<F, S>>
 {
     using type = std::pair<
@@ -71,22 +71,22 @@ struct remove_value_const<std::pair<F, S>>
 } // detail
 
 // Customization point
-template <class Container>
+template<class Container>
 struct container_value
     : detail::remove_value_const<typename Container::value_type>
 {};
 
-template <class Container>
+template<class Container>
 using container_value_t = typename container_value<Container>::type;
 
-template <class Container>
+template<class Container>
 struct container_value<Container const> : container_value<Container> {};
 
 // There is no single container value for fusion maps, but because output
 // of this metafunc is used to check wheter parser's attribute can be
 // saved to container, we simply return whole fusion::map as is
 // so that check can be done in traits::is_substitute specialisation
-template <class T>
+template<class T>
     requires
         fusion::traits::is_sequence<T>::value &&
         fusion::traits::is_associative<T>::value
@@ -95,7 +95,7 @@ struct container_value<T>
     using type = T;
 };
 
-template <>
+template<>
 struct container_value<unused_container_type>
 {
     using type = unused_type;
@@ -103,7 +103,7 @@ struct container_value<unused_container_type>
 
 
 // Customization point
-template <class Container>
+template<class Container>
     requires requires(Container& c) {
         std::ranges::begin(c);
     }
@@ -112,12 +112,12 @@ struct container_iterator
     using type = decltype(std::ranges::begin(std::declval<Container&>()));
 };
 
-template <class Container>
+template<class Container>
 using container_iterator_t = typename container_iterator<Container>::type;
 
 
 // Customization point
-template <class Container>
+template<class Container>
     requires requires(Container& c) {
         std::ranges::end(c);
     }
@@ -126,26 +126,26 @@ struct container_sentinel
     using type = decltype(std::ranges::end(std::declval<Container&>()));
 };
 
-template <class Container>
+template<class Container>
 using container_sentinel_t = typename container_sentinel<Container>::type;
 
 
 // Customization point
-template <class Container>
+template<class Container>
 struct push_back_container; // not defined
 
 namespace detail {
 
 struct push_back_fn
 {
-    template <class Container>
+    template<class Container>
     static constexpr void operator()(Container&, unused_type const&) noexcept
     {
         static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
         static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
     }
 
-    template <class Container, class T>
+    template<class Container, class T>
         requires requires(Container& c) {
             c.push_back(std::declval<T>());
         }
@@ -155,7 +155,7 @@ struct push_back_fn
         c.push_back(std::forward<T>(val));
     }
 
-    template <class Container, class T>
+    template<class Container, class T>
         requires (!requires(Container& c) {
             c.push_back(std::declval<T>());
         }) && requires(Container& c) {
@@ -167,7 +167,7 @@ struct push_back_fn
         c.insert(std::ranges::end(c), std::forward<T>(val));
     }
 
-    template <class Container, class T>
+    template<class Container, class T>
         requires requires(Container& c) {
             push_back_container<Container>::call(c, std::declval<T>());
         }
@@ -190,14 +190,14 @@ inline constexpr detail::push_back_fn push_back{};
 
 
 // Customization point
-template <class Container>
+template<class Container>
 struct append_container; // not defined
 
 namespace detail {
 
 struct append_fn
 {
-    template <class Container, std::forward_iterator It, std::sentinel_for<It> Se>
+    template<class Container, std::forward_iterator It, std::sentinel_for<It> Se>
         requires
             is_associative_v<Container> &&
             requires(Container& c, It first, Se last) {
@@ -209,7 +209,7 @@ struct append_fn
         c.insert(first, last);
     }
 
-    template <class Container, std::forward_iterator It, std::sentinel_for<It> Se>
+    template<class Container, std::forward_iterator It, std::sentinel_for<It> Se>
         requires
             (!is_associative_v<Container>) &&
             requires(Container& c, It first, Se last) {
@@ -221,7 +221,7 @@ struct append_fn
         c.insert(std::ranges::end(c), first, last);
     }
 
-    template <class Container, std::forward_iterator It, std::sentinel_for<It> Se>
+    template<class Container, std::forward_iterator It, std::sentinel_for<It> Se>
         requires requires(Container& c, It first, Se last) {
             append_container<Container>::call(c, first, last);
         }
@@ -244,14 +244,14 @@ inline constexpr detail::append_fn append{};
 
 
 // Customization point
-template <class Container>
+template<class Container>
 struct is_empty_container; // not defined
 
 namespace detail {
 
 struct is_empty_fn
 {
-    template <class Container>
+    template<class Container>
         requires requires(Container const& c) {
             std::ranges::empty(c);
         }
@@ -263,7 +263,7 @@ struct is_empty_fn
         return std::ranges::empty(c);
     }
 
-    template <class Container>
+    template<class Container>
         requires requires(Container const& c) {
             { is_empty_container<Container>::call(c) } -> std::same_as<bool>;
         }
@@ -287,14 +287,14 @@ inline constexpr detail::is_empty_fn is_empty{};
 
 
 // Customization point
-template <class Container>
+template<class Container>
 struct begin_container; // not defined
 
 namespace detail {
 
 struct begin_fn
 {
-    template <class Container>
+    template<class Container>
         requires requires(Container& c) {
             std::ranges::begin(c);
         }
@@ -306,7 +306,7 @@ struct begin_fn
         return std::ranges::begin(c);
     }
 
-    template <class Container>
+    template<class Container>
         requires requires (Container& c) {
             begin_container<Container>::call(c);
         }
@@ -328,14 +328,14 @@ inline constexpr detail::begin_fn begin{};
 } // cpos
 
 // Customization point
-template <class Container>
+template<class Container>
 struct end_container; // not defined
 
 namespace detail {
 
 struct end_fn
 {
-    template <class Container>
+    template<class Container>
         requires requires(Container& c) {
             std::ranges::end(c);
         }
@@ -347,7 +347,7 @@ struct end_fn
         return std::ranges::end(c);
     }
 
-    template <class Container>
+    template<class Container>
         requires requires (Container& c) {
             end_container<Container>::call(c);
         }
@@ -371,14 +371,14 @@ inline constexpr detail::end_fn end{};
 // -------------------------------------------------
 
 // This is NOT a customization point. Don't specialize this.
-template <class T>
+template<class T>
 struct is_container : std::false_type
 {
     static_assert(!std::is_reference_v<T>);
     static_assert(!std::is_const_v<T>);
 };
 
-template <class T>
+template<class T>
     requires
         // required; fusion pollutes ADL on `size`, which is called by `std::ranges::empty` on Clang 22
         (!fusion::traits::is_sequence<std::remove_cvref_t<T>>::value) &&
@@ -402,61 +402,61 @@ struct is_container<T> : std::true_type
 // The attribute category type for `unused_container_type` is
 // `container_attribute`, but it does not satisfy `is_container`.
 
-template <class T>
+template<class T>
 constexpr bool is_container_v = is_container<T>::value;
 
-template <class T>
+template<class T>
 concept ContainerAttr = is_container_v<std::remove_cvref_t<T>>;
 
 // -------------------------------------------------
 
 // Customization point
-template <class T>
+template<class T>
 struct build_container
 {
     using type = std::vector<T>;
 };
 
-template <class T>
+template<class T>
 struct build_container<boost::fusion::deque<T>> : build_container<T> {};
 
-template <>
+template<>
 struct build_container<unused_type>
 {
     using type = unused_container_type;
 };
 
-template <>
+template<>
 struct build_container<unused_container_type>
 {
     using type = unused_container_type;
 };
 
-template <>
+template<>
 struct build_container<char>
 {
     using type = std::basic_string<char>;
 };
 
-template <>
+template<>
 struct build_container<wchar_t>
 {
     using type = std::basic_string<wchar_t>;
 };
 
-template <>
+template<>
 struct build_container<char8_t>
 {
     using type = std::basic_string<char8_t>;
 };
 
-template <>
+template<>
 struct build_container<char16_t>
 {
     using type = std::basic_string<char16_t>;
 };
 
-template <>
+template<>
 struct build_container<char32_t>
 {
     using type = std::basic_string<char32_t>;

@@ -31,26 +31,26 @@
 
 namespace boost::spirit::x4 {
 
-template <class Left, class Right>
+template<class Left, class Right>
 struct sequence;
 
 } // boost::spirit::x4
 
 namespace boost::spirit::x4::detail {
 
-template <class Parser, class Context>
+template<class Parser, class Context>
 struct sequence_size
 {
     static constexpr int value = traits::has_attribute_v<Parser, Context>;
 };
 
-template <class Parser, class Context>
+template<class Parser, class Context>
     requires Parser::is_pass_through_unary
 struct sequence_size<Parser, Context>
     : sequence_size<typename Parser::subject_type, Context>
 {};
 
-template <class L, class R, class Context>
+template<class L, class R, class Context>
 struct sequence_size<sequence<L, R>, Context>
 {
     static constexpr int value =
@@ -62,7 +62,7 @@ struct pass_sequence_attribute_unused
 {
     using type = unused_type;
 
-    template <class T>
+    template<class T>
     [[nodiscard]] static constexpr unused_type
     call(T&) noexcept
     {
@@ -70,7 +70,7 @@ struct pass_sequence_attribute_unused
     }
 };
 
-template <class Attribute>
+template<class Attribute>
 struct pass_sequence_attribute_size_one_view
 {
     using type = typename fusion::result_of::deref<
@@ -85,12 +85,12 @@ struct pass_sequence_attribute_size_one_view
     }
 };
 
-template <class Attribute>
+template<class Attribute>
 struct pass_through_sequence_attribute
 {
     using type = Attribute&;
 
-    template <class Attribute_>
+    template<class Attribute_>
     [[nodiscard]] static constexpr Attribute_&
     call(Attribute_& attribute) noexcept
     {
@@ -98,7 +98,7 @@ struct pass_through_sequence_attribute
     }
 };
 
-template <class Parser, class Attribute>
+template<class Parser, class Attribute>
 struct pass_sequence_attribute : std::conditional_t<
     traits::is_size_one_view_v<Attribute>,
     pass_sequence_attribute_size_one_view<Attribute>,
@@ -106,18 +106,18 @@ struct pass_sequence_attribute : std::conditional_t<
 >
 {};
 
-template <class L, class R, class Attribute>
+template<class L, class R, class Attribute>
 struct pass_sequence_attribute<sequence<L, R>, Attribute>
     : pass_through_sequence_attribute<Attribute>
 {};
 
-template <class Parser, class Attribute>
+template<class Parser, class Attribute>
     requires Parser::is_pass_through_unary
 struct pass_sequence_attribute<Parser, Attribute>
     : pass_sequence_attribute<typename Parser::subject_type, Attribute>
 {};
 
-template <class L, class R, class Attribute, class Context>
+template<class L, class R, class Attribute, class Context>
 struct partition_attribute
 {
     using attr_category = traits::attribute_category_t<Attribute>;
@@ -170,7 +170,7 @@ struct partition_attribute
     }
 };
 
-template <class L, class R, class Attribute, class Context>
+template<class L, class R, class Attribute, class Context>
     requires
         (!traits::has_attribute_v<L, Context>) &&
         traits::has_attribute_v<R, Context>
@@ -190,7 +190,7 @@ struct partition_attribute<L, R, Attribute, Context>
     }
 };
 
-template <class L, class R, class Attribute, class Context>
+template<class L, class R, class Attribute, class Context>
     requires
         traits::has_attribute_v<L, Context> &&
         (!traits::has_attribute_v<R, Context>)
@@ -210,7 +210,7 @@ struct partition_attribute<L, R, Attribute, Context>
     }
 };
 
-template <class L, class R, class Attribute, class Context>
+template<class L, class R, class Attribute, class Context>
     requires
         (!traits::has_attribute_v<L, Context>) &&
         (!traits::has_attribute_v<R, Context>)
@@ -231,7 +231,7 @@ struct partition_attribute<L, R, Attribute, Context>
 };
 
 // Default overload, no constraints on attribute category
-template <
+template<
     class Parser,
     std::forward_iterator It, std::sentinel_for<It> Se,
     class Context, class Attribute
@@ -267,10 +267,10 @@ parse_sequence(
     return false;
 }
 
-template <class Parser, class Context>
+template<class Parser, class Context>
 constexpr bool pass_sequence_container_attribute = sequence_size<Parser, Context>::value > 1;
 
-template <
+template<
     class Parser,
     std::forward_iterator It, std::sentinel_for<It> Se,
     class Context, class Attribute
@@ -288,7 +288,7 @@ parse_sequence_container(
     return parser.parse(first, last, context, attr);
 }
 
-template <
+template<
     class Parser,
     std::forward_iterator It, std::sentinel_for<It> Se,
     class Context, class Attribute
@@ -305,7 +305,7 @@ parse_sequence_container(
     return detail::parse_into_container(parser, first, last, context, attr);
 }
 
-template <
+template<
     class Parser,
     std::forward_iterator It, std::sentinel_for<It> Se,
     class Context>
@@ -344,12 +344,12 @@ parse_sequence(
 //
 // The first case must be parsed as whole.
 // The second one should be parsed separately for left and right.
-template <class Parser, class Context>
+template<class Parser, class Context>
 constexpr bool assoc_sequence_should_split =
     std::is_same_v<traits::attribute_of_t<decltype(std::declval<Parser>().left), Context>, unused_type> ||
     std::is_same_v<traits::attribute_of_t<decltype(std::declval<Parser>().right), Context>, unused_type>;
 
-template <
+template<
     class Parser,
     std::forward_iterator It, std::sentinel_for<It> Se,
     class Context
@@ -365,7 +365,7 @@ parse_sequence(
 	return detail::parse_into_container(parser, first, last, context, attr);
 }
 
-template <
+template<
     class Parser,
     std::forward_iterator It, std::sentinel_for<It> Se,
     class Context
@@ -392,18 +392,18 @@ parse_sequence(
     return false;
 }
 
-template <class Left, class Right, class Context>
+template<class Left, class Right, class Context>
 struct parse_into_container_impl<sequence<Left, Right>, Context>
 {
     using parser_type = sequence<Left, Right>;
 
-    template <class Attribute>
+    template<class Attribute>
     static constexpr bool is_container_substitute = traits::is_substitute_v<
         traits::attribute_of_t<parser_type, Context>,
         traits::container_value_t<Attribute>
     >;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
         requires is_container_substitute<Attribute>
     [[nodiscard]] static constexpr bool
     call(
@@ -418,7 +418,7 @@ struct parse_into_container_impl<sequence<Left, Right>, Context>
         );
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
         requires (!is_container_substitute<Attribute>)
     [[nodiscard]] static constexpr bool
     call(

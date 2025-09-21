@@ -22,19 +22,19 @@ namespace boost::spirit::x4::traits {
 
 namespace detail {
 
-template <class Encoding>
+template<class Encoding>
 struct char_encoding_traits_impl
 {
     using encoding_type = Encoding;
 
-    template <class... Args>
+    template<class... Args>
     [[nodiscard]] static constexpr auto lit(Args&&... args)
         noexcept(noexcept(Encoding::lit(std::forward<Args>(args)...)))
     {
         return Encoding::lit(std::forward<Args>(args)...);
     }
 
-    template <class... Args>
+    template<class... Args>
     [[nodiscard]] static constexpr auto string(Args&&... args)
         noexcept(noexcept(Encoding::string(std::forward<Args>(args)...)))
     {
@@ -44,19 +44,19 @@ struct char_encoding_traits_impl
 
 } // detail
 
-template <CharLike CharT>
+template<CharLike CharT>
 struct char_encoding_traits;
 
-template <>
+template<>
 struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-template <>
+template<>
 struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
 #endif
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
-template <>
+template<>
 struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
 #endif
 

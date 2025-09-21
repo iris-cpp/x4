@@ -34,7 +34,7 @@
 
 struct f
 {
-    template <class Context>
+    template<class Context>
     void operator()(Context const& ctx) const
     {
         x4::_val(ctx) += x4::_attr(ctx);

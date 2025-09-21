@@ -27,7 +27,7 @@ namespace pow10_helper_impl {
 
 using namespace std; // fallback
 
-template <class T>
+template<class T>
 concept HasPow = requires(T base_, T exp_) {
     { pow(base_, exp_) } -> std::convertible_to<T>;
 };
@@ -36,7 +36,7 @@ concept HasPow = requires(T base_, T exp_) {
 
 } // detail
 
-template <class T>
+template<class T>
     requires detail::pow10_helper_impl::HasPow<T>
 struct pow10_helper<T>
 {
@@ -47,7 +47,7 @@ struct pow10_helper<T>
     }
 };
 
-template <>
+template<>
 struct pow10_helper<unused_type>
 {
     [[nodiscard]] static constexpr unused_type call(unused_type) noexcept
@@ -57,7 +57,7 @@ struct pow10_helper<unused_type>
 };
 
 #if DBL_MAX_10_EXP == 308 // for IEEE-754
-template <>
+template<>
 struct pow10_helper<double>
 {
     inline static constexpr double exponents[] =
@@ -102,7 +102,7 @@ struct pow10_helper<double>
     }
 };
 
-template <>
+template<>
 struct pow10_helper<float>
 {
     [[nodiscard]] static constexpr float call(unsigned dim) noexcept
@@ -112,7 +112,7 @@ struct pow10_helper<float>
 };
 #endif // for IEEE-754
 
-template <class T>
+template<class T>
 [[nodiscard]] constexpr T pow10(unsigned dim) noexcept
 {
     return pow10_helper<T>::call(dim);

@@ -21,7 +21,7 @@
 namespace boost::spirit::x4 {
 
 // Parser for a character range
-template <class Encoding, class Attribute = typename Encoding::char_type>
+template<class Encoding, class Attribute = typename Encoding::char_type>
 struct char_range : char_parser<char_range<Encoding, Attribute>>
 {
     using char_type = typename Encoding::char_type;
@@ -33,7 +33,7 @@ struct char_range : char_parser<char_range<Encoding, Attribute>>
         : from(from_), to(to_)
     {}
 
-    template <class Char, class Context>
+    template<class Char, class Context>
         requires (std::is_convertible_v<std::remove_cvref_t<Char>, char_type>)
     [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
@@ -46,7 +46,7 @@ struct char_range : char_parser<char_range<Encoding, Attribute>>
 };
 
 // Parser for a character set
-template <class Encoding, class Attribute = typename Encoding::char_type>
+template<class Encoding, class Attribute = typename Encoding::char_type>
 struct char_set : char_parser<char_set<Encoding, Attribute>>
 {
     using char_type = typename Encoding::char_type;
@@ -91,7 +91,7 @@ struct char_set : char_parser<char_set<Encoding, Attribute>>
         }
     }
 
-    template <class Char, class Context>
+    template<class Char, class Context>
     [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
         return x4::get_case_compare<encoding>(context).in_set(ch_, chset);
@@ -100,7 +100,7 @@ struct char_set : char_parser<char_set<Encoding, Attribute>>
     detail::basic_chset<char_type> chset;
 };
 
-template <class Encoding, class Attribute>
+template<class Encoding, class Attribute>
 struct get_info<char_set<Encoding, Attribute>>
 {
     using result_type = std::string;
@@ -110,7 +110,7 @@ struct get_info<char_set<Encoding, Attribute>>
     }
 };
 
-template <class Encoding, class Attribute>
+template<class Encoding, class Attribute>
 struct get_info<char_range<Encoding, Attribute>>
 {
     using result_type = std::string;

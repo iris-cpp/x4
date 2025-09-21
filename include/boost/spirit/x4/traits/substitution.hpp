@@ -27,32 +27,32 @@
 
 namespace boost::spirit::x4::traits {
 
-template <class T>
+template<class T>
 struct is_variant;
 
 // Find out if T can be a (strong) substitute for Attribute
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct is_substitute;
 
-template <class T, class Attribute>
+template<class T, class Attribute>
 constexpr bool is_substitute_v = is_substitute<T, Attribute>::value;
 
-template <class Variant, class Attribute>
+template<class Variant, class Attribute>
 struct variant_has_substitute;
 
 // TODO: reduce MPL usage
 
 namespace detail {
 
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct value_type_is_substitute
     : is_substitute<container_value_t<T>, container_value_t<Attribute>>
 {};
 
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct is_substitute_impl : std::false_type {};
 
-template <class T, class Attribute>
+template<class T, class Attribute>
     requires std::conjunction_v<
         fusion::traits::is_sequence<T>,
         fusion::traits::is_sequence<Attribute>
@@ -61,7 +61,7 @@ struct is_substitute_impl<T, Attribute>
     : mpl::equal<T, Attribute, is_substitute<mpl::_1, mpl::_2>>
 {};
 
-template <class T, class Attribute>
+template<class T, class Attribute>
     requires
         is_container_v<std::remove_const_t<T>> &&
         is_container_v<std::remove_const_t<Attribute>>
@@ -69,7 +69,7 @@ struct is_substitute_impl<T, Attribute>
     : value_type_is_substitute<T, Attribute>
 {};
 
-template <class T, class Attribute>
+template<class T, class Attribute>
     requires is_variant<std::remove_const_t<Attribute>>::value
 struct is_substitute_impl<T, Attribute>
     : variant_has_substitute<Attribute, T>
@@ -77,7 +77,7 @@ struct is_substitute_impl<T, Attribute>
 
 } // detail
 
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct is_substitute
     : std::disjunction<
           std::is_same<T, Attribute>,
@@ -86,23 +86,23 @@ struct is_substitute
 {};
 
 // for reference T
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct is_substitute<T&, Attribute>
     : is_substitute<T, Attribute>
 {};
 
 // for reference Attribute
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct is_substitute<T, Attribute&>
     : is_substitute<T, Attribute>
 {};
 
 namespace detail {
 
-template <class Key, class Value, class Map>
+template<class Key, class Value, class Map>
 struct has_fusion_kv_in_map : std::false_type {};
 
-template <class Key, class Value, class Map>
+template<class Key, class Value, class Map>
     requires fusion::result_of::has_key<Map, Key>::value
 struct has_fusion_kv_in_map<Key, Value, Map> : is_substitute<
     typename fusion::result_of::value_at_key<Map, Key>::type,
@@ -114,7 +114,7 @@ struct has_fusion_kv_in_map<Key, Value, Map> : is_substitute<
 // 2 element mpl tuple is compatible with fusion::map if:
 // - it's first element type is existing key in map
 // - it second element type is compatible to type stored at the key in map
-template <class T, class Attribute>
+template<class T, class Attribute>
     requires std::conjunction_v<
         fusion::traits::is_sequence<T>,
         fusion::traits::is_sequence<Attribute>,
@@ -136,7 +136,7 @@ struct is_substitute<T, Attribute>
     // "(key1|key2|key3) >> p_value" parser), check that all
     // keys are found in `fusion::map` attribute and that values
     // under these keys match `p_value`.
-    template <class Variant>
+    template<class Variant>
     struct variant_kv
         : mpl::equal_to<
             mpl::size<typename Variant::types>,
@@ -156,7 +156,7 @@ struct is_substitute<T, Attribute>
     >::value;
 };
 
-template <class T, class Attribute>
+template<class T, class Attribute>
 struct is_substitute<std::optional<T>, std::optional<Attribute>>
     : is_substitute<T, Attribute>
 {};

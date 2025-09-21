@@ -30,7 +30,7 @@ struct confix_directive
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool handles_container = Subject::handles_container;
 
-    template <class PrefixT, class SubjectT, class PostfixT>
+    template<class PrefixT, class SubjectT, class PostfixT>
         requires
             std::is_constructible_v<Prefix, PrefixT> &&
             std::is_constructible_v<base_type, SubjectT> &&
@@ -82,10 +82,10 @@ private:
 
 namespace detail {
 
-template <X4Subject Prefix, X4Subject Postfix>
+template<X4Subject Prefix, X4Subject Postfix>
 struct [[nodiscard]] confix_gen
 {
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] constexpr confix_directive<Prefix, as_parser_plain_t<Subject>, Postfix>
     operator[](Subject&& subject) const
         noexcept(
@@ -107,7 +107,7 @@ struct [[nodiscard]] confix_gen
 
 struct confix_fn
 {
-    template <X4Subject Prefix, X4Subject Postfix>
+    template<X4Subject Prefix, X4Subject Postfix>
     static constexpr confix_gen<as_parser_plain_t<Prefix>, as_parser_plain_t<Postfix>>
     operator()(Prefix&& prefix, Postfix&& postfix)
         noexcept(

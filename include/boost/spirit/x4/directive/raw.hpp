@@ -27,7 +27,7 @@ namespace boost::spirit::x4 {
 // the input iterators.
 struct raw_attribute_type {}; // TODO: move this to detail
 
-template <class Subject>
+template<class Subject>
 struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 {
     using base_type = unary_parser<Subject, raw_directive<Subject>>;
@@ -36,7 +36,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 
     static constexpr bool handles_container = true;
 
-    template <class SubjectT>
+    template<class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, raw_directive>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -45,7 +45,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         // never noexcept; construction of `std::ranges::subrange` is never noexcept
@@ -61,7 +61,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, unused_type) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
@@ -74,7 +74,7 @@ namespace detail {
 
 struct raw_gen
 {
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] constexpr raw_directive<as_parser_plain_t<Subject>>
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<raw_directive<as_parser_plain_t<Subject>>, Subject>)
@@ -95,7 +95,7 @@ inline constexpr detail::raw_gen raw{};
 
 namespace boost::spirit::x4::traits {
 
-template <class Context, std::forward_iterator It>
+template<class Context, std::forward_iterator It>
 struct pseudo_attribute<Context, raw_attribute_type, It>
 {
     using attribute_type = raw_attribute_type;

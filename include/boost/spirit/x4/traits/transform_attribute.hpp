@@ -19,7 +19,7 @@
 
 namespace boost::spirit::x4::traits {
 
-template <class Transformed, class Exposed>
+template<class Transformed, class Exposed>
 struct transform_attribute
 {
     static_assert(!std::is_reference_v<Exposed>, "Exposed cannot be a reference type");
@@ -35,7 +35,7 @@ struct transform_attribute
         return Transformed{};
     }
 
-    template <class TransformedT>
+    template<class TransformedT>
     static constexpr void post(Exposed& val, TransformedT&& attribute)
         noexcept(noexcept(x4::move_to(std::forward<TransformedT>(attribute), val)))
     {
@@ -43,7 +43,7 @@ struct transform_attribute
     }
 };
 
-template <class Transformed, class Exposed>
+template<class Transformed, class Exposed>
 concept Transformable = requires(Exposed& val) {
     typename transform_attribute<Transformed, Exposed>::type;
 
@@ -54,7 +54,7 @@ concept Transformable = requires(Exposed& val) {
 };
 
 // Same attribute types; no transformation needed
-template <class Attribute>
+template<class Attribute>
     requires
         (!std::same_as<std::remove_const_t<Attribute>, unused_type>) &&
         (!std::same_as<std::remove_const_t<Attribute>, unused_container_type>)
@@ -67,7 +67,7 @@ struct transform_attribute<Attribute, Attribute>
     static constexpr void post(Attribute&, Attribute const&) noexcept {}
 };
 
-template <>
+template<>
 struct transform_attribute<unused_type, unused_type>
 {
     using type = unused_type;
@@ -75,7 +75,7 @@ struct transform_attribute<unused_type, unused_type>
     static constexpr void post(unused_type, unused_type) noexcept {}
 };
 
-template <>
+template<>
 struct transform_attribute<unused_container_type, unused_container_type>
 {
     using type = unused_container_type;
@@ -83,7 +83,7 @@ struct transform_attribute<unused_container_type, unused_container_type>
     static constexpr void post(unused_container_type, unused_container_type) noexcept {}
 };
 
-template <class Transformed>
+template<class Transformed>
     requires (!std::same_as<Transformed, unused_type>)
 struct transform_attribute<Transformed, unused_type>
     : transform_attribute<unused_type, unused_type>
@@ -91,14 +91,14 @@ struct transform_attribute<Transformed, unused_type>
     static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
 };
 
-template <class Transformed>
+template<class Transformed>
 struct transform_attribute<Transformed, unused_type const>
     : transform_attribute<unused_type, unused_type>
 {
     static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
 };
 
-template <class Transformed>
+template<class Transformed>
     requires (!std::same_as<Transformed, unused_container_type>)
 struct transform_attribute<Transformed, unused_container_type>
     : transform_attribute<unused_container_type, unused_container_type>
@@ -106,7 +106,7 @@ struct transform_attribute<Transformed, unused_container_type>
     static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
 };
 
-template <class Transformed>
+template<class Transformed>
 struct transform_attribute<Transformed, unused_container_type const>
     : transform_attribute<unused_container_type, unused_container_type>
 {

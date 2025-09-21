@@ -31,7 +31,7 @@
 
 namespace boost::spirit::x4::extension {
 
-template <class T>
+template<class T>
 [[nodiscard]] constexpr bool
 scale(int exp, T& n)
 {
@@ -78,7 +78,7 @@ scale(int /*exp*/, unused_type /*n*/) noexcept
     return true;
 }
 
-template <class T>
+template<class T>
 [[nodiscard]] constexpr bool
 scale(int exp, int frac, T& n) noexcept
 {
@@ -110,7 +110,7 @@ negate(bool neg, long double n) noexcept
     return neg ? (std::copysignl)(n, -1.) : n;
 }
 
-template <class T>
+template<class T>
 [[nodiscard]] constexpr T
 negate(bool neg, T const& n) noexcept
 {
@@ -127,10 +127,10 @@ negate(bool /*neg*/, unused_type n) noexcept
 
 namespace boost::spirit::x4 {
 
-template <class T, class RealPolicies>
+template<class T, class RealPolicies>
 struct extract_real
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Attribute& attr, RealPolicies const& p)
         // TODO: noexcept

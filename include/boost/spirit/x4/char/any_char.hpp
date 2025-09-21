@@ -15,7 +15,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class Encoding>
+template<class Encoding>
 struct any_char : char_parser<any_char<Encoding>>
 {
     using char_type = typename Encoding::char_type;
@@ -24,7 +24,7 @@ struct any_char : char_parser<any_char<Encoding>>
 
     static constexpr bool has_attribute = true;
 
-    template <class Context>
+    template<class Context>
     [[nodiscard]] static constexpr bool
     test(char_type ch, Context const&) noexcept
     {
@@ -43,7 +43,7 @@ struct any_char : char_parser<any_char<Encoding>>
         return {ch[0]};
     }
 
-    template <std::size_t N>
+    template<std::size_t N>
     [[nodiscard]] static constexpr char_set<Encoding>
     operator()(char_type const (&ch)[N])
     {
@@ -74,16 +74,16 @@ struct any_char : char_parser<any_char<Encoding>>
     static constexpr void
     operator()(traits::CharIncompatibleWith<char_type> auto const&) = delete; // Mixing incompatible char types is not allowed
 
-    template <std::size_t N>
+    template<std::size_t N>
     static constexpr void
     operator()(traits::CharIncompatibleWith<char_type> auto const (&)[N]) = delete; // Mixing incompatible char types is not allowed
 
-    template <class FromT, class ToT>
+    template<class FromT, class ToT>
         requires traits::CharIncompatibleWith<FromT, char_type> || traits::CharIncompatibleWith<ToT, char_type>
     static constexpr void
     operator()(FromT const&, ToT const&) = delete; // Mixing incompatible char types is not allowed
 
-    template <class FromT, class ToT>
+    template<class FromT, class ToT>
         requires traits::CharIncompatibleWith<FromT, char_type> || traits::CharIncompatibleWith<ToT, char_type>
     static constexpr void
     operator()(FromT const (&)[2], ToT const (&)[2]) = delete; // Mixing incompatible char types is not allowed

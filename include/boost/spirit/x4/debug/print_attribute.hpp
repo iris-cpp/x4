@@ -24,12 +24,12 @@
 
 namespace boost::spirit::x4::traits {
 
-template <class Out, class T>
+template<class Out, class T>
 void print_attribute(Out& out, T const& val);
 
 namespace detail {
 
-template <class Out>
+template<class Out>
 struct print_fusion_sequence
 {
     print_fusion_sequence(Out& out)
@@ -39,7 +39,7 @@ struct print_fusion_sequence
 
     using result_type = void;
 
-    template <class T>
+    template<class T>
     void operator()(T const& val) const
     {
         if (is_first) {
@@ -55,14 +55,14 @@ struct print_fusion_sequence
 };
 
 // print elements in a variant
-template <class Out>
+template<class Out>
 struct print_visitor : static_visitor<>
 {
     print_visitor(Out& out)
         : out(out)
     {}
 
-    template <class T>
+    template<class T>
     void operator()(T const& val) const
     {
         traits::print_attribute(out, val);
@@ -73,7 +73,7 @@ struct print_visitor : static_visitor<>
 
 } // detail
 
-template <class Out, class T>
+template<class Out, class T>
 struct print_attribute_debug
 {
     static void call(Out& out, unused_type const&)
@@ -122,7 +122,7 @@ struct print_attribute_debug
         out << ']';
     }
 
-    template <CategorizedAttr<container_attribute> T_>
+    template<CategorizedAttr<container_attribute> T_>
         requires (!std::is_same_v<T_, unused_container_type>)
     static void call(Out& out, T_ const& val)
     {
@@ -156,7 +156,7 @@ struct print_attribute_debug
     }
 };
 
-template <class Out, class T>
+template<class Out, class T>
 void print_attribute(Out& out, T const& val)
 {
     print_attribute_debug<Out, T>::call(out, val);

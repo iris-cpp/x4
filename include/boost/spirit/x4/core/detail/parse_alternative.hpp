@@ -26,7 +26,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class Left, class Right>
+template<class Left, class Right>
 struct alternative;
 
 } // boost::spirit::x4
@@ -37,7 +37,7 @@ struct pass_variant_unused
 {
     using type = unused_type;
 
-    template <class T>
+    template<class T>
     [[nodiscard]] static constexpr unused_type
     call(T&) noexcept
     {
@@ -45,7 +45,7 @@ struct pass_variant_unused
     }
 };
 
-template <class Attribute>
+template<class Attribute>
 struct pass_variant_used
 {
     using type = Attribute&;
@@ -57,10 +57,10 @@ struct pass_variant_used
     }
 };
 
-template <>
+template<>
 struct pass_variant_used<unused_type> : pass_variant_unused {};
 
-template <class Parser, class Attribute, class Context>
+template<class Parser, class Attribute, class Context>
 struct pass_parser_attribute
 {
     using attribute_type = traits::attribute_of_t<Parser, Context>;
@@ -72,7 +72,7 @@ struct pass_parser_attribute
         substitute_type
     >;
 
-    template <class Attribute_>
+    template<class Attribute_>
         requires std::is_same_v<Attribute_, std::remove_reference_t<type>>
     [[nodiscard]] static constexpr Attribute_&
     call(Attribute_& attribute) noexcept
@@ -80,7 +80,7 @@ struct pass_parser_attribute
         return attribute;
     }
 
-    template <class Attribute_>
+    template<class Attribute_>
         requires (!std::is_same_v<Attribute_, std::remove_reference_t<type>>)
     [[nodiscard]] static type
     call(Attribute_&)
@@ -91,7 +91,7 @@ struct pass_parser_attribute
 };
 
 // Pass non-variant attributes as-is
-template <class Parser, class Attribute, class Context>
+template<class Parser, class Attribute, class Context>
 struct pass_non_variant_attribute
 {
     using type = Attribute&;
@@ -104,7 +104,7 @@ struct pass_non_variant_attribute
 };
 
 // Unwrap single element sequences
-template <class Parser, class Attribute, class Context>
+template<class Parser, class Attribute, class Context>
     requires traits::is_size_one_sequence_v<Attribute>
 struct pass_non_variant_attribute<Parser, Attribute, Context>
 {
@@ -114,7 +114,7 @@ struct pass_non_variant_attribute<Parser, Attribute, Context>
     using pass = pass_parser_attribute<Parser, attr_type, Context>;
     using type = typename pass::type;
 
-    template <class Attribute_>
+    template<class Attribute_>
     [[nodiscard]] static constexpr type
     call(Attribute_& attr)
         noexcept(noexcept(pass::call(fusion::front(attr))))
@@ -123,18 +123,18 @@ struct pass_non_variant_attribute<Parser, Attribute, Context>
     }
 };
 
-template <class Parser, class Attribute, class Context>
+template<class Parser, class Attribute, class Context>
     requires (!traits::is_variant_v<Attribute>)
 struct pass_parser_attribute<Parser, Attribute, Context>
     : pass_non_variant_attribute<Parser, Attribute, Context>
 {};
 
-template <class Parser, class Context>
+template<class Parser, class Context>
 struct pass_parser_attribute<Parser, unused_type, Context>
     : pass_variant_unused
 {};
 
-template <class Parser, class Attribute, class Context>
+template<class Parser, class Attribute, class Context>
 struct pass_variant_attribute
     : std::conditional_t<
         traits::has_attribute_v<Parser, Context>,
@@ -143,7 +143,7 @@ struct pass_variant_attribute
     >
 {};
 
-template <class L, class R, class Attribute, class Context>
+template<class L, class R, class Attribute, class Context>
 struct pass_variant_attribute<alternative<L, R>, Attribute, Context>
     : std::conditional_t<
         traits::has_attribute_v<alternative<L, R>, Context>,
@@ -152,15 +152,15 @@ struct pass_variant_attribute<alternative<L, R>, Attribute, Context>
     >
 {};
 
-template <class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
 using parse_alternative_pseudo_t = traits::pseudo_attribute<
     Context, typename pass_variant_attribute<Parser, Attribute, Context>::type, It, Se
 >;
 
-template <class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
 constexpr bool is_reference_pseudo_type = std::is_reference_v<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>;
 
-template <class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     requires is_reference_pseudo_type<Parser, It, Se, Context, Attribute>
 [[nodiscard]] constexpr bool
 parse_alternative(
@@ -181,7 +181,7 @@ parse_alternative(
     return p.parse(first, last, context, attr_);
 }
 
-template <class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     requires (!is_reference_pseudo_type<Parser, It, Se, Context, Attribute>)
 [[nodiscard]] constexpr bool
 parse_alternative(
@@ -209,14 +209,14 @@ parse_alternative(
     return true;
 }
 
-template <class Subject>
+template<class Subject>
 struct alternative_helper : unary_parser<Subject, alternative_helper<Subject>>
 {
     static constexpr bool is_pass_through_unary = true;
 
     using unary_parser<Subject, alternative_helper<Subject>>::unary_parser;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(noexcept(detail::parse_alternative(this->subject, first, last, context, attr)))
@@ -225,12 +225,12 @@ struct alternative_helper : unary_parser<Subject, alternative_helper<Subject>>
     }
 };
 
-template <class Left, class Right, class Context>
+template<class Left, class Right, class Context>
 struct parse_into_container_impl<alternative<Left, Right>, Context>
 {
     using parser_type = alternative<Left, Right>;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
         requires traits::is_variant_v<traits::container_value_t<Attribute>>
     [[nodiscard]] static constexpr bool
     call(
@@ -242,7 +242,7 @@ struct parse_into_container_impl<alternative<Left, Right>, Context>
             || detail::parse_into_container(alternative_helper<Right>{parser.right}, first, last, context, attribute);
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
         requires (!traits::is_variant_v<traits::container_value_t<Attribute>>)
     [[nodiscard]] static constexpr bool
     call(

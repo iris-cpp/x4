@@ -31,7 +31,7 @@ int got_it = 0;
 
 struct my_rule_class
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
     void on_error(It const&, Se const& last, Exception const& x, Context const&)
     {
         std::cout
@@ -43,7 +43,7 @@ struct my_rule_class
             << std::endl;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
     void on_success(It const&, Se const&, Attribute&, Context const&)
     {
         ++got_it;
@@ -54,7 +54,7 @@ struct on_success_gets_preskipped_iterator
 {
     static bool ok;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute, class Context>
     void on_success(It before, Se const& after, Attribute&, Context const&)
     {
         bool const before_was_b = 'b' == *before;

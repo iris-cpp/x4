@@ -50,7 +50,7 @@ namespace boost::spirit::x4 {
 
 namespace detail {
 
-template <class Derived, bool IsShared, class Encoding, class T, class Lookup>
+template<class Derived, bool IsShared, class Encoding, class T, class Lookup>
 struct symbols_parser_impl : parser<Derived>
 {
     using char_type = typename Encoding::char_type; // the character type
@@ -99,7 +99,7 @@ struct symbols_parser_impl : parser<Derived>
 
     constexpr symbols_parser_impl(symbols_parser_impl&&) noexcept = default;
 
-    template <std::ranges::forward_range Symbols>
+    template<std::ranges::forward_range Symbols>
         requires std::convertible_to<std::ranges::range_value_t<Symbols>, std::basic_string_view<char_type>>
     constexpr symbols_parser_impl(Symbols const& syms, std::string const& name = "symbols")
         : symbols_parser_impl(name)
@@ -109,7 +109,7 @@ struct symbols_parser_impl : parser<Derived>
         }
     }
 
-    template <std::ranges::forward_range Symbols, std::ranges::forward_range Data>
+    template<std::ranges::forward_range Symbols, std::ranges::forward_range Data>
         requires
             std::convertible_to<std::ranges::range_value_t<Symbols>, std::basic_string_view<char_type>> &&
             std::convertible_to<std::ranges::range_value_t<Data>, T>
@@ -197,13 +197,13 @@ struct symbols_parser_impl : parser<Derived>
         return sym.remove(s);
     }
 
-    template <class F>
+    template<class F>
     constexpr void for_each(F&& f) const
     {
         lookup->for_each(std::forward<F>(f));
     }
 
-    template <class F>
+    template<class F>
     constexpr void for_each(F&& f)
     {
         lookup->for_each(std::forward<F>(f));
@@ -214,13 +214,13 @@ struct symbols_parser_impl : parser<Derived>
         return *lookup->add(s.begin(), s.end(), T{});
     }
 
-    template <std::forward_iterator Iterator>
+    template<std::forward_iterator Iterator>
     [[nodiscard]] constexpr value_type* prefix_find(Iterator& first, Iterator const& last) noexcept
     {
         return lookup->find(first, last, case_compare<Encoding>());
     }
 
-    template <std::forward_iterator Iterator>
+    template<std::forward_iterator Iterator>
     [[nodiscard]] constexpr value_type const* prefix_find(Iterator& first, Iterator const& last) const noexcept
     {
         return lookup->find(first, last, case_compare<Encoding>());
@@ -236,7 +236,7 @@ struct symbols_parser_impl : parser<Derived>
         return this->find_impl(s.begin(), s.end());
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(
@@ -264,7 +264,7 @@ struct symbols_parser_impl : parser<Derived>
 
     struct [[maybe_unused]] adder
     {
-        template <std::forward_iterator Iterator>
+        template<std::forward_iterator Iterator>
         [[maybe_unused]] constexpr adder const&
         operator()(Iterator first, Iterator last, T const& val) const
         {
@@ -284,7 +284,7 @@ struct symbols_parser_impl : parser<Derived>
 
     struct [[maybe_unused]] remover
     {
-        template <std::forward_iterator Iterator>
+        template<std::forward_iterator Iterator>
         [[maybe_unused]] constexpr remover const&
         operator()(Iterator const& first, Iterator const& last) const
         {
@@ -306,14 +306,14 @@ struct symbols_parser_impl : parser<Derived>
     [[maybe_unused]] remover remove;
 
 private:
-    template <std::forward_iterator Iterator>
+    template<std::forward_iterator Iterator>
     [[nodiscard]] constexpr value_type* find_impl(Iterator begin, Iterator end) noexcept
     {
         value_type* r = lookup->find(begin, end, case_compare<Encoding>());
         return begin == end ? r : 0;
     }
 
-    template <std::forward_iterator Iterator>
+    template<std::forward_iterator Iterator>
     [[nodiscard]] constexpr value_type const* find_impl(Iterator begin, Iterator end) const noexcept
     {
         value_type const* r = lookup->find(begin, end, case_compare<Encoding>());
@@ -326,7 +326,7 @@ private:
 
 } // detail
 
-template <class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
+template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct shared_symbols_parser
     : detail::symbols_parser_impl<shared_symbols_parser<Encoding, T, Lookup>, true, Encoding, T, Lookup>
 {
@@ -335,7 +335,7 @@ struct shared_symbols_parser
     using base_type::operator=;
 };
 
-template <class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
+template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
 symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
 {
@@ -344,7 +344,7 @@ symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
     using base_type::operator=;
 };
 
-template <class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
+template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct unique_symbols_parser
     : detail::symbols_parser_impl<unique_symbols_parser<Encoding, T, Lookup>, false, Encoding, T, Lookup>
 {
@@ -353,7 +353,7 @@ struct unique_symbols_parser
     using base_type::operator=;
 };
 
-template <class Encoding, class T, class Lookup>
+template<class Encoding, class T, class Lookup>
 struct get_info<shared_symbols_parser<Encoding, T, Lookup>>
 {
     using result_type = std::string const&;
@@ -364,7 +364,7 @@ struct get_info<shared_symbols_parser<Encoding, T, Lookup>>
     }
 };
 
-template <class Encoding, class T, class Lookup>
+template<class Encoding, class T, class Lookup>
 struct get_info<unique_symbols_parser<Encoding, T, Lookup>>
 {
     using result_type = std::string const&;
@@ -377,14 +377,14 @@ struct get_info<unique_symbols_parser<Encoding, T, Lookup>>
 
 namespace standard {
 
-template <class T = unused_type>
+template<class T = unused_type>
 using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
     = shared_symbols_parser<char_encoding::standard, T>;
 
-template <class T = unused_type>
+template<class T = unused_type>
 using shared_symbols = shared_symbols_parser<char_encoding::standard, T>;
 
-template <class T = unused_type>
+template<class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::standard, T>;
 
 } // standard
@@ -396,14 +396,14 @@ using standard::unique_symbols;
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
-template <class T = unused_type>
+template<class T = unused_type>
 using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
     = shared_symbols_parser<char_encoding::standard_wide, T>;
 
-template <class T = unused_type>
+template<class T = unused_type>
 using shared_symbols = shared_symbols_parser<char_encoding::standard_wide, T>;
 
-template <class T = unused_type>
+template<class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::standard_wide, T>;
 
 } // standard_wide
@@ -412,10 +412,10 @@ using unique_symbols = unique_symbols_parser<char_encoding::standard_wide, T>;
 #ifdef BOOST_SPIRIT_X4_UNICODE
 namespace unicode {
 
-template <class T = unused_type>
+template<class T = unused_type>
 using shared_symbols = shared_symbols_parser<char_encoding::unicode, T>;
 
-template <class T = unused_type>
+template<class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::unicode, T>;
 
 } // unicode

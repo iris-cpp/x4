@@ -35,10 +35,10 @@ namespace x4 = boost::spirit::x4;
 // check if we did not break user defined specializations
 namespace check_substitute {
 
-template <class T> struct foo {};
-template <class T> struct bar { using type = T; };
-template <class T> struct is_bar : std::false_type {};
-template <class T> struct is_bar<bar<T>> : std::true_type {};
+template<class T> struct foo {};
+template<class T> struct bar { using type = T; };
+template<class T> struct is_bar : std::false_type {};
+template<class T> struct is_bar<bar<T>> : std::true_type {};
 
 } // check_substitute
 
@@ -46,12 +46,12 @@ namespace boost::spirit::x4::traits {
 
 using namespace check_substitute;
 
-template <class T, class U>
+template<class T, class U>
 struct is_substitute<foo<T>, foo<U>>
     : is_substitute<T, U>
 {};
 
-template <class T, class U>
+template<class T, class U>
     requires is_bar<T>::value && is_bar<U>::value
 struct is_substitute<T, U>
     : is_substitute<typename T::type, typename U::type>
@@ -80,7 +80,7 @@ constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
 BOOST_SPIRIT_X4_DEFINE(pair_rule)
 BOOST_SPIRIT_X4_DEFINE(string_rule)
 
-template <class Container>
+template<class Container>
 void test_map_support()
 {
     Container container;
@@ -102,7 +102,7 @@ void test_map_support()
     BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
 }
 
-template <class Container>
+template<class Container>
 void test_multimap_support()
 {
     Container container;
@@ -124,7 +124,7 @@ void test_multimap_support()
     BOOST_TEST(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
 }
 
-template <class Container>
+template<class Container>
 void test_sequence_support()
 {
     Container container;
@@ -146,7 +146,7 @@ void test_sequence_support()
     BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
-template <class Container>
+template<class Container>
 void test_set_support()
 {
     Container container;
@@ -168,7 +168,7 @@ void test_set_support()
     BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
-template <class Container>
+template<class Container>
 void test_multiset_support()
 {
     Container container;
@@ -190,7 +190,7 @@ void test_multiset_support()
     BOOST_TEST(parse("e1,e2,e2", cic_rule, container));
 }
 
-template <class Container>
+template<class Container>
 void test_string_support()
 {
     Container container;

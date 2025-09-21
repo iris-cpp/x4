@@ -65,7 +65,7 @@ struct token_printer_debug
 
 } // detail
 
-template <class T>
+template<class T>
 struct token_printer_debug
     : std::conditional_t<
         std::is_convertible_v<T, char> && std::is_convertible_v<char, T>,
@@ -74,7 +74,7 @@ struct token_printer_debug
     >
 {};
 
-template <class Out, class T>
+template<class Out, class T>
 void print_token(Out& out, T const& val)
 {
     // allow to customize the token printer routine

@@ -16,10 +16,10 @@ namespace boost::spirit::x4::traits {
 
 // Customization points for numeric operations
 
-template <class T>
+template<class T>
 struct pow10_helper;
 
-template <class T>
+template<class T>
 struct check_overflow : std::bool_constant<std::numeric_limits<T>::is_bounded>
 {};
 

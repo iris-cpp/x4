@@ -22,11 +22,11 @@
 // These policies can be used to parse thousand separated
 // numbers with at most 2 decimal digits after the decimal
 // point. e.g. 123,456,789.01
-template <class T>
+template<class T>
 struct ts_real_policies : x4::ureal_policies<T>
 {
     //  2 decimal places Max
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     static bool
     parse_frac_n(It& first, Se const& last, Attribute& attr)
     {
@@ -35,7 +35,7 @@ struct ts_real_policies : x4::ureal_policies<T>
     }
 
     //  No exponent
-    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    template<std::forward_iterator It, std::sentinel_for<It> Se>
     static bool
     parse_exp(It&, Se const&)
     {
@@ -43,7 +43,7 @@ struct ts_real_policies : x4::ureal_policies<T>
     }
 
     //  No exponent
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     static bool
     parse_exp_n(It&, Se const&, Attribute&)
     {
@@ -51,7 +51,7 @@ struct ts_real_policies : x4::ureal_policies<T>
     }
 
     //  Thousands separated numbers
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Accumulator>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Accumulator>
     static bool
     parse_n(It& first, Se const& last, Accumulator& result)
     {
@@ -85,19 +85,19 @@ struct ts_real_policies : x4::ureal_policies<T>
     }
 };
 
-template <class T>
+template<class T>
 struct no_trailing_dot_policy : x4::real_policies<T>
 {
     static constexpr bool allow_trailing_dot = false;
 };
 
-template <class T>
+template<class T>
 struct no_leading_dot_policy : x4::real_policies<T>
 {
     static constexpr bool allow_leading_dot = false;
 };
 
-template <class T>
+template<class T>
 bool compare(T n, std::type_identity_t<T> expected)
 {
     using std::abs;

@@ -37,7 +37,7 @@ struct raw_attribute_type; // TODO: move this to detail
 // operates on user-specific precondition that assumes the context
 // holds exact specific type provided to the entry point (`x4::parse`).
 
-template <class Subject, class Action>
+template<class Subject, class Action>
 struct action : unary_parser<Subject, action<Subject, Action>>
 {
     static_assert(
@@ -51,7 +51,7 @@ struct action : unary_parser<Subject, action<Subject, Action>>
 
     Action f;
 
-    template <class SubjectT, class ActionT>
+    template<class SubjectT, class ActionT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Action, ActionT>
     constexpr action(SubjectT&& subject, ActionT&& f)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<Action, ActionT>)
@@ -61,7 +61,7 @@ struct action : unary_parser<Subject, action<Subject, Action>>
     }
 
     // attr==unused, action wants attribute
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, unused_type) const
         noexcept(
@@ -77,7 +77,7 @@ struct action : unary_parser<Subject, action<Subject, Action>>
     }
 
     // Catch-all overload for non-unused_type attribute
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(noexcept(this->parse_main(first, last, context, attr)))
@@ -87,7 +87,7 @@ struct action : unary_parser<Subject, action<Subject, Action>>
 
 private:
     // Compose attr(where(val(pass(context))))
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     using composed_context_t = context<
         attr_context_tag,
         Attribute,
@@ -102,7 +102,7 @@ private:
         >
     >;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires std::invocable<Action const&, composed_context_t<It, Se, Context, Attribute> const&>
     [[nodiscard]] constexpr bool
     call_action(
@@ -141,7 +141,7 @@ private:
         return pass;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires (!std::invocable<Action const&, composed_context_t<It, Se, Context, Attribute> const&>)
     [[nodiscard]] constexpr bool
     call_action(
@@ -166,7 +166,7 @@ private:
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse_main(
         It& first, Se const& last, Context const& context, Attribute& attr
@@ -189,7 +189,7 @@ private:
     }
 
     // attr==raw_attribute_type, action wants iterator_range (see raw.hpp)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse_main(
         It& first, Se const& last, Context const& context, raw_attribute_type&
@@ -201,7 +201,7 @@ private:
     }
 };
 
-template <X4Subject Subject, class Action>
+template<X4Subject Subject, class Action>
 [[nodiscard, deprecated(
     "Use `operator[]` instead. The symbol `/` normally means \"ordered choice\" "
     "in PEG, and is irrelevant to semantic actions. Furthermore, using C++'s "

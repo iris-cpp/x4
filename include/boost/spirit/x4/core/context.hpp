@@ -20,7 +20,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 struct context;
 
 namespace detail {
@@ -30,79 +30,79 @@ using monostate_context = context<monostate_context_tag, void, unused_type>;
 
 } // detail
 
-template <class ContextT>
+template<class ContextT>
 struct owning_context; // not defined
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 struct owning_context<context<ID, T, Next>> {};
 
 
 // TODO: Rename. `get` is too generic name.
-template <class ID, class Context>
+template<class ID, class Context>
 [[nodiscard]] constexpr decltype(auto)
 get(Context const& context) noexcept
 {
     return context.get(std::type_identity<ID>{});
 }
 
-template <class ID, class Context>
+template<class ID, class Context>
 void get(Context const&&) = delete; // dangling
 
 // TODO: check whether auto-completion is available for this current implementation.
 // If not, we should implement a partially specialized metafunction instead.
-template <class ID, class Context>
+template<class ID, class Context>
 using get_context_plain_t = std::remove_cvref_t<decltype(x4::get<ID>(std::declval<Context const&>()))>;
 
 
-template <class Context, class ID_To_Search>
+template<class Context, class ID_To_Search>
 struct has_context;
 
-template <class Context, class ID_To_Search>
+template<class Context, class ID_To_Search>
 constexpr bool has_context_v = has_context<Context, ID_To_Search>::value;
 
-template <class ID_To_Search>
+template<class ID_To_Search>
 struct has_context<unused_type, ID_To_Search>
     : std::false_type
 {};
 
-template <class T, class Next, class ID_To_Search>
+template<class T, class Next, class ID_To_Search>
 struct has_context<context<ID_To_Search, T, Next>, ID_To_Search>
     : std::true_type
 {};
 
-template <class ID, class T, class Next, class ID_To_Search>
+template<class ID, class T, class Next, class ID_To_Search>
     requires (!std::same_as<ID, ID_To_Search>)
 struct has_context<context<ID, T, Next>, ID_To_Search>
     : has_context<Next, ID_To_Search>
 {};
 
-template <class ContextT, class ID_To_Search>
+template<class ContextT, class ID_To_Search>
 struct has_context<owning_context<ContextT>, ID_To_Search>
     : has_context<ContextT, ID_To_Search>
 {};
 
-template <class Context, class ID, class T>
+template<class Context, class ID, class T>
 struct has_context_of
 {
     static_assert(!std::is_reference_v<T>);
     static constexpr bool value = std::same_as<get_context_plain_t<ID, Context>, T>;
 };
 
-template <class Context, class ID, class T>
+template<class Context, class ID, class T>
 constexpr bool has_context_of_v = has_context_of<Context, ID, T>::value;
 
 
-template <class ID>
+template<class ID>
 concept UniqueContextID = !requires { ID::is_unique; } || requires { requires ID::is_unique; };
 
 namespace detail {
 
-template <class ID, class Next>
+template<class ID, class Next>
 concept HasNoDuplicateContext = !UniqueContextID<ID> || !has_context_v<Next, ID>;
 
 } // detail
 
-template <class ID, class T, class Next = unused_type>
+template<class ID, class T, class Next = unused_type>
 struct context
 {
     static_assert(!std::is_reference_v<T>);
@@ -142,7 +142,7 @@ struct context
 };
 
 // Empty context specialization. Materialized when `remove_context` removed everything.
-template <>
+template<>
 struct context<detail::monostate_context_tag, void>
 {
     [[nodiscard]] static constexpr unused_type const& get(auto) noexcept
@@ -151,7 +151,7 @@ struct context<detail::monostate_context_tag, void>
     }
 };
 
-template <class ID, class T>
+template<class ID, class T>
 struct context<ID, T, unused_type>
 {
     static_assert(!std::is_reference_v<T>);
@@ -187,7 +187,7 @@ struct context<ID, T, unused_type>
     T& val;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 struct context<ID, T, owning_context<Next>>
 {
     static_assert(!std::is_reference_v<T>);
@@ -198,7 +198,7 @@ struct context<ID, T, owning_context<Next>>
     static_assert(detail::HasNoDuplicateContext<ID, Next>);
     static_assert(!std::same_as<Next, detail::monostate_context>);
 
-    template <class OwningNext>
+    template<class OwningNext>
         requires std::is_constructible_v<Next, OwningNext>
     constexpr context(T& val BOOST_SPIRIT_LIFETIMEBOUND, OwningNext&& owning_next)
         noexcept(std::is_nothrow_constructible_v<Next, OwningNext>)
@@ -206,7 +206,7 @@ struct context<ID, T, owning_context<Next>>
         , next(std::forward<OwningNext>(owning_next))
     {}
 
-    template <class OwningNext>
+    template<class OwningNext>
         requires std::is_constructible_v<Next, OwningNext>
     context(std::remove_const_t<T> const&&, OwningNext&&) = delete; // dangling
 
@@ -230,38 +230,38 @@ struct context<ID, T, owning_context<Next>>
 };
 
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 [[nodiscard]] constexpr context<ID, T, Next>
 make_context(T& val, Next const& next) noexcept
 {
     return {val, next};
 }
 
-template <class ID, class T>
+template<class ID, class T>
 [[nodiscard]] constexpr context<ID, T>
 make_context(T& val, detail::monostate_context const&) noexcept
 {
     return context<ID, T>{val};
 }
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 void make_context(T const&&, Next const&) = delete; // dangling
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 void make_context(T const&&, Next const&&) = delete; // dangling
 
-template <class ID, class T, class Next>
+template<class ID, class T, class Next>
 void make_context(T&, Next const&&) = delete; // dangling
 
 
-template <class ID, class T>
+template<class ID, class T>
 [[nodiscard]] constexpr context<ID, T>
 make_context(T& val) noexcept
 {
     return context<ID, T>{val};
 }
 
-template <class ID, class T>
+template<class ID, class T>
 void make_context(T const&&) = delete; // dangling
 
 
@@ -277,7 +277,7 @@ void make_context(T const&&) = delete; // dangling
 // operation is `x4::locals`. Without this helper, it would
 // inevitably trigger infinite instantiation when binding
 // a local variable instance to the context.
-template <class ID_To_Replace, class ID, class T, class Next, class NewVal>
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
 [[nodiscard]] constexpr auto
 replace_first_context(
     context<ID, T, Next> const& ctx,
@@ -325,11 +325,11 @@ replace_first_context(
     }
 }
 
-template <class ID_To_Replace, class ID, class T, class Next, class NewVal>
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
 void replace_first_context(context<ID, T, Next> const&, NewVal const&&) = delete; // dangling
 
 // Remove the contained reference of the leftmost context having the id `ID_To_Remove`.
-template <class ID_To_Remove, class ID, class T, class Next>
+template<class ID_To_Remove, class ID, class T, class Next>
 [[nodiscard]] constexpr decltype(auto) // may return existing reference in some cases
 remove_first_context(context<ID, T, Next> const& ctx) noexcept
 {
@@ -416,7 +416,7 @@ remove_first_context(context<ID, T, Next> const& ctx) noexcept
     }
 }
 
-template <class ID_To_Remove, class ID, class T, class Next>
+template<class ID_To_Remove, class ID, class T, class Next>
 void remove_first_context(context<ID, T, Next> const&&) = delete; // dangling
 
 } // boost::spirit::x4

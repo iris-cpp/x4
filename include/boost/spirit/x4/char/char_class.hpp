@@ -23,13 +23,13 @@
 
 namespace boost::spirit::x4 {
 
-template <class Encoding>
+template<class Encoding>
 struct char_class_base
 {
     using char_type = typename Encoding::classify_type;
 
 #define BOOST_SPIRIT_X4_CLASSIFY(name) \
-    template <class Char> \
+    template<class Char> \
     [[nodiscard]] static constexpr bool \
     is(name##_tag, Char ch) noexcept \
     { \
@@ -53,7 +53,7 @@ struct char_class_base
 #undef BOOST_SPIRIT_X4_CLASSIFY
 };
 
-template <class Encoding, class Tag>
+template<class Encoding, class Tag>
 struct char_class : char_parser<char_class<Encoding, Tag>>
 {
     using encoding = Encoding;
@@ -62,7 +62,7 @@ struct char_class : char_parser<char_class<Encoding, Tag>>
     using attribute_type = char_type;
     static constexpr bool has_attribute = true;
 
-    template <class Char, class Context>
+    template<class Char, class Context>
     [[nodiscard]] static constexpr bool test(Char ch, Context const& context) noexcept
     {
         return encoding::ischar(ch)

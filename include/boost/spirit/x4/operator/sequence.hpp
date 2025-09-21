@@ -26,19 +26,19 @@
 
 namespace boost::spirit::x4 {
 
-template <class Left, class Right>
+template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 {
     using base_type = binary_parser<Left, Right, sequence<Left, Right>>;
 
-    template <class LeftT, class RightT>
+    template<class LeftT, class RightT>
         requires std::is_constructible_v<base_type, LeftT, RightT>
     constexpr sequence(LeftT&& left, RightT&& right)
         noexcept(std::is_nothrow_constructible_v<base_type, LeftT, RightT>)
         : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, unused_type) const
         noexcept(
@@ -64,7 +64,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
         return false;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
@@ -74,7 +74,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
     }
 };
 
-template <X4Subject Left, X4Subject Right>
+template<X4Subject Left, X4Subject Right>
 [[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
 operator>>(Left&& left, Right&& right)
     noexcept(
@@ -90,7 +90,7 @@ operator>>(Left&& left, Right&& right)
     return {as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right))};
 }
 
-template <X4Subject Left, X4Subject Right>
+template<X4Subject Left, X4Subject Right>
 [[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>
 operator>(Left&& left, Right&& right)
     noexcept(
@@ -117,7 +117,7 @@ operator>(Left&& left, Right&& right)
 
 namespace boost::spirit::x4::traits {
 
-template <class Left, class Right, class Context>
+template<class Left, class Right, class Context>
 struct attribute_of<x4::sequence<Left, Right>, Context>
     : x4::detail::attribute_of_binary<fusion::deque, x4::sequence, Left, Right, Context> {};
 

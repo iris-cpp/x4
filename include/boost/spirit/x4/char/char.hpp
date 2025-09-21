@@ -124,7 +124,7 @@ using unicode::helpers::lit;
 
 namespace extension {
 
-template <>
+template<>
 struct as_parser<char>
 {
     using type = literal_char<char_encoding::standard, unused_type>;
@@ -137,7 +137,7 @@ struct as_parser<char>
 };
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-template <>
+template<>
 struct as_parser<wchar_t>
 {
     using type = literal_char<char_encoding::standard_wide, unused_type>;
@@ -150,7 +150,7 @@ struct as_parser<wchar_t>
 };
 #endif
 
-template <>
+template<>
 struct as_parser<char [2]>
 {
     using type = literal_char<char_encoding::standard, unused_type>;
@@ -163,7 +163,7 @@ struct as_parser<char [2]>
 };
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-template <>
+template<>
 struct as_parser<wchar_t [2]>
 {
     using type = literal_char<char_encoding::standard_wide, unused_type>;

@@ -18,7 +18,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class Encoding, class Attribute = typename Encoding::char_type>
+template<class Encoding, class Attribute = typename Encoding::char_type>
 struct literal_char : char_parser<literal_char<Encoding, Attribute>>
 {
     using char_type = typename Encoding::char_type;
@@ -27,7 +27,7 @@ struct literal_char : char_parser<literal_char<Encoding, Attribute>>
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
-    template <class Char>
+    template<class Char>
         requires
             (!std::is_same_v<std::remove_cvref_t<Char>, literal_char>) &&
             std::convertible_to<Char, char_type>
@@ -37,7 +37,7 @@ struct literal_char : char_parser<literal_char<Encoding, Attribute>>
         static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
     }
 
-    template <class Char, class Context>
+    template<class Char, class Context>
     [[nodiscard]] constexpr bool test(Char ch_, Context const& context) const noexcept
     {
         static_assert(std::same_as<char_type, Char>, "Mixing incompatible character types is not allowed");
@@ -47,7 +47,7 @@ struct literal_char : char_parser<literal_char<Encoding, Attribute>>
     char_type ch;
 };
 
-template <class Encoding, class Attribute>
+template<class Encoding, class Attribute>
 struct get_info<literal_char<Encoding, Attribute>>
 {
     using result_type = std::string;

@@ -33,14 +33,14 @@
 
 namespace boost::spirit::x4::detail {
 
-template <class Attribute, class Value>
+template<class Attribute, class Value>
 struct saver_visitor;
 
 // save to associative fusion container where Key is simple type
-template <class Key>
+template<class Key>
 struct save_to_assoc_attr
 {
-    template <class Value, class Attribute>
+    template<class Value, class Attribute>
     static constexpr void call(Key const&, Value&& value, Attribute& attr)
         noexcept(noexcept(x4::move_to(std::forward<Value>(value), fusion::at_key<Key>(attr))))
     {
@@ -51,10 +51,10 @@ struct save_to_assoc_attr
 
 // save to associative fusion container where Key
 // is variant over possible keys
-template <class... Ts>
+template<class... Ts>
 struct save_to_assoc_attr<variant<Ts...>>
 {
-    template <class Value, class Attribute>
+    template<class Value, class Attribute>
     static constexpr void call(variant<Ts...> const& key, Value&& value, Attribute& attr)
     {
         static_assert(std::is_rvalue_reference_v<Value&&>);
@@ -62,7 +62,7 @@ struct save_to_assoc_attr<variant<Ts...>>
     }
 };
 
-template <class Attribute, class Value>
+template<class Attribute, class Value>
 struct saver_visitor : boost::static_visitor<void>
 {
     constexpr saver_visitor(Attribute& attr, Value&& value) noexcept
@@ -73,7 +73,7 @@ struct saver_visitor : boost::static_visitor<void>
     Attribute& attr;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
     Value&& value;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-    template <class Key>
+    template<class Key>
     constexpr void operator()(Key const& key) const
         noexcept(noexcept(save_to_assoc_attr<Key>::call(key, std::move(value), attr)))
     {
@@ -81,19 +81,19 @@ struct saver_visitor : boost::static_visitor<void>
     }
 };
 
-template <class Parser, class Container, class Context>
+template<class Parser, class Container, class Context>
 struct parser_accepts_container
     : traits::is_substitute<traits::attribute_of_t<Parser, Context>, Container>
 {};
 
-template <class Parser, class Container, class Context>
+template<class Parser, class Container, class Context>
 constexpr bool parser_accepts_container_v = parser_accepts_container<Parser, Container, Context>::value;
 
-template <class Parser>
+template<class Parser>
 struct parse_into_container_base_impl
 {
     // Parser has attribute (synthesize; Attribute is a container)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires (!parser_accepts_container_v<Parser, Attribute, Context>)
     [[nodiscard]] static constexpr bool
     call_synthesize(
@@ -114,7 +114,7 @@ struct parse_into_container_base_impl
         return true;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
         requires (!parser_accepts_container_v<Parser, unused_container_type, Context>)
     [[nodiscard]] static constexpr bool
     call_synthesize(
@@ -127,7 +127,7 @@ struct parse_into_container_base_impl
     }
 
     // Parser has attribute (synthesize; Attribute is a container)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires parser_accepts_container_v<Parser, Attribute, Context>
     [[nodiscard]] static constexpr bool
     call_synthesize(
@@ -140,7 +140,7 @@ struct parse_into_container_base_impl
     }
 
     // Parser has attribute && it is NOT fusion sequence
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires
             traits::has_attribute_v<Parser, Context> &&
             (!fusion::traits::is_sequence<Attribute>::value)
@@ -155,7 +155,7 @@ struct parse_into_container_base_impl
     }
 
     // Parser has attribute && it is fusion sequence (NOT associative)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires
             traits::has_attribute_v<Parser, Context> &&
             fusion::traits::is_sequence<Attribute>::value &&
@@ -172,7 +172,7 @@ struct parse_into_container_base_impl
     }
 
     // Parser has attribute && it is fusion sequence (associative)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires
             traits::has_attribute_v<Parser, Context> &&
             fusion::traits::is_sequence<Attribute>::value &&
@@ -200,7 +200,7 @@ struct parse_into_container_base_impl
     }
 
     // Parser has no attribute (pass unused)
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
         requires (!traits::has_attribute_v<Parser, Context>)
     [[nodiscard]] static constexpr bool
     call(
@@ -213,15 +213,15 @@ struct parse_into_container_base_impl
     }
 };
 
-template <class Parser, class Context>
+template<class Parser, class Context>
 struct parse_into_container_impl : parse_into_container_base_impl<Parser> {};
 
 
-template <class Parser, class Context>
+template<class Parser, class Context>
     requires Parser::handles_container
 struct parse_into_container_impl<Parser, Context>
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
     static constexpr bool pass_attibute_as_is = std::disjunction_v<
         parser_accepts_container<Parser, Attribute, Context>,
 
@@ -235,7 +235,7 @@ struct parse_into_container_impl<Parser, Context>
         >>
     >;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
         requires (!pass_attibute_as_is<It, Se, Attribute>)
     [[nodiscard]] static constexpr bool
     call(
@@ -250,7 +250,7 @@ struct parse_into_container_impl<Parser, Context>
         );
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se>
+    template<std::forward_iterator It, std::sentinel_for<It> Se>
         requires pass_attibute_as_is<It, Se, unused_container_type>
     [[nodiscard]] static constexpr bool
     call(
@@ -262,7 +262,7 @@ struct parse_into_container_impl<Parser, Context>
         return parser.parse(first, last, context, unused_container);
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attribute>
         requires pass_attibute_as_is<It, Se, Attribute>
     [[nodiscard]] static constexpr bool
     call(
@@ -291,7 +291,7 @@ struct parse_into_container_impl<Parser, Context>
     }
 };
 
-template <
+template<
     class Parser, std::forward_iterator It, std::sentinel_for<It> Se,
     class Context, class Attribute
 >

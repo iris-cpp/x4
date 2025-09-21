@@ -50,7 +50,7 @@ constexpr void utf8_put_encode(utf8_string& out, ucs4_char x) noexcept
 
 } // detail
 
-template <class Char>
+template<class Char>
 [[nodiscard]] constexpr utf8_string to_utf8(Char value)
 {
     utf8_string result;
@@ -59,7 +59,7 @@ template <class Char>
     return result;
 }
 
-template <class Char>
+template<class Char>
 [[nodiscard]] constexpr utf8_string to_utf8(Char const* str)
 {
     utf8_string result;
@@ -70,7 +70,7 @@ template <class Char>
     return result;
 }
 
-template <class Char, class Traits>
+template<class Char, class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string_view<Char, Traits> const str)
 {
@@ -82,7 +82,7 @@ to_utf8(std::basic_string_view<Char, Traits> const str)
     return result;
 }
 
-template <class Char, class Traits>
+template<class Char, class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string<Char, Traits> const& str)
 {
@@ -105,7 +105,7 @@ to_utf8(std::basic_string<Char, Traits> const& str)
 
 namespace detail {
 
-template <std::forward_iterator It>
+template<std::forward_iterator It>
     requires std::is_same_v<std::remove_const_t<std::iter_value_t<It>>, wchar_t>
 [[nodiscard]] constexpr ucs4_char decode_utf16(It& s) noexcept
 {
@@ -132,7 +132,7 @@ template <std::forward_iterator It>
 
 } // detail
 
-template <class Traits>
+template<class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string_view<wchar_t, Traits> const str)
 {
@@ -148,7 +148,7 @@ to_utf8(std::basic_string_view<wchar_t, Traits> const str)
     return x4::to_utf8(std::basic_string_view(str));
 }
 
-template <class Traits>
+template<class Traits>
 [[nodiscard]] constexpr utf8_string
 to_utf8(std::basic_string<wchar_t, Traits> const& str)
 {

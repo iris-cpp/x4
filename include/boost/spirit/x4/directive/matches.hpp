@@ -22,7 +22,7 @@
 
 namespace boost::spirit::x4 {
 
-template <class Subject>
+template<class Subject>
 struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
 {
     using base_type = unary_parser<Subject, matches_directive>;
@@ -30,7 +30,7 @@ struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
 
     static constexpr bool has_attribute = true;
 
-    template <class SubjectT>
+    template<class SubjectT>
         requires
             (!std::is_same_v<std::remove_cvref_t<SubjectT>, matches_directive>) &&
             std::is_constructible_v<base_type, SubjectT>
@@ -39,7 +39,7 @@ struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
         : base_type(std::forward<SubjectT>(subject))
     {}
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attribute>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         noexcept(
@@ -59,7 +59,7 @@ namespace detail {
 
 struct matches_gen
 {
-    template <X4Subject Subject>
+    template<X4Subject Subject>
     [[nodiscard]] constexpr matches_directive<as_parser_plain_t<Subject>>
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<matches_directive<as_parser_plain_t<Subject>>, Subject>)
