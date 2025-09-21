@@ -20,9 +20,11 @@
 #include <climits>
 #include <cstdint>
 
+namespace {
+
 //
 // BEWARE PLATFORM DEPENDENT!!!
-// The following assumes 32 bit or 64 bit integers and 64 bit long longs.
+// The following assumes 32-bit or 64-bit integers and 64 bit long longs.
 // Modify these constant strings when appropriate.
 //
 
@@ -54,12 +56,14 @@ struct custom_int
     custom_int() : n(0) {}
     explicit custom_int(int n_) : n(n_) {}
     custom_int& operator=(int n_) { n = n_; return *this; }
-    friend bool operator==(custom_int a, custom_int b) { return a.n == b.n; }
-    friend bool operator==(custom_int a, int b) { return a.n == b; }
+    //friend bool operator==(custom_int a, custom_int b) { return a.n == b.n; }
+    //friend bool operator==(custom_int a, int b) { return a.n == b; }
     friend custom_int operator*(custom_int a, custom_int b) { return custom_int(a.n * b.n); }
     friend custom_int operator+(custom_int a, custom_int b) { return custom_int(a.n + b.n); }
     friend custom_int operator-(custom_int a, custom_int b) { return custom_int(a.n - b.n); }
 };
+
+} // anonymous
 
 int main()
 {

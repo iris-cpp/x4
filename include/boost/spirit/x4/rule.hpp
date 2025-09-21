@@ -38,506 +38,487 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+template<class RuleID, X4Attribute Attr = unused_type, bool ForceAttribute = false>
+struct rule;
+
+struct parse_pass_context_tag;
+
+namespace detail {
+
+template<class RuleID>
+struct rule_id
 {
-    template <typename RuleID, typename Attribute = unused_type, bool ForceAttribute = false>
-    struct rule;
+    static_assert(UniqueContextID<RuleID>);
+};
 
-    struct parse_pass_context_tag;
+// Placeholder type to detect whether the default `parse_rule(...)` is called
+enum struct default_parse_rule_result : bool {};
 
-    namespace detail
+// The default `parse_rule` definition.
+//
+// This overload will only be selected when there exists no user-defined
+// definition for `parse_rule`.
+//
+// When a user invokes `BOOST_SPIRIT_X4_DEFINE_`, an unconstrained overload
+// is generated at the user's namespace scope. It will never conflict with
+// this (vvvvv) overload, as the generated one is never directly called with
+// a context containing `RuleID`.
+template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    requires has_context_v<Context, RuleID>
+[[nodiscard]] constexpr default_parse_rule_result
+parse_rule(
+    rule_id<RuleID>,
+    It& first, Se const& last,
+    Context const& ctx, Attr& attr
+)
+{
+    auto&& rule_ = x4::get<RuleID>(ctx);
+
+    return static_cast<default_parse_rule_result>(
+        rule_.parse(first, last, ctx, attr)
+    );
+}
+
+// This overload is selected only when the user *declares* their `parse_rule`
+// in the user's namespace scope AND the function definition is not found.
+template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    requires (!has_context_v<Context, RuleID>)
+constexpr void
+parse_rule(rule_id<RuleID>, It&, Se const&, Context const&, Attr&)
+    = delete; // BOOST_SPIRIT_X4_DEFINE undefined for this rule
+
+
+template<X4Attribute Attr, class RuleID, bool SkipDefinitionInjection = false>
+struct rule_impl
+{
+    static_assert(UniqueContextID<RuleID>);
+
+    template<
+        class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
+        class Context, class Exposed
+    >
+    [[nodiscard]] static constexpr bool
+    parse_rhs(
+        RHS const& rhs, It& first, Se const& last,
+        Context const& ctx, Exposed& attr
+    ) // never noexcept; requires complex handling
     {
-        template <typename RuleID>
-        struct rule_id
-        {
-            static_assert(UniqueContextID<RuleID>);
-        };
+        // See if the user has `BOOST_SPIRIT_X4_DEFINE` for this rule
+        constexpr bool is_default_parse_rule = std::same_as<
+            decltype(parse_rule( // ADL
+                std::declval<rule_id<RuleID>>(), first, last,
+                std::declval<decltype(x4::make_context<RuleID>(rhs, ctx))>(),
+                std::declval<Attr&>()
+            )),
+            default_parse_rule_result
+        >;
 
-        // Placeholder type to detect whether the default `parse_rule(...)` is called
-        enum struct default_parse_rule_result : bool {};
+        It start = first; // backup
 
-        // The default `parse_rule` definition.
-        //
-        // This overload will only be selected when there exists no user-defined
-        // definition for `parse_rule`.
-        //
-        // When a user invokes `BOOST_SPIRIT_X4_DEFINE_`, an unconstrained overload
-        // is generated at the user's namespace scope. It will never conflict with
-        // this (vvvvv) overload, as the generated one is never directly called with
-        // a context containing `RuleID`.
-        template <typename RuleID, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-            requires has_context_v<Context, RuleID>
-        [[nodiscard]] constexpr default_parse_rule_result
-        parse_rule(
-            rule_id<RuleID>,
-            It& first, Se const& last,
-            Context const& context, Attribute& attr
-        )
-        {
-            auto&& rule_ = x4::get<RuleID>(context);
+        bool ok;
+        if constexpr (SkipDefinitionInjection || !is_default_parse_rule) {
+            ok = rhs.parse(first, last, ctx, attr);
 
-            return static_cast<default_parse_rule_result>(
-                rule_.parse(first, last, context, attr)
+        } else {
+            // If there is no `BOOST_SPIRIT_X4_DEFINE` for this rule,
+            // we'll make a context for this rule tagged by its `RuleID`
+            // so we can extract the rule later on in the default
+            // `parse_rule` overload.
+            auto rule_id_context = x4::make_context<RuleID>(rhs, ctx);
+            ok = rhs.parse(first, last, rule_id_context, attr);
+        }
+
+        // Note: this check uses `It, It` because the value is actually iterator-iterator pair
+        if constexpr (has_on_success<RuleID, It, It, Exposed, Context>::value) {
+            if (!ok) return false;
+
+            x4::skip_over(start, first, ctx);
+            bool pass = true;
+            RuleID{}.on_success(
+                std::as_const(start), std::as_const(first), attr,
+                x4::make_context<parse_pass_context_tag>(pass, ctx)
             );
+            return pass;
+
+        } else { // don't have on_success
+            return ok;
         }
+    }
 
-        // This overload is selected only when the user *declares* their `parse_rule`
-        // in the user's namespace scope AND the function definition is not found.
-        template <typename RuleID, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-            requires (!has_context_v<Context, RuleID>)
-        constexpr void
-        parse_rule(rule_id<RuleID>, It&, Se const&, Context const&, Attribute&)
-            = delete; // BOOST_SPIRIT_X4_DEFINE undefined for this rule
-
-
-        template <typename Attribute, typename RuleID, bool SkipDefinitionInjection = false>
-        struct rule_impl
-        {
-            static_assert(UniqueContextID<RuleID>);
-
-            template <
-                typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-                typename Context, typename Exposed
-            >
-            [[nodiscard]] static constexpr bool
-            parse_rhs(
-                RHS const& rhs, It& first, Se const& last,
-                Context const& context, Exposed& attr
-            ) // never noexcept; requires complex handling
-            {
-                // See if the user has `BOOST_SPIRIT_X4_DEFINE` for this rule
-                constexpr bool is_default_parse_rule = std::same_as<
-                    decltype(parse_rule( // ADL
-                        std::declval<rule_id<RuleID>>(), first, last,
-                        std::declval<decltype(x4::make_context<RuleID>(rhs, context))>(),
-                        std::declval<Attribute&>()
-                    )),
-                    default_parse_rule_result
-                >;
-
-                It start = first; // backup
-
-                bool ok;
-                if constexpr (SkipDefinitionInjection || !is_default_parse_rule)
-                {
-                    ok = rhs.parse(first, last, context, attr);
-                }
-                else
-                {
-                    // If there is no `BOOST_SPIRIT_X4_DEFINE` for this rule,
-                    // we'll make a context for this rule tagged by its `RuleID`
-                    // so we can extract the rule later on in the default
-                    // `parse_rule` overload.
-                    auto rule_id_context = x4::make_context<RuleID>(rhs, context);
-                    ok = rhs.parse(first, last, rule_id_context, attr);
-                }
-
-                // Note: this check uses `It, It` because the value is actually iterator-iterator pair
-                if constexpr (has_on_success<RuleID, It, It, Exposed, Context>::value)
-                {
-                    if (!ok) return false;
-
-                    x4::skip_over(start, first, context);
-                    bool pass = true;
-                    RuleID{}.on_success(
-                        std::as_const(start), std::as_const(first), attr,
-                        x4::make_context<parse_pass_context_tag>(pass, context)
-                    );
-                    return pass;
-                }
-                else
-                {
-                    return ok;
-                }
-            }
-
-            template <
-                typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-                typename Context, X4Attribute Exposed
-            >
-            [[nodiscard]] static constexpr bool
-            parse_rhs_with_on_error(
-                RHS const& rhs, It& first, Se const& last,
-                Context const& context, Exposed& attr
-            ) // never noexcept; requires complex handling
-            {
-                while (true)
-                {
-                    if (rule_impl::parse_rhs(rhs, first, last, context, attr))
-                    {
-                        return true;
-                    }
-
-                    if (x4::has_expectation_failure(context)) {
-                        auto const& x = x4::get_expectation_failure(context);
-                        static_assert(
-                            std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), x, context))>,
-                            "error handler should not return a value"
-                        );
-                        RuleID{}.on_error(std::as_const(first), std::as_const(last), x, context);
-                        return false;
-                    }
-                    return false;
-                }
-            }
-
-            template <
-                bool ForceAttribute,
-                typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-                typename Context, X4Attribute Exposed
-            >
-            [[nodiscard]] static constexpr bool
-            call_rule_definition(
-                RHS const& rhs, char const* rule_name,
-                It& first, Se const& last,
-                Context const& context, Exposed& attr
-            )
-            {
-                // Do down-stream transformation, provide attribute for `rhs` parser
-                using transform = traits::transform_attribute<Attribute, Exposed>;
-                using transform_attr = typename transform::type;
-                transform_attr attr_ = transform::pre(attr);
-
-                // Creates a place to hold the result of parse_rhs
-                // called inside the following scope.
-                bool parse_ok;
-                {
-                #ifdef BOOST_SPIRIT_X4_DEBUG
-                    parse_ok = false;
-
-                    // Debug on destructor, i.e., before any modifications are made to the
-                    // attribute passed to `parse_rhs`. Note: the debug must be done before
-                    // `transform::post`, where some types do some modifications there;
-                    // for instance, if `Exposed` is a recursive variant.
-                    scoped_rule_debug<It, Se, transform_attr>
-                    dbg(rule_name, first, last, attr_, &parse_ok);
-                #else
-                    (void)rule_name;
-                #endif
-
-                    // Replace or insert the `_val` context, while avoiding infinite instantiation on
-                    // recursive grammars.
-                    //
-                    // In pre-X4 codebase, this was done by passing the extraneous `rcontext` parameter
-                    // to every `.parse(...)` invocation on ALL parsers. We dropped that param on X4;
-                    // now we simply append the rule attribute reference to the `context`, as it can
-                    // essentially work as the global storage for any parsers.
-                    //
-                    // Although the `context` acts like the "global" storage, the actual lifetime of the
-                    // rule-specific attribute is managed by stack-like structure, similar to that of
-                    // `x4::locals`. Note that we don't actually use `x4::locals` here; we *already have*
-                    // the stack-like structure because a recursive grammar inherently creates the nested
-                    // invocation hierarchy, which ultimately does the same thing.
-                    //
-                    //   Dear valued user,
-                    //   You have discovered the deepest wizardry of X4...
-                    //   You win!!
-                    //
-                    auto rcontext = x4::replace_first_context<rule_val_context_tag>(context, attr_);
-                    using RContext = decltype(rcontext);
-
-                    constexpr bool rhs_has_on_error = has_on_error<RuleID, It, Se, RContext>::value;
-
-                    // The existence of semantic action inhibits attribute materialization
-                    // _unless_ it is explicitly required by the user (primarily via `%=`).
-                    if constexpr (RHS::has_action && !ForceAttribute)
-                    {
-                        if constexpr (rhs_has_on_error)
-                        {
-                            parse_ok = rule_impl::parse_rhs_with_on_error(
-                                rhs, first, last, rcontext, unused
-                            );
-                        }
-                        else
-                        {
-                            parse_ok = rule_impl::parse_rhs(
-                                rhs, first, last, rcontext, unused
-                            );
-                        }
-                    }
-                    else // attribute is required
-                    {
-                        if constexpr (rhs_has_on_error)
-                        {
-                            parse_ok = rule_impl::parse_rhs_with_on_error(
-                                rhs, first, last, rcontext, attr_
-                            );
-                        }
-                        else
-                        {
-                            parse_ok = rule_impl::parse_rhs(
-                                rhs, first, last, rcontext, attr_
-                            );
-                        }
-                    }
-                }
-
-                if (parse_ok)
-                {
-                    // Integrate the results back into the original attribute value, if appropriate
-                    transform::post(attr, std::forward<transform_attr>(attr_));
-                }
-                return parse_ok;
-            }
-        };
-
-        template <typename RuleID, X4Subject RHS, typename Attribute, bool ForceAttribute, bool SkipDefinitionInjection = false>
-        struct rule_definition : parser<rule_definition<RuleID, RHS, Attribute, ForceAttribute, SkipDefinitionInjection>>
-        {
-            using this_type = rule_definition;
-            using id = RuleID;
-            using rhs_type = RHS;
-            using lhs_type = rule<RuleID, Attribute, ForceAttribute>;
-            using attribute_type = Attribute;
-
-            static constexpr bool has_attribute = !std::same_as<Attribute, unused_type>;
-            static constexpr bool handles_container = traits::is_container<Attribute>::value;
-            static constexpr bool force_attribute = ForceAttribute;
-
-            template <typename RHS_T>
-                requires std::is_constructible_v<RHS, RHS_T>
-            constexpr rule_definition(RHS_T&& rhs, char const* name)
-                noexcept(std::is_nothrow_constructible_v<RHS, RHS_T>)
-                : rhs(std::forward<RHS_T>(rhs))
-                , name(name)
-            {}
-
-            template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute_>
-            [[nodiscard]] constexpr bool
-            parse(It& first, Se const& last, Context const& context, Attribute_& attr) const
-                // never noexcept; requires very complex implementation details
-            {
-                return rule_impl<attribute_type, RuleID, SkipDefinitionInjection>
-                    ::template call_rule_definition<ForceAttribute>(
-                        rhs, name, first, last, context, attr
-                    );
-            }
-
-            RHS rhs;
-            char const* name = "unnamed";
-        };
-
-        template <typename Exposed>
-        struct narrowing_checker
-        {
-            using Dest = Exposed[];
-
-            // emulate `Exposed x[] = {std::forward<T>(t)};`
-            template <typename T>
-            static void operator()(T&&)
-                requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
-        };
-
-        template <typename Exposed, typename Attribute>
-        concept RuleAttrNeedsNarrowingConversion = !requires {
-            narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<Attribute>());
-        };
-
-        // Resolve "The Spirit X3 rule problem" in Boost.Parser's documentation
-        // https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
-        // https://github.com/boostorg/spirit_x4/issues/38
-        template <typename Exposed, typename Attribute>
-        concept RuleAttrTransformable =
-            X4Attribute<std::remove_const_t<Exposed>> &&
-            X4Attribute<Attribute> &&
-            std::default_initializable<Attribute> &&
-            std::is_assignable_v<Exposed&, Attribute> &&
-            !RuleAttrNeedsNarrowingConversion<Exposed, Attribute>;
-
-        template <typename Exposed, typename Attribute>
-        concept RuleAttrCompatible =
-            std::same_as<std::remove_const_t<Exposed>, Attribute> ||
-            RuleAttrTransformable<Exposed, Attribute>;
-
-    } // detail
-
-    template <typename RuleID, typename Attribute, bool ForceAttribute>
-    struct rule : parser<rule<RuleID, Attribute, ForceAttribute>>
+    template<
+        class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
+        class Context, X4Attribute Exposed
+    >
+    [[nodiscard]] static constexpr bool
+    parse_rhs_with_on_error(
+        RHS const& rhs, It& first, Se const& last,
+        Context const& ctx, Exposed& attr
+    ) // never noexcept; requires complex handling
     {
-        static_assert(!std::is_reference_v<Attribute>, "reference type is not allowed for rule attribute type");
-        static_assert(X4Attribute<Attribute>);
-
-        using id = RuleID;
-        using attribute_type = Attribute;
-
-        static constexpr bool has_attribute = !std::same_as<std::remove_const_t<Attribute>, unused_type>;
-        static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<Attribute>>;
-        static constexpr bool force_attribute = ForceAttribute;
-
-        char const* name = "unnamed";
-
-#ifndef BOOST_SPIRIT_X4_NO_RTTI
-        rule() : name(typeid(rule).name()) {}
-#else
-        constexpr rule() noexcept : name("unnamed") {}
-#endif
-
-        constexpr rule(char const* name) noexcept
-            : name(name)
-        {}
-
-        constexpr rule(rule const& r) noexcept
-            : name(r.name)
-        {
-            // Assert that we are not copying an uninitialized static rule. If
-            // the static is in another TU, it may be initialized after we copy
-            // it. If so, its name member will be nullptr.
-            assert(r.name != nullptr && "uninitialized rule"); // static initialization order fiasco
-        }
-
-        // Primary overload
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Attribute Exposed>
-            requires
-                (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-                detail::RuleAttrCompatible<Exposed, Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Exposed& exposed_attr) const
-            // never noexcept; requires very complex implementation details
-        {
-            static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
-
-            // Remove the `_val` context. This makes the actual `context` type passed to
-            // the (potentially ADL-found) `parse_rule` function to be rule-agnostic.
-            // If we don't do this, the specialized function signature becomes
-            // nondeterministic, and we lose the opportunity to do explicit template
-            // instantiation in `BOOST_SPIRIT_X4_INSTANTIATE`.
-            //
-            // Note that this removal is possible only because the actual invocation of
-            // `parse_rule` *ALWAYS* results in subsequent invocation of `call_rule_definition`,
-            // which resets the `_val` context to the appropriate reference.
-            auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
-
-            using detail::parse_rule;
-
-            if constexpr (std::same_as<std::remove_const_t<Exposed>, Attribute>)
-            {
-                return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));
-            }
-            else
-            {
-                static_assert(detail::RuleAttrTransformable<Exposed, Attribute>);
-                static_assert(std::is_assignable_v<Exposed&, Attribute>);
-                static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>);
-
-                Attribute attr;
-                if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, attr)))
-                {
-                    return false;
-                }
-
-                // X3's behavior
-                // x4::move_to(std::move(attr), exposed_attr);
-                exposed_attr = std::move(attr);
+        while (true) {
+            if (rule_impl::parse_rhs(rhs, first, last, ctx, attr)) {
                 return true;
             }
-        }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Attribute Exposed>
-            requires
-                (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-                (!detail::RuleAttrCompatible<Exposed, Attribute>) &&
-                detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, unused_type const&) const
-            // never noexcept; requires very complex implementation details
-        {
-            // make sure we pass exactly the rule attribute type
-            attribute_type no_attr; // default-initialize
-
-            // See the comments on the primary overload of `rule::parse(...)`
-            auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
-
-            // ADL
-            using detail::parse_rule;
-            return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, no_attr));
-        }
-
-        template <X4Subject RHS>
-        [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute>  // NOLINT(misc-unconventional-assign-operator)
-        operator=(RHS&& rhs) const&
-            noexcept(
-                is_parser_nothrow_castable_v<RHS> &&
-                std::is_nothrow_constructible_v<
-                    detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute>,
-                    as_parser_t<RHS>, char const*
-                >
-            )
-        {
-            return { as_parser(std::forward<RHS>(rhs)), name };
-        }
-
-        template <X4Subject RHS>
-        [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true>
-        operator%=(RHS&& rhs) const&
-            noexcept(
-                is_parser_nothrow_castable_v<RHS> &&
-                std::is_nothrow_constructible_v<
-                    detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true>,
-                    as_parser_t<RHS>, char const*
-                >
-            )
-        {
-            return { as_parser(std::forward<RHS>(rhs)), name };
-        }
-
-        // When a rule placeholder constructed and immediately consumed it cannot be used recursively,
-        // that's why the rule definition injection into a parser context can be skipped.
-        // This optimization has a huge impact on compile times because immediate rules are commonly
-        // used to cast an attribute like `as`/`attr_cast` does in Qi.
-        template <X4Subject RHS>
-        [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute, true>  // NOLINT(misc-unconventional-assign-operator)
-        operator=(RHS&& rhs) const&&
-            noexcept(
-                is_parser_nothrow_castable_v<RHS> &&
-                std::is_nothrow_constructible_v<
-                    detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, ForceAttribute, true>,
-                    as_parser_t<RHS>, char const*
-                >
-            )
-        {
-            return { as_parser(std::forward<RHS>(rhs)), name };
-        }
-
-        template <X4Subject RHS>
-        [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true, true>
-        operator%=(RHS&& rhs) const&&
-            noexcept(
-                is_parser_nothrow_castable_v<RHS> &&
-                std::is_nothrow_constructible_v<
-                    detail::rule_definition<RuleID, as_parser_plain_t<RHS>, Attribute, true, true>,
-                    as_parser_t<RHS>, char const*
-                >
-            )
-        {
-            return { as_parser(std::forward<RHS>(rhs)), name };
-        }
-    };
-
-    namespace detail
-    {
-        struct rule_get_info
-        {
-            using result_type = std::string;
-
-            template <typename RuleT> // `rule` or `rule_definition`
-            [[nodiscard]] static std::string operator()(RuleT const& rule_like)
-            {
-                assert(rule_like.name != nullptr && "uninitialized rule"); // static initialization order fiasco
-                return rule_like.name ? rule_like.name : "uninitialized";
+            if (x4::has_expectation_failure(ctx)) {
+                auto const& x = x4::get_expectation_failure(ctx);
+                static_assert(
+                    std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), x, ctx))>,
+                    "error handler should not return a value"
+                );
+                RuleID{}.on_error(std::as_const(first), std::as_const(last), x, ctx);
+                return false;
             }
-        };
+            return false;
+        }
+    }
 
-    } // detail
+    template<
+        bool ForceAttr,
+        class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
+        class Context, X4Attribute Exposed
+    >
+    [[nodiscard]] static constexpr bool
+    call_rule_definition(
+        RHS const& rhs, char const* rule_name,
+        It& first, Se const& last,
+        Context const& ctx, Exposed& attr
+    )
+    {
+        // Do down-stream transformation, provide attribute for `rhs` parser
+        using transform = traits::transform_attribute<Attr, Exposed>;
+        using transform_attr = typename transform::type;
+        transform_attr attr_ = transform::pre(attr);
 
-    template <typename RuleID, typename Attribute, bool ForceAttribute>
-    struct get_info<rule<RuleID, Attribute, ForceAttribute>> : detail::rule_get_info {};
+        // Creates a place to hold the result of parse_rhs
+        // called inside the following scope.
+        bool parse_ok;
+        {
+        #ifdef BOOST_SPIRIT_X4_DEBUG
+            parse_ok = false;
 
-    template <typename RuleID, typename Attribute, typename RHS, bool ForceAttribute, bool SkipDefinitionInjection>
-    struct get_info<detail::rule_definition<RuleID, RHS, Attribute, ForceAttribute, SkipDefinitionInjection>> : detail::rule_get_info {};
+            // Debug on destructor, i.e., before any modifications are made to the
+            // attribute passed to `parse_rhs`. Note: the debug must be done before
+            // `transform::post`, where some types do some modifications there;
+            // for instance, if `Exposed` is a recursive variant.
+            scoped_rule_debug<It, Se, transform_attr>
+            dbg(rule_name, first, last, attr_, &parse_ok);
+        #else
+            (void)rule_name;
+        #endif
+
+            // Replace or insert the `_val` context, while avoiding infinite instantiation on
+            // recursive grammars.
+            //
+            // In pre-X4 codebase, this was done by passing the extraneous `rcontext` parameter
+            // to every `.parse(...)` invocation on ALL parsers. We dropped that param on X4;
+            // now we simply append the rule attribute reference to the `context`, as it can
+            // essentially work as the global storage for any parsers.
+            //
+            // Although the `context` acts like the "global" storage, the actual lifetime of the
+            // rule-specific attribute is managed by stack-like structure, similar to that of
+            // `x4::locals`. Note that we don't actually use `x4::locals` here; we *already have*
+            // the stack-like structure because a recursive grammar inherently creates the nested
+            // invocation hierarchy, which ultimately does the same thing.
+            //
+            //   Dear valued user,
+            //   You have discovered the deepest wizardry of X4...
+            //   You win!!
+            //
+            auto rcontext = x4::replace_first_context<rule_val_context_tag>(ctx, attr_);
+            using RContext = decltype(rcontext);
+
+            constexpr bool rhs_has_on_error = has_on_error<RuleID, It, Se, RContext>::value;
+
+            // The existence of semantic action inhibits attribute materialization
+            // _unless_ it is explicitly required by the user (primarily via `%=`).
+            if constexpr (RHS::has_action && !ForceAttr) {
+                if constexpr (rhs_has_on_error) {
+                    parse_ok = rule_impl::parse_rhs_with_on_error(
+                        rhs, first, last, rcontext, unused
+                    );
+                } else {
+                    parse_ok = rule_impl::parse_rhs(
+                        rhs, first, last, rcontext, unused
+                    );
+                }
+            } else { // attribute is required
+                if constexpr (rhs_has_on_error) {
+                    parse_ok = rule_impl::parse_rhs_with_on_error(
+                        rhs, first, last, rcontext, attr_
+                    );
+                } else {
+                    parse_ok = rule_impl::parse_rhs(
+                        rhs, first, last, rcontext, attr_
+                    );
+                }
+            }
+        }
+
+        if (parse_ok) {
+            // Integrate the results back into the original attribute value, if appropriate
+            transform::post(attr, std::forward<transform_attr>(attr_));
+        }
+        return parse_ok;
+    }
+};
+
+template<class RuleID, X4Subject RHS, X4Attribute Attr, bool ForceAttr, bool SkipDefinitionInjection = false>
+struct rule_definition : parser<rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefinitionInjection>>
+{
+    using this_type = rule_definition;
+    using id = RuleID;
+    using rhs_type = RHS;
+    using lhs_type = rule<RuleID, Attr, ForceAttr>;
+    using attribute_type = Attr;
+
+    static constexpr bool has_attribute = !std::same_as<Attr, unused_type>;
+    static constexpr bool handles_container = traits::is_container<Attr>::value;
+    static constexpr bool force_attribute = ForceAttr;
+
+    template<class RHS_T>
+        requires std::is_constructible_v<RHS, RHS_T>
+    constexpr rule_definition(RHS_T&& rhs, char const* name)
+        noexcept(std::is_nothrow_constructible_v<RHS, RHS_T>)
+        : rhs(std::forward<RHS_T>(rhs))
+        , name(name)
+    {}
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr_& attr) const
+        // never noexcept; requires very complex implementation details
+    {
+        return rule_impl<attribute_type, RuleID, SkipDefinitionInjection>
+            ::template call_rule_definition<ForceAttr>(
+                rhs, name, first, last, ctx, attr
+            );
+    }
+
+    RHS rhs;
+    char const* name = "unnamed";
+};
+
+template<class Exposed>
+struct narrowing_checker
+{
+    using Dest = Exposed[];
+
+    // emulate `Exposed x[] = {std::forward<T>(t)};`
+    template<class T>
+    static void operator()(T&&)
+        requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
+};
+
+template<class Exposed, typename Attr>
+concept RuleAttrNeedsNarrowingConversion =
+    X4Attribute<Attr> &&
+    !requires { narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<Attr>()); };
+
+// Resolve "The Spirit X3 rule problem" in Boost.Parser's documentation
+// https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
+// https://github.com/boostorg/spirit_x4/issues/38
+template<class Exposed, typename Attr>
+concept RuleAttrTransformable =
+    X4Attribute<std::remove_const_t<Exposed>> &&
+    X4Attribute<Attr> &&
+    std::default_initializable<Attr> &&
+    std::is_assignable_v<Exposed&, Attr> &&
+    !RuleAttrNeedsNarrowingConversion<Exposed, Attr>;
+
+template<class Exposed, typename Attr>
+concept RuleAttrCompatible =
+    std::same_as<std::remove_const_t<Exposed>, Attr> ||
+    RuleAttrTransformable<Exposed, Attr>;
+
+} // detail
+
+template<class RuleID, X4Attribute RuleAttr, bool ForceAttr>
+struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
+{
+    static_assert(!std::is_reference_v<RuleAttr>, "reference type is not allowed for rule attribute type");
+    static_assert(X4Attribute<RuleAttr>);
+
+    using id = RuleID;
+    using attribute_type = RuleAttr;
+
+    static constexpr bool has_attribute = !std::same_as<std::remove_const_t<RuleAttr>, unused_type>;
+    static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<RuleAttr>>;
+    static constexpr bool force_attribute = ForceAttr;
+
+    char const* name = "unnamed";
+
+#ifndef BOOST_SPIRIT_X4_NO_RTTI
+    rule() : name(typeid(rule).name()) {}
+#else
+    constexpr rule() noexcept : name("unnamed") {}
+#endif
+
+    constexpr rule(char const* name) noexcept
+        : name(name)
+    {}
+
+    constexpr rule(rule const& r) noexcept
+        : name(r.name)
+    {
+        // Assert that we are not copying an uninitialized static rule. If
+        // the static is in another TU, it may be initialized after we copy
+        // it. If so, its name member will be nullptr.
+        assert(r.name != nullptr && "uninitialized rule"); // static initialization order fiasco
+    }
+
+    // Primary overload
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
+        requires
+            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
+            detail::RuleAttrCompatible<Exposed, RuleAttr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
+        // never noexcept; requires very complex implementation details
+    {
+        static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
+
+        // Remove the `_val` context. This makes the actual `context` type passed to
+        // the (potentially ADL-found) `parse_rule` function to be rule-agnostic.
+        // If we don't do this, the specialized function signature becomes
+        // nondeterministic, and we lose the opportunity to do explicit template
+        // instantiation in `BOOST_SPIRIT_X4_INSTANTIATE`.
+        //
+        // Note that this removal is possible only because the actual invocation of
+        // `parse_rule` *ALWAYS* results in subsequent invocation of `call_rule_definition`,
+        // which resets the `_val` context to the appropriate reference.
+        auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(ctx);
+
+        using detail::parse_rule;
+
+        if constexpr (std::same_as<std::remove_const_t<Exposed>, RuleAttr>) {
+            return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));
+
+        } else {
+            static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
+            static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
+            static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>);
+
+            RuleAttr rule_attr;
+            if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {
+                return false;
+            }
+
+            // X3's behavior
+            // x4::move_to(std::move(rule_attr), exposed_attr);
+            exposed_attr = std::move(rule_attr);
+            return true;
+        }
+    }
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
+        requires
+            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
+            (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
+            detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>
+    [[nodiscard]] constexpr bool
+    parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, unused_type const&) const
+        // never noexcept; requires very complex implementation details
+    {
+        // make sure we pass exactly the rule attribute type
+        attribute_type no_attr; // default-initialize
+
+        // See the comments on the primary overload of `rule::parse(...)`
+        auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(ctx);
+
+        // ADL
+        using detail::parse_rule;
+        return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, no_attr));
+    }
+
+    template<X4Subject RHS>
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr>  // NOLINT(misc-unconventional-assign-operator)
+    operator=(RHS&& rhs) const&
+        noexcept(
+            is_parser_nothrow_castable_v<RHS> &&
+            std::is_nothrow_constructible_v<
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr>,
+                as_parser_t<RHS>, char const*
+            >
+        )
+    {
+        return {as_parser(std::forward<RHS>(rhs)), name};
+    }
+
+    template<X4Subject RHS>
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true>
+    operator%=(RHS&& rhs) const&
+        noexcept(
+            is_parser_nothrow_castable_v<RHS> &&
+            std::is_nothrow_constructible_v<
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true>,
+                as_parser_t<RHS>, char const*
+            >
+        )
+    {
+        return {as_parser(std::forward<RHS>(rhs)), name};
+    }
+
+    // When a rule placeholder constructed and immediately consumed it cannot be used recursively,
+    // that's why the rule definition injection into a parser context can be skipped.
+    // This optimization has a huge impact on compile times because immediate rules are commonly
+    // used to cast an attribute like `as`/`attr_cast` does in Qi.
+    template<X4Subject RHS>
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr, true>  // NOLINT(misc-unconventional-assign-operator)
+    operator=(RHS&& rhs) const&&
+        noexcept(
+            is_parser_nothrow_castable_v<RHS> &&
+            std::is_nothrow_constructible_v<
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, ForceAttr, true>,
+                as_parser_t<RHS>, char const*
+            >
+        )
+    {
+        return {as_parser(std::forward<RHS>(rhs)), name};
+    }
+
+    template<X4Subject RHS>
+    [[nodiscard]] constexpr detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true, true>
+    operator%=(RHS&& rhs) const&&
+        noexcept(
+            is_parser_nothrow_castable_v<RHS> &&
+            std::is_nothrow_constructible_v<
+                detail::rule_definition<RuleID, as_parser_plain_t<RHS>, RuleAttr, true, true>,
+                as_parser_t<RHS>, char const*
+            >
+        )
+    {
+        return {as_parser(std::forward<RHS>(rhs)), name};
+    }
+};
+
+namespace detail {
+
+struct rule_get_info
+{
+    using result_type = std::string;
+
+    template<class RuleT> // `rule` or `rule_definition`
+    [[nodiscard]] static std::string operator()(RuleT const& rule_like)
+    {
+        assert(rule_like.name != nullptr && "uninitialized rule"); // static initialization order fiasco
+        return rule_like.name ? rule_like.name : "uninitialized";
+    }
+};
+
+} // detail
+
+template<class RuleID, X4Attribute Attr, bool ForceAttr>
+struct get_info<rule<RuleID, Attr, ForceAttr>> : detail::rule_get_info {};
+
+template<class RuleID, X4Attribute Attr, class RHS, bool ForceAttr, bool SkipDefinitionInjection>
+struct get_info<detail::rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefinitionInjection>> : detail::rule_get_info {};
 
 // -------------------------------------------------------------
 
@@ -545,12 +526,12 @@ namespace boost::spirit::x4
 #define BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN(msg) BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN_I(message(msg))
 
 #define BOOST_SPIRIT_X4_DECLARE_(r, constexpr_, rule_type) \
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context> \
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context> \
     [[nodiscard]] constexpr_ bool \
     parse_rule( \
         ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
         It& first, Se const& last, \
-        Context const& context, \
+        Context const& ctx, \
         typename std::remove_cvref_t<rule_type>::attribute_type& attr \
     );
 
@@ -572,12 +553,12 @@ namespace boost::spirit::x4
 // -------------------------------------------------------------
 
 #define BOOST_SPIRIT_X4_DEFINE_(r, constexpr_, rule_name) \
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context> \
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context> \
     [[nodiscard]] constexpr_ bool \
     parse_rule( \
         ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<decltype(rule_name)>::id>, \
         It& first, Se const& last, \
-        Context const& context, \
+        Context const& ctx, \
         typename std::remove_cvref_t<decltype(rule_name)>::attribute_type& attr \
     ) { \
         using rule_t = std::remove_cvref_t<decltype(rule_name)>; \
@@ -585,7 +566,7 @@ namespace boost::spirit::x4
             typename rule_t::attribute_type, typename rule_t::id, true \
         >::call_rule_definition<rule_t::force_attribute>( \
             BOOST_SPIRIT_CONCAT(rule_name, _def), rule_name.name, \
-            first, last, context, attr \
+            first, last, ctx, attr \
         ); \
     }
 
@@ -606,32 +587,32 @@ namespace boost::spirit::x4
 
 // -------------------------------------------------------------
 
-    namespace detail
-    {
-        // New API
-        template <typename RuleT, std::forward_iterator It, typename A, typename B = void>
-        struct instantiate_macro_helper
-        {
-            using rule_type = RuleT;
-            using iterator_type = It;
+namespace detail {
 
-            using sentinel_type = A;
-            static_assert(std::sentinel_for<sentinel_type, It>);
+// New API
+template<class RuleT, std::forward_iterator It, class A, class B = void>
+struct instantiate_macro_helper
+{
+    using rule_type = RuleT;
+    using iterator_type = It;
 
-            using context_type = B;
-        };
+    using sentinel_type = A;
+    static_assert(std::sentinel_for<sentinel_type, It>);
 
-        // Old API
-        template <typename RuleT, std::forward_iterator It, typename Context>
-        struct instantiate_macro_helper<RuleT, It, Context, void>
-        {
-            using rule_type = RuleT;
-            using iterator_type = It;
-            using sentinel_type = It;
-            using context_type = Context;
-        };
+    using context_type = B;
+};
 
-    } // detail
+// Old API
+template<class RuleT, std::forward_iterator It, class Context>
+struct instantiate_macro_helper<RuleT, It, Context, void>
+{
+    using rule_type = RuleT;
+    using iterator_type = It;
+    using sentinel_type = It;
+    using context_type = Context;
+};
+
+} // detail
 
 #define BOOST_SPIRIT_X4_INSTANTIATE_(rule_type, It, Se, Context) \
     template bool parse_rule<It, Se, Context>( \

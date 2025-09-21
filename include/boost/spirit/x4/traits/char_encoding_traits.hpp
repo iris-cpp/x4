@@ -18,45 +18,46 @@
 # include <boost/spirit/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x4::traits
+namespace boost::spirit::x4::traits {
+
+namespace detail {
+
+template<class Encoding>
+struct char_encoding_traits_impl
 {
-    namespace detail
+    using encoding_type = Encoding;
+
+    template<class... Args>
+    [[nodiscard]] static constexpr auto lit(Args&&... args)
+        noexcept(noexcept(Encoding::lit(std::forward<Args>(args)...)))
     {
-        template <typename Encoding>
-        struct char_encoding_traits_impl
-        {
-            using encoding_type = Encoding;
+        return Encoding::lit(std::forward<Args>(args)...);
+    }
 
-            template <class... Args>
-            [[nodiscard]] static constexpr auto lit(Args&&... args)
-                noexcept(noexcept(Encoding::lit(std::forward<Args>(args)...)))
-            {
-                return Encoding::lit(std::forward<Args>(args)...);
-            }
+    template<class... Args>
+    [[nodiscard]] static constexpr auto string(Args&&... args)
+        noexcept(noexcept(Encoding::string(std::forward<Args>(args)...)))
+    {
+        return Encoding::string(std::forward<Args>(args)...);
+    }
+};
 
-            template <class... Args>
-            [[nodiscard]] static constexpr auto string(Args&&... args)
-                noexcept(noexcept(Encoding::string(std::forward<Args>(args)...)))
-            {
-                return Encoding::string(std::forward<Args>(args)...);
-            }
-        };
-    } // detail
+} // detail
 
-    template <CharLike CharT>
-    struct char_encoding_traits;
+template<CharLike CharT>
+struct char_encoding_traits;
 
-    template <>
-    struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
+template<>
+struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-    template <>
-    struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
+template<>
+struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
 #endif
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
-    template <>
-    struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
+template<>
+struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
 #endif
 
 } // boost::spirit::x4::traits

@@ -27,7 +27,8 @@ int main()
     using x4::lit;
     using x4::_attr;
 
-    { // context tests
+    {
+        // context tests
 
         char ch;
         auto a = rule<class a_id, char>() = alpha;
@@ -51,7 +52,8 @@ int main()
         BOOST_TEST(ch == 'z');
     }
 
-    { // auto rules tests
+    {
+        // auto rules tests
 
         char ch = '\0';
         auto a = rule<class a_id, char>() = alpha;
@@ -82,8 +84,7 @@ int main()
 
         {
             auto r = rule<class r_id, std::string>()
-                = char_ >> *(',' >> char_)
-                ;
+                = char_ >> *(',' >> char_);
 
             BOOST_TEST(parse("a,b,c,d,e,f", r[f]));
             BOOST_TEST(s == "abcdef");
@@ -92,6 +93,7 @@ int main()
         {
             auto r = rule<class r_id, std::string>()
                 = char_ >> *(',' >> char_);
+
             s.clear();
             BOOST_TEST(parse("a,b,c,d,e,f", r[f]));
             BOOST_TEST(s == "abcdef");
@@ -100,6 +102,7 @@ int main()
         {
             auto r = rule<class r_id, std::string>()
                 = char_ >> char_ >> char_ >> char_ >> char_ >> char_;
+
             s.clear();
             BOOST_TEST(parse("abcdef", r[f]));
             BOOST_TEST(s == "abcdef");

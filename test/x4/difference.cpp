@@ -52,16 +52,16 @@ int main()
         std::string s;
 
         BOOST_TEST(parse(
-            "/*abcdefghijk*/"
-          , "/*" >> *(char_ - "*/")[([&](auto& ctx){ s += _attr(ctx); })] >> "*/"
+            "/*abcdefghijk*/",
+            "/*" >> *(char_ - "*/")[([&](auto& ctx){ s += _attr(ctx); })] >> "*/"
         ));
         BOOST_TEST(s == "abcdefghijk");
         s.clear();
 
         BOOST_TEST(parse(
-            "    /*abcdefghijk*/"
-          , "/*" >> *(char_ - "*/")[([&](auto& ctx){ s += _attr(ctx); })] >> "*/"
-          , space
+            "    /*abcdefghijk*/",
+            "/*" >> *(char_ - "*/")[([&](auto& ctx){ s += _attr(ctx); })] >> "*/",
+            space
         ));
         BOOST_TEST(s == "abcdefghijk");
     }

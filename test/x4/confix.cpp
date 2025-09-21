@@ -35,8 +35,7 @@ int main()
 
         {
             unsigned value = 0;
-            BOOST_TEST(
-                parse(" /* 123 */ ", comment[x4::uint_], x4::standard::space, value));
+            BOOST_TEST(parse(" /* 123 */ ", comment[x4::uint_], x4::standard::space, value));
             BOOST_TEST(value == 123);
 
             using x4::_attr;
@@ -60,17 +59,13 @@ int main()
                 values[1] == 2 &&
                 values[2] == 4 &&
                 values[3] == 6 &&
-                values[4] == 8);
+                values[4] == 8
+            );
         }
         {
             std::vector<std::vector<unsigned>> values;
-            BOOST_TEST(
-                parse("[[1,3,5],[0,2,4]]", array[array[x4::uint_ % ','] % ',']));
-            BOOST_TEST(
-                parse(
-                    "[[1,3,5],[0,2,4]]",
-                    array[array[x4::uint_ % ','] % ','],
-                    values));
+            BOOST_TEST(parse("[[1,3,5],[0,2,4]]", array[array[x4::uint_ % ','] % ',']));
+            BOOST_TEST(parse("[[1,3,5],[0,2,4]]", array[array[x4::uint_ % ','] % ','], values));
             BOOST_TEST(
                 values.size() == 2 &&
                 values[0].size() == 3 &&
@@ -80,7 +75,8 @@ int main()
                 values[1].size() == 3 &&
                 values[1][0] == 0 &&
                 values[1][1] == 2 &&
-                values[1][2] == 4);
+                values[1][2] == 4
+            );
         }
     }
 

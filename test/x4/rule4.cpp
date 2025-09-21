@@ -26,12 +26,12 @@
 namespace x4 = boost::spirit::x4;
 
 namespace {
+
 int got_it = 0;
-}
 
 struct my_rule_class
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
     void on_error(It const&, Se const& last, Exception const& x, Context const&)
     {
         std::cout
@@ -43,8 +43,8 @@ struct my_rule_class
             << std::endl;
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
-    void on_success(It const&, Se const&, Attribute&, Context const&)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr, class Context>
+    void on_success(It const&, Se const&, Attr&, Context const&)
     {
         ++got_it;
     }
@@ -54,15 +54,17 @@ struct on_success_gets_preskipped_iterator
 {
     static bool ok;
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
-    void on_success(It before, Se const& after, Attribute&, Context const&)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr, class Context>
+    void on_success(It before, Se const& after, Attr&, Context const&)
     {
         bool const before_was_b = 'b' == *before;
         ok = before_was_b && (++before == after);
     }
 };
+
 bool on_success_gets_preskipped_iterator::ok = false;
 
+} // anonymous
 
 int main()
 {
@@ -77,15 +79,15 @@ int main()
         rule<class b, int> rb;
         int attr;
 
-        auto ra_def = (ra %= int_);
+        auto ra_def = ra %= int_;
         BOOST_TEST(parse("123", ra_def, attr));
         BOOST_TEST(attr == 123);
 
-        auto rb_def = (rb %= ra_def);
+        auto rb_def = rb %= ra_def;
         BOOST_TEST(parse("123", rb_def, attr));
         BOOST_TEST(attr == 123);
 
-        auto rb_def2 = (rb = ra_def);
+        auto rb_def2 = rb = ra_def;
         BOOST_TEST(parse("123", rb_def2, attr));
         BOOST_TEST(attr == 123);
     }
@@ -95,10 +97,10 @@ int main()
         rule<class a, int> ra;
         rule<class b, int> rb;
         (void)rb;
-        int attr;
+        int attr = 0;
 
-        auto f = [](auto&){};
-        auto ra_def = (ra %= int_[f]);
+        auto f = [](auto&) {};
+        auto ra_def = ra %= int_[f];
         BOOST_TEST(parse("123", ra_def, attr));
         BOOST_TEST(attr == 123);
 
@@ -114,7 +116,7 @@ int main()
 
         // test deduced auto rule behavior
 
-        auto text = rule<class text_id, std::string>()
+        auto text = rule<class text_id, std::string>{}
             = +(!char_(')') >> !char_('>') >> char_);
 
         attr.clear();
@@ -124,7 +126,7 @@ int main()
 
     // error handling
     {
-        auto r = rule<my_rule_class, char const*>()
+        auto r = rule<my_rule_class, char const*>{}
             = '(' > int_ > ',' > int_ > ')';
 
         BOOST_TEST(parse("(123,456)", r));
@@ -138,7 +140,7 @@ int main()
 
     // on_success gets pre-skipped iterator
     {
-        auto r = rule<on_success_gets_preskipped_iterator, char const*>()
+        auto r = rule<on_success_gets_preskipped_iterator, char const*>{}
             = lit("b");
         BOOST_TEST(parse("a b", 'a' >> r, lit(' ')));
         BOOST_TEST(on_success_gets_preskipped_iterator::ok);
@@ -146,13 +148,12 @@ int main()
 
     {
         using v_type = boost::variant<double, int>;
-        auto r1 = rule<class r1_id, v_type>()
-            = int_;
+        auto r1 = rule<class r1_id, v_type>{} = int_;
         v_type v;
         BOOST_TEST(parse("1", r1, v) && v.which() == 1 && boost::get<int>(v) == 1);
 
         using ov_type = std::optional<int>;
-        auto r2 = rule<class r2_id, ov_type>() = int_;
+        auto r2 = rule<class r2_id, ov_type>{} = int_;
         ov_type ov;
         BOOST_TEST(parse("1", r2, ov) && ov && *ov == 1);
     }
@@ -161,8 +162,7 @@ int main()
     {
         using boost::fusion::vector;
         using boost::fusion::at_c;
-        auto r = rule<class r_id, vector<int>>()
-            = int_;
+        auto r = rule<class r_id, vector<int>>{} = int_;
 
         vector<int> v(0);
         BOOST_TEST(parse("1", r, v) && at_c<0>(v) == 1);

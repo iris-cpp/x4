@@ -118,8 +118,7 @@ int main()
         using boost::fusion::at_c;
 
         vector<char, char> v;
-        BOOST_TEST((parse("abc",
-            char_ >> (omit[char_] | omit[char_]) >> char_, v)));
+        BOOST_TEST((parse("abc", char_ >> (omit[char_] | omit[char_]) >> char_, v)));
         BOOST_TEST((at_c<0>(v) == 'a'));
         BOOST_TEST((at_c<1>(v) == 'c'));
     }
@@ -146,9 +145,9 @@ int main()
 
         auto f = [&](auto& ctx){ _val(ctx) = _attr(ctx); };
 
-        (void)(r3 = ((eps >> r1))[f]);
-        (void)(r3 = ((r1) | r2)[f]);
-        (void)(r3 = ((eps >> r1) | r2));
+        (void)(r3 = (eps >> r1)[f]);
+        (void)(r3 = (r1 | r2)[f]);
+        (void)(r3 = eps >> r1 | r2);
         (void)r3;
     }
 
@@ -156,31 +155,27 @@ int main()
         std::string s;
 
         // test having a variant<container, ...>
-        BOOST_TEST( (parse("a,b", (char_ % ',') | eps, s )) );
+        BOOST_TEST((parse("a,b", char_ % ',' | eps, s)));
         BOOST_TEST(s == "ab");
     }
 
     {
         // testing a sequence taking a container as attribute
         std::string s;
-        BOOST_TEST( (parse("abc,a,b,c",
-            char_ >> char_ >> (char_ % ','), s )) );
+        BOOST_TEST((parse("abc,a,b,c", char_ >> char_ >> (char_ % ','), s )));
         BOOST_TEST(s == "abcabc");
 
         // test having an optional<container> inside a sequence
         s.erase();
-        BOOST_TEST( (parse("ab",
-            char_ >> char_ >> -(char_ % ','), s )) );
+        BOOST_TEST((parse("ab", char_ >> char_ >> -(char_ % ','), s )));
         BOOST_TEST(s == "ab");
 
         // test having a variant<container, ...> inside a sequence
         s.erase();
-        BOOST_TEST( (parse("ab",
-            char_ >> char_ >> ((char_ % ',') | eps), s )) );
+        BOOST_TEST((parse("ab", char_ >> char_ >> ((char_ % ',') | eps), s )));
         BOOST_TEST(s == "ab");
         s.erase();
-        BOOST_TEST( (parse("abc",
-            char_ >> char_ >> ((char_ % ',') | eps), s )) );
+        BOOST_TEST((parse("abc", char_ >> char_ >> ((char_ % ',') | eps), s )));
         BOOST_TEST(s == "abc");
     }
 
@@ -249,8 +244,7 @@ int main()
             && BOOST_TEST_EQ(v[1], 2)
             && BOOST_TEST_EQ(v[2], 3)
             && BOOST_TEST_EQ(v[3], 5)
-            && BOOST_TEST_EQ(v[4], 7)
-            ;
+            && BOOST_TEST_EQ(v[4], 7);
     }
 
     {
@@ -264,8 +258,7 @@ int main()
     {
         // sequence parser in alternative into container
         std::string s;
-        BOOST_TEST(parse("abcbbcd",
-            *(char_('a') >> *(*char_('b') >> char_('c')) | char_('d')), s));
+        BOOST_TEST(parse("abcbbcd", *(char_('a') >> *(*char_('b') >> char_('c')) | char_('d')), s));
         BOOST_TEST_EQ(s, "abcbbcd");
     }
 
@@ -284,7 +277,8 @@ int main()
         BOOST_TEST(boost::get<X>(&v) != nullptr);
     }
 
-    { // regression test for #679
+    {
+        // regression test for #679
         using Qaz = std::vector<boost::variant<int>>;
         using Foo = std::vector<boost::variant<Qaz, int>>;
         using Bar = std::vector<boost::variant<Foo, int>>;

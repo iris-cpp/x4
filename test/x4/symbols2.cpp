@@ -37,7 +37,7 @@ int main()
         int data[] = {1, 2, 3, 4, 5, 6};
         shared_symbols<int> sym(syms, data);
 
-        int i;
+        int i = 0;
         BOOST_TEST(parse("Joel", sym, i));
         BOOST_TEST(i == 1);
         BOOST_TEST(parse("Ruby", sym, i));

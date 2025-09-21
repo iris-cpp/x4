@@ -15,25 +15,26 @@
 #include <string_view>
 #include <iterator>
 
+namespace {
+
 struct backwards_bool_policies : x4::bool_policies<>
 {
     // we want to interpret a 'true' spelled backwards as 'false'
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename CaseCompare>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr, class CaseCompare>
     [[nodiscard]] static constexpr bool
-    parse_false(
-        It& first, Se const& last, Attribute& attr, CaseCompare const& case_compare
-    )
+    parse_false(It& first, Se const& last, Attr& attr, CaseCompare const& case_compare)
     {
         using namespace std::string_view_literals;
         namespace x4 = boost::spirit::x4;
-        if (x4::detail::string_parse("eurt"sv, first, last, x4::unused, case_compare))
-        {
+        if (x4::detail::string_parse("eurt"sv, first, last, x4::unused, case_compare)) {
             x4::move_to(false, attr);   // result is false
             return true;
         }
         return false;
     }
 };
+
+} // anonymous
 
 int main()
 {
@@ -95,7 +96,9 @@ int main()
     {
         struct test_bool_type
         {
-            test_bool_type(bool b = false) : b(b) {} // provide conversion
+            test_bool_type(bool b = false) // provide conversion
+                : b(b)
+            {}
             bool b;
         };
 

@@ -19,7 +19,7 @@
 # pragma warning(disable: 4127)   // conditional expression is constant
 #endif
 
-template <int Min, int Max>
+template<int Min, int Max>
 struct custom_int
 {
     custom_int() = default;
@@ -49,7 +49,7 @@ struct custom_int
     bool operator==(custom_int x) const { return value_ == x.value_; }
     bool operator!=(custom_int x) const { return value_ != x.value_; }
 
-    template <typename Char, typename Traits>
+    template<class Char, class Traits>
     friend std::basic_ostream<Char, Traits>&
     operator<<(std::basic_ostream<Char, Traits>& os, custom_int x) {
         return os << x.value_;
@@ -64,16 +64,16 @@ private:
 
 namespace utils {
 
-template <int Min, int Max> struct digits;
-template <> struct digits<-9,  9>  { static constexpr int r2 = 3, r10 = 1; };
-template <> struct digits<-10, 10> { static constexpr int r2 = 3, r10 = 1; };
-template <> struct digits<-15, 15> { static constexpr int r2 = 3, r10 = 1; };
+template<int Min, int Max> struct digits;
+template<> struct digits<-9,  9>  { static constexpr int r2 = 3, r10 = 1; };
+template<> struct digits<-10, 10> { static constexpr int r2 = 3, r10 = 1; };
+template<> struct digits<-15, 15> { static constexpr int r2 = 3, r10 = 1; };
 
-}
+} // utils
 
 namespace std {
 
-template <int Min, int Max>
+template<int Min, int Max>
 class numeric_limits<custom_int<Min, Max>> : public numeric_limits<int>
 {
 public:
@@ -85,39 +85,37 @@ public:
     static constexpr int digits10 = utils::digits<Min, Max>::r10;
 };
 
-}
+} // std
 
-namespace x4 = boost::spirit::x4;
+namespace {
 
-template <typename T, int Base, int MaxDigits>
+template<class T, int Base, int MaxDigits>
 void test_overflow_handling(char const* begin, char const* end, int i)
 {
     // Check that parser fails on overflow
     static_assert(std::numeric_limits<T>::is_bounded, "tests prerequest");
 
-    if constexpr (MaxDigits != -1)
-    {
+    if constexpr (MaxDigits != -1) {
         assert(static_cast<int>(std::pow(float(Base), MaxDigits)) > T::max && "tests prerequest");
     }
 
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
     char const* it = begin;
-    bool r = x4::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
+    bool const r = x4::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
+
     if (T::min <= i && i <= T::max) {
         BOOST_TEST(r);
         BOOST_TEST(it == end);
         BOOST_TEST_EQ(x, i);
-    }
-    else
-        if (MaxDigits == -1) // TODO: Looks like a regression. See #430
-    {
+
+    } else if (MaxDigits == -1) { // TODO: Looks like a regression. See #430
         BOOST_TEST(!r);
         BOOST_TEST(it == begin);
     }
 }
 
-template <typename T, int Base>
+template<class T, int Base>
 void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int i)
 {
     // Check that unparsed digits are not consumed
@@ -127,19 +125,20 @@ void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int 
     auto len = end - it;
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
-    bool r = x4::extract_int<T, Base, 1, 1>::call(it, end, x);
+    bool const r = x4::extract_int<T, Base, 1, 1>::call(it, end, x);
     BOOST_TEST(r);
+
     if (-Base < i && i < Base) {
         BOOST_TEST(it == end);
         BOOST_TEST_EQ(x, i);
-    }
-    else {
+
+    } else {
         BOOST_TEST_EQ(end - it, len - 1 - int(has_sign));
         BOOST_TEST_EQ(x, i / Base);
     }
 }
 
-template <typename T, int Base>
+template<class T, int Base>
 void run_tests(char const* begin, char const* end, int i)
 {
     // Check that parser fails on overflow
@@ -149,6 +148,8 @@ void run_tests(char const* begin, char const* end, int i)
     // Check that unparsed digits are not consumed
     test_unparsed_digits_are_not_consumed<T, Base>(begin, end, i);
 }
+
+} // anonymous
 
 int main()
 {

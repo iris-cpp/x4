@@ -10,7 +10,9 @@
 
 #include "real.hpp"
 
-template <typename T, typename P>
+namespace {
+
+template<class T, class P>
 void basic_real_parser_test(P parser)
 {
     T attr;
@@ -46,6 +48,8 @@ void basic_real_parser_test(P parser)
     BOOST_TEST(!parse("-1.2e", parser, attr));
 }
 
+} // anonymous
+
 int main()
 {
     BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::float_);
@@ -61,7 +65,7 @@ int main()
 
     {
         using x4::double_;
-        double  d;
+        double d = 0;
 
 #if defined(BOOST_SPIRIT_TEST_REAL_PRECISION)
         BOOST_TEST(parse("-5.7222349715140557e+307", double_, d));
@@ -79,46 +83,37 @@ int main()
 
         BOOST_TEST(parse("-inf", double_));
         BOOST_TEST(parse("-infinity", double_));
-        BOOST_TEST(parse("-inf", double_, d) &&
-            std::isinf(d) && std::signbit(d));
-        BOOST_TEST(parse("-infinity", double_, d) &&
-            std::isinf(d) && std::signbit(d));
+        BOOST_TEST(parse("-inf", double_, d) && std::isinf(d) && std::signbit(d));
+        BOOST_TEST(parse("-infinity", double_, d) && std::isinf(d) && std::signbit(d));
         BOOST_TEST(parse("-INF", double_));
         BOOST_TEST(parse("-INFINITY", double_));
-        BOOST_TEST(parse("-INF", double_, d) &&
-            std::isinf(d) && std::signbit(d));
-        BOOST_TEST(parse("-INFINITY", double_, d) &&
-            std::isinf(d) && std::signbit(d));
+        BOOST_TEST(parse("-INF", double_, d) && std::isinf(d) && std::signbit(d));
+        BOOST_TEST(parse("-INFINITY", double_, d) && std::isinf(d) && std::signbit(d));
 
         BOOST_TEST(parse("-nan", double_));
-        BOOST_TEST(parse("-nan", double_, d) &&
-            std::isnan(d) && std::signbit(d));
+        BOOST_TEST(parse("-nan", double_, d) && std::isnan(d) && std::signbit(d));
         BOOST_TEST(parse("-NAN", double_));
-        BOOST_TEST(parse("-NAN", double_, d) &&
-            std::isnan(d) && std::signbit(d));
+        BOOST_TEST(parse("-NAN", double_, d) && std::isnan(d) && std::signbit(d));
 
         BOOST_TEST(parse("-nan(...)", double_));
-        BOOST_TEST(parse("-nan(...)", double_, d) &&
-            std::isnan(d) && std::signbit(d));
+        BOOST_TEST(parse("-nan(...)", double_, d) && std::isnan(d) && std::signbit(d));
         BOOST_TEST(parse("-NAN(...)", double_));
-        BOOST_TEST(parse("-NAN(...)", double_, d) &&
-            std::isnan(d) && std::signbit(d));
+        BOOST_TEST(parse("-NAN(...)", double_, d) && std::isnan(d) && std::signbit(d));
 
         BOOST_TEST(!parse("1e999", double_));
         BOOST_TEST(!parse("1e-999", double_));
-        BOOST_TEST(parse("2.1111111e-303", double_, d) &&
-            compare(d, 2.1111111e-303));
+        BOOST_TEST(parse("2.1111111e-303", double_, d) && compare(d, 2.1111111e-303));
         BOOST_TEST(!parse("1.1234e", double_, d) && compare(d, 1.1234));
 
         // https://svn.boost.org/trac10/ticket/11608
         BOOST_TEST(parse("1267650600228229401496703205376", double_, d) &&
-            compare(d, 1267650600228229401496703205376.));    // Note Qi has better precision
+            compare(d, 1267650600228229401496703205376.)); // Note Qi has better precision
 
         BOOST_TEST(parse("12676506.00228229401496703205376", double_, d) &&
-            compare(d, 12676506.00228229401496703205376));    // Note Qi has better precision
+            compare(d, 12676506.00228229401496703205376)); // Note Qi has better precision
 
         BOOST_TEST(parse("12676506.00228229401496703205376E6", double_, d) &&
-            compare(d, 12676506.00228229401496703205376E6));  // Note Qi has better precision
+            compare(d, 12676506.00228229401496703205376E6)); // Note Qi has better precision
     }
 
     return boost::report_errors();

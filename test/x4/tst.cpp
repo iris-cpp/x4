@@ -18,71 +18,66 @@
 #include <cctype>
 #include <iostream>
 
-namespace
+namespace {
+
+template<class TST, class Char>
+void add(TST& tst, Char const* s, int data)
 {
-    namespace x4 = boost::spirit::x4;
+    Char const* last = s;
+    while (*last) ++last;
+    tst.add(s, last, data);
+}
 
-    template <typename TST, typename Char>
-    void add(TST& tst, Char const* s, int data)
-    {
-        Char const* last = s;
-        while (*last)
-            last++;
-        tst.add(s, last, data);
+template<class TST, class Char>
+void remove(TST& tst, Char const* s)
+{
+    Char const* last = s;
+    while (*last) ++last;
+    tst.remove(s, last);
+}
+
+template<class TST, class Char, class CaseCompare>
+void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool const expected, int N = 0, int val = -1)
+{
+    Char const* first = s;
+    Char const* last = s;
+    while (*last) ++last;
+    int* r = tst.find(s, last,comp);
+    BOOST_TEST(!!r == expected);
+
+    if (r) {
+        BOOST_TEST(s - first == N);
+        BOOST_TEST(*r == val);
     }
+}
 
-    template <typename TST, typename Char>
-    void remove(TST& tst, Char const* s)
+struct printer
+{
+    template<class String, class Data>
+    void operator()(String const& s, Data const& data)
     {
-        Char const* last = s;
-        while (*last)
-            last++;
-        tst.remove(s, last);
+        std::cout << "    " << s << ": " << data << std::endl;
     }
+};
 
-    template <typename TST, typename Char, typename CaseCompare>
-    void docheck(TST const& tst, CaseCompare const& comp, Char const* s, bool expected, int N = 0, int val = -1)
-    {
-        Char const* first = s;
-        Char const* last = s;
-        while (*last)
-            last++;
-        int* r = tst.find(s, last,comp);
-        BOOST_TEST((r != 0) == expected);
-        if (r != 0)
-            BOOST_TEST((s-first) == N);
-        if (r)
-            BOOST_TEST(*r == val);
-    }
-
-    struct printer
-    {
-        template <typename String, typename Data>
-        void operator()(String const& s, Data const& data)
-        {
-            std::cout << "    " << s << ": " << data << std::endl;
-        }
-    };
-
-    template <typename TST>
-    void print(TST const& tst)
-    {
-        std::cout << '[' << std::endl;
-        tst.for_each(printer());
-        std::cout << ']' << std::endl;
-    }
-
+template<class TST>
+void print(TST const& tst)
+{
+    std::cout << '[' << std::endl;
+    tst.for_each(printer());
+    std::cout << ']' << std::endl;
 }
 
 x4::case_compare<x4::char_encoding::standard> ncomp;
 x4::case_compare<x4::char_encoding::standard_wide> wcomp;
 x4::no_case_compare<x4::char_encoding::standard> nc_ncomp;
-x4::no_case_compare<x4::char_encoding::standard_wide> nc_wcomp;
+//x4::no_case_compare<x4::char_encoding::standard_wide> nc_wcomp;
 
-template <typename Lookup, typename WideLookup>
+template<class Lookup, class WideLookup>
 void tests()
 {
-    { // basic tests
+    {
+        // basic tests
         Lookup lookup;
 
         docheck(lookup, ncomp, "not-yet-there", false);
@@ -101,7 +96,8 @@ void tests()
         docheck(lookup, ncomp, "applexxx", true, 5, 123); // partial match
     }
 
-    { // variation of above
+    {
+        // variation of above
         Lookup lookup;
 
         add(lookup, "applepie", 456);
@@ -113,7 +109,8 @@ void tests()
         docheck(lookup, ncomp, "apple", true, 5, 123); // full match
         docheck(lookup, ncomp, "applexxx", true, 5, 123); // partial match
     }
-    { // variation of above
+    {
+        // variation of above
         Lookup lookup;
 
         add(lookup, "applepie", 456);
@@ -126,7 +123,8 @@ void tests()
         docheck(lookup, ncomp, "applexxx", true, 5, 123); // partial match
     }
 
-    { // narrow char tests
+    {
+        // narrow char tests
         Lookup lookup;
         add(lookup, "pineapple", 1);
         add(lookup, "orange", 2);
@@ -158,7 +156,8 @@ void tests()
         docheck(lookup, ncomp, "applepix", true, 5, 5);
     }
 
-    { // wide char tests
+    {
+        // wide char tests
         WideLookup lookup;
         add(lookup, L"pineapple", 1);
         add(lookup, L"orange", 2);
@@ -190,7 +189,8 @@ void tests()
         docheck(lookup, wcomp, L"applepix", true, 5, 5);
     }
 
-    { // test remove
+    {
+        // test remove
         Lookup lookup;
         add(lookup, "pineapple", 1);
         add(lookup, "orange", 2);
@@ -242,7 +242,8 @@ void tests()
         docheck(lookup, ncomp, "applepie", false);
     }
 
-    { // copy/assign/clear test
+    {
+        // copy/assign/clear test
         Lookup lookupa;
         add(lookupa, "pineapple", 1);
         add(lookupa, "orange", 2);
@@ -288,7 +289,8 @@ void tests()
         docheck(lookupb, ncomp, "appl", false);
     }
 
-    { // test for_each
+    {
+        // test for_each
         Lookup lookup;
         add(lookup, "pineapple", 1);
         add(lookup, "orange", 2);
@@ -299,7 +301,8 @@ void tests()
         print(lookup);
     }
 
-    { // case insensitive tests
+    {
+        // case-insensitive tests
         Lookup lookup;
 
         // NOTE: make sure all entries are in lower-case!!!
@@ -331,11 +334,13 @@ void tests()
     }
 }
 
+} // anonymous
+
 int main()
 {
     using x4::tst;
 
-    tests<tst<char, int>, tst<wchar_t, int> >();
+    tests<tst<char, int>, tst<wchar_t, int>>();
 
     return boost::report_errors();
 }

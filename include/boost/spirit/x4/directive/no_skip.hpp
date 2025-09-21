@@ -19,89 +19,89 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+// Same as `lexeme[...]`, but does not pre-skip
+template<class Subject>
+struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
 {
-    // Same as `lexeme[...]`, but does not pre-skip
-    template <typename Subject>
-    struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
+    using base_type = unary_parser<Subject, no_skip_directive<Subject>>;
+
+    static constexpr bool is_pass_through_unary = true;
+    static constexpr bool handles_container = Subject::handles_container;
+
+    template<class SubjectT>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<SubjectT>, no_skip_directive>) &&
+            std::is_constructible_v<base_type, SubjectT>
+    constexpr no_skip_directive(SubjectT&& subject)
+        noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
+        : base_type(std::forward<SubjectT>(subject))
+    {}
+
+private:
+    template<class Context>
+    using unused_skipper_context_t = x4::context<
+        skipper_tag,
+        unused_skipper<
+            std::remove_reference_t<decltype(x4::get<skipper_tag>(std::declval<Context const&>()))>
+        >,
+        Context
+    >;
+
+public:
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires has_skipper_v<Context>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<
+            Subject, It, Se,
+            unused_skipper_context_t<Context>,
+            Attr
+        >)
     {
-        using base_type = unary_parser<Subject, no_skip_directive<Subject>>;
+        auto const& skipper = x4::get<skipper_tag>(ctx);
 
-        static constexpr bool is_pass_through_unary = true;
-        static constexpr bool handles_container = Subject::handles_container;
+        unused_skipper<std::remove_reference_t<decltype(skipper)>>
+        unused_skipper(skipper);
 
-        template <typename SubjectT>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<SubjectT>, no_skip_directive>) &&
-                std::is_constructible_v<base_type, SubjectT>
-        constexpr no_skip_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
-            : base_type(std::forward<SubjectT>(subject))
-        {}
+        return this->subject.parse(
+            first, last,
+            x4::make_context<skipper_tag>(unused_skipper, ctx),
+            attr
+        );
+    }
 
-    private:
-        template <typename Context>
-        using unused_skipper_context_t = x4::context<
-            skipper_tag,
-            unused_skipper<
-                std::remove_reference_t<decltype(x4::get<skipper_tag>(std::declval<Context const&>()))>
-            >,
-            Context
-        >;
-
-    public:
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-            requires has_skipper_v<Context>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<
-                Subject, It, Se,
-                unused_skipper_context_t<Context>,
-                Attribute
-            >)
-        {
-            auto const& skipper = x4::get<skipper_tag>(context);
-
-            unused_skipper<std::remove_reference_t<decltype(skipper)>>
-            unused_skipper(skipper);
-
-            return this->subject.parse(
-                first, last,
-                x4::make_context<skipper_tag>(unused_skipper, context),
-                attr
-            );
-        }
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-            requires (!has_skipper_v<Context>)
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
-        {
-            return this->subject.parse(first, last, context, attr);
-        }
-    };
-
-    namespace detail
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires (!has_skipper_v<Context>)
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
-        struct no_skip_gen
-        {
-            template <X4Subject Subject>
-            [[nodiscard]] constexpr no_skip_directive<as_parser_plain_t<Subject>>
-            operator[](Subject&& subject) const // TODO: MSVC can't handle static operator[]
-                noexcept(is_parser_nothrow_constructible_v<no_skip_directive<as_parser_plain_t<Subject>>, Subject>)
-            {
-                return { as_parser(std::forward<Subject>(subject)) };
-            }
-        };
+        return this->subject.parse(first, last, ctx, attr);
+    }
+};
 
-    } // detail
+namespace detail {
 
-    inline namespace cpos
+struct no_skip_gen
+{
+    template<X4Subject Subject>
+    [[nodiscard]] constexpr no_skip_directive<as_parser_plain_t<Subject>>
+    operator[](Subject&& subject) const // TODO: MSVC can't handle static operator[]
+        noexcept(is_parser_nothrow_constructible_v<no_skip_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        inline constexpr detail::no_skip_gen no_skip{};
+        return {as_parser(std::forward<Subject>(subject))};
+    }
+};
 
-    } // cpos
+} // detail
+
+inline namespace cpos {
+
+inline constexpr detail::no_skip_gen no_skip{};
+
+} // cpos
 
 } // boost::spirit::x4
 

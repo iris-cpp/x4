@@ -16,6 +16,7 @@
 #include <boost/spirit/x4/char/unicode_char_class.hpp>
 #include <boost/spirit/x4/char/negated_char.hpp>
 
+#include <concepts>
 #include <type_traits>
 
 int main()
@@ -145,8 +146,8 @@ int main()
     {   // test invalid unicode literals
         using namespace x4::unicode;
 
-        auto const invalid_unicode = char32_t{0x7FFFFFFF};
-        auto const input           = std::u32string_view(&invalid_unicode, 1);
+        constexpr auto invalid_unicode = char32_t{0x7FFFFFFF};
+        auto const input = std::u32string_view(&invalid_unicode, 1);
 
         BOOST_TEST(!parse(input, char_));
 
@@ -162,7 +163,7 @@ int main()
         using x4::standard::alpha;
         using x4::standard::alpha_type;
 
-        static_assert(std::is_same_v<attribute_of_t<alpha_type, unused_type>, char>);
+        static_assert(std::same_as<attribute_of_t<alpha_type, unused_type>, char>);
 
         int attr = 0;
         BOOST_TEST(parse("a", alpha, attr));

@@ -12,83 +12,83 @@
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/context.hpp>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+struct parse_pass_context_tag; // _pass
+
+// _val
+struct rule_val_context_tag
 {
-    struct parse_pass_context_tag; // _pass
+    static constexpr bool is_unique = true;
+};
 
-    // _val
-    struct rule_val_context_tag
+struct where_context_tag; // _where
+struct attr_context_tag; // _attr
+
+namespace detail {
+
+struct _pass_fn
+{
+    template<class Context>
+    [[nodiscard]] static constexpr bool&
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        static constexpr bool is_unique = true;
-    };
+        return x4::get<parse_pass_context_tag>(ctx);
+    }
 
-    struct where_context_tag; // _where
-    struct attr_context_tag; // _attr
+    template<class Context>
+    static void operator()(Context const&&) = delete; // dangling
+};
 
-    namespace detail
+struct _val_fn
+{
+    template<class Context>
+    [[nodiscard]] static constexpr auto&&
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        struct _pass_fn
-        {
-            template <typename Context>
-            [[nodiscard]] static constexpr bool&
-            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-            {
-                return x4::get<parse_pass_context_tag>(context);
-            }
+        return x4::get<rule_val_context_tag>(ctx);
+    }
 
-            template <typename Context>
-            static void operator()(Context const&&) = delete; // dangling
-        };
+    template<class Context>
+    static void operator()(Context const&&) = delete; // dangling
+};
 
-        struct _val_fn
-        {
-            template <typename Context>
-            [[nodiscard]] static constexpr auto&&
-            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-            {
-                return x4::get<rule_val_context_tag>(context);
-            }
-
-            template <typename Context>
-            static void operator()(Context const&&) = delete; // dangling
-        };
-
-        struct _where_fn
-        {
-            template <typename Context>
-            [[nodiscard]] static constexpr auto&&
-            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-            {
-                return x4::get<where_context_tag>(context);
-            }
-
-            template <typename Context>
-            static void operator()(Context const&&) = delete; // dangling
-        };
-
-        struct _attr_fn
-        {
-            template <typename Context>
-            [[nodiscard]] static constexpr auto&&
-            operator()(Context const& context BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-            {
-                return x4::get<attr_context_tag>(context);
-            }
-
-            template <typename Context>
-            static void operator()(Context const&&) = delete; // dangling
-        };
-
-    } // detail
-
-    inline namespace cpos
+struct _where_fn
+{
+    template<class Context>
+    [[nodiscard]] static constexpr auto&&
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        inline constexpr detail::_pass_fn _pass{};
-        inline constexpr detail::_val_fn _val{};
-        inline constexpr detail::_where_fn _where{};
-        inline constexpr detail::_attr_fn _attr{};
+        return x4::get<where_context_tag>(ctx);
+    }
 
-    } // cpos
+    template<class Context>
+    static void operator()(Context const&&) = delete; // dangling
+};
+
+struct _attr_fn
+{
+    template<class Context>
+    [[nodiscard]] static constexpr auto&&
+    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    {
+        return x4::get<attr_context_tag>(ctx);
+    }
+
+    template<class Context>
+    static void operator()(Context const&&) = delete; // dangling
+};
+
+} // detail
+
+inline namespace cpos {
+
+inline constexpr detail::_pass_fn _pass{};
+inline constexpr detail::_val_fn _val{};
+inline constexpr detail::_where_fn _where{};
+inline constexpr detail::_attr_fn _attr{};
+
+} // cpos
 
 } // boost::spirit::x4
 

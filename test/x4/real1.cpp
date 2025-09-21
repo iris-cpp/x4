@@ -14,10 +14,9 @@
 #include <boost/spirit/x4/operator/kleene.hpp>
 #include <boost/spirit/x4/operator/sequence.hpp>
 
-
 int main()
 {
-    // thousand separated numbers
+    // 3-digit separated numbers
     {
         using x4::uint_parser;
 
@@ -39,7 +38,7 @@ int main()
         using x4::real_parser;
         using x4::ureal_policies;
 
-        constexpr real_parser<double, ureal_policies<double> > udouble;
+        constexpr real_parser<double, ureal_policies<double>> udouble;
         double d;
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(udouble);
@@ -73,27 +72,19 @@ int main()
         BOOST_TEST(parse("INF", udouble));
         BOOST_TEST(parse("INFINITY", udouble));
 
-        BOOST_TEST(parse("inf", udouble, d)
-                && std::isinf(d));
-        BOOST_TEST(parse("INF", udouble, d)
-                && std::isinf(d));
-        BOOST_TEST(parse("infinity", udouble, d)
-                && std::isinf(d));
-        BOOST_TEST(parse("INFINITY", udouble, d)
-                && std::isinf(d));
+        BOOST_TEST(parse("inf", udouble, d) && std::isinf(d));
+        BOOST_TEST(parse("INF", udouble, d) && std::isinf(d));
+        BOOST_TEST(parse("infinity", udouble, d) && std::isinf(d));
+        BOOST_TEST(parse("INFINITY", udouble, d) && std::isinf(d));
 
         BOOST_TEST(parse("nan", udouble));
-        BOOST_TEST(parse("nan", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("nan", udouble, d) && std::isnan(d));
         BOOST_TEST(parse("NAN", udouble));
-        BOOST_TEST(parse("NAN", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("NAN", udouble, d) && std::isnan(d));
         BOOST_TEST(parse("nan(...)", udouble));
-        BOOST_TEST(parse("nan(...)", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("nan(...)", udouble, d) && std::isnan(d));
         BOOST_TEST(parse("NAN(...)", udouble));
-        BOOST_TEST(parse("NAN(...)", udouble, d)
-                && std::isnan(d));
+        BOOST_TEST(parse("NAN(...)", udouble, d) && std::isnan(d));
 
         BOOST_TEST(!parse("e3", udouble));
         BOOST_TEST(!parse("e3", udouble, d));

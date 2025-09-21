@@ -22,9 +22,6 @@
 
 int main()
 {
-    using namespace spirit_test;
-    namespace x4 = boost::spirit::x4;
-
     BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::seek['x']);
 
     // test eoi

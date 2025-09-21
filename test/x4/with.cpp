@@ -20,39 +20,37 @@
 #include <utility>
 #include <type_traits>
 
-namespace x4 = boost::spirit::x4;
+namespace {
 
 struct my_tag;
 
 struct my_rule_class
 {
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Exception, typename Context>
-    void on_error(It const&, Se const&, Exception const&, Context const& context)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Exception, class Context>
+    void on_error(It const&, Se const&, Exception const&, Context const& ctx)
     {
-        ++x4::get<my_tag>(context);
+        ++x4::get<my_tag>(ctx);
     }
 
-    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute, typename Context>
-    void on_success(It const&, Se const&, Attribute&, Context const& context)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Attr, class Context>
+    void on_success(It const&, Se const&, Attr&, Context const& ctx)
     {
-        ++x4::get<my_tag>(context);
+        ++x4::get<my_tag>(ctx);
     }
 };
 
-namespace
-{
-    using x4::rule;
-    using x4::int_;
-    using x4::with;
-    using x4::_pass;
-    using x4::_attr;
+using x4::rule;
+using x4::int_;
+using x4::with;
+using x4::_pass;
+using x4::_attr;
 
-    template<class T>
-    constexpr auto value_equals = int_[([](auto& ctx) {
-        auto&& with_val = x4::get<my_tag>(ctx);
-        static_assert(std::same_as<decltype(with_val), T>);
-        _pass(ctx) = with_val == _attr(ctx);
-    })];
+template<class T>
+constexpr auto value_equals = int_[([](auto& ctx) {
+    auto&& with_val = x4::get<my_tag>(ctx);
+    static_assert(std::same_as<decltype(with_val), T>);
+    _pass(ctx) = with_val == _attr(ctx);
+})];
 
 } // anonymous
 
@@ -131,10 +129,10 @@ int main()
     {
         // injecting data into the context in the grammar
         int val = 0;
-        auto r = rule<my_rule_class, char const*>() =
+        auto r = rule<my_rule_class, char const*>{} =
             '(' > int_ > ',' > int_ > ')';
 
-        auto start = with<my_tag>(std::ref(val)) [ r ];
+        auto start = with<my_tag>(std::ref(val))[r];
 
         BOOST_TEST(parse("(123,456)", start));
         BOOST_TEST(!parse("(abc,def)", start));
@@ -167,11 +165,14 @@ int main()
 
     {
         // injecting const/non-const lvalue and rvalue into the context
-        struct functor {
-            int operator()(int& val) {
+        struct functor
+        {
+            int operator()(int& val)
+            {
                 return val * 10; // non-const ref returns 10 * injected val
             }
-            int operator()(int const& val) {
+            int operator()(int const& val)
+            {
                 return val; // const ref returns injected val
             }
         };

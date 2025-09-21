@@ -16,39 +16,39 @@
 
 #include <iterator>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+struct eoi_parser : parser<eoi_parser>
 {
-    struct eoi_parser : parser<eoi_parser>
+    using attribute_type = unused_type;
+
+    static constexpr bool has_attribute = false;
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr&) const
+        noexcept(
+            noexcept(x4::skip_over(first, last, ctx)) &&
+            noexcept(first == last)
+        )
     {
-        using attribute_type = unused_type;
+        x4::skip_over(first, last, ctx);
+        return first == last;
+    }
+};
 
-        static constexpr bool has_attribute = false;
+template<>
+struct get_info<eoi_parser>
+{
+    using result_type = std::string;
+    [[nodiscard]] result_type operator()(eoi_parser const &) const { return "eoi"; }
+};
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute&) const
-            noexcept(
-                noexcept(x4::skip_over(first, last, context)) &&
-                noexcept(first == last)
-            )
-        {
-            x4::skip_over(first, last, context);
-            return first == last;
-        }
-    };
+inline namespace cpos {
 
-    template<>
-    struct get_info<eoi_parser>
-    {
-        using result_type = std::string;
-        [[nodiscard]] result_type operator()(eoi_parser const &) const { return "eoi"; }
-    };
+inline constexpr eoi_parser eoi{};
 
-    inline namespace cpos
-    {
-        inline constexpr eoi_parser eoi{};
-
-    } // cpos
+} // cpos
 
 } // boost::spirit::x4
 

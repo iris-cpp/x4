@@ -22,8 +22,6 @@
 #include <set>
 #include <map>
 
-using namespace spirit_test;
-
 int main()
 {
     using namespace x4::standard;
@@ -61,7 +59,8 @@ int main()
         BOOST_TEST(s == "abcdefg");
     }
 
-    { // regression test for has_attribute
+    {
+        // regression test for has_attribute
         using x4::int_;
         using x4::omit;
 
@@ -101,7 +100,8 @@ int main()
         BOOST_TEST(1 == v2.size() && 'a' == v2[0]);
     }
 
-    { // actions
+    {
+        // actions
         using x4::_attr;
 
         std::string s;
@@ -111,9 +111,10 @@ int main()
         BOOST_TEST(s == "abcdefgh");
     }
 
-    { // test move only types
-        std::vector<move_only> v;
-        BOOST_TEST(parse("s.s.s.s", synth_move_only % '.', v));
+    {
+        // test move only types
+        std::vector<spirit_test::move_only> v;
+        BOOST_TEST(parse("s.s.s.s", spirit_test::synth_move_only % '.', v));
         BOOST_TEST_EQ(v.size(), 4);
     }
 

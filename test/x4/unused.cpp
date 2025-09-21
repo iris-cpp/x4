@@ -39,14 +39,14 @@ int main()
     // static_assert(std::assignable_from<unused_type const&, unused_type const&>);
 
     unused_type unused_mut;
-    static_assert(std::is_same_v<decltype((unused)), unused_type const&>);
-    static_assert(std::is_same_v<decltype((unused_mut)), unused_type&>);
-    // static_assert(std::is_same_v<decltype(unused = 123), unused_type const&>);
-    // static_assert(std::is_same_v<decltype(unused = unused), unused_type const&>);
-    // static_assert(std::is_same_v<decltype(unused = unused_mut), unused_type const&>);
-    // static_assert(std::is_same_v<decltype(unused_mut = 123), unused_type&>);
-    static_assert(std::is_same_v<decltype(unused_mut = unused), unused_type&>);
-    static_assert(std::is_same_v<decltype(unused_mut = unused_mut), unused_type&>);
+    static_assert(std::same_as<decltype((unused)), unused_type const&>);
+    static_assert(std::same_as<decltype((unused_mut)), unused_type&>);
+    // static_assert(std::same_as<decltype(unused = 123), unused_type const&>);
+    // static_assert(std::same_as<decltype(unused = unused), unused_type const&>);
+    // static_assert(std::same_as<decltype(unused = unused_mut), unused_type const&>);
+    // static_assert(std::same_as<decltype(unused_mut = 123), unused_type&>);
+    static_assert(std::same_as<decltype(unused_mut = unused), unused_type&>);
+    static_assert(std::same_as<decltype(unused_mut = unused_mut), unused_type&>);
 
     {
         constexpr auto test_use = [](x4::unused_type) { return true; };

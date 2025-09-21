@@ -18,10 +18,10 @@
 
 namespace boost::spirit::x4 {
 
-template <typename Klass>
+template<class Klass>
 struct allocator_ops
 {
-    template <typename... Allocs>
+    template<class... Allocs>
     static constexpr bool move_assign_noexcept = std::conjunction_v<
         std::disjunction<
             typename std::allocator_traits<Allocs>::propagate_on_container_move_assignment,
@@ -29,7 +29,7 @@ struct allocator_ops
         >...
     >;
 
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     [[nodiscard]] static constexpr auto copy_construct(Klass& self, Klass const& other)
         -> std::remove_reference_t<decltype(self.*Mem)>
     {
@@ -42,14 +42,14 @@ struct allocator_ops
         return data;
     }
 
-    template <auto AllocMem, auto... Mems>
+    template<auto AllocMem, auto... Mems>
     static constexpr void destroy_deallocate(Klass& self) noexcept
     {
         static_assert(sizeof...(Mems) > 0);
         (allocator_ops::destroy_deallocate_impl<AllocMem, Mems>(self), ...);
     }
 
-    template <auto AllocMem, auto... Mems>
+    template<auto AllocMem, auto... Mems>
     static constexpr void copy_assign(Klass& self, Klass const& other)
     {
         assert(std::addressof(self) != std::addressof(other));
@@ -58,13 +58,12 @@ struct allocator_ops
 
         using Alloc = std::remove_reference_t<decltype(self.*AllocMem)>;
         constexpr bool pocca = std::allocator_traits<Alloc>::propagate_on_container_copy_assignment::value;
-        if constexpr (pocca)
-        {
+        if constexpr (pocca) {
             self.*AllocMem = other.*AllocMem;
         }
     }
 
-    template <auto AllocMem, auto... Mems>
+    template<auto AllocMem, auto... Mems>
     static constexpr void move_assign(Klass& self, Klass&& other)
         noexcept(move_assign_noexcept<decltype(self.*AllocMem)>)
     {
@@ -74,15 +73,14 @@ struct allocator_ops
 
         using Alloc = std::remove_reference_t<decltype(self.*AllocMem)>;
         constexpr bool pocca = std::allocator_traits<Alloc>::propagate_on_container_move_assignment::value;
-        if constexpr (pocca)
-        {
+        if constexpr (pocca) {
             self.*AllocMem = std::move(other.*AllocMem);
         }
     }
 
 
 private:
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     static constexpr void destroy_deallocate_impl(Klass& self) noexcept
     {
         auto& data = self.*Mem;
@@ -94,7 +92,7 @@ private:
         std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
     }
 
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     static constexpr void copy_assign_impl(Klass& self, Klass const& other)
     {
         using Alloc = std::remove_reference_t<decltype(self.*AllocMem)>;
@@ -106,71 +104,53 @@ private:
         auto const& other_data = other.*Mem;
         auto const& other_alloc = other.*AllocMem;
 
-        if (other_data)
-        {
-            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value)
-            {
-                if (data)
-                {
+        if (other_data) {
+            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value) {
+                if (data) {
                     *data = *other_data;
                     return;
                 }
-                if constexpr (pocca)
-                {
+                if constexpr (pocca) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, *other_data);
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, *other_data);
                 }
                 return;
-            }
-            else if (alloc == other_alloc)
-            {
-                if (data)
-                {
+
+            } else if (alloc == other_alloc) {
+                if (data) {
                     *data = *other_data;
                     return;
                 }
-                if constexpr (pocca)
-                {
+                if constexpr (pocca) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, *other_data);
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, *other_data);
                 }
                 return;
-            }
-            else
-            {
-                if (data)
-                {
+
+            } else {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                     data = nullptr;
                 }
-                if constexpr (pocca)
-                {
+                if constexpr (pocca) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, *other_data);
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, *other_data);
                 }
                 return;
             }
-        }
-        else // !other_data
-        {
-            if (data)
-            {
+
+        } else { // !other_data
+            if (data) {
                 std::allocator_traits<Alloc>::destroy(alloc, data);
                 std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 data = nullptr;
@@ -179,7 +159,7 @@ private:
         }
     }
 
-    template <auto AllocMem, auto Mem>
+    template<auto AllocMem, auto Mem>
     static constexpr void move_assign_impl(Klass& self, Klass&& other)
         noexcept(move_assign_noexcept<std::remove_reference_t<decltype(self.*AllocMem)>>)
     {
@@ -192,42 +172,32 @@ private:
         auto& other_data = other.*Mem;
         auto& other_alloc = other.*AllocMem;
 
-        if (other_data)
-        {
-            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value)
-            {
-                if (data)
-                {
+        if (other_data) {
+            if constexpr (std::allocator_traits<Alloc>::is_always_equal::value) {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 }
                 data = std::exchange(other_data, nullptr);
                 return;
-            }
-            else if (alloc == other_alloc)
-            {
-                if (data)
-                {
+
+            } else if (alloc == other_alloc) {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 }
                 data = std::exchange(other_data, nullptr);
                 return;
-            }
-            else
-            {
-                if (data)
-                {
+
+            } else {
+                if (data) {
                     std::allocator_traits<Alloc>::destroy(alloc, data);
                     std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 }
-                if constexpr (pocma)
-                {
+                if constexpr (pocma) {
                     data = std::allocator_traits<Alloc>::allocate(other_alloc, 1);
                     std::allocator_traits<Alloc>::construct(other_alloc, data, std::move(*other_data));
-                }
-                else
-                {
+                } else {
                     data = std::allocator_traits<Alloc>::allocate(alloc, 1);
                     std::allocator_traits<Alloc>::construct(alloc, data, std::move(*other_data));
                 }
@@ -236,11 +206,9 @@ private:
                 std::allocator_traits<Alloc>::deallocate(other_alloc, other_data, 1);
                 return;
             }
-        }
-        else // !other_data
-        {
-            if (data)
-            {
+
+        } else { // !other_data
+            if (data) {
                 std::allocator_traits<Alloc>::destroy(alloc, data);
                 std::allocator_traits<Alloc>::deallocate(alloc, data, 1);
                 data = nullptr;

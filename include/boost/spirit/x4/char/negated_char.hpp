@@ -15,66 +15,66 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+// `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
+template<class Positive>
+struct negated_char_parser : char_parser<negated_char_parser<Positive>>
 {
-    // `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
-    template <typename Positive>
-    struct negated_char_parser : char_parser<negated_char_parser<Positive>>
+    template<class PositiveT>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<PositiveT>, negated_char_parser>) &&
+            std::is_constructible_v<Positive, PositiveT>
+    constexpr negated_char_parser(PositiveT&& positive)
+        noexcept(std::is_nothrow_constructible_v<Positive, PositiveT>)
+        : positive_(std::forward<PositiveT>(positive))
+    {}
+
+    template<class CharParam, class Context>
+    [[nodiscard]] constexpr bool
+    test(CharParam ch, Context const& ctx) const noexcept
     {
-        template <typename PositiveT>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<PositiveT>, negated_char_parser>) &&
-                std::is_constructible_v<Positive, PositiveT>
-        constexpr negated_char_parser(PositiveT&& positive)
-            noexcept(std::is_nothrow_constructible_v<Positive, PositiveT>)
-            : positive_(std::forward<PositiveT>(positive))
-        {}
-
-        template <typename CharParam, typename Context>
-        [[nodiscard]] constexpr bool
-        test(CharParam ch, Context const& context) const noexcept
-        {
-            static_assert(noexcept(!positive_.test(ch, context)));
-            return !positive_.test(ch, context);
-        }
-
-        [[nodiscard]] constexpr Positive const& positive() const noexcept
-        {
-            return positive_;
-        }
-
-    private:
-        Positive positive_;
-    };
-
-    template <typename Positive>
-    [[nodiscard]] constexpr negated_char_parser<Positive>
-    operator~(char_parser<Positive> const& cp)
-        noexcept(std::is_nothrow_constructible_v<negated_char_parser<Positive>, Positive const&>)
-    {
-        return { cp.derived() };
+        static_assert(noexcept(!positive_.test(ch, ctx)));
+        return !positive_.test(ch, ctx);
     }
 
-    template <typename Positive>
-    [[nodiscard]] constexpr Positive const&
-    operator~(negated_char_parser<Positive> const& cp) noexcept
+    [[nodiscard]] constexpr Positive const& positive() const noexcept
     {
-        return cp.positive();
+        return positive_;
     }
+
+private:
+    Positive positive_;
+};
+
+template<class Positive>
+[[nodiscard]] constexpr negated_char_parser<Positive>
+operator~(char_parser<Positive> const& cp)
+    noexcept(std::is_nothrow_constructible_v<negated_char_parser<Positive>, Positive const&>)
+{
+    return {cp.derived()};
+}
+
+template<class Positive>
+[[nodiscard]] constexpr Positive const&
+operator~(negated_char_parser<Positive> const& cp) noexcept
+{
+    return cp.positive();
+}
 
 } // boost::spirit::x4
 
-namespace boost::spirit::x4::traits
-{
-    template <typename Positive, typename Context>
-    struct attribute_of<negated_char_parser<Positive>, Context>
-        : attribute_of<Positive, Context>
-    {};
+namespace boost::spirit::x4::traits {
 
-    template <typename Positive, typename Context>
-    struct has_attribute<negated_char_parser<Positive>, Context>
-        : has_attribute<Positive, Context>
-    {};
+template<class Positive, class Context>
+struct attribute_of<negated_char_parser<Positive>, Context>
+    : attribute_of<Positive, Context>
+{};
+
+template<class Positive, class Context>
+struct has_attribute<negated_char_parser<Positive>, Context>
+    : has_attribute<Positive, Context>
+{};
 
 } // boost::spirit::x4::traits
 

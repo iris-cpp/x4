@@ -124,9 +124,9 @@ int main()
 
         auto const sub_delims = char_(U"!$&'()*+,;=");
 
-        auto const delims =
-            std::vector<std::u32string_view>{U"!", U"$", U"&", U"'", U"(", U")", U"*", U"+",
-                                               U",", U";", U"="};
+        auto const delims = std::vector<std::u32string_view>{
+            U"!", U"$", U"&", U"'", U"(", U")", U"*", U"+", U",", U";", U"="
+        };
 
         auto const matched_all_sub_delims =
             std::ranges::all_of(delims, [&](auto const delim) -> bool {
@@ -142,11 +142,13 @@ int main()
 
         auto const chars = char_(U"\u0024\u00a2\u0939\u20ac\U00010348");
 
-        auto const test_strings =
-            std::vector<std::u32string_view>{U"\u0024", U"\u00a2", U"\u0939", U"\u20ac",
-                                               U"\U00010348"};
+        auto const test_strings = std::vector<std::u32string_view>{
+            U"\u0024", U"\u00a2", U"\u0939", U"\u20ac", U"\U00010348"
+        };
 
-        auto const bad_test_strings = std::vector<std::u32string_view>{U"a", U"B", U"c", U"\u0409"};
+        auto const bad_test_strings = std::vector<std::u32string_view>{
+            U"a", U"B", U"c", U"\u0409"
+        };
 
         auto const all_matched =
             std::ranges::all_of(test_strings, [&](auto const test_str) -> bool {
@@ -162,7 +164,8 @@ int main()
         BOOST_TEST(none_matched);
     }
 
-    {   // single char strings!
+    {
+        // single char strings!
         namespace standard = x4::standard;
         namespace wide = x4::standard_wide;
 

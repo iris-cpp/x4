@@ -18,65 +18,65 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+// propagate no_case information through the context
+template<class Subject>
+struct no_case_directive : unary_parser<Subject, no_case_directive<Subject>>
 {
-    // propagate no_case information through the context
-    template <typename Subject>
-    struct no_case_directive : unary_parser<Subject, no_case_directive<Subject>>
-    {
-        using base_type = unary_parser<Subject, no_case_directive>;
+    using base_type = unary_parser<Subject, no_case_directive>;
 
-        static constexpr bool is_pass_through_unary = true;
-        static constexpr bool handles_container = Subject::handles_container;
+    static constexpr bool is_pass_through_unary = true;
+    static constexpr bool handles_container = Subject::handles_container;
 
-        template <typename SubjectT>
-            requires
-                (!std::is_same_v<std::remove_cvref_t<SubjectT>, no_case_directive>) &&
-                std::is_constructible_v<base_type, SubjectT>
-        constexpr no_case_directive(SubjectT&& subject)
-            noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
-            : base_type(std::forward<SubjectT>(subject))
-        {}
+    template<class SubjectT>
+        requires
+            (!std::is_same_v<std::remove_cvref_t<SubjectT>, no_case_directive>) &&
+            std::is_constructible_v<base_type, SubjectT>
+    constexpr no_case_directive(SubjectT&& subject)
+        noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
+        : base_type(std::forward<SubjectT>(subject))
+    {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
-            noexcept(noexcept(
-                this->subject.parse(
-                    first, last,
-                    x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, context),
-                    attr
-                )
-            ))
-        {
-            return this->subject.parse(
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(noexcept(
+            this->subject.parse(
                 first, last,
-                x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, context),
+                x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx),
                 attr
-            );
-        }
-    };
-
-    namespace detail
+            )
+        ))
     {
-        struct no_case_gen
-        {
-            template <X4Subject Subject>
-            [[nodiscard]] constexpr no_case_directive<as_parser_plain_t<Subject>>
-            operator[](Subject&& subject) const
-                noexcept(is_parser_nothrow_constructible_v<no_case_directive<as_parser_plain_t<Subject>>, Subject>)
-            {
-                return { as_parser(std::forward<Subject>(subject)) };
-            }
-        };
+        return this->subject.parse(
+            first, last,
+            x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx),
+            attr
+        );
+    }
+};
 
-    } // detail
+namespace detail {
 
-    inline namespace cpos
+struct no_case_gen
+{
+    template<X4Subject Subject>
+    [[nodiscard]] constexpr no_case_directive<as_parser_plain_t<Subject>>
+    operator[](Subject&& subject) const
+        noexcept(is_parser_nothrow_constructible_v<no_case_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        inline constexpr detail::no_case_gen no_case{};
+        return {as_parser(std::forward<Subject>(subject))};
+    }
+};
 
-    } // cpos
+} // detail
+
+inline namespace cpos {
+
+inline constexpr detail::no_case_gen no_case{};
+
+} // cpos
 
 } // boost::spirit::x4
 

@@ -51,7 +51,7 @@ int main()
     }
 
     {
-        long i;
+        long i = 0;
         static_assert(
             !std::same_as<decltype(i), used_attr::grammar_type::attribute_type>,
             "ensure we have instantiated the rule with a different attribute type"
@@ -63,7 +63,7 @@ int main()
     }
 
     {
-        long i;
+        long i = 0;
         BOOST_TEST(parse("123", sem_act::used_attr1, i));
     }
     {
@@ -89,7 +89,7 @@ int main()
             RuleAgnosticContext
         >);
 
-        long i;
+        long i = 0;
         BOOST_TEST(parse("===", sem_act::used_attr2, i));
     }
     {

@@ -16,53 +16,51 @@
 
 #include <iterator>
 
-namespace boost::spirit::x4
+namespace boost::spirit::x4 {
+
+struct eol_parser : parser<eol_parser>
 {
-    struct eol_parser : parser<eol_parser>
+    using attribute_type = unused_type;
+
+    static constexpr bool has_attribute = false;
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr&) const
+        // TODO: noexcept
     {
-        using attribute_type = unused_type;
+        x4::skip_over(first, last, ctx);
+        It iter = first;
+        bool matched = false;
 
-        static constexpr bool has_attribute = false;
+        using iter_value_type = std::iter_value_t<It>;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, Attribute&) const
-            // TODO: noexcept
-        {
-            x4::skip_over(first, last, context);
-            It iter = first;
-            bool matched = false;
-
-            using iter_value_type = std::iter_value_t<It>;
-
-            if (iter != last && *iter == static_cast<iter_value_type>('\r'))
-            {
-                matched = true;
-                ++iter;
-            }
-            if (iter != last && *iter == static_cast<iter_value_type>('\n'))
-            {
-                matched = true;
-                ++iter;
-            }
-
-            if (matched) first = iter;
-            return matched;
+        if (iter != last && *iter == static_cast<iter_value_type>('\r')) {
+            matched = true;
+            ++iter;
         }
-    };
+        if (iter != last && *iter == static_cast<iter_value_type>('\n')) {
+            matched = true;
+            ++iter;
+        }
 
-    template<>
-    struct get_info<eol_parser>
-    {
-        using result_type = std::string;
-        [[nodiscard]] result_type operator()(eol_parser const &) const { return "eol"; }
-    };
+        if (matched) first = iter;
+        return matched;
+    }
+};
 
-    inline namespace cpos
-    {
-        inline constexpr eol_parser eol{};
+template<>
+struct get_info<eol_parser>
+{
+    using result_type = std::string;
+    [[nodiscard]] result_type operator()(eol_parser const &) const { return "eol"; }
+};
 
-    } // cpos
+inline namespace cpos {
+
+inline constexpr eol_parser eol{};
+
+} // cpos
 
 } // boost::spirit::x4
 

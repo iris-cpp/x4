@@ -13,6 +13,8 @@
 #include <boost/spirit/x4/directive/no_case.hpp>
 #include <boost/spirit/x4/operator/sequence.hpp>
 
+namespace {
+
 // Custom string type with a C-style string conversion.
 struct custom_string_c
 {
@@ -25,12 +27,15 @@ private:
     char str[2];
 };
 
+} // anonymous
+
 int main()
 {
     using x4::shared_symbols;
     using x4::no_case;
 
-    { // basics
+    {
+        // basics
         shared_symbols<int> sym;
 
         sym.add
@@ -113,7 +118,7 @@ int main()
             ("Joey", 6)
         ;
 
-        int i;
+        int i = 0;
         BOOST_TEST(parse("Joel", sym, i));
         BOOST_TEST(i == 1);
         BOOST_TEST(parse("Ruby", sym, i));
@@ -149,7 +154,7 @@ int main()
             ("Joey", 6)
         ;
 
-        int i;
+        int i = 0;
         auto f = [&](auto& ctx){ i = _attr(ctx); }; // lambda with capture (important for subsequent checks)
 
         using Parser = std::remove_cvref_t<decltype(sym[f])>;
