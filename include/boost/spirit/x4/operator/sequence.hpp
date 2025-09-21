@@ -38,19 +38,19 @@ namespace boost::spirit::x4
             : base_type(std::forward<LeftT>(left), std::forward<RightT>(right))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, unused_type) const
+        parse(It& first, Se const& last, Context const& context, unused_type) const
             noexcept(
                 std::is_nothrow_copy_assignable_v<It> &&
-                is_nothrow_parsable_v<Left, It, Se, Context, RContext, unused_type> &&
-                is_nothrow_parsable_v<Right, It, Se, Context, RContext, unused_type>
+                is_nothrow_parsable_v<Left, It, Se, Context, unused_type> &&
+                is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
             )
         {
             It const first_saved = first;
 
-            if (this->left.parse(first, last, context, rcontext, unused)
-                && this->right.parse(first, last, context, rcontext, unused))
+            if (this->left.parse(first, last, context, unused)
+                && this->right.parse(first, last, context, unused))
             {
                 return true;
             }
@@ -65,13 +65,13 @@ namespace boost::spirit::x4
             return false;
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires (!std::is_same_v<std::remove_const_t<Attribute>, unused_type>)
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(noexcept(detail::parse_sequence(*this, first, last, context, rcontext, attr)))
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(noexcept(detail::parse_sequence(*this, first, last, context, attr)))
         {
-            return detail::parse_sequence(*this, first, last, context, rcontext, attr);
+            return detail::parse_sequence(*this, first, last, context, attr);
         }
     };
 

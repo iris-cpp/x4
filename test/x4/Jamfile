@@ -58,6 +58,9 @@ rule compile-fail ( sources + : requirements * : target-name ? )
            : $(requirements) : $(target-name) ] ;
 }
 
+run parser.cpp ;
+run context.cpp ;
+
 run actions.cpp ;
 run alternative.cpp ;
 run and_predicate.cpp ;

@@ -79,13 +79,13 @@ int main()
 
     {
         std::vector<int> v;
-        BOOST_TEST(parse("123 456 789 10", +int_, v, space) && 4 == v.size() &&
+        BOOST_TEST(parse("123 456 789 10", +int_, space, v) && 4 == v.size() &&
             v[0] == 123 && v[1] == 456 && v[2] == 789 &&  v[3] == 10);
     }
 
     {
         std::vector<std::string> v;
-        BOOST_TEST(parse("a b c d", +lexeme[+alpha], v, space) && 4 == v.size() &&
+        BOOST_TEST(parse("a b c d", +lexeme[+alpha], space, v) && 4 == v.size() &&
             v[0] == "a" && v[1] == "b" && v[2] == "c" &&  v[3] == "d");
     }
 

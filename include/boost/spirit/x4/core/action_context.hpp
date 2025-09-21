@@ -15,7 +15,13 @@
 namespace boost::spirit::x4
 {
     struct parse_pass_context_tag; // _pass
-    struct rule_val_context_tag; // _val
+
+    // _val
+    struct rule_val_context_tag
+    {
+        static constexpr bool is_unique = true;
+    };
+
     struct where_context_tag; // _where
     struct attr_context_tag; // _attr
 

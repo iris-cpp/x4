@@ -45,7 +45,7 @@ namespace boost::spirit::x4
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, unused_type, Attribute& attr_param) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
             // TODO: noexcept
         {
             x4::skip_over(first, last, context);
@@ -77,9 +77,9 @@ namespace boost::spirit::x4
 
         static constexpr bool has_attribute = !std::is_same_v<unused_type, T>;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr_param) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
             // TODO: noexcept
         {
             x4::skip_over(first, last, context);

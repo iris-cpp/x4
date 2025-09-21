@@ -51,7 +51,6 @@
 #include <boost/preprocessor/facilities/overload.hpp>
 #include <boost/preprocessor/facilities/expand.hpp>
 
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -74,7 +73,7 @@ namespace x4 = boost::spirit::x4;
                 auto const res = parse(input, parser); \
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
-                auto const& x = *res.expect_failure; \
+                auto const& x = res.expect_failure; \
                 [[maybe_unused]] auto const& which = x.which(); \
                 [[maybe_unused]] auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
@@ -90,7 +89,7 @@ namespace x4 = boost::spirit::x4;
                 auto const res = parse(input, parser, arg0); \
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
-                auto const& x = *res.expect_failure; \
+                auto const& x = res.expect_failure; \
                 [[maybe_unused]] auto const& which = x.which(); \
                 [[maybe_unused]] auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
@@ -106,7 +105,7 @@ namespace x4 = boost::spirit::x4;
                 auto const res = parse(input, parser, arg0, arg1); \
                 if (!BOOST_TEST(tester res.completed())) break; \
                 if (!BOOST_TEST(res.expect_failure.has_value())) break; \
-                auto const& x = *res.expect_failure; \
+                auto const& x = res.expect_failure; \
                 [[maybe_unused]] auto const& which = x.which(); \
                 [[maybe_unused]] auto const& where = std::string_view(x.where(), res.remainder.end()); \
                 catch_stmt \
@@ -243,7 +242,7 @@ int main()
     // Test that attributes with > (sequences) work just like >> (sequences)
     {
         vector<char, char, char> attr;
-        TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ > char_, attr, space);
+        TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ > char_, space, attr);
         BOOST_TEST((at_c<0>(attr) == 'a'));
         BOOST_TEST((at_c<1>(attr) == 'b'));
         BOOST_TEST((at_c<2>(attr) == 'c'));
@@ -251,7 +250,7 @@ int main()
 
     {
         vector<char, char, char> attr;
-        TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ >> char_, attr, space);
+        TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ >> char_, space, attr);
         BOOST_TEST((at_c<0>(attr) == 'a'));
         BOOST_TEST((at_c<1>(attr) == 'b'));
         BOOST_TEST((at_c<2>(attr) == 'c'));
@@ -259,7 +258,7 @@ int main()
 
     {
         vector<char, char, char> attr;
-        TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' > char_ >> ',' > char_, attr, space);
+        TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' > char_ >> ',' > char_, space, attr);
         BOOST_TEST((at_c<0>(attr) == 'a'));
         BOOST_TEST((at_c<1>(attr) == 'b'));
         BOOST_TEST((at_c<2>(attr) == 'c'));
@@ -267,7 +266,7 @@ int main()
 
     {
         std::string attr;
-        TEST_ATTR_SUCCESS_PASS("'azaaz'", "'" > *(char_("a") | char_("z")) > "'", attr, space);
+        TEST_ATTR_SUCCESS_PASS("'azaaz'", "'" > *(char_("a") | char_("z")) > "'", space, attr);
         BOOST_TEST(attr == "azaaz");
     }
 
@@ -522,25 +521,25 @@ int main()
 
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('d')], s, blank);
+            TEST_ATTR_SUCCESS_PASS("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('d')], blank, s);
             BOOST_TEST(s == "abcd");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('z') > skip(space)[char_('c') > char_('d')], s, blank, {
+            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('z') > skip(space)[char_('c') > char_('d')], blank, s, {
                 BOOST_TEST(which == "'z'"sv);
                 BOOST_TEST(where == "b\n c\n d"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('z') > char_('d')], s, blank, {
+            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('z') > char_('d')], blank, s, {
                 BOOST_TEST(where == "\n c\n d"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], s, blank, {
+            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], blank, s, {
                 BOOST_TEST(which == "'z'"sv);
                 BOOST_TEST(where == "d"sv);
             });
@@ -549,12 +548,12 @@ int main()
         // reskip
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d')]], s, blank);
+            TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d')]], blank, s);
             BOOST_TEST(s == "abcd");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z')]], s, blank, {
+            TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z')]], blank, s, {
                 BOOST_TEST(where == "d"sv);
             });
         }
@@ -562,18 +561,18 @@ int main()
         // reskip with expectation failure context propagation
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('e')]], s, blank);
+            TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('e')]], blank, s);
             BOOST_TEST(s == "abcde");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z') > char_('e')]], s, blank, {
+            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z') > char_('e')]], blank, s, {
                 BOOST_TEST(where == " d e"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('z')]], s, blank, {
+            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('z')]], blank, s, {
                 BOOST_TEST(which == "'z'"sv);
                 BOOST_TEST(where == "e"sv);
             });

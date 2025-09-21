@@ -233,14 +233,13 @@ namespace boost::spirit::x4::detail
     template <
         typename Parser,
         std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext, typename Attribute
+        typename Context, typename Attribute
     >
     [[nodiscard]] constexpr bool
     parse_sequence(
         Parser const& parser,
         It& first, Se const& last,
-        Context const& context, RContext& rcontext,
-        Attribute& attr
+        Context const& context, Attribute& attr
     )
     {
         using partition = partition_attribute<
@@ -258,8 +257,8 @@ namespace boost::spirit::x4::detail
 
         It const first_saved = first;
 
-        if (parser.left.parse(first, last, context, rcontext, l_attr) &&
-            parser.right.parse(first, last, context, rcontext, r_attr)
+        if (parser.left.parse(first, last, context, l_attr) &&
+            parser.right.parse(first, last, context, r_attr)
         )
         {
             return true;
@@ -274,62 +273,57 @@ namespace boost::spirit::x4::detail
     template <
         typename Parser,
         std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext, typename Attribute
+        typename Context, typename Attribute
     >
         requires pass_sequence_container_attribute<Parser, Context>
     [[nodiscard]] constexpr bool
     parse_sequence_container(
         Parser const& parser,
         It& first, Se const& last,
-        Context const& context, RContext& rcontext,
-        Attribute& attr
+        Context const& context, Attribute& attr
     )
-        noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, RContext, Attribute>)
+        noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attribute>)
     {
-        static_assert(Parsable<Parser, It, Se, Context, RContext, Attribute>);
-        return parser.parse(first, last, context, rcontext, attr);
+        static_assert(Parsable<Parser, It, Se, Context, Attribute>);
+        return parser.parse(first, last, context, attr);
     }
 
     template <
         typename Parser,
         std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext,
-        typename Attribute
+        typename Context, typename Attribute
     >
         requires (!pass_sequence_container_attribute<Parser, Context>)
     [[nodiscard]] constexpr bool
     parse_sequence_container(
         Parser const& parser,
         It& first, Se const& last,
-        Context const& context, RContext& rcontext,
-        Attribute& attr
+        Context const& context, Attribute& attr
     )
-        noexcept(noexcept(detail::parse_into_container(parser, first, last, context, rcontext, attr)))
+        noexcept(noexcept(detail::parse_into_container(parser, first, last, context, attr)))
     {
-        return detail::parse_into_container(parser, first, last, context, rcontext, attr);
+        return detail::parse_into_container(parser, first, last, context, attr);
     }
 
     template <
         typename Parser,
         std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext
-    >
+        typename Context>
     [[nodiscard]] constexpr bool
     parse_sequence(
         Parser const& parser,
         It& first, Se const& last,
-        Context const& context, RContext& rcontext,
-        traits::CategorizedAttr<traits::container_attribute> auto& attr
+        Context const& context, traits::CategorizedAttr<traits::container_attribute> auto& attr
     )
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
-            noexcept(detail::parse_sequence_container(parser.left, first, last, context, rcontext, attr)) &&
-            noexcept(detail::parse_sequence_container(parser.right, first, last, context, rcontext, attr))
+            noexcept(detail::parse_sequence_container(parser.left, first, last, context, attr)) &&
+            noexcept(detail::parse_sequence_container(parser.right, first, last, context, attr))
         )
     {
         It const first_saved = first;
-        if (detail::parse_sequence_container(parser.left, first, last, context, rcontext, attr) &&
-            detail::parse_sequence_container(parser.right, first, last, context, rcontext, attr)
+        if (detail::parse_sequence_container(parser.left, first, last, context, attr) &&
+            detail::parse_sequence_container(parser.right, first, last, context, attr)
         )
         {
             return true;
@@ -359,41 +353,37 @@ namespace boost::spirit::x4::detail
     template <
         typename Parser,
         std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext
-    >
+        typename Context>
         requires (!assoc_sequence_should_split<Parser, Context>)
     [[nodiscard]] constexpr bool
     parse_sequence(
         Parser const& parser,
         It& first, Se const& last,
-        Context const& context, RContext& rcontext,
-        traits::CategorizedAttr<traits::associative_attribute> auto& attr
-    ) noexcept(noexcept(detail::parse_into_container(parser, first, last, context, rcontext, attr)))
+        Context const& context, traits::CategorizedAttr<traits::associative_attribute> auto& attr
+    ) noexcept(noexcept(detail::parse_into_container(parser, first, last, context, attr)))
     {
-	    return detail::parse_into_container(parser, first, last, context, rcontext, attr);
+	    return detail::parse_into_container(parser, first, last, context, attr);
     }
 
     template <
         typename Parser,
         std::forward_iterator It, std::sentinel_for<It> Se,
-        typename Context, typename RContext
-    >
+        typename Context>
         requires assoc_sequence_should_split<Parser, Context>
     [[nodiscard]] constexpr bool
     parse_sequence(
         Parser const& parser,
         It& first, Se const& last,
-        Context const& context, RContext& rcontext,
-        traits::CategorizedAttr<traits::associative_attribute> auto& attr
+        Context const& context, traits::CategorizedAttr<traits::associative_attribute> auto& attr
     ) noexcept(
         std::is_nothrow_copy_assignable_v<It> &&
-        noexcept(parser.left.parse(first, last, context, rcontext, attr)) &&
-        noexcept(parser.right.parse(first, last, context, rcontext, attr))
+        noexcept(parser.left.parse(first, last, context, attr)) &&
+        noexcept(parser.right.parse(first, last, context, attr))
     )
     {
         It const first_saved = first;
-        if (parser.left.parse(first, last, context, rcontext, attr) &&
-            parser.right.parse(first, last, context, rcontext, attr)
+        if (parser.left.parse(first, last, context, attr) &&
+            parser.right.parse(first, last, context, attr)
         )
         {
             return true;
@@ -402,8 +392,8 @@ namespace boost::spirit::x4::detail
         return false;
     }
 
-    template <typename Left, typename Right, typename Context, typename RContext>
-    struct parse_into_container_impl<sequence<Left, Right>, Context, RContext>
+    template <typename Left, typename Right, typename Context>
+    struct parse_into_container_impl<sequence<Left, Right>, Context>
     {
         using parser_type = sequence<Left, Right>;
 
@@ -418,14 +408,13 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             parser_type const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext,
-            Attribute& attr
+            Context const& context, Attribute& attr
         ) noexcept(noexcept(parse_into_container_base_impl<parser_type>::call(
-            parser, first, last, context, rcontext, attr
+            parser, first, last, context, attr
         )))
         {
             return parse_into_container_base_impl<parser_type>::call(
-                parser, first, last, context, rcontext, attr
+                parser, first, last, context, attr
             );
         }
 
@@ -434,8 +423,7 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             parser_type const& parser, It& first, Se const& last,
-            Context const& context, RContext& rcontext,
-            Attribute& attr
+            Context const& context, Attribute& attr
         ) // never noexcept (requires container insertion)
         {
             // inform user what went wrong if we jumped here in attempt to
@@ -457,12 +445,12 @@ namespace boost::spirit::x4::detail
                 std::is_same_v<std::remove_const_t<Attribute>, unused_container_type>
             )
             {
-                return detail::parse_sequence(parser, first, last, context, rcontext, x4::assume_container(attr));
+                return detail::parse_sequence(parser, first, last, context, x4::assume_container(attr));
             }
             else
             {
                 Attribute attr_;
-                if (!detail::parse_sequence(parser, first, last, context, rcontext, attr_))
+                if (!detail::parse_sequence(parser, first, last, context, attr_))
                 {
                     return false;
                 }

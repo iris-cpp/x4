@@ -47,22 +47,21 @@ namespace boost::spirit::x4
         {
         }
 
-        template<std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template<std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr
-        ) const noexcept(
-            std::is_nothrow_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Prefix, It, Se, Context, RContext, unused_type> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, RContext, Attribute> &&
-            is_nothrow_parsable_v<Postfix, It, Se, Context, RContext, unused_type>
-        )
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(
+                std::is_nothrow_copy_assignable_v<It> &&
+                is_nothrow_parsable_v<Prefix, It, Se, Context, unused_type> &&
+                is_nothrow_parsable_v<Subject, It, Se, Context, Attribute> &&
+                is_nothrow_parsable_v<Postfix, It, Se, Context, unused_type>
+            )
         {
             It const saved_first = first;
 
-            if (!(prefix_.parse(first, last, context, rcontext, unused) &&
-                  this->subject.parse(first, last, context, rcontext, attr) &&
-                  postfix_.parse(first, last, context, rcontext, unused))
+            if (!(prefix_.parse(first, last, context, unused) &&
+                  this->subject.parse(first, last, context, attr) &&
+                  postfix_.parse(first, last, context, unused))
             ) {
                 if (x4::has_expectation_failure(context))
                 {

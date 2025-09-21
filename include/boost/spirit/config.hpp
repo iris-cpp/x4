@@ -10,6 +10,13 @@
 
 #include <version>
 
+#define BOOST_SPIRIT_STRINGIZE_I(x) #x
+#define BOOST_SPIRIT_STRINGIZE(x) BOOST_SPIRIT_STRINGIZE_I(x)
+
+#define BOOST_SPIRIT_CONCAT_I_I(a, b) a##b
+#define BOOST_SPIRIT_CONCAT_I(a, b) BOOST_SPIRIT_CONCAT_I_I(a, b)
+#define BOOST_SPIRIT_CONCAT(a, b) BOOST_SPIRIT_CONCAT_I(a, b)
+
 #if _MSC_VER
 # include <CodeAnalysis/CppCoreCheck/warnings.h>
 # pragma warning(default: CPPCORECHECK_LIFETIME_WARNINGS)

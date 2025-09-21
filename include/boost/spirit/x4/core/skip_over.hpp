@@ -22,7 +22,10 @@
 namespace boost::spirit::x4
 {
     // Tag used to find the skipper from the context
-    struct skipper_tag;
+    struct skipper_tag
+    {
+        static constexpr bool is_unique = false;
+    };
 
     // Move the /first/ iterator to the first non-matching position
     // given a skip-parser. The function is a no-op if unused_type or
@@ -96,10 +99,8 @@ namespace boost::spirit::x4
         };
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Subject Skipper>
-        constexpr void skip_over(
-            It& first, Se const& last, Context& context, Skipper const& skipper
-        )
-            noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type, unused_type>)
+        constexpr void skip_over(It& first, Se const& last, Context const& context, Skipper const& skipper)
+            noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type>)
         {
             if constexpr (std::is_same_v<expectation_failure_t<Context>, unused_type>)
             {
@@ -117,7 +118,7 @@ namespace boost::spirit::x4
                 // If we encounter this branch in any other situations,
                 // that should be a BUG of `expectation_failure` logic.
 
-                while (skipper.parse(first, last, unused, unused, unused))
+                while (skipper.parse(first, last, unused, unused))
                     /* loop */;
             }
             else
@@ -150,13 +151,13 @@ namespace boost::spirit::x4
                 auto const local_ctx = x4::make_context<expectation_failure_tag>(
                     x4::get<expectation_failure_tag>(context));
 
-                while (skipper.parse(first, last, local_ctx, unused, unused))
+                while (skipper.parse(first, last, local_ctx, unused))
                     /* loop */;
             }
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
-        constexpr void skip_over(It&, Se const&, Context&, unused_type) noexcept
+        constexpr void skip_over(It&, Se const&, Context&, unused_type const&) noexcept
         {
         }
 

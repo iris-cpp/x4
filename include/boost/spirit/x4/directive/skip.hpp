@@ -16,6 +16,7 @@
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -38,44 +39,36 @@ namespace boost::spirit::x4
             : base_type(std::forward<SubjectT>(subject))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires has_skipper_v<Context>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, RContext, Attribute>)
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attribute>)
         {
-            static_assert(Parsable<Subject, It, Se, Context, RContext, Attribute>);
-            return this->subject.parse(first, last, context, rcontext, attr);
+            return this->subject.parse(first, last, context, attr);
         }
 
     private:
         template <typename Context>
-        using context_t = x4::context<
+        using context_t = context<
             skipper_tag,
-            decltype(detail::get_unused_skipper(x4::get<skipper_tag>(std::declval<Context const&>()))),
+            std::remove_cvref_t<decltype(detail::get_unused_skipper(
+                std::declval<get_context_plain_t<skipper_tag, Context> const&>()
+            ))>,
             Context
         >;
 
     public:
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
             requires (!has_skipper_v<Context>)
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            // never noexcept (requires expectation failure modification)
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attribute>)
         {
-            static_assert(Parsable<Subject, It, Se, context_t<Context>, RContext, Attribute>);
-
+            // This logic is heavily related to the instantiation chain;
+            // see `x4::skip_over` for details.
             auto const& skipper = detail::get_unused_skipper(x4::get<skipper_tag>(context));
-
-            auto const local_ctx = x4::make_context<skipper_tag>(skipper, context);
-            bool const r = this->subject.parse(first, last, local_ctx, rcontext, attr);
-
-            if (x4::has_expectation_failure(local_ctx))
-            {
-                x4::set_expectation_failure(x4::get_expectation_failure(local_ctx), context);
-            }
-
-            return r;
+            return this->subject.parse(first, last, x4::make_context<skipper_tag>(skipper, context), attr);
         }
     };
 
@@ -91,49 +84,16 @@ namespace boost::spirit::x4
         constexpr skip_directive(SubjectT&& subject, SkipperT&& skipper)
             noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<Skipper, SkipperT>)
             : base_type(std::forward<SubjectT>(subject))
-            , skipper_(skipper)
+            , skipper_(std::forward<SkipperT>(skipper))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, unused_type const&, RContext& rcontext, Attribute& attr) const
-            noexcept(is_nothrow_parsable_v<Subject, It, Se, x4::context<skipper_tag, Skipper>, RContext, Attribute>)
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(is_nothrow_parsable_v<Subject, It, Se, x4::context<skipper_tag, Skipper, Context>, Attribute>)
         {
-            static_assert(Parsable<Subject, It, Se, x4::context<skipper_tag, Skipper>, RContext, Attribute>);
-
-            // It is perfectly fine to omit the expectation_failure context
-            // even in non-throwing mode if and only if the skipper itself
-            // is expectation-less.
-            //
-            // For example:
-            //   skip(a > b) [lit('foo')]
-            //   skip(c >> d)[lit('foo')]
-            //     `a > b`  should require non-`unused_type` context, but
-            //     `c >> d` should NOT require non-`unused_type` context
-            //
-            // However, it's impossible right now to detect whether
-            // `this->subject` actually is expectation-less, so we just
-            // call the parse function to see what will happen. If the
-            // subject turns out to lack the expectation context,
-            // static_assert will be engaged in other locations.
-            //
-            // Anyways, we don't need to repack the expectation context
-            // into our brand new skipper context, in contrast to the
-            // repacking process done in `x4::skip_over`.
-            return this->subject.parse(
-                first, last, x4::make_context<skipper_tag>(skipper_), rcontext, attr
-            );
-        }
-
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
-        [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            // never noexcept (requires expectation failure modification)
-        {
-            static_assert(Parsable<Subject, It, Se, x4::context<skipper_tag, Context>, RContext, Attribute>);
-
             static_assert(
-                !std::is_same_v<expectation_failure_t<Context>, unused_type>,
+                !std::same_as<expectation_failure_t<Context>, unused_type>,
                 "Context type was not specified for x4::expectation_failure_tag. "
                 "You probably forgot: `x4::with<x4::expectation_failure_tag>(failure)[p]`. "
                 "Note that you must also bind the context to your skipper."
@@ -141,14 +101,7 @@ namespace boost::spirit::x4
 
             // This logic is heavily related to the instantiation chain;
             // see `x4::skip_over` for details.
-            auto const local_ctx = x4::make_context<skipper_tag>(skipper_, context);
-            bool const r = this->subject.parse(first, last, local_ctx, rcontext, attr);
-
-            if (x4::has_expectation_failure(local_ctx))
-            {
-                x4::set_expectation_failure(x4::get_expectation_failure(local_ctx), context);
-            }
-            return r;
+            return this->subject.parse(first, last, x4::make_context<skipper_tag>(skipper_, context), attr);
         }
 
     private:
@@ -168,7 +121,7 @@ namespace boost::spirit::x4
             >;
 
             template <typename SkipperT>
-                requires std::is_same_v<std::remove_cvref_t<SkipperT>, std::remove_cvref_t<Skipper>>
+                requires std::same_as<std::remove_cvref_t<SkipperT>, std::remove_cvref_t<Skipper>>
             constexpr skip_gen_impl(SkipperT&& skipper)
                 noexcept(std::is_nothrow_constructible_v<skipper_type, SkipperT>)
                 : skipper_(std::forward<SkipperT>(skipper))
@@ -190,7 +143,7 @@ namespace boost::spirit::x4
             }
 
         private:
-            skipper_type skipper_;
+            skipper_type skipper_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         };
 
         struct skip_gen

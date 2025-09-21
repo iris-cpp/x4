@@ -31,20 +31,20 @@ namespace boost::spirit::x4
     struct case_compare
     {
         template <typename Char, typename CharSet>
-        [[nodiscard]] constexpr bool in_set(Char ch, CharSet const& set) noexcept
+        [[nodiscard]] static constexpr bool in_set(Char ch, CharSet const& set) noexcept
         {
             static_assert(noexcept(set.test(ch)));
             return set.test(ch);
         }
 
         template <typename Char>
-        [[nodiscard]] constexpr std::int32_t operator()(Char lc, Char rc) const noexcept
+        [[nodiscard]] static constexpr std::int32_t operator()(Char lc, Char rc) noexcept
         {
             return lc - rc;
         }
 
         template <typename CharClassTag>
-        [[nodiscard]] constexpr CharClassTag get_char_class_tag(CharClassTag tag) const noexcept
+        [[nodiscard]] static constexpr CharClassTag get_char_class_tag(CharClassTag tag) noexcept
         {
             return tag;
         }
@@ -54,7 +54,7 @@ namespace boost::spirit::x4
     struct no_case_compare
     {
         template <typename Char, typename CharSet>
-        [[nodiscard]] bool in_set(Char ch_, CharSet const& set) noexcept // TODO: constexpr
+        [[nodiscard]] static constexpr bool in_set(Char ch_, CharSet const& set) noexcept
         {
             using classify_type = typename Encoding::classify_type;
             auto ch = classify_type(ch_);
@@ -66,7 +66,7 @@ namespace boost::spirit::x4
         }
 
         template <typename Char>
-        [[nodiscard]] std::int32_t operator()(Char lc_, Char const rc_) const noexcept // TODO: constexpr
+        [[nodiscard]] static constexpr std::int32_t operator()(Char lc_, Char const rc_) noexcept
         {
             using classify_type = typename Encoding::classify_type;
             auto lc = classify_type(lc_);
@@ -76,17 +76,17 @@ namespace boost::spirit::x4
         }
 
         template <typename CharClassTag>
-        [[nodiscard]] constexpr CharClassTag get_char_class_tag(CharClassTag tag) const noexcept
+        [[nodiscard]] static constexpr CharClassTag get_char_class_tag(CharClassTag tag) noexcept
         {
             return tag;
         }
 
-        [[nodiscard]] constexpr alpha_tag get_char_class_tag(lower_tag) const noexcept
+        [[nodiscard]] static constexpr alpha_tag get_char_class_tag(lower_tag) noexcept
         {
             return {};
         }
 
-        [[nodiscard]] constexpr alpha_tag get_char_class_tag(upper_tag) const noexcept
+        [[nodiscard]] static constexpr alpha_tag get_char_class_tag(upper_tag) noexcept
         {
             return {};
         }
@@ -94,28 +94,28 @@ namespace boost::spirit::x4
 
     namespace detail
     {
-        struct no_case_tag_t {};
-        inline constexpr no_case_tag_t no_case_tag{};
-
-        template <typename Encoding>
-        [[nodiscard]] constexpr case_compare<Encoding> get_case_compare_impl(unused_type const&) noexcept
+        struct case_compare_tag
         {
-            return {};
-        }
+            static constexpr bool is_unique = false;
+        };
 
-        template <typename Encoding>
-        [[nodiscard]] constexpr no_case_compare<Encoding> get_case_compare_impl(no_case_tag_t const&) noexcept
-        {
-            return {};
-        }
+        struct case_compare_no_case_t {};
+        inline constexpr case_compare_no_case_t case_compare_no_case{};
 
     } // detail
 
     template <typename Encoding, typename Context>
-    [[nodiscard]] constexpr decltype(auto)
-    get_case_compare(Context const& context) noexcept
+    [[nodiscard]] constexpr auto
+    get_case_compare(Context const&) noexcept
     {
-        return detail::get_case_compare_impl<Encoding>(x4::get<detail::no_case_tag_t>(context));
+        if constexpr (has_context_of_v<Context, detail::case_compare_tag, detail::case_compare_no_case_t>)
+        {
+            return no_case_compare<Encoding>{};
+        }
+        else
+        {
+            return case_compare<Encoding>{};
+        }
     }
 
 } // boost::spirit::x4

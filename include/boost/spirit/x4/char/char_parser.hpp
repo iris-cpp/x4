@@ -20,9 +20,9 @@ namespace boost::spirit::x4
     template <typename Derived>
     struct char_parser : parser<Derived>
     {
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
             // TODO: noexcept
         {
             x4::skip_over(first, last, context);

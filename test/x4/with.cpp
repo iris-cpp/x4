@@ -144,7 +144,7 @@ int main()
     {
         // injecting non-const lvalue into the context
         int val = 0;
-        auto const r  = int_[([](auto& ctx){
+        auto const r = int_[([](auto& ctx){
             x4::get<my_tag>(ctx) += x4::_attr(ctx);
         })];
         BOOST_TEST(parse("123,456", with<my_tag>(val)[r % ',']));

@@ -159,41 +159,39 @@ namespace boost::spirit::x4::detail
     template <typename Parser, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
     constexpr bool is_reference_pseudo_type = std::is_reference_v<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>;
 
-    template <typename Parser, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+    template <typename Parser, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         requires is_reference_pseudo_type<Parser, It, Se, Context, Attribute>
     [[nodiscard]] constexpr bool
     parse_alternative(
         Parser const& p, It& first, Se const& last,
-        Context const& context, RContext& rcontext, Attribute& attribute
+        Context const& context, Attribute& attribute
     ) noexcept(
         noexcept(parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::call(
             first, last, pass_variant_attribute<Parser, Attribute, Context>::call(attribute)
         )) &&
         is_nothrow_parsable_v<
-            Parser, It, Se, Context, RContext,
-            std::remove_reference_t<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>
+            Parser, It, Se, Context, std::remove_reference_t<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>
         >
     )
     {
         using pass = pass_variant_attribute<Parser, Attribute, Context>;
         using pseudo = traits::pseudo_attribute<Context, typename pass::type, It, Se>;
         typename pseudo::type attr_ = pseudo::call(first, last, pass::call(attribute));
-        return p.parse(first, last, context, rcontext, attr_);
+        return p.parse(first, last, context, attr_);
     }
 
-    template <typename Parser, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+    template <typename Parser, std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         requires (!is_reference_pseudo_type<Parser, It, Se, Context, Attribute>)
     [[nodiscard]] constexpr bool
     parse_alternative(
         Parser const& p, It& first, Se const& last,
-        Context const& context, RContext& rcontext, Attribute& attribute
+        Context const& context, Attribute& attribute
     ) noexcept(
         noexcept(parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::call(
             first, last, pass_variant_attribute<Parser, Attribute, Context>::call(attribute)
         )) &&
         is_nothrow_parsable_v<
-            Parser, It, Se, Context, RContext,
-            std::remove_reference_t<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>
+            Parser, It, Se, Context, std::remove_reference_t<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type>
         > &&
         noexcept(x4::move_to(
             std::declval<typename parse_alternative_pseudo_t<Parser, It, Se, Context, Attribute>::type&&>(),
@@ -205,7 +203,7 @@ namespace boost::spirit::x4::detail
         using pseudo = traits::pseudo_attribute<Context, typename pass::type, It, Se>;
         typename pseudo::type attr_ = pseudo::call(first, last, pass::call(attribute));
 
-        if (p.parse(first, last, context, rcontext, attr_))
+        if (p.parse(first, last, context, attr_))
         {
             x4::move_to(std::move(attr_), attribute);
             return true;
@@ -220,17 +218,17 @@ namespace boost::spirit::x4::detail
 
         using unary_parser<Subject, alternative_helper<Subject>>::unary_parser;
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
-            noexcept(noexcept(detail::parse_alternative(this->subject, first, last, context, rcontext, attr)))
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
+            noexcept(noexcept(detail::parse_alternative(this->subject, first, last, context, attr)))
         {
-            return detail::parse_alternative(this->subject, first, last, context, rcontext, attr);
+            return detail::parse_alternative(this->subject, first, last, context, attr);
         }
     };
 
-    template <typename Left, typename Right, typename Context, typename RContext>
-    struct parse_into_container_impl<alternative<Left, Right>, Context, RContext>
+    template <typename Left, typename Right, typename Context>
+    struct parse_into_container_impl<alternative<Left, Right>, Context>
     {
         using parser_type = alternative<Left, Right>;
 
@@ -239,11 +237,11 @@ namespace boost::spirit::x4::detail
         [[nodiscard]] static constexpr bool
         call(
             parser_type const& parser,
-            It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attribute
+            It& first, Se const& last, Context const& context, Attribute& attribute
         )
         {
-            return detail::parse_into_container(alternative_helper<Left>{parser.left}, first, last, context, rcontext, attribute)
-                || detail::parse_into_container(alternative_helper<Right>{parser.right}, first, last, context, rcontext, attribute);
+            return detail::parse_into_container(alternative_helper<Left>{parser.left}, first, last, context, attribute)
+                || detail::parse_into_container(alternative_helper<Right>{parser.right}, first, last, context, attribute);
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Attribute>
@@ -252,11 +250,11 @@ namespace boost::spirit::x4::detail
         call(
             parser_type const& parser,
             It& first, Se const& last,
-            Context const& context, RContext& rcontext, Attribute& attribute
+            Context const& context, Attribute& attribute
         )
         {
-            return detail::parse_into_container(parser.left, first, last, context, rcontext, attribute)
-                || detail::parse_into_container(parser.right, first, last, context, rcontext, attribute);
+            return detail::parse_into_container(parser.left, first, last, context, attribute)
+                || detail::parse_into_container(parser.right, first, last, context, attribute);
         }
     };
 

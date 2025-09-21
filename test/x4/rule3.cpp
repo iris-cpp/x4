@@ -108,7 +108,6 @@ int main()
     using x4::rule;
     using x4::lit;
     using x4::eps;
-    using x4::unused_type;
     using x4::_val;
     using x4::_attr;
 

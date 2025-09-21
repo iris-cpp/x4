@@ -53,7 +53,7 @@ int main()
         std::string str;
         BOOST_TEST(parse("spirit_test_123", raw[alpha >> *(alnum | '_')], range));
         BOOST_TEST((std::string(range.begin(), range.end()) == "spirit_test_123"));
-        BOOST_TEST(parse("  spirit", raw[*alpha], range, space));
+        BOOST_TEST(parse("  spirit", raw[*alpha], space, range));
         BOOST_TEST((range.size() == 6));
     }
 

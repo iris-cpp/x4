@@ -16,6 +16,7 @@
 #include <boost/fusion/include/make_vector.hpp>
 #include <boost/fusion/include/equal_to.hpp>
 
+#include <iterator>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -24,18 +25,17 @@
 template <typename Value, typename Expected>
 struct checked_attr_parser : x4::attr_parser<Value>
 {
-    using base_t = x4::attr_parser<Value>;
+    using base_type = x4::attr_parser<Value>;
 
-    checked_attr_parser(Value const& value) : base_t(value) {}
-    checked_attr_parser(Value&& value) : base_t(std::move(value)) {}
+    checked_attr_parser(Value const& value) : base_type(value) {}
+    checked_attr_parser(Value&& value) : base_type(std::move(value)) {}
 
-    template <typename Iterator, typename Context
-      , typename RuleContext, typename Attribute>
-    bool parse(Iterator& first, Iterator const& last
-      , Context const& ctx, RuleContext& rctx, Attribute& attr_) const
+    template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attribute& attr_) const
     {
         static_assert(std::is_same_v<Expected, Attribute>, "attribute type check failed");
-        return base_t::parse(first, last, ctx, rctx, attr_);
+        return base_type::parse(first, last, ctx, attr_);
     }
 };
 

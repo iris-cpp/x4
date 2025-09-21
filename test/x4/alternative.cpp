@@ -57,7 +57,6 @@ int main()
     using x4::standard::lit;
     using x4::attr;
     using x4::int_;
-    using x4::unused_type;
     using x4::unused;
     using x4::omit;
     using x4::eps;

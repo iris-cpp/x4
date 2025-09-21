@@ -49,7 +49,7 @@ int main()
         int i = 0;
 
         BOOST_TEST(
-            parse("!@#$%^&* KEY : 123", x4::seek[x4::lit("KEY") >> ':'] >> x4::int_, i, x4::space)
+            parse("!@#$%^&* KEY : 123", x4::seek[x4::lit("KEY") >> ':'] >> x4::int_, x4::space, i)
             && i == 123
         );
     }

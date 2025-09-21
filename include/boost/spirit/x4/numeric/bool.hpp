@@ -75,9 +75,9 @@ namespace boost::spirit::x4
         	: policies_(std::forward<BoolPoliciesT>(policies))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, T& attr) const
+        parse(It& first, Se const& last, Context const& context, T& attr) const
             // TODO: noexcet
         {
             x4::skip_over(first, last, context);
@@ -85,14 +85,14 @@ namespace boost::spirit::x4
                 || policies_.parse_false(first, last, attr, get_case_compare<encoding>(context));
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, Attribute& attr_param) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
             // TODO: noexcept
         {
             // this case is called when Attribute is not T
             T attr_;
-            if (bool_parser::parse(first, last, context, unused, attr_))
+            if (bool_parser::parse(first, last, context, attr_))
             {
                 x4::move_to(std::move(attr_), attr_param);
                 return true;
@@ -132,9 +132,9 @@ namespace boost::spirit::x4
             , n_(std::forward<Value>(n))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const&, T& attr) const
+        parse(It& first, Se const& last, Context const& context, T& attr) const
             // TODO: noexcept
         {
             x4::skip_over(first, last, context);
@@ -142,14 +142,14 @@ namespace boost::spirit::x4
                 || (!n_ && policies_.parse_false(first, last, attr, x4::get_case_compare<encoding>(context)));
         }
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext const& rcontext, Attribute& attr_param) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr_param) const
             // TODO: noexcept
         {
             // this case is called when Attribute is not T
             T attr_;
-            if (literal_bool_parser::parse(first, last, context, rcontext, attr_))
+            if (literal_bool_parser::parse(first, last, context, attr_))
             {
                 x4::move_to(std::move(attr_), attr_param);
                 return true;

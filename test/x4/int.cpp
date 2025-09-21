@@ -175,7 +175,6 @@ int main()
     // int_parser<unused_type> tests
     {
         using x4::int_parser;
-        using x4::unused_type;
         constexpr int_parser<unused_type> any_int{};
 
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(any_int);

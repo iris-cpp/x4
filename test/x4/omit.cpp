@@ -35,8 +35,6 @@ int main()
 {
     using namespace x4::standard;
     using x4::omit;
-    using x4::unused_type;
-    using x4::unused;
     using x4::int_;
     using x4::_attr;
 
@@ -93,7 +91,7 @@ int main()
     {
         // "hello" has an unused_type. unused attrubutes are not part of the sequence
         vector<char, char> attr;
-        BOOST_TEST(parse("a hello c", char_ >> "hello" >> char_, attr, space));
+        BOOST_TEST(parse("a hello c", char_ >> "hello" >> char_, space, attr));
         BOOST_TEST((at_c<0>(attr) == 'a'));
         BOOST_TEST((at_c<1>(attr) == 'c'));
     }
@@ -101,8 +99,8 @@ int main()
     {
         // if only one node in a sequence is left (all the others are omitted),
         // then we need "naked" attributes (not wrapped in a tuple)
-        int attr;
-        BOOST_TEST(parse("a 123 c", omit['a'] >> int_ >> omit['c'], attr, space));
+        int attr = 0;
+        BOOST_TEST(parse("a 123 c", omit['a'] >> int_ >> omit['c'], space, attr));
         BOOST_TEST((attr == 123));
     }
 

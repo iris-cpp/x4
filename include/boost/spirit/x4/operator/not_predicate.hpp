@@ -36,16 +36,16 @@ namespace boost::spirit::x4
             : base_type(std::forward<SubjectT>(subject))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& /*attr*/) const
+        parse(It& first, Se const& last, Context const& context, Attribute& /*attr*/) const
             noexcept(
                 std::is_nothrow_copy_assignable_v<It> &&
-                is_nothrow_parsable_v<Subject, It, Se, Context, RContext, unused_type>
+                is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
             )
         {
             It local_first = first;
-            return !this->subject.parse(local_first, last, context, rcontext, unused)
+            return !this->subject.parse(local_first, last, context, unused)
                 && !has_expectation_failure(context);
         }
     };

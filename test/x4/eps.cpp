@@ -14,7 +14,6 @@
 int main()
 {
     using x4::eps;
-    using x4::unused_type;
 
     {
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps);
@@ -33,8 +32,8 @@ int main()
 
     {   // test lazy semantic predicate
 
-        auto true_ = [](unused_type) { return true; };
-        auto false_ = [](unused_type) { return false; };
+        auto true_ = [] { return true; };
+        auto false_ = [] { return false; };
 
         // cannot use lambda in constant expression before C++17
         BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps(std::true_type{}));

@@ -116,7 +116,7 @@ int main()
 
     {
         std::vector<adata> v;
-        BOOST_TEST(parse("a 1 2 a 2", *('a' >> int_ >> -int_), v, char_(' ')));
+        BOOST_TEST(parse("a 1 2 a 2", *('a' >> int_ >> -int_), char_(' '), v));
         BOOST_TEST(
             2 == v.size() &&
             1 == v[0].a && v[0].b && 2 == *(v[0].b) &&

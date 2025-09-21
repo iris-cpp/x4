@@ -36,7 +36,7 @@ int main()
         {
             unsigned value = 0;
             BOOST_TEST(
-                parse(" /* 123 */ ", comment[x4::uint_], value, x4::standard::space));
+                parse(" /* 123 */ ", comment[x4::uint_], x4::standard::space, value));
             BOOST_TEST(value == 123);
 
             using x4::_attr;

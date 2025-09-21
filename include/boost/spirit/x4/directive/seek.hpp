@@ -37,13 +37,13 @@ namespace boost::spirit::x4
             : base_type(std::forward<SubjectT>(subject))
         {}
 
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename RContext, typename Attribute>
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Attribute>
         [[nodiscard]] constexpr bool
-        parse(It& first, Se const& last, Context const& context, RContext& rcontext, Attribute& attr) const
+        parse(It& first, Se const& last, Context const& context, Attribute& attr) const
         {
             for (It current(first); ; ++current)
             {
-                if (this->subject.parse(current, last, context, rcontext, attr))
+                if (this->subject.parse(current, last, context, attr))
                 {
                     first = current;
                     return true;
