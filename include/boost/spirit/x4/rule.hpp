@@ -153,7 +153,7 @@ namespace boost::spirit::x4
 
             template <
                 typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-                typename Context, typename Exposed
+                typename Context, X4Attribute Exposed
             >
             [[nodiscard]] static constexpr bool
             parse_rhs_with_on_error(
@@ -184,7 +184,7 @@ namespace boost::spirit::x4
             template <
                 bool ForceAttribute,
                 typename RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-                typename Context, typename Exposed
+                typename Context, X4Attribute Exposed
             >
             [[nodiscard]] static constexpr bool
             call_rule_definition(
@@ -317,6 +317,38 @@ namespace boost::spirit::x4
             char const* name = "unnamed";
         };
 
+        template <typename Exposed>
+        struct narrowing_checker
+        {
+            using Dest = Exposed[];
+
+            // emulate `Exposed x[] = {std::forward<T>(t)};`
+            template <typename T>
+            static void operator()(T&&)
+                requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
+        };
+
+        template <typename Exposed, typename Attribute>
+        concept RuleAttrNeedsNarrowingConversion = !requires {
+            narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<Attribute>());
+        };
+
+        // Resolve "The Spirit X3 rule problem" in Boost.Parser's documentation
+        // https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
+        // https://github.com/boostorg/spirit_x4/issues/38
+        template <typename Exposed, typename Attribute>
+        concept RuleAttrTransformable =
+            X4Attribute<std::remove_const_t<Exposed>> &&
+            X4Attribute<Attribute> &&
+            std::default_initializable<Attribute> &&
+            std::is_assignable_v<Exposed&, Attribute> &&
+            !RuleAttrNeedsNarrowingConversion<Exposed, Attribute>;
+
+        template <typename Exposed, typename Attribute>
+        concept RuleAttrCompatible =
+            std::same_as<std::remove_const_t<Exposed>, Attribute> ||
+            RuleAttrTransformable<Exposed, Attribute>;
+
     } // detail
 
     template <typename RuleID, typename Attribute, bool ForceAttribute>
@@ -354,24 +386,15 @@ namespace boost::spirit::x4
         }
 
         // Primary overload
-        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, typename Exposed>
-            requires (!std::same_as<std::remove_const_t<Exposed>, unused_type>)
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Attribute Exposed>
+            requires
+                (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
+                detail::RuleAttrCompatible<Exposed, Attribute>
         [[nodiscard]] constexpr bool
         parse(It& first, Se const& last, Context const& context, Exposed& exposed_attr) const
             // never noexcept; requires very complex implementation details
         {
             static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
-
-            static_assert(
-                traits::Transformable<Attribute, Exposed>,
-                "Attribute type mismatch; the rule's attribute is not assignable to "
-                "the exposed attribute, and no eligible specialization of "
-                "`x4::traits::transform_attribute` was found."
-            );
-
-            using transform = traits::transform_attribute<Attribute, Exposed>;
-            using transformed_type = typename transform::type;
-            transformed_type transformed_attr = transform::pre(exposed_attr);
 
             // Remove the `_val` context. This makes the actual `context` type passed to
             // the (potentially ADL-found) `parse_rule` function to be rule-agnostic.
@@ -384,14 +407,38 @@ namespace boost::spirit::x4
             // which resets the `_val` context to the appropriate reference.
             auto&& rule_agnostic_ctx = x4::remove_first_context<rule_val_context_tag>(context);
 
-            // ADL
             using detail::parse_rule;
-            if (static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, transformed_attr))) {
-                transform::post(exposed_attr, std::forward<transformed_type>(transformed_attr));
+
+            if constexpr (std::same_as<std::remove_const_t<Exposed>, Attribute>)
+            {
+                return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));
+            }
+            else
+            {
+                static_assert(detail::RuleAttrTransformable<Exposed, Attribute>);
+                static_assert(std::is_assignable_v<Exposed&, Attribute>);
+                static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>);
+
+                Attribute attr;
+                if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, attr)))
+                {
+                    return false;
+                }
+
+                // X3's behavior
+                // x4::move_to(std::move(attr), exposed_attr);
+                exposed_attr = std::move(attr);
                 return true;
             }
-            return false;
         }
+
+        template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context, X4Attribute Exposed>
+            requires
+                (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
+                (!detail::RuleAttrCompatible<Exposed, Attribute>) &&
+                detail::RuleAttrNeedsNarrowingConversion<Exposed, Attribute>
+        [[nodiscard]] constexpr bool
+        parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
 
         template <std::forward_iterator It, std::sentinel_for<It> Se, typename Context>
         [[nodiscard]] constexpr bool
