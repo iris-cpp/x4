@@ -98,7 +98,7 @@ cmake -B build
 ```
 
 
-## Brief History
+## History
 
 Date       | Boost | Commit  | Event
 ---------- | ----- | ------- | -----------------------------------------------
