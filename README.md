@@ -74,7 +74,7 @@ git submodule update --init --depth 1 --recursive -- \
     libs/type_traits libs/typeof libs/utility libs/variant
 
 # Linux
-./bootstrap.sh --with-toolset=gcc
+./bootstrap.sh
 ./b2 headers
 
 # Windows
