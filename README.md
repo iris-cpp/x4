@@ -112,7 +112,7 @@ Date       | Boost | Commit  | Event
 2009-04-30 | 1.41  | 5963a39 | [Spirit.Repository] appeared.
 2008-04-13 | 1.36  | ffd0cc1 | Spirit V2 (Qi, Karma, Lex, Phoenix V2) is added.
 2006-08-23 | 1.35  | 2dc892b | Fusion V1 is retired.
-2003-01-31 | 1.30  | 8190791 | Spirit joined the Boost C++ Libraries.
+2003&#x2011;01&#x2011;31 | 1.30  | 8190791 | Spirit joined the Boost C++ Libraries.
 
 [Spirit.X4]: https://github.com/boostorg/spirit_x4
 [Phoenix V3]: http://boost.org/libs/phoenix
