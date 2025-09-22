@@ -104,7 +104,7 @@ Date       | Boost | Commit  | Event
 ---------- | ----- | ------- | -----------------------------------------------
 2025-09-18 | N/A   | `60c08ab` | Full CMake support added to X4.
 2025-09-13 | N/A   | `9c0fc51` | Spirit.X3 and V2 are officially deprecated in favor of X4. Obsolete versions are feature-frozen and will accept security patches only.
-2025-09-12 | N/A   | N/A     | The modernization effort was [officially approved](https://lists.boost.org/archives/list/boost@lists.boost.org/thread/K3EQLEQJHEUBROB6ODUKTZHFP2FDUS2E/?sort=date) as the independent library, [Spirit.X4]. <br> Note: it is not part of the `boostorg/boost` superproject at this moment (yet).
+2025-09-12 | N/A   | N/A     | The modernization effort was [officially approved](https://lists.boost.org/archives/list/boost@lists.boost.org/thread/K3EQLEQJHEUBROB6ODUKTZHFP2FDUS2E/?sort=date) as the independent library, [Spirit.X4]. Note: it is not part of the `boostorg/boost` superproject at this moment yet.
 2025-09-05 | N/A   | `d21af8b` | The development of the C++23 modernization began.
 2014-03-18 | 1.56  | `8a35332` | Spirit.X3 is added.
 2013-12-14 | 1.56  | `c0537c8` | Phoenix V2 is retired.
