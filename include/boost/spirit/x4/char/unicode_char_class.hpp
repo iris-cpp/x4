@@ -16,6 +16,23 @@
 
 namespace boost::spirit::x4 {
 
+namespace char_classes::unicode {
+
+// Common Categories (semantically compatible with `standard::*` variants)
+using char_tag = char_classes::char_tag;
+using alnum_tag = char_classes::alnum_tag;
+using alpha_tag = char_classes::alpha_tag;
+using digit_tag = char_classes::digit_tag;
+using xdigit_tag = char_classes::xdigit_tag;
+using cntrl_tag = char_classes::cntrl_tag;
+using graph_tag = char_classes::graph_tag;
+using lower_tag = char_classes::lower_tag;
+using print_tag = char_classes::print_tag;
+using punct_tag = char_classes::punct_tag;
+using space_tag = char_classes::space_tag;
+using blank_tag = char_classes::blank_tag;
+using upper_tag = char_classes::upper_tag;
+
 // Unicode Major Categories
 struct letter_tag {};
 struct mark_tag {};
@@ -239,6 +256,8 @@ struct inherited_tag {};
 struct common_tag {};
 struct unknown_tag {};
 
+} // char_classes::unicode
+
 namespace detail {
 
 struct unicode_char_class_base
@@ -249,7 +268,7 @@ struct unicode_char_class_base
 #define BOOST_SPIRIT_X4_BASIC_CLASSIFY(name) \
     template<class Char> \
     static constexpr bool \
-    is(name##_tag, Char ch) noexcept \
+    is(char_classes::unicode::name##_tag, Char ch) noexcept \
     { \
         return (encoding_type::is##name)(detail::cast_char<char_type>(ch)); \
     }
@@ -257,7 +276,7 @@ struct unicode_char_class_base
 #define BOOST_SPIRIT_X4_CLASSIFY(name) \
     template<class Char> \
     static constexpr bool \
-    is(name##_tag, Char ch) noexcept \
+    is(char_classes::unicode::name##_tag, Char ch) noexcept \
     { \
         return (encoding_type::is_##name)(detail::cast_char<char_type>(ch)); \
     }
@@ -528,7 +547,7 @@ struct unicode_char_class : char_parser<char_encoding::unicode, unicode_char_cla
 };
 
 #define BOOST_SPIRIT_X4_CHAR_CLASS(name) \
-    using name##_type = unicode_char_class<name##_tag>; \
+    using name##_type = unicode_char_class<char_classes::unicode::name##_tag>; \
     inline constexpr name##_type name{};
 
 namespace unicode {

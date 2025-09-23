@@ -11,6 +11,8 @@
 
 namespace boost::spirit::x4 {
 
+namespace char_classes {
+
 struct char_tag {};
 struct alnum_tag {};
 struct alpha_tag {};
@@ -24,6 +26,8 @@ struct space_tag {};
 struct xdigit_tag {};
 struct lower_tag {};
 struct upper_tag {};
+
+} // char_classes
 
 } // boost::spirit::x4
 

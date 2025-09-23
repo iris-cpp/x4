@@ -9,7 +9,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/char/char_class_tags.hpp>
 
@@ -96,12 +95,12 @@ struct no_case_compare
         return tag;
     }
 
-    [[nodiscard]] static constexpr alpha_tag get_char_class_tag(lower_tag) noexcept
+    [[nodiscard]] static constexpr char_classes::alpha_tag get_char_class_tag(char_classes::lower_tag) noexcept
     {
         return {};
     }
 
-    [[nodiscard]] static constexpr alpha_tag get_char_class_tag(upper_tag) noexcept
+    [[nodiscard]] static constexpr char_classes::alpha_tag get_char_class_tag(char_classes::upper_tag) noexcept
     {
         return {};
     }

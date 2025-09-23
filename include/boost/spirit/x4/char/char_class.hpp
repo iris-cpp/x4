@@ -37,7 +37,7 @@ struct char_class_base
 #define BOOST_SPIRIT_X4_CLASSIFY(name) \
     template<class Char> \
     [[nodiscard]] static constexpr bool \
-    is(name##_tag, Char ch) noexcept \
+    is(char_classes::name##_tag, Char ch) noexcept \
     { \
         static_assert(std::same_as<Char, classify_type>); \
         return (Encoding::is##name)(detail::cast_char<classify_type>(ch)); \
@@ -87,7 +87,7 @@ struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag
 };
 
 #define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name) \
-    using name##_type = char_class_parser<char_encoding::encoding, name##_tag>; \
+    using name##_type = char_class_parser<char_encoding::encoding, char_classes::name##_tag>; \
     inline constexpr name##_type name{};
 
 #define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding) \
