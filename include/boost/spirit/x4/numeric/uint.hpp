@@ -41,11 +41,11 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
     parse(It& first, Se const& last, Context const& ctx, Attr& attr)
         noexcept(
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
+            noexcept(numeric::extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
         )
     {
         x4::skip_over(first, last, ctx);
-        return extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
+        return numeric::extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
     }
 };
 

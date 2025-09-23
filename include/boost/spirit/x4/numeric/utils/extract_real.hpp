@@ -125,7 +125,7 @@ negate(bool /*neg*/, unused_type n) noexcept
 }
 } // boost::spirit::x4::extension
 
-namespace boost::spirit::x4 {
+namespace boost::spirit::x4::numeric {
 
 template<class T, class RealPolicies>
 struct extract_real
@@ -256,6 +256,6 @@ struct extract_real
 # pragma warning(pop)
 #endif
 
-} // boost::spirit::x4
+} // boost::spirit::x4::numeric
 
 #endif

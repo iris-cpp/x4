@@ -102,7 +102,7 @@ void test_overflow_handling(char const* begin, char const* end, int i)
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
     char const* it = begin;
-    bool const r = x4::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
+    bool const r = x4::numeric::extract_int<T, Base, 1, MaxDigits>::call(it, end, x);
 
     if (T::min <= i && i <= T::max) {
         BOOST_TEST(r);
@@ -125,7 +125,7 @@ void test_unparsed_digits_are_not_consumed(char const* it, char const* end, int 
     auto len = end - it;
     int initial = Base - i % Base; // just a 'random' non-equal to i number
     T x { initial };
-    bool const r = x4::extract_int<T, Base, 1, 1>::call(it, end, x);
+    bool const r = x4::numeric::extract_int<T, Base, 1, 1>::call(it, end, x);
     BOOST_TEST(r);
 
     if (-Base < i && i < Base) {

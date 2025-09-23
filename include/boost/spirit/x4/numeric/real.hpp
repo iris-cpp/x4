@@ -47,9 +47,9 @@ struct ureal_policies
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
     parse_n(It& first, Se const& last, Attr& attr_)
-        noexcept(noexcept(extract_uint<T, 10, 1, -1>::call(first, last, attr_)))
+        noexcept(noexcept(numeric::extract_uint<T, 10, 1, -1>::call(first, last, attr_)))
     {
-        return extract_uint<T, 10, 1, -1>::call(first, last, attr_);
+        return numeric::extract_uint<T, 10, 1, -1>::call(first, last, attr_);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se>
@@ -67,9 +67,9 @@ struct ureal_policies
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
     parse_frac_n(It& first, Se const& last, Attr& attr_)
-        noexcept(noexcept(extract_uint<T, 10, 1, -1, true>::call(first, last, attr_)))
+        noexcept(noexcept(numeric::extract_uint<T, 10, 1, -1, true>::call(first, last, attr_)))
     {
-        return extract_uint<T, 10, 1, -1, true>::call(first, last, attr_);
+        return numeric::extract_uint<T, 10, 1, -1, true>::call(first, last, attr_);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se>
@@ -87,9 +87,9 @@ struct ureal_policies
     template<std::forward_iterator It, std::sentinel_for<It> Se>
     [[nodiscard]] static constexpr bool
     parse_exp_n(It& first, Se const& last, int& attr_)
-        noexcept(noexcept(extract_int<int, 10, 1, -1>::call(first, last, attr_)))
+        noexcept(noexcept(numeric::extract_int<int, 10, 1, -1>::call(first, last, attr_)))
     {
-        return extract_int<int, 10, 1, -1>::call(first, last, attr_);
+        return numeric::extract_int<int, 10, 1, -1>::call(first, last, attr_);
     }
 
     // The parse_nan() and parse_inf() functions get called whenever
@@ -159,9 +159,9 @@ struct real_policies : ureal_policies<T>
     template<std::forward_iterator It, std::sentinel_for<It> Se>
     [[nodiscard]] static constexpr bool
     parse_sign(It& first, Se const& last)
-        noexcept(noexcept(detail::extract_sign(first, last)))
+        noexcept(noexcept(numeric::detail::extract_sign(first, last)))
     {
-        return detail::extract_sign(first, last);
+        return numeric::detail::extract_sign(first, last);
     }
 };
 
@@ -201,11 +201,11 @@ struct real_parser : parser<real_parser<T, RealPolicies>>
     parse(It& first, Se const& last, Context const& ctx, T& attr_) const
         noexcept(
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
+            noexcept(numeric::extract_real<T, RealPolicies>::parse(first, last, attr_, policies_))
         )
     {
         x4::skip_over(first, last, ctx);
-        return extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
+        return numeric::extract_real<T, RealPolicies>::parse(first, last, attr_, policies_);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>

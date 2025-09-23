@@ -37,7 +37,7 @@
 # define BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL 3
 #endif
 
-namespace boost::spirit::x4 {
+namespace boost::spirit::x4::numeric {
 
 namespace detail {
 
@@ -559,6 +559,6 @@ struct extract_int
     }
 };
 
-} // boost::spirit::x4
+} // boost::spirit::x4::numeric
 
 #endif

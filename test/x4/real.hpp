@@ -30,8 +30,7 @@ struct ts_real_policies : x4::ureal_policies<T>
     static bool
     parse_frac_n(It& first, Se const& last, Attr& attr)
     {
-        namespace x4 = boost::spirit::x4;
-        return x4::extract_uint<T, 10, 1, 2, true>::call(first, last, attr);
+        return x4::numeric::extract_uint<T, 10, 1, 2, true>::call(first, last, attr);
     }
 
     //  No exponent
