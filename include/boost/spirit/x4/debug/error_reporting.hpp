@@ -52,25 +52,25 @@ public:
 
     void operator()(It err_pos, std::string const& error_message) const;
     void operator()(It err_first, It err_last, std::string const& error_message) const;
-    void operator()(position_tagged pos, std::string const& message) const
+    void operator()(ast::position_tagged const& pos, std::string const& message) const
     {
         auto where = pos_cache.position_of(pos);
         (*this)(where.begin(), where.end(), message);
     }
 
-    template<class AST>
-    void tag(AST& ast, It first, It last)
+    template<X4Attribute Attr>
+    void tag(Attr& attr, It first, It last)
     {
-        return pos_cache.annotate(ast, first, last);
+        return pos_cache.annotate(attr, first, last);
     }
 
     [[nodiscard]] std::ranges::subrange<It>
-    position_of(position_tagged pos) const
+    position_of(ast::position_tagged const& pos) const
     {
         return pos_cache.position_of(pos);
     }
 
-    [[nodiscard]] position_cache<std::vector<It>> const&
+    [[nodiscard]] ast::position_cache<std::vector<It>> const&
     get_position_cache() const noexcept
     {
         return pos_cache;
@@ -87,7 +87,7 @@ private:
     std::ostream& err_out;
     std::string file;
     int tabs;
-    position_cache<std::vector<It>> pos_cache;
+    ast::position_cache<std::vector<It>> pos_cache;
 };
 
 template<std::forward_iterator It>
