@@ -182,11 +182,13 @@ struct repeat_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::repeat_gen repeat{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::repeat;
 
 } // boost::spirit::x4
 

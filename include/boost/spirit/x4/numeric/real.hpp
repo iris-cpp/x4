@@ -230,13 +230,17 @@ private:
     BOOST_SPIRIT_NO_UNIQUE_ADDRESS RealPolicies policies_{};
 };
 
-inline namespace cpos {
+namespace parsers {
 
 inline constexpr real_parser<float> float_{};
 inline constexpr real_parser<double> double_{};
 inline constexpr real_parser<long double> long_double{};
 
-} // cpos
+} // parsers
+
+using parsers::float_;
+using parsers::double_;
+using parsers::long_double;
 
 } // boost::spirit::x4
 

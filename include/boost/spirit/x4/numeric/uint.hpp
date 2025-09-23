@@ -49,7 +49,7 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
     }
 };
 
-inline namespace cpos {
+namespace parsers {
 
 inline constexpr uint_parser<unsigned short> ushort_{};
 inline constexpr uint_parser<unsigned int> uint_{};
@@ -65,7 +65,21 @@ inline constexpr uint_parser<unsigned, 2> bin{};
 inline constexpr uint_parser<unsigned, 8> oct{};
 inline constexpr uint_parser<unsigned, 16> hex{};
 
-} // cpos
+} // parsers
+
+using parsers::ushort_;
+using parsers::uint_;
+using parsers::ulong_;
+using parsers::ulong_long;
+
+using parsers::uint8;
+using parsers::uint16;
+using parsers::uint32;
+using parsers::uint64;
+
+using parsers::bin;
+using parsers::oct;
+using parsers::hex;
 
 } // boost::spirit::x4
 

@@ -118,11 +118,13 @@ struct eps_parser : parser<eps_parser>
     }
 };
 
-inline namespace cpos {
+namespace parsers {
 
 [[maybe_unused]] inline constexpr eps_parser eps{};
 
-} // cpos
+} // parsers
+
+using parsers::eps;
 
 } // boost::spirit::x4
 

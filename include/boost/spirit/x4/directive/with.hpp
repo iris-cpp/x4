@@ -201,14 +201,16 @@ struct with_fn
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 // `with` directive injects a value into the context prior to parsing.
 // Holds lvalue references by reference, holds rvalue reference by value.
 template<class ID>
 inline constexpr detail::with_fn<ID> with{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::with;
 
 } // boost::spirit::x4
 

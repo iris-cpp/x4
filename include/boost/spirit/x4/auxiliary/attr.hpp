@@ -94,11 +94,13 @@ struct attr_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers {
 
 inline constexpr detail::attr_gen attr{};
 
-} // cpos
+} // parsers
+
+using parsers::attr;
 
 } // boost::spirit::x4
 

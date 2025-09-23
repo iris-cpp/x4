@@ -166,6 +166,14 @@ inline constexpr literal_bool_parser<bool, char_encoding::standard> false_{false
 
 } // standard
 
+namespace parsers::standard {
+
+using x4::standard::bool_;
+using x4::standard::true_;
+using x4::standard::false_;
+
+} // parsers::standard
+
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
@@ -174,6 +182,14 @@ inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> true_{t
 inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> false_{false};
 
 } // standard_wide
+
+namespace parsers::standard_wide {
+
+using x4::standard_wide::bool_;
+using x4::standard_wide::true_;
+using x4::standard_wide::false_;
+
+} // parsers::standard_wide
 #endif
 
 // TODO: unicode bool parser
@@ -181,6 +197,14 @@ inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> false_{
 using standard::bool_;
 using standard::true_;
 using standard::false_;
+
+namespace parsers {
+
+using x4::standard::bool_;
+using x4::standard::true_;
+using x4::standard::false_;
+
+} // parsers
 
 } // boost::spirit::x4
 

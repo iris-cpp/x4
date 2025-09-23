@@ -50,7 +50,7 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
     }
 };
 
-inline namespace cpos {
+namespace parsers {
 
 inline constexpr int_parser<short> short_{};
 inline constexpr int_parser<int> int_{};
@@ -62,7 +62,17 @@ inline constexpr int_parser<std::int16_t> int16{};
 inline constexpr int_parser<std::int32_t> int32{};
 inline constexpr int_parser<std::int64_t> int64{};
 
-} // cpos
+} // parsers
+
+using parsers::short_;
+using parsers::int_;
+using parsers::long_;
+using parsers::long_long;
+
+using parsers::int8;
+using parsers::int16;
+using parsers::int32;
+using parsers::int64;
 
 } // boost::spirit::x4
 

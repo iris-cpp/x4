@@ -184,12 +184,15 @@ struct reskip_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::skip_gen skip{};
 inline constexpr detail::reskip_gen reskip{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::skip;
+using parsers::directive::reskip;
 
 } // boost::spirit::x4
 

@@ -505,6 +505,13 @@ struct get_info<rule<RuleID, Attr, ForceAttr>> : detail::rule_get_info {};
 template<class RuleID, X4Attribute Attr, class RHS, bool ForceAttr, bool SkipDefinitionInjection>
 struct get_info<detail::rule_definition<RuleID, RHS, Attr, ForceAttr, SkipDefinitionInjection>> : detail::rule_get_info {};
 
+
+namespace parsers {
+
+using x4::rule;
+
+} // parsers
+
 // -------------------------------------------------------------
 
 #define BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN_I(x) _Pragma(#x)

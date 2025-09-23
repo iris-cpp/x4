@@ -72,11 +72,13 @@ struct no_case_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::no_case_gen no_case{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::no_case;
 
 } // boost::spirit::x4
 

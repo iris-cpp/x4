@@ -87,24 +87,26 @@ struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag
 };
 
 #define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name) \
-    inline constexpr char_class_parser<char_encoding::encoding, char_classes::name##_tag> name{};
+    namespace encoding { \
+    inline constexpr char_class_parser<char_encoding::encoding, char_classes::name##_tag> name{}; \
+    } /* encoding */ \
+    namespace parsers::encoding { \
+    using x4::encoding::name; \
+    } /* parsers::encoding */
 
 #define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding) \
-    namespace encoding \
-    { \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alnum) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alpha) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, digit) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, xdigit) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, cntrl) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, graph) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, lower) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, print) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, punct) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, space) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, blank) \
-        BOOST_SPIRIT_X4_CHAR_CLASS(encoding, upper) \
-    } /* encoding */
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alnum) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alpha) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, digit) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, xdigit) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, cntrl) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, graph) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, lower) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, print) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, punct) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, space) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, blank) \
+    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, upper)
 
 BOOST_SPIRIT_X4_CHAR_CLASSES(standard)
 
@@ -115,18 +117,20 @@ BOOST_SPIRIT_X4_CHAR_CLASSES(standard_wide)
 #undef BOOST_SPIRIT_X4_CHAR_CLASS
 #undef BOOST_SPIRIT_X4_CHAR_CLASSES
 
-inline constexpr auto const& alnum  = standard::alnum;
-inline constexpr auto const& alpha  = standard::alpha;
-inline constexpr auto const& digit  = standard::digit;
-inline constexpr auto const& xdigit = standard::xdigit;
-inline constexpr auto const& cntrl  = standard::cntrl;
-inline constexpr auto const& graph  = standard::graph;
-inline constexpr auto const& lower  = standard::lower;
-inline constexpr auto const& print  = standard::print;
-inline constexpr auto const& punct  = standard::punct;
-inline constexpr auto const& space  = standard::space;
-inline constexpr auto const& blank  = standard::blank;
-inline constexpr auto const& upper  = standard::upper;
+// Don't put these in namespace `parsers`, these are too much
+
+using x4::standard::alnum;
+using x4::standard::alpha;
+using x4::standard::digit;
+using x4::standard::xdigit;
+using x4::standard::cntrl;
+using x4::standard::graph;
+using x4::standard::lower;
+using x4::standard::print;
+using x4::standard::punct;
+using x4::standard::space;
+using x4::standard::blank;
+using x4::standard::upper;
 
 } // boost::spirit::x4
 

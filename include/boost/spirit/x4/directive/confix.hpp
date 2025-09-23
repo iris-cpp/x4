@@ -125,11 +125,13 @@ struct confix_fn
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::confix_fn confix{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::confix;
 
 } // boost::spirit::x4
 

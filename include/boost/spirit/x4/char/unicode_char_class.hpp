@@ -556,9 +556,12 @@ struct unicode_char_class : char_parser<char_encoding::unicode, unicode_char_cla
 };
 
 #define BOOST_SPIRIT_X4_CHAR_CLASS(name) \
-    inline constexpr unicode_char_class<char_classes::unicode::name##_tag> name{};
-
-namespace unicode {
+    namespace unicode { \
+    inline constexpr unicode_char_class<char_classes::unicode::name##_tag> name{}; \
+    } /* unicode */ \
+    namespace parsers::unicode { \
+    using x4::unicode::name; \
+    } /* parsers::unicode */
 
 // Unicode Major Categories
 
@@ -801,8 +804,6 @@ BOOST_SPIRIT_X4_CHAR_CLASS(zanabazar_square)
 BOOST_SPIRIT_X4_CHAR_CLASS(inherited)
 BOOST_SPIRIT_X4_CHAR_CLASS(common)
 BOOST_SPIRIT_X4_CHAR_CLASS(unknown)
-
-} // unicode
 
 #undef BOOST_SPIRIT_X4_CHAR_CLASS
 

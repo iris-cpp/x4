@@ -89,11 +89,13 @@ struct raw_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::raw_gen raw{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::raw;
 
 } // boost::spirit::x4
 
