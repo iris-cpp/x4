@@ -20,7 +20,6 @@
 int main()
 {
     using x4::standard::space;
-    using x4::standard::space_type;
     using x4::standard::char_;
     using x4::lexeme;
     using x4::no_skip;

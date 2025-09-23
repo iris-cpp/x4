@@ -51,40 +51,19 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 
 inline namespace cpos {
 
-using ushort_type = uint_parser<unsigned short>;
-inline constexpr ushort_type ushort_{};
+inline constexpr uint_parser<unsigned short> ushort_{};
+inline constexpr uint_parser<unsigned int> uint_{};
+inline constexpr uint_parser<unsigned long> ulong_{};
+inline constexpr uint_parser<unsigned long long> ulong_long{};
 
-using uint_type = uint_parser<unsigned int>;
-inline constexpr uint_type uint_{};
+inline constexpr uint_parser<std::uint8_t> uint8{};
+inline constexpr uint_parser<std::uint16_t> uint16{};
+inline constexpr uint_parser<std::uint32_t> uint32{};
+inline constexpr uint_parser<std::uint64_t> uint64{};
 
-using ulong_type = uint_parser<unsigned long>;
-inline constexpr ulong_type ulong_{};
-
-using ulong_long_type = uint_parser<unsigned long long>;
-inline constexpr ulong_long_type ulong_long{};
-
-
-using uint8_type = uint_parser<std::uint8_t>;
-inline constexpr uint8_type uint8{};
-
-using uint16_type = uint_parser<std::uint16_t>;
-inline constexpr uint16_type uint16{};
-
-using uint32_type = uint_parser<std::uint32_t>;
-inline constexpr uint32_type uint32{};
-
-using uint64_type = uint_parser<std::uint64_t>;
-inline constexpr uint64_type uint64{};
-
-
-using bin_type = uint_parser<unsigned, 2>;
-inline constexpr bin_type bin{};
-
-using oct_type = uint_parser<unsigned, 8>;
-inline constexpr oct_type oct{};
-
-using hex_type = uint_parser<unsigned, 16>;
-inline constexpr hex_type hex{};
+inline constexpr uint_parser<unsigned, 2> bin{};
+inline constexpr uint_parser<unsigned, 8> oct{};
+inline constexpr uint_parser<unsigned, 16> hex{};
 
 } // cpos
 

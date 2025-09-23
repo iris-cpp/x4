@@ -52,30 +52,15 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
 
 inline namespace cpos {
 
-using short_type = int_parser<short>;
-inline constexpr short_type short_{};
+inline constexpr int_parser<short> short_{};
+inline constexpr int_parser<int> int_{};
+inline constexpr int_parser<long> long_{};
+inline constexpr int_parser<long long> long_long{};
 
-using int_type = int_parser<int>;
-inline constexpr int_type int_{};
-
-using long_type = int_parser<long>;
-inline constexpr long_type long_{};
-
-using long_long_type = int_parser<long long>;
-inline constexpr long_long_type long_long{};
-
-
-using int8_type = int_parser<std::int8_t>;
-inline constexpr int8_type int8{};
-
-using int16_type = int_parser<std::int16_t>;
-inline constexpr int16_type int16{};
-
-using int32_type = int_parser<std::int32_t>;
-inline constexpr int32_type int32{};
-
-using int64_type = int_parser<std::int64_t>;
-inline constexpr int64_type int64{};
+inline constexpr int_parser<std::int8_t> int8{};
+inline constexpr int_parser<std::int16_t> int16{};
+inline constexpr int_parser<std::int32_t> int32{};
+inline constexpr int_parser<std::int64_t> int64{};
 
 } // cpos
 

@@ -232,14 +232,9 @@ private:
 
 inline namespace cpos {
 
-using float_type = real_parser<float>;
-inline constexpr float_type float_{};
-
-using double_type = real_parser<double>;
-inline constexpr double_type double_{};
-
-using long_double_type = real_parser<long double>;
-inline constexpr long_double_type long_double{};
+inline constexpr real_parser<float> float_{};
+inline constexpr real_parser<double> double_{};
+inline constexpr real_parser<long double> long_double{};
 
 } // cpos
 

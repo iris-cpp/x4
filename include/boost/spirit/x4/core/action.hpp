@@ -23,9 +23,9 @@
 
 namespace boost::spirit::x4 {
 
-struct raw_attribute_type; // TODO: move this to detail
-
 namespace detail {
+
+struct raw_attribute_t;
 
 // Compose attr(where(val(pass(context))))
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -238,15 +238,14 @@ private:
         return false;
     }
 
-    // attr==raw_attribute_type, action wants iterator_range (see raw.hpp)
+    // attr==raw, action wants iterator_range (see raw.hpp)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
-    parse_main(
-        It& first, Se const& last, Context const& ctx, raw_attribute_type&
-    ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
+    parse_main(It& first, Se const& last, Context const& ctx, detail::raw_attribute_t&) const
+        noexcept(false) // construction of `subrange` is never noexcept as per the standard
     {
         // synthesize the attribute since one is not supplied
-        std::ranges::subrange<It, Se> rng;
+        std::ranges::subrange<It, It> rng; // This must be It-It pair, NOT It-Se pair
         return this->parse_main(first, last, ctx, rng);
     }
 };

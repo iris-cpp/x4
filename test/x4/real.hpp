@@ -56,7 +56,6 @@ struct ts_real_policies : x4::ureal_policies<T>
     parse_n(It& first, Se const& last, Accumulator& result)
     {
         using x4::uint_parser;
-        namespace x4 = boost::spirit::x4;
 
         constexpr uint_parser<unsigned, 10, 1, 3> uint3;
         constexpr uint_parser<unsigned, 10, 3, 3> uint3_3;

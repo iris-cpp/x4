@@ -87,8 +87,7 @@ struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag
 };
 
 #define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name) \
-    using name##_type = char_class_parser<char_encoding::encoding, char_classes::name##_tag>; \
-    inline constexpr name##_type name{};
+    inline constexpr char_class_parser<char_encoding::encoding, char_classes::name##_tag> name{};
 
 #define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding) \
     namespace encoding \
@@ -115,19 +114,6 @@ BOOST_SPIRIT_X4_CHAR_CLASSES(standard_wide)
 
 #undef BOOST_SPIRIT_X4_CHAR_CLASS
 #undef BOOST_SPIRIT_X4_CHAR_CLASSES
-
-using alnum_type  = standard::alnum_type;
-using alpha_type  = standard::alpha_type;
-using digit_type  = standard::digit_type;
-using xdigit_type = standard::xdigit_type;
-using cntrl_type  = standard::cntrl_type;
-using graph_type  = standard::graph_type;
-using lower_type  = standard::lower_type;
-using print_type  = standard::print_type;
-using punct_type  = standard::punct_type;
-using space_type  = standard::space_type;
-using blank_type  = standard::blank_type;
-using upper_type  = standard::upper_type;
 
 inline constexpr auto const& alnum  = standard::alnum;
 inline constexpr auto const& alpha  = standard::alpha;
