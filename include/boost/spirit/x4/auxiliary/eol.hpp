@@ -56,11 +56,13 @@ struct get_info<eol_parser>
     [[nodiscard]] result_type operator()(eol_parser const &) const { return "eol"; }
 };
 
-inline namespace cpos {
+namespace parsers {
 
 inline constexpr eol_parser eol{};
 
-} // cpos
+} // parsers
+
+using parsers::eol;
 
 } // boost::spirit::x4
 

@@ -72,11 +72,13 @@ struct seek_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::seek_gen seek{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::seek;
 
 } // boost::spirit::x4
 

@@ -17,7 +17,6 @@
 int main()
 {
     using x4::standard::space;
-    using x4::standard::space_type;
     using x4::standard::digit;
     using x4::lexeme;
     using x4::rule;

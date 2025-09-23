@@ -9,10 +9,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <boost/spirit/x4/core/attribute.hpp>
+
 #include <concepts>
 #include <ranges>
 
 namespace boost::spirit::x4 {
+
+namespace ast {
 
 struct position_tagged
 {
@@ -34,41 +38,41 @@ public:
         , last_(last)
     {}
 
-    template<class AST>
-        requires std::derived_from<AST, position_tagged>
+    template<X4Attribute Attr>
+        requires std::derived_from<Attr, position_tagged>
     [[nodiscard]] std::ranges::subrange<iterator_type>
-    position_of(AST const& ast) const
+    position_of(Attr const& attr) const
     {
         return std::ranges::subrange<iterator_type>{
-            positions_.at(ast.id_first),
-            positions_.at(ast.id_last)
+            positions_.at(attr.id_first),
+            positions_.at(attr.id_last)
         };
     }
 
-    template<class AST>
-        requires (!std::derived_from<AST, position_tagged>)
+    template<X4Attribute Attr>
+        requires (!std::derived_from<Attr, position_tagged>)
     [[nodiscard]] std::ranges::subrange<iterator_type>
-    position_of(AST const&) const
+    position_of(Attr const&) const
     {
         // returns an empty position
         return std::ranges::subrange<iterator_type>{};
     }
 
     // This will catch all nodes except those inheriting from position_tagged
-    template<class AST>
-        requires (!std::derived_from<AST, position_tagged>)
-    void annotate(AST&, iterator_type const&, iterator_type const&)
+    template<X4Attribute Attr>
+        requires (!std::derived_from<Attr, position_tagged>)
+    static void annotate(Attr&, iterator_type const&, iterator_type const&)
     {
         // (no-op) no need for tags
     }
 
-    template<class AST>
-        requires std::derived_from<AST, position_tagged>
-    void annotate(AST& ast, iterator_type first, iterator_type last)
+    template<X4Attribute Attr>
+        requires std::derived_from<Attr, position_tagged>
+    void annotate(Attr& attr, iterator_type first, iterator_type last)
     {
-        ast.id_first = int(positions_.size());
+        attr.id_first = static_cast<int>(positions_.size());
         positions_.push_back(std::move(first));
-        ast.id_last = int(positions_.size());
+        attr.id_last = static_cast<int>(positions_.size());
         positions_.push_back(std::move(last));
     }
 
@@ -86,6 +90,13 @@ private:
     iterator_type first_;
     iterator_type last_;
 };
+
+} // ast
+
+using position_tagged [[deprecated("Use `ast::`")]] = ast::position_tagged;
+
+template<class Container>
+using position_cache [[deprecated("Use `ast::`")]] = ast::position_cache<Container>;
 
 } // boost::spirit::x4
 

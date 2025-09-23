@@ -10,20 +10,18 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <type_traits>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace boost::spirit::x4 {
 
-using ucs4_char = char32_t;
-using utf8_char = char;
-using ucs4_string = std::basic_string<ucs4_char>;
-using utf8_string = std::basic_string<utf8_char>;
-
 namespace detail {
 
-constexpr void utf8_put_encode(utf8_string& out, ucs4_char x) noexcept
+// TODO: https://github.com/microsoft/STL/issues/2207
+using impl_def_u8string = std::string;
+
+constexpr void utf8_put_encode(impl_def_u8string& out, char32_t x) noexcept
 {
     // https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf D90
     if (x > 0x10FFFFul || (0xD7FFul < x && x < 0xE000ul)) [[unlikely]] {
@@ -51,18 +49,18 @@ constexpr void utf8_put_encode(utf8_string& out, ucs4_char x) noexcept
 } // detail
 
 template<class Char>
-[[nodiscard]] constexpr utf8_string to_utf8(Char value)
+[[nodiscard]] constexpr detail::impl_def_u8string to_utf8(Char value)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     using UChar = std::make_unsigned_t<Char>;
     detail::utf8_put_encode(result, static_cast<UChar>(value));
     return result;
 }
 
 template<class Char>
-[[nodiscard]] constexpr utf8_string to_utf8(Char const* str)
+[[nodiscard]] constexpr detail::impl_def_u8string to_utf8(Char const* str)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     using UChar = std::make_unsigned_t<Char>;
     while (*str) {
         detail::utf8_put_encode(result, static_cast<UChar>(*str++));
@@ -71,10 +69,10 @@ template<class Char>
 }
 
 template<class Char, class Traits>
-[[nodiscard]] constexpr utf8_string
+[[nodiscard]] constexpr detail::impl_def_u8string
 to_utf8(std::basic_string_view<Char, Traits> const str)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     using UChar = std::make_unsigned_t<Char>;
     for (Char ch : str) {
         detail::utf8_put_encode(result, static_cast<UChar>(ch));
@@ -83,10 +81,10 @@ to_utf8(std::basic_string_view<Char, Traits> const str)
 }
 
 template<class Char, class Traits>
-[[nodiscard]] constexpr utf8_string
+[[nodiscard]] constexpr detail::impl_def_u8string
 to_utf8(std::basic_string<Char, Traits> const& str)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     using UChar = std::make_unsigned_t<Char>;
     for (Char ch : str) {
         detail::utf8_put_encode(result, static_cast<UChar>(ch));
@@ -96,9 +94,9 @@ to_utf8(std::basic_string<Char, Traits> const& str)
 
 // Assume wchar_t content is UTF-16 on MSVC, or mingw/wineg++ with -fshort-wchar
 #if defined(_MSC_VER) || defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2
-[[nodiscard]] constexpr utf8_string to_utf8(wchar_t value)
+[[nodiscard]] constexpr detail::impl_def_u8string to_utf8(wchar_t value)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     detail::utf8_put_encode(result, static_cast<std::make_unsigned_t<wchar_t>>(value));
     return result;
 }
@@ -107,7 +105,7 @@ namespace detail {
 
 template<std::forward_iterator It>
     requires std::is_same_v<std::remove_const_t<std::iter_value_t<It>>, wchar_t>
-[[nodiscard]] constexpr ucs4_char decode_utf16(It& s) noexcept
+[[nodiscard]] constexpr char32_t decode_utf16(It& s) noexcept
 {
     using uwchar_t = std::make_unsigned_t<wchar_t>;
 
@@ -132,27 +130,25 @@ template<std::forward_iterator It>
 
 } // detail
 
-template<class Traits>
-[[nodiscard]] constexpr utf8_string
-to_utf8(std::basic_string_view<wchar_t, Traits> const str)
+[[nodiscard]] constexpr detail::impl_def_u8string
+to_utf8(std::basic_string_view<wchar_t> const str)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     for (auto it = str.begin(); it != str.end(); ++it) {
         detail::utf8_put_encode(result, detail::decode_utf16(it));
     }
     return result;
 }
 
-[[nodiscard]] constexpr utf8_string to_utf8(wchar_t const* str)
+[[nodiscard]] constexpr detail::impl_def_u8string to_utf8(wchar_t const* str)
 {
     return x4::to_utf8(std::basic_string_view(str));
 }
 
-template<class Traits>
-[[nodiscard]] constexpr utf8_string
-to_utf8(std::basic_string<wchar_t, Traits> const& str)
+[[nodiscard]] constexpr detail::impl_def_u8string
+to_utf8(std::basic_string<wchar_t> const& str)
 {
-    utf8_string result;
+    detail::impl_def_u8string result;
     for (auto it = str.begin(); it != str.end(); ++it) {
         detail::utf8_put_encode(result, detail::decode_utf16(it));
     }

@@ -112,11 +112,12 @@ struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
     }
 };
 
-inline namespace cpos {
 
 #define BOOST_SPIRIT_X4_BINARY_PARSER(name, endiantype, attrtype, bits) \
-    using name##type = any_binary_parser<attrtype, boost::endian::order::endiantype, bits>; \
-    inline constexpr name##type name{};
+    namespace parsers { \
+    inline constexpr any_binary_parser<attrtype, boost::endian::order::endiantype, bits> name{}; \
+    } /* parsers */ \
+    using parsers::name;
 
 BOOST_SPIRIT_X4_BINARY_PARSER(byte_, native, uint_least8_t, 8)
 BOOST_SPIRIT_X4_BINARY_PARSER(word, native, uint_least16_t, 16)
@@ -141,7 +142,6 @@ BOOST_SPIRIT_X4_BINARY_PARSER(little_bin_double, little, double, sizeof(double) 
 
 #undef BOOST_SPIRIT_X4_BINARY_PARSER
 
-} // cpos
 
 template<class T, std::size_t bits>
 struct get_info<any_binary_parser<T, endian::order::little, bits>>

@@ -22,16 +22,20 @@
 
 namespace boost::spirit::x4 {
 
+namespace detail {
+
 // Pseudo attribute type indicating that the parser wants the
 // iterator range pointing to the [first, last) matching characters from
 // the input iterators.
-struct raw_attribute_type {}; // TODO: move this to detail
+struct raw_attribute_t {};
+
+} // detail
 
 template<class Subject>
 struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 {
     using base_type = unary_parser<Subject, raw_directive<Subject>>;
-    using attribute_type = raw_attribute_type;
+    using attribute_type = detail::raw_attribute_t;
     using subject_type = Subject;
 
     static constexpr bool handles_container = true;
@@ -85,23 +89,25 @@ struct raw_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::raw_gen raw{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::raw;
 
 } // boost::spirit::x4
 
 namespace boost::spirit::x4::traits {
 
 template<class Context, std::forward_iterator It>
-struct pseudo_attribute<Context, raw_attribute_type, It>
+struct pseudo_attribute<Context, x4::detail::raw_attribute_t, It>
 {
-    using attribute_type = raw_attribute_type;
-    using type = std::ranges::subrange<It>;
+    using attribute_type = x4::detail::raw_attribute_t;
+    using type = std::ranges::subrange<It, It>; // This must be It-It pair, NOT It-Se pair
 
-    [[nodiscard]] static constexpr type call(It& first, std::sentinel_for<It> auto const& last, raw_attribute_type)
+    [[nodiscard]] static constexpr type call(It& first, std::sentinel_for<It> auto const& last, x4::detail::raw_attribute_t)
     {
         return {first, last};
     }

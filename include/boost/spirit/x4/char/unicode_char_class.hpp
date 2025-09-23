@@ -16,7 +16,26 @@
 
 namespace boost::spirit::x4 {
 
+namespace char_classes::unicode {
+
+// Common Categories (semantically compatible with `standard::*` variants)
+
+using char_tag = char_classes::char_tag;
+using alnum_tag = char_classes::alnum_tag;
+using alpha_tag = char_classes::alpha_tag;
+using digit_tag = char_classes::digit_tag;
+using xdigit_tag = char_classes::xdigit_tag;
+using cntrl_tag = char_classes::cntrl_tag;
+using graph_tag = char_classes::graph_tag;
+using lower_tag = char_classes::lower_tag;
+using print_tag = char_classes::print_tag;
+using punct_tag = char_classes::punct_tag;
+using space_tag = char_classes::space_tag;
+using blank_tag = char_classes::blank_tag;
+using upper_tag = char_classes::upper_tag;
+
 // Unicode Major Categories
+
 struct letter_tag {};
 struct mark_tag {};
 struct number_tag {};
@@ -26,6 +45,7 @@ struct punctuation_tag {};
 struct symbol_tag {};
 
 // Unicode General Categories
+
 struct uppercase_letter_tag {};
 struct lowercase_letter_tag {};
 struct titlecase_letter_tag {};
@@ -64,6 +84,7 @@ struct modifier_symbol_tag {};
 struct other_symbol_tag {};
 
 // Unicode Derived Categories
+
 struct alphabetic_tag {};
 struct uppercase_tag {};
 struct lowercase_tag {};
@@ -73,6 +94,7 @@ struct noncharacter_code_point_tag {};
 struct default_ignorable_code_point_tag {};
 
 // Unicode Scripts
+
 struct adlam_tag {};
 struct caucasian_albanian_tag {};
 struct ahom_tag {};
@@ -239,6 +261,8 @@ struct inherited_tag {};
 struct common_tag {};
 struct unknown_tag {};
 
+} // char_classes::unicode
+
 namespace detail {
 
 struct unicode_char_class_base
@@ -249,7 +273,7 @@ struct unicode_char_class_base
 #define BOOST_SPIRIT_X4_BASIC_CLASSIFY(name) \
     template<class Char> \
     static constexpr bool \
-    is(name##_tag, Char ch) noexcept \
+    is(char_classes::unicode::name##_tag, Char ch) noexcept \
     { \
         return (encoding_type::is##name)(detail::cast_char<char_type>(ch)); \
     }
@@ -257,13 +281,13 @@ struct unicode_char_class_base
 #define BOOST_SPIRIT_X4_CLASSIFY(name) \
     template<class Char> \
     static constexpr bool \
-    is(name##_tag, Char ch) noexcept \
+    is(char_classes::unicode::name##_tag, Char ch) noexcept \
     { \
         return (encoding_type::is_##name)(detail::cast_char<char_type>(ch)); \
     }
 
-
     // Unicode Major Categories
+
     BOOST_SPIRIT_X4_BASIC_CLASSIFY(char)
     BOOST_SPIRIT_X4_BASIC_CLASSIFY(alnum)
     BOOST_SPIRIT_X4_BASIC_CLASSIFY(alpha)
@@ -279,6 +303,7 @@ struct unicode_char_class_base
     BOOST_SPIRIT_X4_BASIC_CLASSIFY(upper)
 
     // Unicode Major Categories
+
     BOOST_SPIRIT_X4_CLASSIFY(letter)
     BOOST_SPIRIT_X4_CLASSIFY(mark)
     BOOST_SPIRIT_X4_CLASSIFY(number)
@@ -288,6 +313,7 @@ struct unicode_char_class_base
     BOOST_SPIRIT_X4_CLASSIFY(symbol)
 
     // Unicode General Categories
+
     BOOST_SPIRIT_X4_CLASSIFY(uppercase_letter)
     BOOST_SPIRIT_X4_CLASSIFY(lowercase_letter)
     BOOST_SPIRIT_X4_CLASSIFY(titlecase_letter)
@@ -326,6 +352,7 @@ struct unicode_char_class_base
     BOOST_SPIRIT_X4_CLASSIFY(other_symbol)
 
     // Unicode Derived Categories
+
     BOOST_SPIRIT_X4_CLASSIFY(alphabetic)
     BOOST_SPIRIT_X4_CLASSIFY(uppercase)
     BOOST_SPIRIT_X4_CLASSIFY(lowercase)
@@ -335,6 +362,7 @@ struct unicode_char_class_base
     BOOST_SPIRIT_X4_CLASSIFY(default_ignorable_code_point)
 
     // Unicode Scripts
+
     BOOST_SPIRIT_X4_CLASSIFY(adlam)
     BOOST_SPIRIT_X4_CLASSIFY(caucasian_albanian)
     BOOST_SPIRIT_X4_CLASSIFY(ahom)
@@ -528,12 +556,15 @@ struct unicode_char_class : char_parser<char_encoding::unicode, unicode_char_cla
 };
 
 #define BOOST_SPIRIT_X4_CHAR_CLASS(name) \
-    using name##_type = unicode_char_class<name##_tag>; \
-    inline constexpr name##_type name{};
-
-namespace unicode {
+    namespace unicode { \
+    inline constexpr unicode_char_class<char_classes::unicode::name##_tag> name{}; \
+    } /* unicode */ \
+    namespace parsers::unicode { \
+    using x4::unicode::name; \
+    } /* parsers::unicode */
 
 // Unicode Major Categories
+
 BOOST_SPIRIT_X4_CHAR_CLASS(alnum)
 BOOST_SPIRIT_X4_CHAR_CLASS(alpha)
 BOOST_SPIRIT_X4_CHAR_CLASS(digit)
@@ -548,6 +579,7 @@ BOOST_SPIRIT_X4_CHAR_CLASS(blank)
 BOOST_SPIRIT_X4_CHAR_CLASS(upper)
 
 // Unicode Major Categories
+
 BOOST_SPIRIT_X4_CHAR_CLASS(letter)
 BOOST_SPIRIT_X4_CHAR_CLASS(mark)
 BOOST_SPIRIT_X4_CHAR_CLASS(number)
@@ -557,6 +589,7 @@ BOOST_SPIRIT_X4_CHAR_CLASS(punctuation)
 BOOST_SPIRIT_X4_CHAR_CLASS(symbol)
 
 // Unicode General Categories
+
 BOOST_SPIRIT_X4_CHAR_CLASS(uppercase_letter)
 BOOST_SPIRIT_X4_CHAR_CLASS(lowercase_letter)
 BOOST_SPIRIT_X4_CHAR_CLASS(titlecase_letter)
@@ -595,6 +628,7 @@ BOOST_SPIRIT_X4_CHAR_CLASS(modifier_symbol)
 BOOST_SPIRIT_X4_CHAR_CLASS(other_symbol)
 
 // Unicode Derived Categories
+
 BOOST_SPIRIT_X4_CHAR_CLASS(alphabetic)
 BOOST_SPIRIT_X4_CHAR_CLASS(uppercase)
 BOOST_SPIRIT_X4_CHAR_CLASS(lowercase)
@@ -604,6 +638,7 @@ BOOST_SPIRIT_X4_CHAR_CLASS(noncharacter_code_point)
 BOOST_SPIRIT_X4_CHAR_CLASS(default_ignorable_code_point)
 
 // Unicode Scripts
+
 BOOST_SPIRIT_X4_CHAR_CLASS(adlam)
 BOOST_SPIRIT_X4_CHAR_CLASS(caucasian_albanian)
 BOOST_SPIRIT_X4_CHAR_CLASS(ahom)
@@ -769,8 +804,6 @@ BOOST_SPIRIT_X4_CHAR_CLASS(zanabazar_square)
 BOOST_SPIRIT_X4_CHAR_CLASS(inherited)
 BOOST_SPIRIT_X4_CHAR_CLASS(common)
 BOOST_SPIRIT_X4_CHAR_CLASS(unknown)
-
-} // unicode
 
 #undef BOOST_SPIRIT_X4_CHAR_CLASS
 

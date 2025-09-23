@@ -44,11 +44,13 @@ struct get_info<eoi_parser>
     [[nodiscard]] result_type operator()(eoi_parser const &) const { return "eoi"; }
 };
 
-inline namespace cpos {
+namespace parsers {
 
 inline constexpr eoi_parser eoi{};
 
-} // cpos
+} // parsers
+
+using parsers::eoi;
 
 } // boost::spirit::x4
 

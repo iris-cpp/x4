@@ -70,11 +70,13 @@ struct matches_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::matches_gen matches{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::matches;
 
 } // boost::spirit::x4
 

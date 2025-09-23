@@ -38,7 +38,7 @@
 #include <utility>
 
 #define BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING(old_api) \
-    "Use `shared_" old_api "` instead. `" old_api "` has had a " \
+    "Use `unique_" old_api "` instead. `" old_api "` has had a " \
     "*implicit* trait where the underlying storage is shared via " \
     "`std::shared_ptr`. This disallows `constexpr` usage in generic " \
     "scenarios where the sharing is not actually needed at all. Even " \
@@ -393,6 +393,12 @@ using standard::symbols;
 using standard::shared_symbols;
 using standard::unique_symbols;
 
+
+namespace parsers::standard {
+using x4::standard::shared_symbols;
+using x4::standard::unique_symbols;
+} // parsers::standard
+
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
@@ -407,6 +413,11 @@ template<class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::standard_wide, T>;
 
 } // standard_wide
+
+namespace parsers::standard_wide {
+using x4::standard_wide::shared_symbols;
+using x4::standard_wide::unique_symbols;
+} // parsers::standard_wide
 #endif
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
@@ -419,6 +430,11 @@ template<class T = unused_type>
 using unique_symbols = unique_symbols_parser<char_encoding::unicode, T>;
 
 } // unicode
+
+namespace parsers::unicode {
+using x4::unicode::shared_symbols;
+using x4::unicode::unique_symbols;
+} // parsers::unicode
 #endif
 
 } // boost::spirit::x4

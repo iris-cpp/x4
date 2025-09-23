@@ -170,6 +170,34 @@ using unicode::helpers::string;
 using unicode::helpers::lit;
 #endif
 
+
+namespace parsers {
+
+namespace standard {
+using x4::standard::string;
+using x4::standard::lit;
+} // standard
+
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+namespace standard_wide {
+using x4::standard_wide::string;
+using x4::standard_wide::lit;
+} // standard_wide
+#endif
+
+#ifdef BOOST_SPIRIT_X4_UNICODE
+namespace unicode {
+using x4::unicode::string;
+using x4::unicode::lit;
+} // standard_wide
+#endif
+
+using x4::string;
+using x4::lit;
+
+} // parsers
+
+
 namespace extension {
 
 template<traits::CharLike CharT, std::size_t N>

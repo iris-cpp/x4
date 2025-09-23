@@ -97,11 +97,13 @@ struct no_skip_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::no_skip_gen no_skip{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::no_skip;
 
 } // boost::spirit::x4
 

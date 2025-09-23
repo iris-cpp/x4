@@ -160,30 +160,36 @@ private:
 
 namespace standard {
 
-using bool_type = bool_parser<bool, char_encoding::standard>;
-inline constexpr bool_type bool_{};
-
-using true_type = literal_bool_parser<bool, char_encoding::standard>;
-inline constexpr true_type true_{true};
-
-using false_type = literal_bool_parser<bool, char_encoding::standard>;
-inline constexpr false_type false_{false};
+inline constexpr bool_parser<bool, char_encoding::standard> bool_{};
+inline constexpr literal_bool_parser<bool, char_encoding::standard> true_{true};
+inline constexpr literal_bool_parser<bool, char_encoding::standard> false_{false};
 
 } // standard
+
+namespace parsers::standard {
+
+using x4::standard::bool_;
+using x4::standard::true_;
+using x4::standard::false_;
+
+} // parsers::standard
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
-using bool_type = bool_parser<bool, char_encoding::standard_wide>;
-inline constexpr bool_type bool_{};
-
-using true_type = literal_bool_parser<bool, char_encoding::standard_wide>;
-inline constexpr true_type true_{true};
-
-using false_type = literal_bool_parser<bool, char_encoding::standard_wide>;
-inline constexpr false_type false_{false};
+inline constexpr bool_parser<bool, char_encoding::standard_wide> bool_{};
+inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> true_{true};
+inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> false_{false};
 
 } // standard_wide
+
+namespace parsers::standard_wide {
+
+using x4::standard_wide::bool_;
+using x4::standard_wide::true_;
+using x4::standard_wide::false_;
+
+} // parsers::standard_wide
 #endif
 
 // TODO: unicode bool parser
@@ -191,6 +197,14 @@ inline constexpr false_type false_{false};
 using standard::bool_;
 using standard::true_;
 using standard::false_;
+
+namespace parsers {
+
+using x4::standard::bool_;
+using x4::standard::true_;
+using x4::standard::false_;
+
+} // parsers
 
 } // boost::spirit::x4
 

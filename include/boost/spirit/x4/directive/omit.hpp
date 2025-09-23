@@ -63,11 +63,13 @@ struct omit_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 [[maybe_unused]] inline constexpr detail::omit_gen omit{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::omit;
 
 } // boost::spirit::x4
 

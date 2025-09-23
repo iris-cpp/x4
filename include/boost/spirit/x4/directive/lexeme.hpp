@@ -87,11 +87,13 @@ struct lexeme_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::lexeme_gen lexeme{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::lexeme;
 
 } // boost::spirit::x4
 

@@ -178,9 +178,7 @@ int main()
     {   // test attribute extraction
         using x4::traits::attribute_of_t;
         using x4::standard::alpha;
-        using x4::standard::alpha_type;
-
-        static_assert(std::same_as<attribute_of_t<alpha_type, unused_type>, char>);
+        static_assert(std::same_as<attribute_of_t<std::remove_const_t<decltype(x4::standard::alpha)>, unused_type>, char>);
 
         int attr = 0;
         BOOST_TEST(parse("a", alpha, attr));

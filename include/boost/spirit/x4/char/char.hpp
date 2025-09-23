@@ -122,6 +122,33 @@ using unicode::helpers::lit;
 #endif // BOOST_SPIRIT_X4_UNICODE
 
 
+namespace parsers {
+
+namespace standard {
+using x4::standard::char_;
+using x4::standard::lit;
+} // standard
+
+#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+namespace standard_wide {
+using x4::standard_wide::char_;
+using x4::standard_wide::lit;
+} // standard_wide
+#endif
+
+#ifdef BOOST_SPIRIT_X4_UNICODE
+namespace unicode {
+using x4::unicode::char_;
+using x4::unicode::lit;
+} // standard_wide
+#endif
+
+using x4::char_; // TODO: make `any_parser` encoding-agnostic
+using x4::lit;
+
+} // parsers
+
+
 namespace extension {
 
 template<>

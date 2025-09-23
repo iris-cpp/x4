@@ -66,11 +66,13 @@ struct expect_gen
 
 } // detail
 
-inline namespace cpos {
+namespace parsers::directive {
 
 inline constexpr detail::expect_gen expect{};
 
-} // cpos
+} // parsers::directive
+
+using parsers::directive::expect;
 
 } // boost::spirit::x4
 

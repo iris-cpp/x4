@@ -22,7 +22,7 @@ int main()
 {
     using x4::int_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::int_type{}[std::true_type{}]);
+    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::int_[std::true_type{}]);
 
     {
         int x = 0;
