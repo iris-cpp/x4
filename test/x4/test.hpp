@@ -15,7 +15,11 @@
 #include <boost/spirit/x4/core/move_to.hpp>
 #include <boost/spirit/x4/parse.hpp>
 
-#include <boost/core/lightweight_test.hpp>
+#if BOOST_SPIRIT_CI_IS_B2
+# include "catch_amalgamated.hpp"
+#else
+# include <catch2/catch_test_macros.hpp>
+#endif
 
 #include <iterator>
 #include <string_view>
