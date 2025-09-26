@@ -53,6 +53,7 @@ x4_define_tests(
     alternative
     and_predicate
     attr
+    attribute
     attribute_type_check
     binary
     bool

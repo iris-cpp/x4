@@ -471,6 +471,9 @@ TEST_CASE("sequence")
                 std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
             );
         });
+        STATIC_CHECK(requires(T& c) {
+            traits::clear(c);
+        });
 
         STATIC_CHECK(traits::is_container_v<std::vector<spirit_test::move_only>>);
         STATIC_CHECK(traits::CategorizedAttr<std::vector<spirit_test::move_only>, x4::traits::container_attr>);

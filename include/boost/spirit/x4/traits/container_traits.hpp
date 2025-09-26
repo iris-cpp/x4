@@ -245,6 +245,51 @@ inline constexpr detail::append_fn append{};
 
 // Customization point
 template<class Container>
+struct clear_container; // not defined
+
+namespace detail {
+
+struct clear_fn
+{
+    template<class Container>
+        requires requires(Container& c) {
+            c.clear();
+        }
+    static constexpr void
+    operator()(Container& c) noexcept(noexcept(c.clear()))
+    {
+        static_assert(!std::same_as<Container, unused_type>);
+        static_assert(!std::same_as<Container, unused_container_type>);
+        static_assert(!std::is_const_v<Container>);
+        c.clear();
+    }
+
+    template<class Container>
+        requires requires(Container& c) {
+            { clear_container<Container>::call(c) };
+        }
+    static constexpr void
+    operator()(Container& c)
+        noexcept(noexcept(clear_container<Container>::call(c)))
+    {
+        static_assert(!std::same_as<Container, unused_type>);
+        static_assert(!std::same_as<Container, unused_container_type>);
+        static_assert(!std::is_const_v<Container>);
+        return clear_container<Container>::call(c);
+    }
+};
+
+} // detail
+
+inline namespace cpos {
+
+inline constexpr detail::clear_fn clear{};
+
+} // cpos
+
+
+// Customization point
+template<class Container>
 struct is_empty_container; // not defined
 
 namespace detail {
@@ -382,6 +427,9 @@ template<class T>
     requires
         // required; fusion pollutes ADL on `size`, which is called by `std::ranges::empty` on Clang 22
         (!fusion::traits::is_sequence<std::remove_cvref_t<T>>::value) &&
+
+        std::default_initializable<T> &&
+
         requires(T& c) {
             typename T::value_type; // required
             traits::begin(c);
@@ -395,6 +443,7 @@ template<class T>
                 std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
                 std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
             );
+            traits::clear(c);
         }
 struct is_container<T> : std::true_type
 {};
