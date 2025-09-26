@@ -62,6 +62,7 @@ obj catch2 : catch_amalgamated.cpp ;
 
 run parser.cpp catch2 ;
 run context.cpp catch2 ;
+run attribute.cpp catch2 ;
 run x3_rule_problem.cpp catch2 ;
 
 run actions.cpp catch2 ;
