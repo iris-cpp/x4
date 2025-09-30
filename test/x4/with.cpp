@@ -15,6 +15,7 @@
 #include <boost/spirit/x4/operator/sequence.hpp>
 #include <boost/spirit/x4/operator/list.hpp>
 
+#include <vector>
 #include <concepts>
 #include <iterator>
 #include <utility>
@@ -24,17 +25,20 @@ namespace {
 
 struct my_tag;
 
-struct my_rule_class
+template<x4::X4Attribute ExpectedAttr>
+struct match_counter_rule_id
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Failure, class Context>
     void on_error(It const&, Se const&, Context const& ctx, Failure const&)
     {
+        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_val, ExpectedAttr>);
         ++x4::get<my_tag>(ctx);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
     void on_success(It const&, Se const&, Context const& ctx, Attr&)
     {
+        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_val, ExpectedAttr>);
         ++x4::get<my_tag>(ctx);
     }
 };
@@ -128,15 +132,17 @@ TEST_CASE("with")
 
     {
         // injecting data into the context in the grammar
-        int val = 0;
-        auto r = rule<my_rule_class, char const*>{} =
+        int matched_count = 0;
+        auto r = rule<match_counter_rule_id<std::vector<int>>, std::vector<int>>{} =
             '(' > int_ > ',' > int_ > ')';
 
-        auto start = with<my_tag>(std::ref(val))[r];
+        auto start = with<my_tag>(std::ref(matched_count))[r];
+        std::vector<int> ints;
 
-        REQUIRE(parse("(123,456)", start));
-        REQUIRE(!parse("(abc,def)", start));
-        CHECK(val == 2);
+        REQUIRE(parse("(123,456)", start, ints));
+        REQUIRE(!parse("(abc,def)", start, ints));
+        CHECK(matched_count == 2);
+        CHECK(ints == std::vector<int>{123, 456});
     }
 
     {
