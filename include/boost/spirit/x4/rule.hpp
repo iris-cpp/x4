@@ -94,14 +94,81 @@ struct rule_impl
 {
     static_assert(UniqueContextID<RuleID>);
 
+private:
+    template<class Context, X4Attribute RHSAttr>
+    using rcontext_t = std::remove_cvref_t<
+        decltype(x4::replace_first_context<contexts::rule_val>(
+            std::declval<Context const&>(),
+            std::declval<typename traits::transform_attribute<Attr, RHSAttr>::type&>()
+        ))
+    >;
+
+    // Note: this check uses `It, It` because the value is actually iterator-iterator pair
+    template<std::forward_iterator It, class RContext, X4Attribute RHSAttr>
+    static constexpr bool need_on_success =
+        has_on_success<RuleID, It, It, RContext, RHSAttr>::value;
+
+    template<std::forward_iterator It, class RContext, X4Attribute RHSAttr>
+    static constexpr bool need_on_error =
+        has_context_v<RContext, contexts::expectation_failure> &&
+        has_on_error<RuleID, It, It, RContext>::value;
+
+    template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
+    static constexpr bool need_rcontext =
+        RHS::need_rcontext ||
+        need_on_success<It, rcontext_t<Context, RHSAttr>, RHSAttr> ||
+        need_on_error<It, rcontext_t<Context, RHSAttr>, RHSAttr>;
+
+
+    template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
+    [[nodiscard]] static constexpr Context const&
+    make_rcontext(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND, RHSAttr&) noexcept
+    {
+        static_assert(!need_rcontext<RHS, It, Context, RHSAttr>); // sanity check
+
+        // A parse invocation does not require `_val` context if and only if it doesn't
+        // involve any of the below features:
+        //   - Semantic action
+        //   - `RuleID::on_success(...)`
+        //   - `RuleID::on_error(...)`
+        return ctx;
+    }
+
+    // Replace or insert the `_val` context, while avoiding infinite instantiation on
+    // recursive grammars.
+    //
+    // In pre-X4 codebase, this was done by passing the extraneous `rcontext` parameter
+    // to every `.parse(...)` invocation on ALL parsers. We dropped that param on X4;
+    // now we simply append the rule attribute reference to the `context`, as it can
+    // essentially work as the global storage for any parsers.
+    //
+    // Although the `context` acts like the "global" storage, the actual lifetime of the
+    // rule-specific attribute is managed by stack-like structure, similar to that of
+    // `x4::locals`. Note that we don't actually use `x4::locals` here; we *already have*
+    // the stack-like structure because a recursive grammar inherently creates the nested
+    // invocation hierarchy, which ultimately does the same thing.
+    //
+    //   Dear valued user,
+    //   You have discovered the deepest wizardry of X4...
+    //   You win!!
+    //
+    template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
+        requires need_rcontext<RHS, It, Context, RHSAttr>
+    [[nodiscard]] static constexpr decltype(auto)
+    make_rcontext(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND, RHSAttr& rhs_attr BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    {
+        return x4::replace_first_context<contexts::rule_val>(ctx, rhs_attr);
+    }
+
+public:
     template<
         class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
-        class RContext, X4Attribute Exposed
+        class RContext, X4Attribute RHSAttr
     >
     [[nodiscard]] static constexpr bool
     parse_rhs(
         RHS const& rhs, It& first, Se const& last,
-        RContext const& rcontext, Exposed& attr
+        RContext const& rcontext, RHSAttr& rhs_attr
     ) // never noexcept; requires complex handling
     {
         // See if the user has `BOOST_SPIRIT_X4_DEFINE` for this rule
@@ -125,7 +192,7 @@ struct rule_impl
 
         bool ok;
         if constexpr (SkipDefinitionInjection || !is_default_parse_rule) {
-            ok = rhs.parse(first, last, rcontext, attr);
+            ok = rhs.parse(first, last, rcontext, rhs_attr);
 
         } else {
             // If there is no `BOOST_SPIRIT_X4_DEFINE` for this rule,
@@ -133,22 +200,17 @@ struct rule_impl
             // so we can extract the rule later on in the default
             // `parse_rule` overload.
             auto const rule_id_context = x4::make_context<RuleID>(rhs, rcontext);
-            ok = rhs.parse(first, last, rule_id_context, attr);
+            ok = rhs.parse(first, last, rule_id_context, rhs_attr);
         }
 
-        constexpr bool need_on_error =
-            has_context_v<RContext, contexts::expectation_failure> &&
-            has_on_error<RuleID, It, Se, RContext>::value;
-
-        // Note: this check uses `It, It` because the value is actually iterator-iterator pair
-        if constexpr (has_on_success<RuleID, It, It, RContext, Exposed>::value) {
+        if constexpr (need_on_success<It, RContext, RHSAttr>) {
             if (ok) {
                 x4::skip_over(start, first, rcontext);
-                RuleID{}.on_success(std::as_const(start), std::as_const(first), rcontext, attr);
+                RuleID{}.on_success(std::as_const(start), std::as_const(first), rcontext, rhs_attr);
                 return true;
             }
 
-            if constexpr (need_on_error) {
+            if constexpr (need_on_error<It, RContext, RHSAttr>) {
                 if (x4::has_expectation_failure(rcontext)) {
                     auto const& x = x4::get_expectation_failure(rcontext);
                     static_assert(
@@ -161,7 +223,7 @@ struct rule_impl
             return false;
 
         } else { // does not have `on_success`
-            if constexpr (need_on_error) {
+            if constexpr (need_on_error<It, RContext, RHSAttr>) {
                 if (ok) return true;
 
                 if (x4::has_expectation_failure(rcontext)) {
@@ -189,13 +251,13 @@ struct rule_impl
     call_rule_definition(
         RHS const& rhs, char const* rule_name,
         It& first, Se const& last,
-        Context const& ctx, Exposed& attr
+        Context const& ctx, Exposed& exposed_attr
     )
     {
         // Do down-stream transformation, provide attribute for `rhs` parser
         using transform = traits::transform_attribute<Attr, Exposed>;
         using transform_attr = typename transform::type;
-        transform_attr attr_ = transform::pre(attr);
+        transform_attr rhs_attr = transform::pre(exposed_attr);
 
         // Creates a place to hold the result of parse_rhs
         // called inside the following scope.
@@ -209,30 +271,10 @@ struct rule_impl
             // `transform::post`, where some types do some modifications there;
             // for instance, if `Exposed` is a recursive variant.
             scoped_rule_debug<It, Se, transform_attr>
-            dbg(rule_name, first, last, attr_, &parse_ok);
+            dbg(rule_name, first, last, rhs_attr, &parse_ok);
         #else
             (void)rule_name;
         #endif
-
-            // Replace or insert the `_val` context, while avoiding infinite instantiation on
-            // recursive grammars.
-            //
-            // In pre-X4 codebase, this was done by passing the extraneous `rcontext` parameter
-            // to every `.parse(...)` invocation on ALL parsers. We dropped that param on X4;
-            // now we simply append the rule attribute reference to the `context`, as it can
-            // essentially work as the global storage for any parsers.
-            //
-            // Although the `context` acts like the "global" storage, the actual lifetime of the
-            // rule-specific attribute is managed by stack-like structure, similar to that of
-            // `x4::locals`. Note that we don't actually use `x4::locals` here; we *already have*
-            // the stack-like structure because a recursive grammar inherently creates the nested
-            // invocation hierarchy, which ultimately does the same thing.
-            //
-            //   Dear valued user,
-            //   You have discovered the deepest wizardry of X4...
-            //   You win!!
-            //
-            auto&& rcontext = x4::replace_first_context<contexts::rule_val>(ctx, attr_);
 
             // The existence of semantic action inhibits attribute materialization _unless_ it is
             // explicitly required by the user (primarily via `%=`).
@@ -240,17 +282,33 @@ struct rule_impl
             // Note: `x4::as<T>(...)` explicitly unsets `has_action` even if the underlying subject
             // has semantic action, so it will be dispatched to the latter branch (unless the
             // `as_directive` itself has semantic action).
-            if constexpr (RHS::has_action && !ForceAttr) {
-                parse_ok = rule_impl::parse_rhs(rhs, first, last, rcontext, unused);
+            if constexpr (RHS::has_action) {
+                if constexpr (ForceAttr) {
+                    parse_ok = rule_impl::parse_rhs(
+                        rhs, first, last,
+                        rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
+                        rhs_attr
+                    );
+                } else {
+                    parse_ok = rule_impl::parse_rhs(
+                        rhs, first, last,
+                        rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
+                        unused // <-- omitted attribute
+                    );
+                }
 
-            } else { // Attribute is required
-                parse_ok = rule_impl::parse_rhs(rhs, first, last, rcontext, attr_);
+            } else { // RHS has no semantic action
+                parse_ok = rule_impl::parse_rhs(
+                    rhs, first, last,
+                    rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
+                    rhs_attr
+                );
             }
         }
 
         if (parse_ok) {
             // Integrate the results back into the original attribute value, if appropriate
-            transform::post(attr, std::forward<transform_attr>(attr_));
+            transform::post(exposed_attr, std::forward<transform_attr>(rhs_attr));
         }
         return parse_ok;
     }

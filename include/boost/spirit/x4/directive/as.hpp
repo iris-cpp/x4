@@ -46,7 +46,7 @@ struct as_directive : unary_parser<Subject, as_directive<T, Subject>>
     using subject_type = Subject;
 
     static constexpr bool has_attribute = !std::same_as<T, unused_type>;
-    static constexpr bool has_action = false; // Important: explicitly re-enable attribute detection in `x4::rule`
+    static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
 
 private:
     static constexpr bool need_as_val = Subject::has_action;

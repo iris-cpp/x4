@@ -47,6 +47,7 @@ struct parser : private detail::parser_base
     static constexpr bool handles_container = false;
     static constexpr bool is_pass_through_unary = false;
     static constexpr bool has_action = false;
+    static constexpr bool need_rcontext = false;
 
     [[nodiscard]] constexpr Derived& derived() & noexcept
     {
@@ -92,6 +93,7 @@ struct unary_parser : parser<Derived>
     using subject_type = Subject;
 
     static constexpr bool has_action = Subject::has_action;
+    static constexpr bool need_rcontext = Subject::need_rcontext;
 
     constexpr unary_parser() = default;
 
@@ -114,6 +116,7 @@ struct binary_parser : parser<Derived>
     using right_type = Right;
 
     static constexpr bool has_action = left_type::has_action || right_type::has_action;
+    static constexpr bool need_rcontext = left_type::need_rcontext || right_type::need_rcontext;
 
     constexpr binary_parser() = default;
 
