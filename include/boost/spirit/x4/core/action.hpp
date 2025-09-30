@@ -93,6 +93,7 @@ struct action : unary_parser<Subject, action<Subject, Action>>
     using base_type = unary_parser<Subject, action<Subject, Action>>;
     static constexpr bool is_pass_through_unary = true;
     static constexpr bool has_action = true;
+    static constexpr bool need_rcontext = true;
 
     Action f;
 
