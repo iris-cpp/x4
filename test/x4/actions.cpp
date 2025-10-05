@@ -26,7 +26,7 @@ TEST_CASE("action")
         CHECK(parse("{42}", '{' >> int_[fun_action] >> '}'));
     }
     {
-        auto const fail = [](auto& ctx) { x4::_pass(ctx) = false; };
+        auto const fail = [](auto&) { return false; };
         std::string input("1234 6543");
         char next = '\0';
 

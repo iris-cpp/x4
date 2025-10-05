@@ -214,14 +214,14 @@ TEST_CASE("rollback on failed parse (action)")
     {
         constexpr auto input = "foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(eps[([](auto& ctx) { _pass(ctx) = false; })].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(eps[([](auto&) { return false; })].parse(first, input.end(), unused, unused));
         CHECK(first == input.begin());
     }
     {
         constexpr auto input = "42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(int_[([](auto& ctx) { _pass(ctx) = false; })].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(int_[([](auto&) { return false; })].parse(first, input.end(), unused, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser itself succeeds; always results in side effect
     }
@@ -229,7 +229,7 @@ TEST_CASE("rollback on failed parse (action)")
         constexpr auto input = "42,43"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE((int_ >> ',' >> int_)[([](auto& ctx) { _pass(ctx) = false; })].parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE((int_ >> ',' >> int_)[([](auto&) { return false; })].parse(first, input.end(), unused, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{42, 43}); // sequence parser itself succeeds; always results in side effect
     }

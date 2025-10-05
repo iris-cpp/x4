@@ -27,7 +27,7 @@ namespace detail {
 
 struct raw_attribute_t;
 
-// Compose attr(where(val(pass(context))))
+// Compose attr(where(val(context)))
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 struct action_context_impl;
 
@@ -43,11 +43,7 @@ struct action_context_impl<It, Se, Context, Attr>
         context<
             contexts::where,
             std::ranges::subrange<It, Se> const,
-            context<
-                contexts::parse_pass,
-                bool,
-                canonical_context_t<Context const&>
-            >
+            canonical_context_t<Context const&>
         >
     >;
 };
@@ -58,11 +54,7 @@ struct action_context_impl<It, Se, Context, Attr>
     using type = context<
         contexts::where,
         std::ranges::subrange<It, Se> const,
-        context<
-            contexts::parse_pass,
-            bool,
-            canonical_context_t<Context const&>
-        >
+        canonical_context_t<Context const&>
     >;
 };
 
@@ -142,12 +134,12 @@ private:
         Context const& ctx, Attr& attr
     ) const noexcept(false) // construction of `subrange` is never noexcept as per the standard
     {
+        using action_return_type = std::invoke_result_t<Action const&, detail::action_context_t<It, Se, Context, Attr> const&>;
+        constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
         static_assert(
-            std::is_void_v<std::invoke_result_t<Action const&, detail::action_context_t<It, Se, Context, Attr> const&>>,
-            "Semantic action should not return value. Check your function signature."
+            action_returns_bool || std::same_as<action_return_type, void>,
+            "Semantic action should not return value other than `bool`. Check your function signature."
         );
-
-        bool pass = true;
 
         // TODO:
         // Provide some trait to detect whether this is actually needed for
@@ -160,25 +152,25 @@ private:
 
         // Inject `_attr` only when `Attr` is not `unused_type`
         if constexpr (X4UnusedAttribute<Attr>) {
-            auto const where_ctx = x4::make_context<contexts::where>(
-                where_rng,
-                x4::make_context<contexts::parse_pass>(pass, ctx)
-            );
+            auto const where_ctx = x4::make_context<contexts::where>(where_rng, ctx);
 
             // Sanity check (internal check for detecting implementation divergence)
             static_assert(std::same_as<
                 std::remove_const_t<decltype(where_ctx)>,
                 detail::action_context_t<It, Se, Context, Attr>
             >);
-            this->f(where_ctx);
+
+            if constexpr (action_returns_bool) {
+                return this->f(where_ctx);
+            } else {
+                this->f(where_ctx);
+                return true;
+            }
 
         } else {
             auto const attr_ctx = x4::make_context<contexts::attr>(
                 attr,
-                x4::make_context<contexts::where>(
-                    where_rng,
-                    x4::make_context<contexts::parse_pass>(pass, ctx)
-                )
+                x4::make_context<contexts::where>(where_rng, ctx)
             );
 
             // Sanity check (internal check for detecting implementation divergence)
@@ -187,9 +179,13 @@ private:
                 detail::action_context_t<It, Se, Context, Attr>
             >);
 
-            this->f(attr_ctx);
+            if constexpr (action_returns_bool) {
+                return this->f(attr_ctx);
+            } else {
+                this->f(attr_ctx);
+                return true;
+            }
         }
-        return pass;
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>

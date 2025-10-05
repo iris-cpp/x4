@@ -46,14 +46,13 @@ struct match_counter_rule_id
 using x4::rule;
 using x4::int_;
 using x4::with;
-using x4::_pass;
 using x4::_attr;
 
 template<class T>
 constexpr auto value_equals = int_[([](auto& ctx) {
     auto&& with_val = x4::get<my_tag>(ctx);
     static_assert(std::same_as<decltype(with_val), T>);
-    _pass(ctx) = with_val == _attr(ctx);
+    return with_val == _attr(ctx);
 })];
 
 } // anonymous
