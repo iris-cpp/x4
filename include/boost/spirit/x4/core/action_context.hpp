@@ -16,12 +16,6 @@ namespace boost::spirit::x4 {
 
 namespace contexts {
 
-// _pass
-struct parse_pass
-{
-    static constexpr bool is_unique = true;
-};
-
 // _val
 // Refers to the attribute of `x4::rule`.
 // This always points to the *innermost* attribute for the (potentially recursive) invocation of `x4::rule`.
@@ -54,7 +48,6 @@ struct attr
 
 } // contexts
 
-using parse_pass_context_tag [[deprecated("Use `x4::contexts::parse_pass`")]] = contexts::parse_pass;
 using rule_val_context_tag [[deprecated("Use `x4::contexts::rule_val`")]] = contexts::rule_val;
 using where_context_tag [[deprecated("Use `x4::contexts::where`")]] = contexts::where;
 using attr_context_tag [[deprecated("Use `x4::contexts::attr`")]] = contexts::attr;
@@ -65,14 +58,8 @@ namespace detail {
 struct _pass_fn
 {
     template<class Context>
-    [[nodiscard]] static constexpr bool&
-    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-    {
-        return x4::get<contexts::parse_pass>(ctx);
-    }
-
-    template<class Context>
-    static void operator()(Context const&&) = delete; // dangling
+    static constexpr void
+    operator()(Context const&) = delete; // `_pass(ctx)` is obsolete. Just return bool from semantic action.
 };
 
 struct _val_fn
