@@ -111,6 +111,4 @@ struct parser_traits
 
 } // boost::spirit::x4
 
-#undef BOOST_SPIRIT_X4_PASS_THROUGH_UNARY_DEPRECATION
-
 #endif
