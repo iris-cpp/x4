@@ -591,7 +591,7 @@ void print_file(Out& out, Builder& builder, int field_width, char const* name)
 
     out
         << "\n"
-        << "    inline constexpr std::uint8_t " << name << "_stage1[] = {\n"
+        << "    [[maybe_unused]] inline constexpr std::uint8_t " << name << "_stage1[] = {\n"
         << "\n"
         ;
 
@@ -603,7 +603,7 @@ void print_file(Out& out, Builder& builder, int field_width, char const* name)
         << "    };"
         << "\n"
         << "\n"
-        << "    inline constexpr " << int_name << ' ' << name << "_stage2[] = {"
+        << "    [[maybe_unused]] inline constexpr " << int_name << ' ' << name << "_stage2[] = {"
         ;
 
     int block_n = 0;

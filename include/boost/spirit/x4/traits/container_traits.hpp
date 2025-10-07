@@ -179,7 +179,7 @@ struct push_back_fn
 
 inline namespace cpos {
 
-inline constexpr detail::push_back_fn push_back{};
+[[maybe_unused]] inline constexpr detail::push_back_fn push_back{};
 
 } // cpos
 
@@ -238,7 +238,7 @@ struct append_fn
 
 inline namespace cpos {
 
-inline constexpr detail::append_fn append{};
+[[maybe_unused]] inline constexpr detail::append_fn append{};
 
 } // cpos
 
@@ -283,7 +283,7 @@ struct clear_fn
 
 inline namespace cpos {
 
-inline constexpr detail::clear_fn clear{};
+[[maybe_unused]] inline constexpr detail::clear_fn clear{};
 
 } // cpos
 
@@ -326,7 +326,7 @@ struct is_empty_fn
 
 inline namespace cpos {
 
-inline constexpr detail::is_empty_fn is_empty{};
+[[maybe_unused]] inline constexpr detail::is_empty_fn is_empty{};
 
 } // cpos
 
@@ -368,7 +368,7 @@ struct begin_fn
 
 inline namespace cpos {
 
-inline constexpr detail::begin_fn begin{};
+[[maybe_unused]] inline constexpr detail::begin_fn begin{};
 
 } // cpos
 
@@ -409,7 +409,7 @@ struct end_fn
 
 inline namespace cpos {
 
-inline constexpr detail::end_fn end{};
+[[maybe_unused]] inline constexpr detail::end_fn end{};
 
 } // cpos
 

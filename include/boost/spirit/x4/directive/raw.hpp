@@ -81,7 +81,7 @@ struct raw_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::raw_gen raw{};
+[[maybe_unused]] inline constexpr detail::raw_gen raw{};
 
 } // parsers::directive
 

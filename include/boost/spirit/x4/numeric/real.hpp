@@ -254,9 +254,9 @@ struct real_parser : parser<real_parser<T, Policy>>
 
 namespace parsers {
 
-inline constexpr real_parser<float> float_{};
-inline constexpr real_parser<double> double_{};
-inline constexpr real_parser<long double> long_double{};
+[[maybe_unused]] inline constexpr real_parser<float> float_{};
+[[maybe_unused]] inline constexpr real_parser<double> double_{};
+[[maybe_unused]] inline constexpr real_parser<long double> long_double{};
 
 } // parsers
 

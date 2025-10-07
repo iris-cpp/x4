@@ -252,7 +252,7 @@ struct as_parser_fn
 
 inline namespace cpos {
 
-inline constexpr detail::as_parser_fn as_parser{};
+[[maybe_unused]] inline constexpr detail::as_parser_fn as_parser{};
 
 } // cpos
 
@@ -511,7 +511,7 @@ struct what_fn
 
 inline namespace cpos {
 
-inline constexpr detail::what_fn what{}; // no ADL
+[[maybe_unused]] inline constexpr detail::what_fn what{}; // no ADL
 
 } // cpos
 

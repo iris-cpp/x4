@@ -45,8 +45,8 @@ struct unused_container_type
 
 inline namespace cpos {
 
-inline constexpr unused_type unused{};
-inline constexpr unused_container_type unused_container{};
+[[maybe_unused]] inline constexpr unused_type unused{};
+[[maybe_unused]] inline constexpr unused_container_type unused_container{};
 
 } // cpos
 

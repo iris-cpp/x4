@@ -179,8 +179,8 @@ struct reskip_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::skip_gen skip{};
-inline constexpr detail::reskip_gen reskip{};
+[[maybe_unused]] inline constexpr detail::skip_gen skip{};
+[[maybe_unused]] inline constexpr detail::reskip_gen reskip{};
 
 } // parsers::directive
 

@@ -382,7 +382,7 @@ struct parse_fn : parse_fn_main, parse_fn_deprecated
 
 inline namespace cpos {
 
-inline constexpr detail::parse_fn parse{};
+[[maybe_unused]] inline constexpr detail::parse_fn parse{};
 
 [[maybe_unused, deprecated("Use `parse(...)`. Spirit can now dispatch overloads correctly.")]]
 inline constexpr detail::parse_fn phrase_parse{};

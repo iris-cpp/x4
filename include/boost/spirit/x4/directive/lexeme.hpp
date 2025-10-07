@@ -81,7 +81,7 @@ struct lexeme_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::lexeme_gen lexeme{};
+[[maybe_unused]] inline constexpr detail::lexeme_gen lexeme{};
 
 } // parsers::directive
 

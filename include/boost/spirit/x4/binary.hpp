@@ -115,7 +115,7 @@ struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
 
 #define BOOST_SPIRIT_X4_BINARY_PARSER(name, endiantype, attrtype, bits) \
     namespace parsers { \
-    inline constexpr any_binary_parser<attrtype, boost::endian::order::endiantype, bits> name{}; \
+    [[maybe_unused]] inline constexpr any_binary_parser<attrtype, boost::endian::order::endiantype, bits> name{}; \
     } /* parsers */ \
     using parsers::name;
 

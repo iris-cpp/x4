@@ -46,7 +46,7 @@ struct get_info<eoi_parser>
 
 namespace parsers {
 
-inline constexpr eoi_parser eoi{};
+[[maybe_unused]] inline constexpr eoi_parser eoi{};
 
 } // parsers
 

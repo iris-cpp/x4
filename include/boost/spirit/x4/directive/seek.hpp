@@ -65,7 +65,7 @@ struct seek_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::seek_gen seek{};
+[[maybe_unused]] inline constexpr detail::seek_gen seek{};
 
 } // parsers::directive
 

@@ -121,7 +121,7 @@ struct parse_overloads : x4::detail::parse_fn_main
 
 inline namespace cpos {
 
-inline constexpr detail::parse_overloads parse{};
+[[maybe_unused]] inline constexpr detail::parse_overloads parse{};
 
 } // cpos
 

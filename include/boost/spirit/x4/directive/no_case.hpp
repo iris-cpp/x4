@@ -63,7 +63,7 @@ struct no_case_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::no_case_gen no_case{};
+[[maybe_unused]] inline constexpr detail::no_case_gen no_case{};
 
 } // parsers::directive
 

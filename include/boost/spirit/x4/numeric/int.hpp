@@ -52,15 +52,15 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
 
 namespace parsers {
 
-inline constexpr int_parser<short> short_{};
-inline constexpr int_parser<int> int_{};
-inline constexpr int_parser<long> long_{};
-inline constexpr int_parser<long long> long_long{};
+[[maybe_unused]] inline constexpr int_parser<short> short_{};
+[[maybe_unused]] inline constexpr int_parser<int> int_{};
+[[maybe_unused]] inline constexpr int_parser<long> long_{};
+[[maybe_unused]] inline constexpr int_parser<long long> long_long{};
 
-inline constexpr int_parser<std::int8_t> int8{};
-inline constexpr int_parser<std::int16_t> int16{};
-inline constexpr int_parser<std::int32_t> int32{};
-inline constexpr int_parser<std::int64_t> int64{};
+[[maybe_unused]] inline constexpr int_parser<std::int8_t> int8{};
+[[maybe_unused]] inline constexpr int_parser<std::int16_t> int16{};
+[[maybe_unused]] inline constexpr int_parser<std::int32_t> int32{};
+[[maybe_unused]] inline constexpr int_parser<std::int64_t> int64{};
 
 } // parsers
 
