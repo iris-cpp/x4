@@ -47,7 +47,7 @@ TEST_CASE("as")
         using Underlying = std::remove_const_t<decltype(eps)>;
         using AsParser = std::remove_const_t<decltype(p)>;
 
-        static_assert(std::same_as<x4::traits::attribute_of_t<Underlying, Context>, unused_type>);
+        static_assert(std::same_as<x4::parser_traits<Underlying>::attribute_type, unused_type>);
 
         static_assert(x4::is_nothrow_parsable_v<Underlying, It, Se, Context, unused_type>);
         static_assert(x4::is_nothrow_parsable_v<Underlying, It, Se, Context, std::string>); // Arbitrary exposed attribute
@@ -69,7 +69,7 @@ TEST_CASE("as")
         using Underlying = std::remove_const_t<decltype(eps)>;
         using AsParser = std::remove_const_t<decltype(p)>;
 
-        static_assert(std::same_as<x4::traits::attribute_of_t<Underlying, Context>, unused_type>);
+        static_assert(std::same_as<x4::parser_traits<Underlying>::attribute_type, unused_type>);
 
         static_assert(x4::is_nothrow_parsable_v<Underlying, It, Se, Context, unused_type>);
         static_assert(x4::is_nothrow_parsable_v<Underlying, It, Se, Context, std::string>); // Arbitrary exposed attribute

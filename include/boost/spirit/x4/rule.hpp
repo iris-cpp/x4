@@ -317,14 +317,16 @@ public:
 template<class RuleID, X4Subject RHS, X4Attribute RuleDefAttr, bool ForceAttr, bool SkipDefinitionInjection = false>
 struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceAttr, SkipDefinitionInjection>>
 {
+    static_assert(!std::is_same_v<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
+
     using this_type = rule_definition;
     using id = RuleID;
     using lhs_type = rule<RuleID, RuleDefAttr, ForceAttr>;
     using rhs_type = RHS;
     using attribute_type = RuleDefAttr;
 
-    static constexpr bool has_attribute = !std::same_as<RuleDefAttr, unused_type>;
-    static constexpr bool handles_container = traits::is_container<RuleDefAttr>::value;
+    static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleDefAttr>, unused_type>;
+    static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<RuleDefAttr>>;
     static constexpr bool force_attribute = ForceAttr;
 
     template<class RHS_T>
@@ -396,11 +398,12 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 {
     static_assert(X4Attribute<RuleAttr>);
     static_assert(X4UnusedAttribute<RuleAttr> || !std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
+    static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
 
     using id = RuleID;
     using attribute_type = RuleAttr;
 
-    static constexpr bool has_attribute = !std::same_as<std::remove_const_t<RuleAttr>, unused_type>;
+    static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleAttr>, unused_type>;
     static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<RuleAttr>>;
     static constexpr bool force_attribute = ForceAttr;
 

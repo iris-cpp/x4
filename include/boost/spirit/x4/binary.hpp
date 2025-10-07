@@ -32,8 +32,6 @@ struct binary_lit_parser : parser<binary_lit_parser<T, endian, bits>>
 {
     using attribute_type = unused_type;
 
-    static constexpr bool has_attribute = false;
-
     template<class U>
         requires
             (!std::is_same_v<std::remove_cvref_t<U>, binary_lit_parser>) &&
@@ -74,8 +72,6 @@ struct any_binary_parser : parser<any_binary_parser<T, endian, bits>>
     static_assert(std::is_trivially_copyable_v<T>);
 
     using attribute_type = T;
-
-    static constexpr bool has_attribute = !std::is_same_v<unused_type, T>;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool

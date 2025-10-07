@@ -13,8 +13,6 @@
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/action_context.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
-
 #include <ranges>
 #include <iterator>
 #include <concepts>
@@ -75,15 +73,15 @@ struct action_context_impl<It, Se, Context, Attr>
 // holds exact specific type provided to the entry point (`x4::parse`).
 
 template<class Subject, class Action>
-struct action : unary_parser<Subject, action<Subject, Action>>
+struct action : proxy_parser<Subject, action<Subject, Action>>
 {
     static_assert(
         !std::is_reference_v<Action>,
         "Reference type is disallowed for semantic action functor to prevent dangling reference"
     );
 
-    using base_type = unary_parser<Subject, action<Subject, Action>>;
-    static constexpr bool is_pass_through_unary = true;
+    using base_type = proxy_parser<Subject, action>;
+
     static constexpr bool has_action = true;
     static constexpr bool need_rcontext = true;
 
@@ -103,14 +101,12 @@ struct action : unary_parser<Subject, action<Subject, Action>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, unused_type) const
         noexcept(
-            std::is_nothrow_default_constructible_v<traits::attribute_of_t<action, Context>> &&
-            noexcept(this->parse_main(first, last, ctx, std::declval<traits::attribute_of_t<action, Context>&>()))
+            std::is_nothrow_default_constructible_v<typename base_type::attribute_type> &&
+            noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
         )
     {
-        using attribute_type = traits::attribute_of_t<action, Context>;
-
         // Synthesize the attribute since one is not supplied
-        attribute_type attribute; // default-initialize
+        typename base_type::attribute_type attribute; // default-initialize
         return this->parse_main(first, last, ctx, attribute);
     }
 
@@ -205,12 +201,19 @@ private:
             "`const` qualifier to satisfy the constraints."
         );
 
+        using action_return_type = std::invoke_result_t<Action const&>;
+        constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
         static_assert(
-            std::is_void_v<std::invoke_result_t<Action const&>>,
-            "Semantic action should not return value. Check your function signature."
+            action_returns_bool || std::same_as<action_return_type, void>,
+            "Semantic action should not return value other than `bool`. Check your function signature."
         );
-        this->f();
-        return true;
+
+        if constexpr (action_returns_bool) {
+            return this->f();
+        } else {
+            this->f();
+            return true;
+        }
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>

@@ -22,8 +22,6 @@ struct eol_parser : parser<eol_parser>
 {
     using attribute_type = unused_type;
 
-    static constexpr bool has_attribute = false;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr&) const

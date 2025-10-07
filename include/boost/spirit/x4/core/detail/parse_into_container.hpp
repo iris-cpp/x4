@@ -10,44 +10,38 @@
 =============================================================================*/
 
 #include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/core/move_to.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/container_appender.hpp>
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
-#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/substitution.hpp>
 
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
 #include <boost/fusion/sequence/intrinsic/front.hpp>
 #include <boost/fusion/sequence/intrinsic/back.hpp>
 
-// TODO: remove Boost.Variant usage
-#include <boost/variant/variant.hpp>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
+#include <boost/variant/variant.hpp> // TODO: remove Boost.Variant usage
 
-#include <ranges>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 
 namespace boost::spirit::x4::detail {
 
-template<class Parser, class Container, class Context>
+template<class Parser, class Container>
 struct parser_accepts_container
-    : traits::is_substitute<traits::attribute_of_t<Parser, Context>, Container>
+    : traits::is_substitute<typename parser_traits<Parser>::attribute_type, Container>
 {};
 
-template<class Parser, class Container, class Context>
-constexpr bool parser_accepts_container_v = parser_accepts_container<Parser, Container, Context>::value;
+template<class Parser, class Container>
+constexpr bool parser_accepts_container_v = parser_accepts_container<Parser, Container>::value;
 
 template<class Parser>
 struct parse_into_container_base_impl
 {
     // Parser has attribute (synthesize; Attribute is a container)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!parser_accepts_container_v<Parser, Attr, Context>)
+        requires (!parser_accepts_container_v<Parser, Attr>)
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
@@ -68,7 +62,7 @@ struct parse_into_container_base_impl
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-        requires (!parser_accepts_container_v<Parser, unused_container_type, Context>)
+        requires (!parser_accepts_container_v<Parser, unused_container_type>)
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
@@ -81,7 +75,7 @@ struct parse_into_container_base_impl
 
     // Parser has attribute (synthesize; Attribute is a container)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires parser_accepts_container_v<Parser, Attr, Context>
+        requires parser_accepts_container_v<Parser, Attr>
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
@@ -95,7 +89,7 @@ struct parse_into_container_base_impl
     // Parser has attribute && it is NOT fusion sequence
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
-            traits::has_attribute_v<Parser, Context> &&
+            has_attribute_v<Parser> &&
             (!fusion::traits::is_sequence<Attr>::value)
     [[nodiscard]] static constexpr bool
     call(
@@ -110,7 +104,7 @@ struct parse_into_container_base_impl
     // Parser has attribute && it is fusion sequence
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
-            traits::has_attribute_v<Parser, Context> &&
+            has_attribute_v<Parser> &&
             fusion::traits::is_sequence<Attr>::value
     [[nodiscard]] static constexpr bool
     call(
@@ -125,7 +119,7 @@ struct parse_into_container_base_impl
 
     // Parser has no attribute (pass unused)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!traits::has_attribute_v<Parser, Context>)
+        requires (!has_attribute_v<Parser>)
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -137,30 +131,29 @@ struct parse_into_container_base_impl
     }
 };
 
-template<class Parser, class Context>
+template<class Parser>
 struct parse_into_container_impl : parse_into_container_base_impl<Parser> {};
 
 
-template<class Parser, class Context>
+template<class Parser>
     requires Parser::handles_container
-struct parse_into_container_impl<Parser, Context>
+struct parse_into_container_impl<Parser>
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     static constexpr bool pass_attibute_as_is = std::disjunction_v<
-        parser_accepts_container<Parser, Attr, Context>,
+        parser_accepts_container<Parser, Attr>,
 
         std::negation<traits::is_substitute< // parser attribute is substitute for container value?
-            traits::pseudo_attribute_t<
-                Context,
-                traits::attribute_of_t<Parser, Context>,
-                It, Se
-            >,
+            typename traits::pseudo_attribute<
+                It, Se, Context,
+                typename parser_traits<Parser>::attribute_type
+            >::actual_type,
             traits::container_value_t<Attr>
         >>
     >;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
-        requires (!pass_attibute_as_is<It, Se, Attr>)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires (!pass_attibute_as_is<It, Se, Context, Attr>)
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -174,8 +167,8 @@ struct parse_into_container_impl<Parser, Context>
         );
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se>
-        requires pass_attibute_as_is<It, Se, unused_container_type>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+        requires pass_attibute_as_is<It, Se, Context, unused_container_type>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -186,8 +179,8 @@ struct parse_into_container_impl<Parser, Context>
         return parser.parse(first, last, ctx, unused_container);
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
-        requires pass_attibute_as_is<It, Se, Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires pass_attibute_as_is<It, Se, Context, Attr>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -211,18 +204,14 @@ template<
 parse_into_container(
     Parser const& parser, It& first, Se const& last,
     Context const& ctx, Attr& attr
-) noexcept(noexcept(parse_into_container_impl<Parser, Context>::call(
-    parser, first, last, ctx, attr
-)))
+) noexcept(noexcept(parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr)))
 {
     static_assert(
         !std::same_as<Attr, unused_type>,
         "`unused_type` should not be passed to `parse_into_container`. Use `x4::assume_container(attr)`"
     );
 
-    return parse_into_container_impl<Parser, Context>::call(
-        parser, first, last, ctx, attr
-    );
+    return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
 }
 
 } // boost::spirit::x4::detail

@@ -83,10 +83,11 @@ inline constexpr detail::repeat_inf_type inf{};
 } // cpos
 
 template<class Subject, detail::RepeatBounds Bounds>
-struct repeat_directive : unary_parser<Subject, repeat_directive<Subject, Bounds>>
+struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds>>
 {
-    using base_type = unary_parser<Subject, repeat_directive<Subject, Bounds>>;
-    static constexpr bool is_pass_through_unary = true;
+    using base_type = proxy_parser<Subject, repeat_directive>;
+    using attribute_type = traits::build_container_t<typename parser_traits<Subject>::attribute_type>;
+
     static constexpr bool handles_container = true;
 
     template<class SubjectT, detail::RepeatBounds BoundsT>
@@ -195,14 +196,5 @@ namespace parsers::directive {
 using parsers::directive::repeat;
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Subject, class Bounds, class Context>
-struct attribute_of<x4::repeat_directive<Subject, Bounds>, Context>
-    : build_container<attribute_of_t<Subject, Context>>
-{};
-
-} // boost::spirit::x4::traits
 
 #endif

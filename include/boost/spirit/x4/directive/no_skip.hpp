@@ -23,11 +23,8 @@ namespace boost::spirit::x4 {
 
 // Same as `lexeme[...]`, but does not pre-skip
 template<class Subject>
-struct no_skip_directive : unary_parser<Subject, no_skip_directive<Subject>>
+struct no_skip_directive : proxy_parser<Subject, no_skip_directive<Subject>>
 {
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
-
 private:
     template<class Context>
     using unused_skipper_context_t = x4::context<

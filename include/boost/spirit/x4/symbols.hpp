@@ -53,12 +53,14 @@ namespace detail {
 template<class Derived, bool IsShared, class Encoding, class T, class Lookup>
 struct symbols_parser_impl : parser<Derived>
 {
+    static_assert(!std::is_same_v<T, unused_container_type>, "symbols parser with `unused_container_type` is not supported");
+
     using char_type = typename Encoding::char_type; // the character type
     using encoding = Encoding;
     using value_type = T; // the value associated with each entry
     using attribute_type = value_type;
 
-    static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
+    static constexpr bool has_attribute = !std::is_same_v<attribute_type, unused_type>;
     static constexpr bool handles_container = traits::is_container_v<attribute_type>;
 
     constexpr symbols_parser_impl(std::string_view name = "symbols")

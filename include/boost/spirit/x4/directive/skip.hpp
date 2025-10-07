@@ -11,8 +11,6 @@
 =============================================================================*/
 
 #include <boost/spirit/x4/core/context.hpp>
-#include <boost/spirit/x4/core/unused.hpp>
-#include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/skip_over.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 
@@ -24,11 +22,8 @@
 namespace boost::spirit::x4 {
 
 template<class Subject>
-struct reskip_directive : unary_parser<Subject, reskip_directive<Subject>>
+struct reskip_directive : proxy_parser<Subject, reskip_directive<Subject>>
 {
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
@@ -72,12 +67,9 @@ public:
 };
 
 template<class Subject, class Skipper>
-struct skip_directive : unary_parser<Subject, skip_directive<Subject, Skipper>>
+struct skip_directive : proxy_parser<Subject, skip_directive<Subject, Skipper>>
 {
-    using base_type = unary_parser<Subject, skip_directive<Subject, Skipper>>;
-
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
+    using base_type = proxy_parser<Subject, skip_directive>;
 
     template<class SubjectT, class SkipperT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Skipper, SkipperT>

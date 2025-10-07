@@ -12,11 +12,11 @@
 =============================================================================*/
 
 #include <boost/spirit/x4/core/parser.hpp>
+#include <boost/spirit/x4/core/parser_traits.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/optional_traits.hpp>
 #include <boost/spirit/x4/traits/attribute_category.hpp>
 
@@ -29,7 +29,8 @@ namespace boost::spirit::x4 {
 template<class Subject>
 struct optional : unary_parser<Subject, optional<Subject>>
 {
-    static constexpr bool is_pass_through_unary = false;
+    using attribute_type = traits::build_optional_t<typename parser_traits<Subject>::attribute_type>;
+
     static constexpr bool handles_container = true;
 
     // catch-all overload
@@ -112,14 +113,5 @@ operator-(Subject&& subject)
 }
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Subject, class Context>
-struct attribute_of<x4::optional<Subject>, Context>
-    : build_optional<attribute_of_t<Subject, Context>>
-{};
-
-} // boost::spirit::x4::traits
 
 #endif

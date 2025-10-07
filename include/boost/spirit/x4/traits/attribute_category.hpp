@@ -17,7 +17,6 @@
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/support/category_of.hpp>
 
-#include <concepts>
 #include <type_traits>
 
 namespace boost::spirit::x4 {
@@ -40,6 +39,7 @@ struct subrange_attr {};
 template<class T>
 struct attribute_category
 {
+    static_assert(X4NonUnusedAttribute<T>);
     using type = plain_attr;
 };
 

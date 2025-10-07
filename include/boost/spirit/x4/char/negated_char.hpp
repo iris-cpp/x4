@@ -9,7 +9,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/char/char_parser.hpp>
 
 #include <type_traits>
@@ -21,6 +20,9 @@ namespace boost::spirit::x4 {
 template<class Positive>
 struct negated_char_parser : char_parser<typename Positive::encoding_type, negated_char_parser<Positive>>
 {
+    static_assert(X4ExplicitSubject<Positive>);
+
+    using attribute_type = parser_traits<Positive>::attribute_type;
     using encoding_type = typename Positive::encoding_type;
 
     template<class PositiveT>
@@ -65,19 +67,5 @@ operator~(negated_char_parser<Positive> const& cp) noexcept
 }
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Positive, class Context>
-struct attribute_of<negated_char_parser<Positive>, Context>
-    : attribute_of<Positive, Context>
-{};
-
-template<class Positive, class Context>
-struct has_attribute<negated_char_parser<Positive>, Context>
-    : has_attribute<Positive, Context>
-{};
-
-} // boost::spirit::x4::traits
 
 #endif

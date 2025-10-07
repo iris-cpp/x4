@@ -17,7 +17,6 @@
 
 #include <concepts>
 #include <iterator>
-#include <utility>
 
 namespace boost::spirit::x4 {
 

@@ -12,7 +12,6 @@
 ==============================================================================*/
 
 #include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
@@ -43,7 +42,6 @@ struct attr_parser : parser<attr_parser<T, HeldValueT>>
     using attribute_type = T;
     using held_value_type = HeldValueT;
 
-    static constexpr bool has_attribute = !std::is_same_v<T, unused_type>;
     static constexpr bool handles_container = traits::is_container_v<T>;
 
     template<class U>

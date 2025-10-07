@@ -16,7 +16,6 @@
 #include <boost/spirit/x4/core/unused.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/numeric_traits.hpp>
 #include <boost/spirit/x4/traits/char_encoding_traits.hpp>
 
@@ -285,8 +284,7 @@ struct extract_int
             }
         }
 
-        using attribute_type = traits::attribute_type_t<Attr>;
-        attribute_type val = Accumulate ? attr : attribute_type(0);
+        Attr val = Accumulate ? attr : Attr{};
         std::size_t count = 0;
         char_type ch;
 
@@ -378,8 +376,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
             }
         }
 
-        using attribute_type = traits::attribute_type_t<Attr>;
-        attribute_type val = Accumulate ? attr : attribute_type{};
+        Attr val = Accumulate ? attr : Attr{};
 
         char_type ch = *it;
         if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val)) {

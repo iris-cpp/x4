@@ -20,11 +20,8 @@
 namespace boost::spirit::x4 {
 
 template<class Subject>
-struct lexeme_directive : unary_parser<Subject, lexeme_directive<Subject>>
+struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
 {
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
-
 private:
     template<class Context>
     using pre_skip_context_t = std::remove_cvref_t<decltype(

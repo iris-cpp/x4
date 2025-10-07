@@ -17,7 +17,6 @@
 #include <boost/spirit/x4/core/unused.hpp>
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
-#include <boost/spirit/x4/traits/attribute.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -28,6 +27,8 @@ namespace boost::spirit::x4 {
 template<class Left, class Right>
 struct list : binary_parser<Left, Right, list<Left, Right>>
 {
+    using attribute_type = traits::build_container_t<typename parser_traits<Left>::attribute_type>;
+
     static constexpr bool handles_container = true;
 
     using binary_parser<Left, Right, list>::binary_parser;
@@ -80,19 +81,5 @@ operator%(Left&& left, Right&& right)
 }
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Left, class Right, class Context>
-struct attribute_of<x4::list<Left, Right>, Context>
-    : traits::build_container<attribute_of_t<Left, Context>>
-{};
-
-template<class Left, class Right, class Context>
-struct has_attribute<x4::list<Left, Right>, Context>
-    : has_attribute<Left, Context>
-{};
-
-} // boost::spirit::x4::traits
 
 #endif

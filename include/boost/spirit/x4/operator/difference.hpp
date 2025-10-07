@@ -13,8 +13,6 @@
 #include <boost/spirit/x4/core/expectation.hpp>
 #include <boost/spirit/x4/core/parser.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
-
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -24,6 +22,8 @@ namespace boost::spirit::x4 {
 template<class Left, class Right>
 struct difference : binary_parser<Left, Right, difference<Left, Right>>
 {
+    using attribute_type = parser_traits<Left>::attribute_type;
+
     static constexpr bool handles_container = Left::handles_container;
 
     using binary_parser<Left, Right, difference>::binary_parser;
@@ -74,19 +74,5 @@ operator-(Left&& left, Right&& right)
 }
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Left, class Right, class Context>
-struct attribute_of<x4::difference<Left, Right>, Context>
-    : attribute_of<Left, Context>
-{};
-
-template<class Left, class Right, class Context>
-struct has_attribute<x4::difference<Left, Right>, Context>
-    : has_attribute<Left, Context>
-{};
-
-} // boost::spirit::x4::traits
 
 #endif

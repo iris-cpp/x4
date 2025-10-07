@@ -13,8 +13,6 @@
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/move_to.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
-
 #include <ranges>
 #include <iterator>
 #include <type_traits>
@@ -35,7 +33,6 @@ template<class Subject>
 struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 {
     using attribute_type = detail::raw_attribute_t;
-    using subject_type = Subject;
 
     static constexpr bool handles_container = true;
 
@@ -91,13 +88,13 @@ using parsers::directive::raw;
 
 namespace boost::spirit::x4::traits {
 
-template<class Context, std::forward_iterator It>
-struct pseudo_attribute<Context, x4::detail::raw_attribute_t, It>
+template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+struct pseudo_attribute<It, Se, Context, x4::detail::raw_attribute_t>
 {
-    using attribute_type = x4::detail::raw_attribute_t;
-    using type = std::ranges::subrange<It, It>; // This must be It-It pair, NOT It-Se pair
+    using actual_type = std::ranges::subrange<It, Se>;
 
-    [[nodiscard]] static constexpr type call(It& first, std::sentinel_for<It> auto const& last, x4::detail::raw_attribute_t)
+    [[nodiscard]] static constexpr actual_type
+    make_actual_type(It& first, Se const& last, Context const&, x4::detail::raw_attribute_t)
     {
         return {first, last};
     }

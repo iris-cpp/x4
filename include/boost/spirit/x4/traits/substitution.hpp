@@ -18,8 +18,6 @@
 #include <boost/mpl/placeholders.hpp>
 #include <boost/mpl/equal.hpp>
 #include <boost/mpl/filter_view.hpp>
-#include <boost/mpl/size.hpp>
-#include <boost/mpl/at.hpp>
 
 #include <optional>
 #include <type_traits>

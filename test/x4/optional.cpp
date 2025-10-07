@@ -9,6 +9,7 @@
 #include "test.hpp"
 
 #include <boost/spirit/x4/char/char.hpp>
+#include <boost/spirit/x4/string/string.hpp>
 #include <boost/spirit/x4/directive/omit.hpp>
 #include <boost/spirit/x4/numeric/int.hpp>
 #include <boost/spirit/x4/operator/optional.hpp>
@@ -20,7 +21,9 @@
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
 
+#include <concepts>
 #include <optional>
+#include <type_traits>
 
 #ifdef _MSC_VER
 // bogus https://developercommunity.visualstudio.com/t/buggy-warning-c4709/471956
@@ -56,6 +59,7 @@ TEST_CASE("optional")
 
     using x4::int_;
     using x4::omit;
+    using x4::lit;
     using x4::standard::char_;
     using x4::_attr;
 
@@ -92,11 +96,41 @@ TEST_CASE("optional")
         using boost::fusion::at_c;
         using boost::fusion::vector;
 
+        // optional of `unused_type`
         {
+            [[maybe_unused]] constexpr auto omit_int_p = omit[int_];
+            static_assert(!x4::parser_traits<std::remove_const_t<decltype(omit_int_p)>>::has_attribute);
+            static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(omit_int_p)>>::attribute_type, unused_type>);
+
+            [[maybe_unused]] constexpr auto opt_omit_int_p = -omit_int_p;
+            static_assert(!x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::has_attribute);
+            static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::attribute_type, unused_type>);
+
             vector<char, char> v;
             REQUIRE(parse("a1234c", char_ >> -omit[int_] >> char_, v));
             CHECK(at_c<0>(v) == 'a');
             CHECK(at_c<1>(v) == 'c');
+        }
+        // optional of `unused_container_type`
+        {
+            [[maybe_unused]] constexpr auto foos_p = +lit("foo");
+            static_assert(!x4::parser_traits<std::remove_const_t<decltype(foos_p)>>::has_attribute);
+            static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(foos_p)>>::attribute_type, unused_container_type>);
+            CHECK(parse("foofoo", foos_p));
+            {
+                auto const res = parse("bar", foos_p);
+                CHECK(!res.ok);
+            }
+
+            [[maybe_unused]] constexpr auto opt_foos_p = -foos_p;
+            static_assert(!x4::parser_traits<std::remove_const_t<decltype(opt_foos_p)>>::has_attribute);
+            static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(opt_foos_p)>>::attribute_type, unused_container_type>);
+            CHECK(parse("foofoo", opt_foos_p));
+            {
+                auto const res = parse("bar", opt_foos_p);
+                CHECK(res.is_partial_match());
+                CHECK(res.remainder_str() == "bar");
+            }
         }
         {
             vector<char, char> v;

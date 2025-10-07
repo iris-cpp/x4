@@ -472,6 +472,9 @@ struct build_container
 };
 
 template<class T>
+using build_container_t = typename build_container<T>::type;
+
+template<class T>
 struct build_container<boost::fusion::deque<T>> : build_container<T> {};
 
 template<>

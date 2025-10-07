@@ -29,6 +29,9 @@
 
 namespace boost::spirit::x4 {
 
+template<class Source, class Dest>
+constexpr void move_to(Source&&, Dest&) = delete; // `Source` and `Dest` do not fall into any of the overload below.
+
 // Identical types ---------------------------------------
 //
 // Note that these overloads must be strictly "more constrained"
