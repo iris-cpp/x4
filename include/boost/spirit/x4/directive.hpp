@@ -10,7 +10,7 @@
 ==============================================================================*/
 
 #include <boost/spirit/config.hpp>
-// #include <boost/spirit/x4/directive/as.hpp>
+#include <boost/spirit/x4/directive/as.hpp>
 #include <boost/spirit/x4/directive/expect.hpp>
 #include <boost/spirit/x4/directive/lexeme.hpp>
 #include <boost/spirit/x4/directive/matches.hpp>
