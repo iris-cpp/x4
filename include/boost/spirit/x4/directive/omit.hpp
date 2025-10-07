@@ -24,7 +24,6 @@ template<class Subject>
 struct omit_directive : unary_parser<Subject, omit_directive<Subject>>
 {
     using attribute_type = unused_type;
-    using subject_type = Subject;
 
     static constexpr bool has_attribute = false;
 

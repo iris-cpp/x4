@@ -10,10 +10,18 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/x4/core/unused.hpp>
+#include <boost/spirit/config.hpp>
 
 #include <optional>
 #include <type_traits>
+
+namespace boost::spirit::x4 {
+
+struct unused_type;
+struct unused_container_type;
+
+} // boost::spirit::x4
+
 
 namespace boost::spirit::x4::traits {
 
@@ -26,7 +34,6 @@ constexpr bool is_optional_v = is_optional<T>::value;
 template<class T>
 struct is_optional<std::optional<T>> : std::true_type {};
 
-// Build a optional type from T. Return unused_type if T is unused_type.
 template<class T>
 struct build_optional
 {
@@ -48,7 +55,12 @@ struct build_optional<unused_type>
     using type = unused_type;
 };
 
-// Get the optional's value_type. Handles unused_type as well.
+template<>
+struct build_optional<unused_container_type>
+{
+    using type = unused_container_type;
+};
+
 template<class T>
 struct optional_value
 {

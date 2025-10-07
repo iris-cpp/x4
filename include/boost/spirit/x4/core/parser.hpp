@@ -13,8 +13,7 @@
 #include <boost/spirit/config.hpp>
 #include <boost/spirit/x4/core/attribute.hpp>
 #include <boost/spirit/x4/core/unused.hpp>
-#include <boost/spirit/x4/core/context.hpp>
-#include <boost/spirit/x4/traits/attribute.hpp>
+#include <boost/spirit/x4/core/parser_traits.hpp>
 
 #include <iterator>
 #include <string>
@@ -38,6 +37,7 @@ struct parser_id;
 
 } // detail
 
+
 template<class Derived>
 struct parser : private detail::parser_base
 {
@@ -45,7 +45,6 @@ struct parser : private detail::parser_base
     using derived_type = Derived;
 
     static constexpr bool handles_container = false;
-    static constexpr bool is_pass_through_unary = false;
     static constexpr bool has_action = false;
     static constexpr bool need_rcontext = false;
 
@@ -109,6 +108,19 @@ struct unary_parser : parser<Derived>
     Subject subject;
 };
 
+template<class Subject, class Derived>
+struct proxy_parser : unary_parser<Subject, Derived>
+{
+    using proxy_backend_type = Subject;
+    using attribute_type = parser_traits<Subject>::attribute_type;
+
+    static constexpr bool has_attribute = x4::has_attribute_v<Subject>;
+    static constexpr bool handles_container = Subject::handles_container;
+    static constexpr std::size_t sequence_size = parser_traits<Subject>::sequence_size;
+
+    using unary_parser<Subject, Derived>::unary_parser;
+};
+
 template<class Left, class Right, class Derived>
 struct binary_parser : parser<Derived>
 {
@@ -133,30 +145,7 @@ struct binary_parser : parser<Derived>
     /*BOOST_SPIRIT_NO_UNIQUE_ADDRESS*/ Right right;
 };
 
-// as_parser: convert a type, T, into a parser.
 namespace extension {
-
-// In short: if you want to customize the `as_parser(p)` behavior, just
-// specialize `x4::extension::as_parser` for your class.
-//
-// Older versions of X4 specified the signature `as_spirit_parser(p)` to be
-// used for the ADL adaptation of user-defined types. However, many parts in
-// X4 were instead using ADL of the form `as_parser(p)` to dispatch any types
-// in the first place. This makes it impossible for the control to reach the
-// `as_spirit_parser(p)` call if any user-defined `as_parser(p)` is *more
-// constrained* than `as_spirit_parser(p)`.
-//
-// In other words, the old signature `as_spirit_parser(p)` has never been
-// implemented correctly since its very first introduction to X4.
-//
-// Additionally, GitHub fulltext search shows that there exists zero usage of
-// `as_spirit_parser` except for the unmaintained blog post written by the
-// original inventor. Therefore, we simply removed the feature.
-//
-// Furthermore, the current maintainer of X4 believes there are no practical
-// use cases of ADL adaptation on user-defined types. As such, we make the
-// `x4::as_parser` (not to be confused with `x4::extension::as_parser`) to
-// model a C++20-ish CPO to inhibit undesired ADL in the first place.
 
 template<class T>
 struct as_parser; // not defined
@@ -302,6 +291,7 @@ concept X4ExplicitSubject =
     // Note: a lambda with a capture has a deleted move assignment operator,
     // thus requiring move assignable here would make such `x4::action` to
     // not satisfy this trait; we consider it too strict for now.
+    //std::is_move_assignable_v<std::remove_cvref_t<T>>
 
 template<class T>
 concept X4ImplicitSubject =
@@ -516,17 +506,5 @@ inline namespace cpos {
 } // cpos
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Subject, class Derived, class Context>
-struct has_attribute<unary_parser<Subject, Derived>, Context>
-    : has_attribute<Subject, Context> {};
-
-template<class Left, class Right, class Derived, class Context>
-struct has_attribute<binary_parser<Left, Right, Derived>, Context>
-    : std::disjunction<has_attribute<Left, Context>, has_attribute<Right, Context>> {};
-
-} // boost::spirit::x4::traits
 
 #endif

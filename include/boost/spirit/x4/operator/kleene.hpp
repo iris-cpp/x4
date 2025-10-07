@@ -17,7 +17,6 @@
 #include <boost/spirit/x4/core/expectation.hpp>
 
 #include <boost/spirit/x4/traits/container_traits.hpp>
-#include <boost/spirit/x4/traits/attribute.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -28,6 +27,8 @@ namespace boost::spirit::x4 {
 template<class Subject>
 struct kleene : unary_parser<Subject, kleene<Subject>>
 {
+    using attribute_type = traits::build_container_t<typename parser_traits<Subject>::attribute_type>;
+
     static constexpr bool handles_container = true;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -55,13 +56,5 @@ operator*(Subject&& subject)
 }
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Subject, class Context>
-struct attribute_of<x4::kleene<Subject>, Context>
-    : build_container<attribute_of_t<Subject, Context>> {};
-
-} // boost::spirit::x4::traits
 
 #endif

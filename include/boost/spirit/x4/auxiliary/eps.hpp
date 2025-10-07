@@ -20,11 +20,11 @@
 
 namespace boost::spirit::x4 {
 
+namespace detail {
+
 struct semantic_predicate : parser<semantic_predicate>
 {
     using attribute_type = unused_type;
-
-    static constexpr bool has_attribute = false;
 
     constexpr explicit semantic_predicate(bool predicate) noexcept
         : predicate_(predicate)
@@ -47,8 +47,6 @@ template<class F>
 struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
 {
     using attribute_type = unused_type;
-
-    static constexpr bool has_attribute = false;
 
     template<class F_>
         requires
@@ -88,11 +86,11 @@ private:
     F f_;
 };
 
+} // detail
+
 struct eps_parser : parser<eps_parser>
 {
     using attribute_type = unused_type;
-
-    static constexpr bool has_attribute = false;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -103,18 +101,18 @@ struct eps_parser : parser<eps_parser>
         return true;
     }
 
-    [[nodiscard]] static constexpr semantic_predicate
+    [[nodiscard]] static constexpr detail::semantic_predicate
     operator()(bool predicate) noexcept
     {
-        return semantic_predicate{predicate};
+        return detail::semantic_predicate{predicate};
     }
 
     template<class F>
-    [[nodiscard]] static constexpr lazy_semantic_predicate<std::remove_cvref_t<F>>
+    [[nodiscard]] static constexpr detail::lazy_semantic_predicate<std::remove_cvref_t<F>>
     operator()(F&& f)
-        noexcept(std::is_nothrow_constructible_v<lazy_semantic_predicate<std::remove_cvref_t<F>>, F>)
+        noexcept(std::is_nothrow_constructible_v<detail::lazy_semantic_predicate<std::remove_cvref_t<F>>, F>)
     {
-        return lazy_semantic_predicate<std::remove_cvref_t<F>>{std::forward<F>(f)};
+        return detail::lazy_semantic_predicate<std::remove_cvref_t<F>>{std::forward<F>(f)};
     }
 };
 

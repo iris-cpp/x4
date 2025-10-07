@@ -24,9 +24,9 @@ namespace detail {
 
 template<class Subject, class ID, class T>
 struct with_directive_impl
-    : unary_parser<Subject, with_directive<Subject, ID, T>>
+    : proxy_parser<Subject, with_directive<Subject, ID, T>>
 {
-    using base_type = unary_parser<Subject, with_directive<Subject, ID, T>>;
+    using base_type = proxy_parser<Subject, with_directive<Subject, ID, T>>;
     mutable T val_;
 
     template<class SubjectT, class U>
@@ -45,9 +45,9 @@ struct with_directive_impl
 
 template<class Subject, class ID, class T>
 struct with_directive_impl<Subject, ID, T const>
-    : unary_parser<Subject, with_directive<Subject, ID, T const>>
+    : proxy_parser<Subject, with_directive<Subject, ID, T const>>
 {
-    using base_type = unary_parser<Subject, with_directive<Subject, ID, T const>>;
+    using base_type = proxy_parser<Subject, with_directive<Subject, ID, T const>>;
     /* not mutable */ T const val_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
     template<class SubjectT, class U>
@@ -66,9 +66,9 @@ struct with_directive_impl<Subject, ID, T const>
 
 template<class Subject, class ID, class T>
 struct with_directive_impl<Subject, ID, T&>
-    : unary_parser<Subject, with_directive<Subject, ID, T&>>
+    : proxy_parser<Subject, with_directive<Subject, ID, T&>>
 {
-    using base_type = unary_parser<Subject, with_directive<Subject, ID, T&>>;
+    using base_type = proxy_parser<Subject, with_directive<Subject, ID, T&>>;
     T& val_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
     template<class SubjectT, class U>
@@ -100,13 +100,9 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
         "so it can be stored by value."
     );
 
-    using subject_type = Subject;
     using id_type = ID;
     using value_type = T;
     using base_type = detail::with_directive_impl<Subject, ID, T>;
-
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
 
     template<class SubjectT, class U>
         requires std::is_constructible_v<base_type, SubjectT, U>

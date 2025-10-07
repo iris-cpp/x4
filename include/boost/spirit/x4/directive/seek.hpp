@@ -21,11 +21,8 @@
 namespace boost::spirit::x4 {
 
 template<class Subject>
-struct seek_directive : unary_parser<Subject, seek_directive<Subject>>
+struct seek_directive : proxy_parser<Subject, seek_directive<Subject>>
 {
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const

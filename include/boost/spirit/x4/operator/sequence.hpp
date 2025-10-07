@@ -14,7 +14,7 @@
 #include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/detail/parse_sequence.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
+#include <boost/spirit/x4/traits/attribute_of_binary.hpp>
 
 #include <boost/spirit/x4/directive/expect.hpp>
 
@@ -30,6 +30,11 @@ namespace boost::spirit::x4 {
 template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 {
+    using attribute_type = traits::attribute_of_binary<boost::fusion::deque, x4::sequence, Left, Right>::type;
+
+    static constexpr std::size_t sequence_size =
+        parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
+
     using binary_parser<Left, Right, sequence>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
@@ -110,13 +115,5 @@ operator>(Left&& left, Right&& right)
 }
 
 } // boost::spirit::x4
-
-namespace boost::spirit::x4::traits {
-
-template<class Left, class Right, class Context>
-struct attribute_of<x4::sequence<Left, Right>, Context>
-    : x4::detail::attribute_of_binary<fusion::deque, x4::sequence, Left, Right, Context> {};
-
-} // boost::spirit::x4::traits
 
 #endif

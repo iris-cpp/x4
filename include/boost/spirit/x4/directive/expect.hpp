@@ -21,10 +21,8 @@
 namespace boost::spirit::x4 {
 
 template<class Subject>
-struct expect_directive : unary_parser<Subject, expect_directive<Subject>>
+struct expect_directive : proxy_parser<Subject, expect_directive<Subject>>
 {
-    static constexpr bool is_pass_through_unary = true;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -75,10 +73,10 @@ using parsers::directive::expect;
 namespace boost::spirit::x4::detail {
 
 // Special case handling for expect expressions.
-template<class Subject, class Context>
-struct parse_into_container_impl<expect_directive<Subject>, Context>
+template<class Subject>
+struct parse_into_container_impl<expect_directive<Subject>>
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
     call(
         expect_directive<Subject> const& parser,

@@ -53,8 +53,6 @@ TEST_CASE("sequence")
     using x4::_attr;
     using x4::eps;
 
-    using traits::attribute_of_t;
-
     using boost::fusion::vector;
     using boost::fusion::deque;
     using boost::fusion::at_c;
@@ -407,7 +405,7 @@ TEST_CASE("sequence")
 
     // Test that sequence with only one parser producing attribute makes it unwrapped
     STATIC_CHECK(std::same_as<
-        attribute_of_t<decltype(lit("abc") >> attr(long())), unused_type>,
+        x4::parser_traits<decltype(lit("abc") >> attr(long()))>::attribute_type,
         long
     >);
 

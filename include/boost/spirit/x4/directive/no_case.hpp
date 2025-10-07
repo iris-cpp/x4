@@ -22,11 +22,8 @@ namespace boost::spirit::x4 {
 
 // propagate no_case information through the context
 template<class Subject>
-struct no_case_directive : unary_parser<Subject, no_case_directive<Subject>>
+struct no_case_directive : proxy_parser<Subject, no_case_directive<Subject>>
 {
-    static constexpr bool is_pass_through_unary = true;
-    static constexpr bool handles_container = Subject::handles_container;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const

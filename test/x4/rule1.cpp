@@ -24,7 +24,6 @@ TEST_CASE("rule1")
     using x4::int_;
     using x4::phrase_parse;
     using x4::root_skipper_flag;
-    using x4::traits::has_attribute_v;
 
 #ifdef BOOST_SPIRIT_X4_NO_RTTI
     BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{});
@@ -33,10 +32,10 @@ TEST_CASE("rule1")
     BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"} = 'x');
 
     // check attribute advertising
-    static_assert( has_attribute_v<rule<class r_, int>, /*Context=*/unused_type>);
-    static_assert(!has_attribute_v<rule<class r_     >, /*Context=*/unused_type>);
-    static_assert( has_attribute_v<decltype(rule<class r_, int>{} = int_), /*Context=*/unused_type>);
-    static_assert(!has_attribute_v<decltype(rule<class r_     >{} = int_), /*Context=*/unused_type>);
+    static_assert( x4::has_attribute_v<rule<class r_, int>>);
+    static_assert(!x4::has_attribute_v<rule<class r_     >>);
+    static_assert( x4::has_attribute_v<decltype(rule<class r_, int>{} = int_)>);
+    static_assert(!x4::has_attribute_v<decltype(rule<class r_     >{} = int_)>);
 
     {
         // basic tests

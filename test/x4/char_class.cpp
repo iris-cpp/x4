@@ -176,9 +176,8 @@ TEST_CASE("char_class")
     }
 
     {   // test attribute extraction
-        using x4::traits::attribute_of_t;
         using x4::standard::alpha;
-        static_assert(std::same_as<attribute_of_t<std::remove_const_t<decltype(x4::standard::alpha)>, unused_type>, char>);
+        static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(x4::standard::alpha)>>::attribute_type, char>);
 
         int attr = 0;
         REQUIRE(parse("a", alpha, attr));

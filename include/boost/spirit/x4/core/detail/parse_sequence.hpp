@@ -10,9 +10,9 @@
 =============================================================================*/
 
 #include <boost/spirit/config.hpp>
+#include <boost/spirit/x4/core/parser_traits.hpp>
 #include <boost/spirit/x4/core/detail/parse_into_container.hpp>
 
-#include <boost/spirit/x4/traits/attribute.hpp>
 #include <boost/spirit/x4/traits/attribute_category.hpp>
 #include <boost/spirit/x4/traits/container_traits.hpp>
 #include <boost/spirit/x4/traits/tuple_traits.hpp>
@@ -37,30 +37,6 @@ struct sequence;
 } // boost::spirit::x4
 
 namespace boost::spirit::x4::detail {
-
-template<class Parser, class Context>
-struct sequence_size
-{
-    static constexpr std::size_t value = traits::has_attribute_v<Parser, Context>;
-};
-
-template<class Parser, class Context>
-    requires Parser::is_pass_through_unary
-struct sequence_size<Parser, Context>
-    : sequence_size<typename Parser::subject_type, Context>
-{};
-
-template<class L, class R, class Context>
-struct sequence_size<sequence<L, R>, Context>
-{
-    static constexpr std::size_t value =
-        sequence_size<L, Context>::value +
-        sequence_size<R, Context>::value;
-};
-
-template<class Parser, class Context>
-constexpr bool is_sequence_size_more_than_1 = sequence_size<Parser, Context>::value > 1;
-
 
 struct pass_sequence_attribute_unused
 {
@@ -110,18 +86,20 @@ struct pass_sequence_attribute : std::conditional_t<
 >
 {};
 
-template<class L, class R, class Attr>
-struct pass_sequence_attribute<sequence<L, R>, Attr>
+template<class LParser, class RParser, class Attr>
+struct pass_sequence_attribute<sequence<LParser, RParser>, Attr>
     : pass_through_sequence_attribute<Attr>
 {};
 
 template<class Parser, class Attr>
-    requires Parser::is_pass_through_unary
+    requires requires {
+        typename Parser::proxy_backend_type;
+    }
 struct pass_sequence_attribute<Parser, Attr>
-    : pass_sequence_attribute<typename Parser::subject_type, Attr>
+    : pass_sequence_attribute<typename Parser::proxy_backend_type, Attr>
 {};
 
-template<class L, class R, class Attr, class Context>
+template<class LParser, class RParser, class Attr>
 struct partition_attribute
 {
     using attr_category = traits::attribute_category_t<Attr>;
@@ -131,8 +109,8 @@ struct partition_attribute
         "The parser expects tuple-like attribute type"
     );
 
-    static constexpr std::size_t l_size = sequence_size<L, Context>::value;
-    static constexpr std::size_t r_size = sequence_size<R, Context>::value;
+    static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
+    static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
 
     static constexpr std::size_t actual_size = static_cast<std::size_t>(fusion::result_of::size<Attr>::value);
     static constexpr std::size_t expected_size = l_size + r_size;
@@ -149,13 +127,13 @@ struct partition_attribute
         "Sequence size of the passed attribute is greater than expected."
     );
 
-    using l_begin = typename fusion::result_of::begin<Attr>::type;
-    using l_end = typename fusion::result_of::advance_c<l_begin, l_size>::type;
-    using r_end = typename fusion::result_of::end<Attr>::type;
+    using l_begin = fusion::result_of::begin<Attr>::type;
+    using l_end = fusion::result_of::advance_c<l_begin, l_size>::type;
+    using r_end = fusion::result_of::end<Attr>::type;
     using l_part = fusion::iterator_range<l_begin, l_end>;
     using r_part = fusion::iterator_range<l_end, r_end>;
-    using l_pass = pass_sequence_attribute<L, l_part>;
-    using r_pass = pass_sequence_attribute<R, r_part>;
+    using l_pass = pass_sequence_attribute<LParser, l_part>;
+    using r_pass = pass_sequence_attribute<RParser, r_part>;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
@@ -174,14 +152,14 @@ struct partition_attribute
     }
 };
 
-template<class L, class R, class Attr, class Context>
+template<class LParser, class RParser, class Attr>
     requires
-        (!traits::has_attribute_v<L, Context>) &&
-        traits::has_attribute_v<R, Context>
-struct partition_attribute<L, R, Attr, Context>
+        (!has_attribute_v<LParser>) &&
+        has_attribute_v<RParser>
+struct partition_attribute<LParser, RParser, Attr>
 {
     using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute<R, Attr>;
+    using r_pass = pass_sequence_attribute<RParser, Attr>;
 
     [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
     {
@@ -194,13 +172,13 @@ struct partition_attribute<L, R, Attr, Context>
     }
 };
 
-template<class L, class R, class Attr, class Context>
+template<class LParser, class RParser, class Attr>
     requires
-        traits::has_attribute_v<L, Context> &&
-        (!traits::has_attribute_v<R, Context>)
-struct partition_attribute<L, R, Attr, Context>
+        has_attribute_v<LParser> &&
+        (!has_attribute_v<RParser>)
+struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute<L, Attr>;
+    using l_pass = pass_sequence_attribute<LParser, Attr>;
     using r_pass = pass_sequence_attribute_unused;
 
     [[nodiscard]] static constexpr Attr& left(Attr& s) noexcept
@@ -214,11 +192,11 @@ struct partition_attribute<L, R, Attr, Context>
     }
 };
 
-template<class L, class R, class Attr, class Context>
+template<class LParser, class RParser, class Attr>
     requires
-        (!traits::has_attribute_v<L, Context>) &&
-        (!traits::has_attribute_v<R, Context>)
-struct partition_attribute<L, R, Attr, Context>
+        (!has_attribute_v<LParser>) &&
+        (!has_attribute_v<RParser>)
+struct partition_attribute<LParser, RParser, Attr>
 {
     using l_pass = pass_sequence_attribute_unused;
     using r_pass = pass_sequence_attribute_unused;
@@ -235,34 +213,23 @@ struct partition_attribute<L, R, Attr, Context>
 };
 
 // Default overload, no constraints on attribute category
-template<
-    class Parser,
-    std::forward_iterator It, std::sentinel_for<It> Se,
-    class Context,
-    class Attr // unconstrained
->
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
-parse_sequence(
-    Parser const& parser,
-    It& first, Se const& last,
-    Context const& ctx,
-    Attr& attr
-) // TODO: noexcept
+parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+    // TODO: noexcept
 {
     static_assert(X4Attribute<Attr>);
 
     using partition = partition_attribute<
         typename Parser::left_type,
         typename Parser::right_type,
-        Attr, Context
+        Attr
     >;
-    using l_pass = typename partition::l_pass;
-    using r_pass = typename partition::r_pass;
 
     auto&& l_part = partition::left(attr);
     auto&& r_part = partition::right(attr);
-    auto&& l_attr = l_pass::call(l_part);
-    auto&& r_attr = r_pass::call(r_part);
+    auto&& l_attr = partition::l_pass::call(l_part);
+    auto&& r_attr = partition::r_pass::call(r_part);
 
     auto&& l_attr_appender = x4::make_container_appender(l_attr);
     auto&& r_attr_appender = x4::make_container_appender(r_attr);
@@ -278,57 +245,40 @@ parse_sequence(
     return false;
 }
 
-template<
-    class Parser,
-    std::forward_iterator It, std::sentinel_for<It> Se,
-    class Context,
-    X4Attribute Attr
->
-    requires is_sequence_size_more_than_1<Parser, Context>
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    requires (parser_traits<Parser>::sequence_size > 1)
 [[nodiscard]] constexpr bool
-parse_sequence_impl(
-    Parser const& parser,
-    It& first, Se const& last,
-    Context const& ctx,
-    Attr& attr
-)
+parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
     static_assert(Parsable<Parser, It, Se, Context, Attr>);
     return parser.parse(first, last, ctx, attr);
 }
 
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    requires (!is_sequence_size_more_than_1<Parser, Context>)
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    requires (parser_traits<Parser>::sequence_size <= 1)
 [[nodiscard]] constexpr bool
-parse_sequence_impl(
-    Parser const& parser,
-    It& first, Se const& last,
-    Context const& ctx,
-    X4Attribute auto& attr
-)
+parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
     return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+template<
+    class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
+    traits::CategorizedAttr<traits::container_attr> ContainerAttr
+>
 [[nodiscard]] constexpr bool
-parse_sequence(
-    Parser const& parser,
-    It& first, Se const& last,
-    Context const& ctx,
-    traits::CategorizedAttr<traits::container_attr> auto& attr
-)
+parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
     noexcept(
         std::is_nothrow_copy_assignable_v<It> &&
-        noexcept(detail::parse_sequence_impl(parser.left, first, last, ctx, attr)) &&
-        noexcept(detail::parse_sequence_impl(parser.right, first, last, ctx, attr))
+        noexcept(detail::parse_sequence_impl(parser.left, first, last, ctx, container_attr)) &&
+        noexcept(detail::parse_sequence_impl(parser.right, first, last, ctx, container_attr))
     )
 {
     It local_it = first;
-    if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, attr) &&
-        detail::parse_sequence_impl(parser.right, local_it, last, ctx, attr)
+    if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, container_attr) &&
+        detail::parse_sequence_impl(parser.right, local_it, last, ctx, container_attr)
     ) {
         first = std::move(local_it);
         return true;
@@ -336,37 +286,35 @@ parse_sequence(
     return false;
 }
 
-template<class Left, class Right, class Context>
-struct parse_into_container_impl<sequence<Left, Right>, Context>
+template<class Left, class Right>
+struct parse_into_container_impl<sequence<Left, Right>>
 {
-    using parser_type = sequence<Left, Right>;
-
     template<X4Attribute Attr>
     static constexpr bool is_container_substitute = traits::is_substitute_v<
-        traits::attribute_of_t<parser_type, Context>,
+        typename sequence<Left, Right>::attribute_type,
         traits::container_value_t<Attr>
     >;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires is_container_substitute<Attr>
     [[nodiscard]] static constexpr bool
     call(
-        parser_type const& parser, It& first, Se const& last,
+        sequence<Left, Right> const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
-    ) noexcept(noexcept(parse_into_container_base_impl<parser_type>::call(
+    ) noexcept(noexcept(parse_into_container_base_impl<sequence<Left, Right>>::call(
         parser, first, last, ctx, attr
     )))
     {
-        return parse_into_container_base_impl<parser_type>::call(
+        return parse_into_container_base_impl<sequence<Left, Right>>::call(
             parser, first, last, ctx, attr
         );
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires (!is_container_substitute<Attr>)
     [[nodiscard]] static constexpr bool
     call(
-        parser_type const& parser, It& first, Se const& last,
+        sequence<Left, Right> const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
