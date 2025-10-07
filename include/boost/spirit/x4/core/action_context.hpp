@@ -118,11 +118,11 @@ struct _attr_fn
 
 inline namespace cpos {
 
-inline constexpr detail::_pass_fn _pass{};
-inline constexpr detail::_val_fn _val{};
-inline constexpr detail::_as_val_fn _as_val{};
-inline constexpr detail::_where_fn _where{};
-inline constexpr detail::_attr_fn _attr{};
+[[maybe_unused]] inline constexpr detail::_pass_fn _pass{};
+[[maybe_unused]] inline constexpr detail::_val_fn _val{};
+[[maybe_unused]] inline constexpr detail::_as_val_fn _as_val{};
+[[maybe_unused]] inline constexpr detail::_where_fn _where{};
+[[maybe_unused]] inline constexpr detail::_attr_fn _attr{};
 
 } // cpos
 

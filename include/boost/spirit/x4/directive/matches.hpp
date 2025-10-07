@@ -65,7 +65,7 @@ struct matches_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::matches_gen matches{};
+[[maybe_unused]] inline constexpr detail::matches_gen matches{};
 
 } // parsers::directive
 

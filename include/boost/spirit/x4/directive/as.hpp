@@ -139,7 +139,7 @@ struct as_fn
 namespace parsers::directive {
 
 template<X4Attribute T>
-inline constexpr detail::as_fn<T> as{};
+[[maybe_unused]] inline constexpr detail::as_fn<T> as{};
 
 } // parsers::directive
 

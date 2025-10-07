@@ -215,7 +215,7 @@ namespace parsers::directive {
 // `with` directive injects a value into the context prior to parsing.
 // Holds lvalue references by reference, holds rvalue reference by value.
 template<class ID>
-inline constexpr detail::with_fn<ID> with{};
+[[maybe_unused]] inline constexpr detail::with_fn<ID> with{};
 
 } // parsers::directive
 

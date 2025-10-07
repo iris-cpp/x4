@@ -121,7 +121,7 @@ struct attr_gen
 
 namespace parsers {
 
-inline constexpr detail::attr_gen attr{};
+[[maybe_unused]] inline constexpr detail::attr_gen attr{};
 
 } // parsers
 

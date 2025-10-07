@@ -51,19 +51,19 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 
 namespace parsers {
 
-inline constexpr uint_parser<unsigned short> ushort_{};
-inline constexpr uint_parser<unsigned int> uint_{};
-inline constexpr uint_parser<unsigned long> ulong_{};
-inline constexpr uint_parser<unsigned long long> ulong_long{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned short> ushort_{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned int> uint_{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned long> ulong_{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned long long> ulong_long{};
 
-inline constexpr uint_parser<std::uint8_t> uint8{};
-inline constexpr uint_parser<std::uint16_t> uint16{};
-inline constexpr uint_parser<std::uint32_t> uint32{};
-inline constexpr uint_parser<std::uint64_t> uint64{};
+[[maybe_unused]] inline constexpr uint_parser<std::uint8_t> uint8{};
+[[maybe_unused]] inline constexpr uint_parser<std::uint16_t> uint16{};
+[[maybe_unused]] inline constexpr uint_parser<std::uint32_t> uint32{};
+[[maybe_unused]] inline constexpr uint_parser<std::uint64_t> uint64{};
 
-inline constexpr uint_parser<unsigned, 2> bin{};
-inline constexpr uint_parser<unsigned, 8> oct{};
-inline constexpr uint_parser<unsigned, 16> hex{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned, 2> bin{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned, 8> oct{};
+[[maybe_unused]] inline constexpr uint_parser<unsigned, 16> hex{};
 
 } // parsers
 

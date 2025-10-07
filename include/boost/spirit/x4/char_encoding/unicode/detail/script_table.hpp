@@ -12,7 +12,7 @@
 
 namespace boost::spirit::x4::unicode::detail {
 
-inline constexpr std::uint8_t script_stage1[] = {
+[[maybe_unused]] inline constexpr std::uint8_t script_stage1[] = {
       0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,
      16,  17,  18,  19,  20,  20,  21,  22,  23,  24,  25,  26,  27,  28,   1,  29,
      30,  31,  32,  32,  33,  32,  32,  32,  34,  32,  32,  35,  36,  37,  38,  39,
@@ -287,7 +287,7 @@ inline constexpr std::uint8_t script_stage1[] = {
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56
 };
 
-inline constexpr std::uint8_t script_stage2[] = {
+[[maybe_unused]] inline constexpr std::uint8_t script_stage2[] = {
     // block 0
     163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,
     163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,

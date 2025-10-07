@@ -88,7 +88,7 @@ struct no_skip_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::no_skip_gen no_skip{};
+[[maybe_unused]] inline constexpr detail::no_skip_gen no_skip{};
 
 } // parsers::directive
 

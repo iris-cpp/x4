@@ -64,7 +64,7 @@ struct expect_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::expect_gen expect{};
+[[maybe_unused]] inline constexpr detail::expect_gen expect{};
 
 } // parsers::directive
 

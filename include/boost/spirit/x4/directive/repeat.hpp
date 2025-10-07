@@ -74,11 +74,11 @@ concept RepeatBounds = requires(std::remove_cvref_t<Bounds> const& bounds) {
 inline namespace cpos {
 
 // Infinite loop tag type
-[[deprecated("Use `x4::repeat_inf`")]]
+[[maybe_unused, deprecated("Use `x4::repeat_inf`")]]
 inline constexpr detail::repeat_inf_type inf{};
 
 // Infinite loop tag type
-inline constexpr detail::repeat_inf_type repeat_inf{};
+[[maybe_unused]] inline constexpr detail::repeat_inf_type repeat_inf{};
 
 } // cpos
 
@@ -188,7 +188,7 @@ struct repeat_gen
 
 namespace parsers::directive {
 
-inline constexpr detail::repeat_gen repeat{};
+[[maybe_unused]] inline constexpr detail::repeat_gen repeat{};
 
 } // parsers::directive
 

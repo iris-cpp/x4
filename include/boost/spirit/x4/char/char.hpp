@@ -27,7 +27,7 @@ namespace boost::spirit::x4 {
 
 namespace standard {
 
-inline constexpr any_char<char_encoding::standard> char_{};
+[[maybe_unused]] inline constexpr any_char<char_encoding::standard> char_{};
 
 inline namespace helpers {
 
@@ -55,14 +55,16 @@ constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing 
 
 } // standard
 
-inline constexpr auto const& char_ = standard::char_; // TODO: this can't overload other character types
+
+[[maybe_unused]] inline constexpr auto const& char_ = standard::char_; // TODO: this can't overload other character types
+
 using standard::helpers::lit;
 
 
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
-inline constexpr any_char<char_encoding::standard_wide> char_{};
+[[maybe_unused]] inline constexpr any_char<char_encoding::standard_wide> char_{};
 
 inline namespace helpers {
 
@@ -92,7 +94,7 @@ using standard_wide::helpers::lit;
 #ifdef BOOST_SPIRIT_X4_UNICODE
 namespace unicode {
 
-inline constexpr any_char<char_encoding::unicode> char_{};
+[[maybe_unused]] inline constexpr any_char<char_encoding::unicode> char_{};
 
 inline namespace helpers {
 

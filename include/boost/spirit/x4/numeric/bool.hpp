@@ -190,9 +190,9 @@ private:
 
 namespace standard {
 
-inline constexpr bool_parser<bool, char_encoding::standard> bool_{};
-inline constexpr literal_bool_parser<bool, char_encoding::standard> true_{true};
-inline constexpr literal_bool_parser<bool, char_encoding::standard> false_{false};
+[[maybe_unused]] inline constexpr bool_parser<bool, char_encoding::standard> bool_{};
+[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard> true_{true};
+[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard> false_{false};
 
 } // standard
 
@@ -207,9 +207,9 @@ using x4::standard::false_;
 #ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
-inline constexpr bool_parser<bool, char_encoding::standard_wide> bool_{};
-inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> true_{true};
-inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> false_{false};
+[[maybe_unused]] inline constexpr bool_parser<bool, char_encoding::standard_wide> bool_{};
+[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> true_{true};
+[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> false_{false};
 
 } // standard_wide
 

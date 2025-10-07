@@ -114,7 +114,7 @@ struct case_compare_tag
 };
 
 struct case_compare_no_case_t {};
-inline constexpr case_compare_no_case_t case_compare_no_case{};
+[[maybe_unused]] inline constexpr case_compare_no_case_t case_compare_no_case{};
 
 } // detail
 

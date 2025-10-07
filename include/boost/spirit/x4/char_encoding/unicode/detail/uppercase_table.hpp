@@ -12,7 +12,7 @@
 
 namespace boost::spirit::x4::unicode::detail {
 
-inline constexpr std::uint8_t uppercase_stage1[] = {
+[[maybe_unused]] inline constexpr std::uint8_t uppercase_stage1[] = {
       0,   1,   2,   3,   4,   5,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       7,   6,   6,   8,   6,   6,   6,   6,   6,   6,   6,   6,   9,  10,  11,  12,
       6,  13,   6,   6,  14,   6,   6,   6,   6,   6,   6,   6,  15,  16,   6,   6,
@@ -287,7 +287,7 @@ inline constexpr std::uint8_t uppercase_stage1[] = {
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6
 };
 
-inline constexpr std::uint32_t uppercase_stage2[] = {
+[[maybe_unused]] inline constexpr std::uint32_t uppercase_stage2[] = {
     // block 0
          0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
          0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
