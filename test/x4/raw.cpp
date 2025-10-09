@@ -83,7 +83,7 @@ TEST_CASE("raw")
 
     {
         std::ranges::subrange<std::string_view::const_iterator> range;
-        REQUIRE(parse("x", raw[alpha][ ([&](auto& ctx){ range = _attr(ctx); }) ]));
+        REQUIRE(parse("x", raw[alpha][ ([&](auto&& ctx){ range = _attr(ctx); }) ]));
         REQUIRE(range.size() == 1);
         CHECK(*range.begin() == 'x');
     }

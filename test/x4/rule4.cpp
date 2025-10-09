@@ -102,7 +102,7 @@ TEST_CASE("rule4")
         rule<class a, int> ra;
         rule<class b, int> rb;
         (void)rb;
-        auto f = [](auto&) {};
+        auto f = [](auto&&) {};
         auto ra_def = ra %= int_[f];
         auto ra_def2 = (rb = (ra %= int_[f]));
 

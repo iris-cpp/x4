@@ -52,7 +52,7 @@ TEST_CASE("difference")
         std::string s;
         REQUIRE(parse(
             "/*abcdefghijk*/",
-            "/*" >> *(char_ - "*/")[([&](auto& ctx){ s += _attr(ctx); })] >> "*/"
+            "/*" >> *(char_ - "*/")[([&](auto&& ctx){ s += _attr(ctx); })] >> "*/"
         ));
         CHECK(s == "abcdefghijk");
     }
@@ -60,7 +60,7 @@ TEST_CASE("difference")
         std::string s;
         REQUIRE(parse(
             "    /*abcdefghijk*/",
-            "/*" >> *(char_ - "*/")[([&](auto& ctx){ s += _attr(ctx); })] >> "*/",
+            "/*" >> *(char_ - "*/")[([&](auto&& ctx){ s += _attr(ctx); })] >> "*/",
             space
         ));
         CHECK(s == "abcdefghijk");

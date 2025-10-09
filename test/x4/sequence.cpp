@@ -414,7 +414,7 @@ TEST_CASE("sequence")
 
         char c = 0;
         int n = 0;
-        auto f = [&](auto& ctx) {
+        auto f = [&](auto&& ctx) {
             c = at_c<0>(_attr(ctx));
             n = at_c<1>(_attr(ctx));
         };
@@ -428,7 +428,7 @@ TEST_CASE("sequence")
         // test action
         char c = 0;
         int n = 0;
-        auto f = [&](auto& ctx) {
+        auto f = [&](auto&& ctx) {
             c = at_c<0>(_attr(ctx));
             n = at_c<1>(_attr(ctx));
         };

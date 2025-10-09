@@ -34,12 +34,6 @@ struct as_val
     static constexpr bool is_unique = true;
 };
 
-// _where
-struct where
-{
-    static constexpr bool is_unique = true;
-};
-
 // _attr
 struct attr
 {
@@ -49,7 +43,6 @@ struct attr
 } // contexts
 
 using rule_val_context_tag [[deprecated("Use `x4::contexts::rule_val`")]] = contexts::rule_val;
-using where_context_tag [[deprecated("Use `x4::contexts::where`")]] = contexts::where;
 using attr_context_tag [[deprecated("Use `x4::contexts::attr`")]] = contexts::attr;
 
 
@@ -91,14 +84,8 @@ struct _as_val_fn
 struct _where_fn
 {
     template<class Context>
-    [[nodiscard]] static constexpr auto&&
-    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
-    {
-        return x4::get<contexts::where>(ctx);
-    }
-
-    template<class Context>
-    static void operator()(Context const&&) = delete; // dangling
+    static constexpr void
+    operator()(Context const&) = delete; // `_where` is obsolete. Use `raw[...]` directive.
 };
 
 struct _attr_fn
