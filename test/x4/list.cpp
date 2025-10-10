@@ -111,7 +111,7 @@ TEST_CASE("list")
     {
         // actions
         std::string s;
-        auto f = [&](auto& ctx){ s = std::string(_attr(ctx).begin(), _attr(ctx).end()); };
+        auto f = [&](auto&& ctx){ s = std::string(_attr(ctx).begin(), _attr(ctx).end()); };
 
         REQUIRE(parse("a,b,c,d,e,f,g,h", (char_ % ',')[f]));
         CHECK(s == "abcdefgh");

@@ -156,7 +156,7 @@ TEST_CASE("symbols1")
         ;
 
         int i = 0;
-        auto f = [&](auto& ctx){ i = _attr(ctx); }; // lambda with capture (important for subsequent checks)
+        auto f = [&](auto&& ctx){ i = _attr(ctx); }; // lambda with capture (important for subsequent checks)
 
         using Parser = std::remove_cvref_t<decltype(sym[f])>;
         STATIC_CHECK(x4::X4ExplicitSubject<Parser>);

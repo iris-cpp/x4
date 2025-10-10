@@ -22,15 +22,15 @@ TEST_CASE("action")
 
     {
         int x = 0;
-        auto const fun_action = [&](auto& ctx) { x += x4::_attr(ctx); };
+        auto const fun_action = [&](auto&& ctx) { x += x4::_attr(ctx); };
         CHECK(parse("{42}", '{' >> int_[fun_action] >> '}'));
     }
     {
-        auto const fail = [](auto&) { return false; };
+        auto const fail = [](auto&&) { return false; };
         std::string input("1234 6543");
         char next = '\0';
 
-        auto const setnext = [&](auto& ctx) {
+        auto const setnext = [&](auto&& ctx) {
             next = x4::_attr(ctx);
         };
 

@@ -112,7 +112,7 @@ TEST_CASE("omit")
     {
         // test action with omitted attribute
         char c = 0;
-        auto f = [&](auto& ctx){ c = _attr(ctx); };
+        auto f = [&](auto&& ctx){ c = _attr(ctx); };
 
         REQUIRE(parse("x123\"a string\"", (char_ >> omit[int_] >> "\"a string\"")[f]));
         CHECK(c == 'x');
@@ -121,7 +121,7 @@ TEST_CASE("omit")
     {
         // test action with omitted attribute
         int n = 0;
-        auto f = [&](auto& ctx){ n = _attr(ctx); };
+        auto f = [&](auto&& ctx){ n = _attr(ctx); };
 
         REQUIRE(parse("x 123 \"a string\"", (omit[char_] >> int_ >> "\"a string\"")[f], space));
         CHECK(n == 123);

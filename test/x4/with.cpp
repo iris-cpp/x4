@@ -49,7 +49,7 @@ using x4::with;
 using x4::_attr;
 
 template<class T>
-constexpr auto value_equals = int_[([](auto& ctx) {
+constexpr auto value_equals = int_[([](auto&& ctx) {
     auto&& with_val = x4::get<my_tag>(ctx);
     static_assert(std::same_as<decltype(with_val), T>);
     return with_val == _attr(ctx);
@@ -133,7 +133,7 @@ TEST_CASE("with")
         // injecting data into the context in the grammar
         int matched_count = 0;
         auto r = rule<match_counter_rule_id<std::vector<int>>, std::vector<int>>{} =
-            '(' > int_ > ',' > int_ > ')';
+            '(' > int_ > ',' > int_ > ')';  // NOLINT(bugprone-chained-comparison)
 
         auto start = with<my_tag>(std::ref(matched_count))[r];
         std::vector<int> ints;
@@ -147,7 +147,7 @@ TEST_CASE("with")
     {
         // injecting non-const lvalue into the context
         int val = 0;
-        auto const r = int_[([](auto& ctx){
+        auto const r = int_[([](auto&& ctx){
             x4::get<my_tag>(ctx) += x4::_attr(ctx);
         })];
         REQUIRE(parse("123,456", with<my_tag>(val)[r % ',']));
@@ -156,11 +156,11 @@ TEST_CASE("with")
 
     {
         // injecting rvalue into the context
-        auto const r1 = int_[([](auto& ctx){
+        auto const r1 = int_[([](auto&& ctx){
             x4::get<my_tag>(ctx) += x4::_attr(ctx);
         })];
         auto const r2 = rule<struct my_rvalue_rule_class, int>() =
-            x4::lit('(') >> (r1 % ',') >> x4::lit(')')[([](auto& ctx){
+            x4::lit('(') >> (r1 % ',') >> x4::lit(')')[([](auto&& ctx){
                 x4::_val(ctx) = x4::get<my_tag>(ctx);
             })];
         int attr = 0;
@@ -182,7 +182,7 @@ TEST_CASE("with")
             }
         };
 
-        auto f = [](auto& ctx){
+        auto f = [](auto&& ctx){
             x4::_val(ctx) = x4::_attr(ctx) + functor()(x4::get<my_tag>(ctx));
         };
         auto const r = rule<struct my_rule_class2, int>() = int_[f];

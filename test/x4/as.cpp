@@ -165,11 +165,11 @@ TEST_CASE("as")
 
         constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
             x4::as<std::string>(
-                eps[([](auto& ctx) {
+                eps[([](auto&& ctx) {
                     _val(ctx) = "default";
                 })] >>
 
-                eps[([](auto& ctx) {
+                eps[([](auto&& ctx) {
                     _as_val(ctx) = "foo";
                 })]
             );
@@ -187,11 +187,11 @@ TEST_CASE("as")
 
         constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
             x4::as<std::string>(
-                eps[([](auto& ctx) {
+                eps[([](auto&& ctx) {
                     _val(ctx) = "default";
                 })] >>
 
-                eps[([]([[maybe_unused]] auto& ctx) {
+                eps[([]([[maybe_unused]] auto&& ctx) {
                     static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, unused_type>);
                 })]
             ) >> disable_attr; // <----------
@@ -209,7 +209,7 @@ TEST_CASE("as")
 
         constexpr auto unused_rule = x4::as<unused_type>(
             x4::as<std::string>(
-                eps[([]([[maybe_unused]] auto& ctx) {
+                eps[([]([[maybe_unused]] auto&& ctx) {
                     static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, unused_type>);
                 })]
             )
@@ -229,12 +229,12 @@ TEST_CASE("as")
         /*constexpr*/ auto unused_rule = x4::as<std::string>(
             x4::attr("default") >>
 
-            eps[([]([[maybe_unused]] auto& ctx) {
+            eps[([]([[maybe_unused]] auto&& ctx) {
                 static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, std::string>);
             })] >>
 
             x4::as<unused_type>(
-                eps[([]([[maybe_unused]] auto& ctx) {
+                eps[([]([[maybe_unused]] auto&& ctx) {
                     static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, unused_type>);
                 })]
             )
@@ -261,13 +261,13 @@ TEST_CASE("as")
         constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
             eps[([](auto& ctx) { _val(ctx).is_quoted = false; })] >>
             x4::as<std::string>(
-                x4::lit('"')[([](auto& ctx) {
+                x4::lit('"')[([](auto&& ctx) {
                     StringLiteral& rule_val = _val(ctx);
                     rule_val.is_quoted = true;
                 })] >>
                 *~x4::char_('"') >>
                 '"'
-            )[([](auto& ctx) { _val(ctx).text = std::move(_attr(ctx)); })];
+            )[([](auto&& ctx) { _val(ctx).text = std::move(_attr(ctx)); })];
 
         std::string_view input = R"("foo")";
         It first = input.begin();

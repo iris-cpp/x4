@@ -105,7 +105,7 @@ TEST_CASE("kleene")
         using x4::_attr;
 
         std::string v;
-        auto f = [&](auto& ctx){ v = _attr(ctx); };
+        auto f = [&](auto&& ctx){ v = _attr(ctx); };
 
         REQUIRE(parse("bbbb", (*char_)[f]));
         REQUIRE(v.size() == 4);
@@ -120,7 +120,7 @@ TEST_CASE("kleene")
         using x4::_attr;
 
         std::vector<int> v;
-        auto f = [&](auto& ctx){ v = _attr(ctx); };
+        auto f = [&](auto&& ctx){ v = _attr(ctx); };
 
         REQUIRE(parse("123 456 789", (*int_)[f], space));
         CHECK(v.size() == 3);

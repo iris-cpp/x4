@@ -211,7 +211,7 @@ TEST_CASE("int")
         using x4::standard::space;
         int n = 0, m = 0;
 
-        auto f = [&](auto& ctx){ n = _attr(ctx); };
+        auto f = [&](auto&& ctx){ n = _attr(ctx); };
 
         REQUIRE(parse("123", int_[f]));
         CHECK(n == 123);

@@ -196,7 +196,7 @@ TEST_CASE("char_class")
         using namespace x4::standard;
         using x4::_attr;
         char ch = '\0';
-        auto f = [&](auto& ctx){ ch = _attr(ctx); };
+        auto f = [&](auto&& ctx){ ch = _attr(ctx); };
 
         REQUIRE(parse("x", alnum[f]));
         CHECK(ch == 'x');

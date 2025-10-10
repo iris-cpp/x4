@@ -45,7 +45,7 @@ namespace {
 struct test_attribute_type
 {
     template<class Context>
-    void operator()(Context& ctx) const
+    void operator()(Context&& ctx) const
     {
         CHECK(typeid(decltype(x4::_attr(ctx))).name() == typeid(std::optional<int>).name());
     }
@@ -161,13 +161,13 @@ TEST_CASE("optional")
 
     {
         std::optional<int> n;
-        auto f = [&](auto& ctx) { n = _attr(ctx); };
+        auto f = [&](auto&& ctx) { n = _attr(ctx); };
         CHECK(parse("abcd", (-int_)[f]).is_partial_match());
         CHECK(!n.has_value());
     }
     {
         std::optional<int> n = 0;
-        auto f = [&](auto& ctx){ n = _attr(ctx); };
+        auto f = [&](auto&& ctx){ n = _attr(ctx); };
         REQUIRE(parse("1234", (-int_)[f]));
         CHECK(*n == 1234);
     }

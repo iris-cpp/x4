@@ -35,14 +35,14 @@ TEST_CASE("rule2")
         {
             char ch{};
             // This semantic action requires the context
-            auto f = [&](auto& ctx){ ch = _attr(ctx); };
+            auto f = [&](auto&& ctx){ ch = _attr(ctx); };
             REQUIRE(parse("x", a[f]));
             CHECK(ch == 'x');
         }
         {
             char ch{};
             // This semantic action requires the (unused) context
-            auto f2 = [&](auto&){ ch = 'y'; };
+            auto f2 = [&](auto&&){ ch = 'y'; };
             REQUIRE(parse("x", a[f2]));
             CHECK(ch == 'y');
         }
@@ -68,7 +68,7 @@ TEST_CASE("rule2")
 
         {
             char ch{};
-            auto f = [&](auto& ctx){ ch = _attr(ctx); };
+            auto f = [&](auto&& ctx){ ch = _attr(ctx); };
             REQUIRE(parse("x", a[f]));
             CHECK(ch == 'x');
         }
@@ -79,7 +79,7 @@ TEST_CASE("rule2")
         }
         {
             char ch{};
-            auto f = [&](auto& ctx) { ch = _attr(ctx); };
+            auto f = [&](auto&& ctx) { ch = _attr(ctx); };
             REQUIRE(parse("x", a[f]));
             CHECK(ch == 'x');
         }
@@ -99,7 +99,7 @@ TEST_CASE("rule2")
         constexpr auto r = rule<class r_id, std::string>("r") = char_ >> *(',' >> char_);
 
         std::string s;
-        auto f = [&](auto& ctx) { s = _attr(ctx); };
+        auto f = [&](auto&& ctx) { s = _attr(ctx); };
         REQUIRE(parse("a,b,c,d,e,f", r[f]));
         CHECK(s == "abcdef");
     }
@@ -107,7 +107,7 @@ TEST_CASE("rule2")
         constexpr auto r = rule<class r_id, std::string>("r") = char_ >> *(',' >> char_);
 
         std::string s;
-        auto f = [&](auto& ctx) { s = _attr(ctx); };
+        auto f = [&](auto&& ctx) { s = _attr(ctx); };
         REQUIRE(parse("a,b,c,d,e,f", r[f]));
         CHECK(s == "abcdef");
     }
@@ -115,7 +115,7 @@ TEST_CASE("rule2")
         auto r = rule<class r_id, std::string>("r") = char_ >> char_ >> char_ >> char_ >> char_ >> char_;
 
         std::string s;
-        auto f = [&](auto& ctx) { s = _attr(ctx); };
+        auto f = [&](auto&& ctx) { s = _attr(ctx); };
         REQUIRE(parse("abcdef", r[f]));
         CHECK(s == "abcdef");
     }

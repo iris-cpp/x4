@@ -104,7 +104,7 @@ TEST_CASE("rule3")
         std::string s;
         using rule_type = rule<class r, std::string>;
 
-        auto rdef = rule_type{} = alpha[([](auto& ctx) {
+        auto rdef = rule_type{} = alpha[([](auto&& ctx) {
             x4::_val(ctx) += x4::_attr(ctx);
         })];
 
@@ -118,7 +118,7 @@ TEST_CASE("rule3")
         using rule_type = rule<class r, std::string>;
 
         auto rdef = rule_type() =
-            alpha[([](auto& ctx) {
+            alpha[([](auto&& ctx) {
                 _val(ctx) += _attr(ctx);
             })];
 
@@ -127,7 +127,7 @@ TEST_CASE("rule3")
     }
 
     {
-        auto r = rule<class r_id, int>{} = eps[([] ([[maybe_unused]] auto& ctx) {
+        auto r = rule<class r_id, int>{} = eps[([] ([[maybe_unused]] auto&& ctx) {
             static_assert(
                 std::is_same_v<std::decay_t<decltype(_val(ctx))>, unused_type>,
                 "Attr must not be synthesized"
