@@ -22,5 +22,6 @@
 #include <boost/spirit/x4/directive/seek.hpp>
 #include <boost/spirit/x4/directive/skip.hpp>
 #include <boost/spirit/x4/directive/with.hpp>
+#include <boost/spirit/x4/directive/with_local.hpp>
 
 #endif
