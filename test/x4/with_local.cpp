@@ -79,7 +79,7 @@ TEST_CASE("with_local")
 
             with_local<int>[
                 eps[([](auto&& ctx) {
-                    CHECK(_local_var(ctx) == 0.0);
+                    CHECK(_local_var(ctx) == 0);
                 })] >>
                 int_[([](auto&& ctx) {
                     _local_var(ctx) = _attr(ctx);
@@ -118,7 +118,7 @@ TEST_CASE("with_local")
                     _local_var(ctx) = _attr(ctx);
                 })] >>
                 eps[([&](auto&& ctx) {
-                    d = std::ceil(static_cast<double>(_local_var(ctx)) / 10);
+                    d = std::ceil(_local_var(ctx) / 10);
                 })]
             ] >>
 
