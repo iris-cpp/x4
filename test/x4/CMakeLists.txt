@@ -105,6 +105,7 @@ x4_define_tests(
     uint_radix
     unused
     with
+    with_local
     x3_rule_problem
 )
 
