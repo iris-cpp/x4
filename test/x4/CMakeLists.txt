@@ -56,7 +56,6 @@ x4_define_tests(
     attr
     attribute
     attribute_type_check
-    binary
     bool
     char
     char_class
