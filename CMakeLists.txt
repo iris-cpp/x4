@@ -181,10 +181,6 @@ list(APPEND boost_spirit_x4_boost_deps mp11)
 list(APPEND boost_spirit_x4_boost_deps predef)
 list(APPEND boost_spirit_x4_boost_deps io)
 
-# Everything required by `endian` (manually confirmed)
-list(APPEND boost_spirit_x4_boost_deps endian) # used in binary parsers
-list(APPEND boost_spirit_x4_boost_deps config)
-
 # Everything required by `preprocessor` (manually confirmed)
 list(APPEND boost_spirit_x4_boost_deps preprocessor)
 
