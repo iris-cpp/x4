@@ -16,20 +16,20 @@ namespace boost::spirit::x4 {
 
 namespace contexts {
 
-// _val
+// _rule_var
 // Refers to the attribute of `x4::rule`.
 // This always points to the *innermost* attribute for the (potentially recursive) invocation of `x4::rule`.
 // Note: we currently provide no method to obtain the outer attribute, as it is discouraged for maintainability.
 //
 // This does NOT point to the attribute variable created by `x4::as<T>(...)`.
-struct rule_val
+struct rule_var
 {
     static constexpr bool is_unique = true;
 };
 
-// _as_val
+// _as_var
 // Refers to the attribute of `x4::as<T>(...)`.
-struct as_val
+struct as_var
 {
     static constexpr bool is_unique = true;
 };
@@ -42,9 +42,6 @@ struct attr
 
 } // contexts
 
-using rule_val_context_tag [[deprecated("Use `x4::contexts::rule_val`")]] = contexts::rule_val;
-using attr_context_tag [[deprecated("Use `x4::contexts::attr`")]] = contexts::attr;
-
 
 namespace detail {
 
@@ -55,26 +52,26 @@ struct _pass_fn
     operator()(Context const&) = delete; // `_pass(ctx)` is obsolete. Just return bool from semantic action.
 };
 
-struct _val_fn
+struct _rule_var_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
     operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::get<contexts::rule_val>(ctx);
+        return x4::get<contexts::rule_var>(ctx);
     }
 
     template<class Context>
     static void operator()(Context const&&) = delete; // dangling
 };
 
-struct _as_val_fn
+struct _as_var_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
     operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::get<contexts::as_val>(ctx);
+        return x4::get<contexts::as_var>(ctx);
     }
 
     template<class Context>
@@ -106,9 +103,14 @@ struct _attr_fn
 inline namespace cpos {
 
 [[maybe_unused]] inline constexpr detail::_pass_fn _pass{};
-[[maybe_unused]] inline constexpr detail::_val_fn _val{};
-[[maybe_unused]] inline constexpr detail::_as_val_fn _as_val{};
-[[maybe_unused]] inline constexpr detail::_where_fn _where{};
+
+[[maybe_unused]] inline constexpr detail::_rule_var_fn _rule_var{};
+
+[[maybe_unused, deprecated("Use `_rule_var`")]]
+inline constexpr detail::_rule_var_fn _val{};
+
+[[maybe_unused]] inline constexpr detail::_as_var_fn _as_var{};
+[[maybe_unused]] inline constexpr detail::_where_fn _where{}; // obsolete
 [[maybe_unused]] inline constexpr detail::_attr_fn _attr{};
 
 } // cpos

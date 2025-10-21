@@ -97,7 +97,7 @@ struct rule_impl
 private:
     template<class Context, X4Attribute RHSAttr>
     using rcontext_t = std::remove_cvref_t<
-        decltype(x4::replace_first_context<contexts::rule_val>(
+        decltype(x4::replace_first_context<contexts::rule_var>(
             std::declval<Context const&>(),
             std::declval<typename traits::transform_attribute<Attr, RHSAttr>::type&>()
         ))
@@ -126,7 +126,7 @@ private:
     {
         static_assert(!need_rcontext<RHS, It, Context, RHSAttr>); // sanity check
 
-        // A parse invocation does not require `_val` context if and only if it doesn't
+        // A parse invocation does not require `_rule_var` context if and only if it doesn't
         // involve any of the below features:
         //   - Semantic action
         //   - `RuleID::on_success(...)`
@@ -134,7 +134,7 @@ private:
         return ctx;
     }
 
-    // Replace or insert the `_val` context, while avoiding infinite instantiation on
+    // Replace or insert the `_rule_var` context, while avoiding infinite instantiation on
     // recursive grammars.
     //
     // In pre-X4 codebase, this was done by passing the extraneous `rcontext` parameter
@@ -157,7 +157,7 @@ private:
     [[nodiscard]] static constexpr decltype(auto)
     make_rcontext(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND, RHSAttr& rhs_attr BOOST_SPIRIT_LIFETIMEBOUND) noexcept
     {
-        return x4::replace_first_context<contexts::rule_val>(ctx, rhs_attr);
+        return x4::replace_first_context<contexts::rule_var>(ctx, rhs_attr);
     }
 
 public:
@@ -430,7 +430,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     {
         static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
 
-        // Remove the `_val` context. This makes the actual `context` type passed to
+        // Remove the `_rule_var` context. This makes the actual `context` type passed to
         // the (potentially ADL-found) `parse_rule` function to be rule-agnostic.
         // If we don't do this, the specialized function signature becomes
         // nondeterministic, and we lose the opportunity to do explicit template
@@ -438,8 +438,8 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         //
         // Note that this removal is possible only because the actual invocation of
         // `parse_rule` *ALWAYS* results in subsequent invocation of `call_rule_definition`,
-        // which resets the `_val` context to the appropriate reference.
-        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_val>(ctx);
+        // which resets the `_rule_var` context to the appropriate reference.
+        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
 
         using detail::parse_rule; // ADL
 
@@ -488,7 +488,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         attribute_type no_attr; // default-initialize
 
         // See the comments on the primary overload of `rule::parse(...)`
-        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_val>(ctx);
+        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
 
         using detail::parse_rule; // ADL
         return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, no_attr));  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)

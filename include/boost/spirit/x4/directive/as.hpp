@@ -22,7 +22,7 @@ struct as_directive_ctx_impl // false
 template<class Context, X4Attribute Attr>
 struct as_directive_ctx_impl<true, Context, Attr>
 {
-    using type = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::as_val>(
+    using type = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::as_var>(
         std::declval<Context const&>(),
         std::declval<Attr&>()
     ))>;
@@ -47,7 +47,7 @@ struct as_directive : unary_parser<Subject, as_directive<T, Subject>>
     static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
 
 private:
-    static constexpr bool need_as_val = Subject::has_action;
+    static constexpr bool need_as_var = Subject::has_action;
 
 public:
     // `as<T>(as<T>(subject))` forwards the outer `T&` for `subject`
@@ -55,10 +55,10 @@ public:
         requires std::same_as<std::remove_const_t<OuterAttr>, T>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_val, Context, OuterAttr>::type, OuterAttr>)
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_var, Context, OuterAttr>::type, OuterAttr>)
     {
-        if constexpr (need_as_val) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_val>(ctx, outer_attr), outer_attr);
+        if constexpr (need_as_var) {
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), outer_attr);
         } else {
             return this->subject.parse(first, last, ctx, outer_attr);
         }
@@ -70,10 +70,10 @@ public:
             (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr&) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_val, Context, unused_type>::type, unused_type>)
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_var, Context, unused_type>::type, unused_type>)
     {
-        if constexpr (need_as_val) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_val>(ctx, unused), unused);
+        if constexpr (need_as_var) {
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, unused), unused);
         } else {
             return this->subject.parse(first, last, ctx, unused);
         }
@@ -87,7 +87,7 @@ public:
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
         noexcept(
-            is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_val, Context, T>::type, T> &&
+            is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_var, Context, T>::type, T> &&
             noexcept(x4::move_to(std::declval<T>(), outer_attr))
         )
     {
@@ -101,8 +101,8 @@ public:
 
         T attr_{}; // value-initialize
 
-        if constexpr (need_as_val) {
-            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_val>(ctx, attr_), attr_)) return false;
+        if constexpr (need_as_var) {
+            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), attr_)) return false;
         } else {
             if (!this->subject.parse(first, last, ctx, attr_)) return false;
         }

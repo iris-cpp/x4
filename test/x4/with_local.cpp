@@ -25,7 +25,7 @@ TEST_CASE("with_local")
     using x4::as;
     using x4::_local_var;
     using x4::_attr;
-    using x4::_as_val;
+    using x4::_as_var;
     using x4::int_;
     using x4::eps;
 
@@ -38,7 +38,7 @@ TEST_CASE("with_local")
                     _local_var(ctx) = _attr(ctx) * 100;
                 })] >>
                 eps[([](auto&& ctx) {
-                    _as_val(ctx) = _local_var(ctx);
+                    _as_var(ctx) = _local_var(ctx);
                 })]
             )
         ];

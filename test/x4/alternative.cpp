@@ -152,13 +152,13 @@ TEST_CASE("alternative")
 
         using x4::rule;
         using x4::_attr;
-        using x4::_val;
+        using x4::_rule_var;
 
         rule<class r1, wchar_t> r1;
         rule<class r2, wchar_t> r2;
         rule<class r3, wchar_t> r3;
 
-        constexpr auto f = [&](auto& ctx){ _val(ctx) = _attr(ctx); };
+        constexpr auto f = [&](auto& ctx){ _rule_var(ctx) = _attr(ctx); };
 
         (void)(r3 = (eps >> r1)[f]);
         (void)(r3 = (r1 | r2)[f]);

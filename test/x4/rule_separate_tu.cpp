@@ -69,7 +69,7 @@ TEST_CASE("rule_separate_tu")
             x4::contexts::expectation_failure,
             x4::expectation_failure<std::string_view::const_iterator>,
             x4::context<
-                x4::contexts::rule_val,
+                x4::contexts::rule_var,
                 int
             >
         >;
@@ -80,7 +80,7 @@ TEST_CASE("rule_separate_tu")
 
         static_assert(std::same_as<
             std::remove_cvref_t<decltype(
-                x4::remove_first_context<x4::contexts::rule_val>(std::declval<Context const&>())
+                x4::remove_first_context<x4::contexts::rule_var>(std::declval<Context const&>())
             )>,
             RuleAgnosticContext
         >);

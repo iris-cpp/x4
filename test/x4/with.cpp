@@ -31,14 +31,14 @@ struct match_counter_rule_id
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Failure, class Context>
     void on_error(It const&, Se const&, Context const& ctx, Failure const&)
     {
-        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_val, ExpectedAttr>);
+        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_var, ExpectedAttr>);
         ++x4::get<my_tag>(ctx);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
     void on_success(It const&, Se const&, Context const& ctx, Attr&)
     {
-        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_val, ExpectedAttr>);
+        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_var, ExpectedAttr>);
         ++x4::get<my_tag>(ctx);
     }
 };
@@ -161,7 +161,7 @@ TEST_CASE("with")
         })];
         auto const r2 = rule<struct my_rvalue_rule_class, int>() =
             x4::lit('(') >> (r1 % ',') >> x4::lit(')')[([](auto&& ctx){
-                x4::_val(ctx) = x4::get<my_tag>(ctx);
+                x4::_rule_var(ctx) = x4::get<my_tag>(ctx);
             })];
         int attr = 0;
         REQUIRE(parse("(1,2,3)", with<my_tag>(100)[r2], attr));
@@ -183,7 +183,7 @@ TEST_CASE("with")
         };
 
         auto f = [](auto&& ctx){
-            x4::_val(ctx) = x4::_attr(ctx) + functor()(x4::get<my_tag>(ctx));
+            x4::_rule_var(ctx) = x4::_attr(ctx) + functor()(x4::get<my_tag>(ctx));
         };
         auto const r = rule<struct my_rule_class2, int>() = int_[f];
 
