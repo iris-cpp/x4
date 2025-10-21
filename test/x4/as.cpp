@@ -34,7 +34,7 @@ TEST_CASE("as")
     using x4::eps;
     using x4::string;
     using x4::_attr;
-    using x4::_val;
+    using x4::_rule_var;
     using x4::_as_var;
 
     using It = std::string_view::const_iterator;
@@ -166,7 +166,7 @@ TEST_CASE("as")
         constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
             x4::as<std::string>(
                 eps[([](auto&& ctx) {
-                    _val(ctx) = "default";
+                    _rule_var(ctx) = "default";
                 })] >>
 
                 eps[([](auto&& ctx) {
@@ -188,7 +188,7 @@ TEST_CASE("as")
         constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
             x4::as<std::string>(
                 eps[([](auto&& ctx) {
-                    _val(ctx) = "default";
+                    _rule_var(ctx) = "default";
                 })] >>
 
                 eps[([]([[maybe_unused]] auto&& ctx) {
@@ -248,7 +248,7 @@ TEST_CASE("as")
         CHECK(result == "default"sv);
     }
 
-    // Use `_val(ctx)` inside `as<T>(...)`
+    // Use `_rule_var(ctx)` inside `as<T>(...)`
     {
         struct StringLiteral
         {
@@ -259,15 +259,15 @@ TEST_CASE("as")
         StringLiteral result;
 
         constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-            eps[([](auto& ctx) { _val(ctx).is_quoted = false; })] >>
+            eps[([](auto& ctx) { _rule_var(ctx).is_quoted = false; })] >>
             x4::as<std::string>(
                 x4::lit('"')[([](auto&& ctx) {
-                    StringLiteral& rule_val = _val(ctx);
-                    rule_val.is_quoted = true;
+                    StringLiteral& rule_var = _rule_var(ctx);
+                    rule_var.is_quoted = true;
                 })] >>
                 *~x4::char_('"') >>
                 '"'
-            )[([](auto&& ctx) { _val(ctx).text = std::move(_attr(ctx)); })];
+            )[([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })];
 
         std::string_view input = R"("foo")";
         It first = input.begin();
