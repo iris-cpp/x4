@@ -18,7 +18,6 @@
 #include <boost/spirit/x4/char/negated_char.hpp>
 #include <boost/spirit/x4/string/string.hpp>
 #include <boost/spirit/x4/symbols.hpp>
-#include <boost/spirit/x4/binary.hpp>
 #include <boost/spirit/x4/rule.hpp>
 #include <boost/spirit/x4/auxiliary/attr.hpp>
 #include <boost/spirit/x4/auxiliary/eoi.hpp>
@@ -309,7 +308,6 @@ TEST_CASE("expect")
     using x4::eoi;
     using x4::eol;
     //using x4::attr;
-    using x4::dword;
     using x4::int_;
     using x4::shared_symbols;
     using x4::with;
@@ -533,15 +531,11 @@ TEST_CASE("expect")
         CHECK(n == 12);
     }
 
-    // binary, numeric, char, string parsers
+    // numeric, char, string parsers
     {
-        TEST_SUCCESS_PASS("12abcd", +digit > dword);
         TEST_SUCCESS_PASS("abc12", +alpha > int_);
         TEST_SUCCESS_PASS("12a", +digit > lit('a'));
 
-        TEST_FAILURE("12abc", +digit > dword, {
-            CHECK(where == "abc"sv);
-        });
         TEST_FAILURE("abc", +alpha > int_, {
             CHECK(where == ""sv);
         });

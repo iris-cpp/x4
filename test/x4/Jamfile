@@ -67,7 +67,6 @@ run actions.cpp catch2 ;
 run alternative.cpp catch2 ;
 run and_predicate.cpp catch2 ;
 run attr.cpp catch2 ;
-run binary.cpp catch2 ;
 run bool.cpp catch2 ;
 run char.cpp catch2 ;
 run char_class.cpp catch2 ;

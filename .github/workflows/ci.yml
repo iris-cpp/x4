@@ -194,7 +194,6 @@ jobs:
             libs/core \
             libs/describe \
             libs/detail \
-            libs/endian \
             libs/function \
             libs/function_types \
             libs/functional \
