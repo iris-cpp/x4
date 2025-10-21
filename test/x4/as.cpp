@@ -35,7 +35,7 @@ TEST_CASE("as")
     using x4::string;
     using x4::_attr;
     using x4::_val;
-    using x4::_as_val;
+    using x4::_as_var;
 
     using It = std::string_view::const_iterator;
     using Se = It;
@@ -159,7 +159,7 @@ TEST_CASE("as")
         }
     }
 
-    // `as_val(ctx)` (with auto attribute propagation)
+    // `_as_var(ctx)` (with auto attribute propagation)
     {
         std::string result;
 
@@ -170,7 +170,7 @@ TEST_CASE("as")
                 })] >>
 
                 eps[([](auto&& ctx) {
-                    _as_val(ctx) = "foo";
+                    _as_var(ctx) = "foo";
                 })]
             );
 
@@ -181,7 +181,7 @@ TEST_CASE("as")
         REQUIRE(string_rule.parse(first, last, unused, result));
         CHECK(result == "foo"sv);
     }
-    // `as_val(ctx)` (with disabled attribute)
+    // `_as_var(ctx)` (with disabled attribute)
     {
         std::string result;
 
@@ -192,7 +192,7 @@ TEST_CASE("as")
                 })] >>
 
                 eps[([]([[maybe_unused]] auto&& ctx) {
-                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, unused_type>);
+                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
                 })]
             ) >> disable_attr; // <----------
 
@@ -203,14 +203,14 @@ TEST_CASE("as")
         REQUIRE(string_rule.parse(first, last, unused, result));
         CHECK(result == "default"sv);
     }
-    // `as_val(ctx)` (within `as<unused_type>(as<std::string>(...))`)
+    // `_as_var(ctx)` (within `as<unused_type>(as<std::string>(...))`)
     {
         std::string result{"default"};
 
         constexpr auto unused_rule = x4::as<unused_type>(
             x4::as<std::string>(
                 eps[([]([[maybe_unused]] auto&& ctx) {
-                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, unused_type>);
+                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
                 })]
             )
         );
@@ -222,7 +222,7 @@ TEST_CASE("as")
         REQUIRE(unused_rule.parse(first, last, unused, result));
         CHECK(result == "default"sv);
     }
-    // `as_val(ctx)` (within `as<std::string>(as<unused_type>(...))`)
+    // `_as_var(ctx)` (within `as<std::string>(as<unused_type>(...))`)
     {
         std::string result;
 
@@ -230,12 +230,12 @@ TEST_CASE("as")
             x4::attr("default") >>
 
             eps[([]([[maybe_unused]] auto&& ctx) {
-                static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, std::string>);
+                static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, std::string>);
             })] >>
 
             x4::as<unused_type>(
                 eps[([]([[maybe_unused]] auto&& ctx) {
-                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_val(ctx))>, unused_type>);
+                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
                 })]
             )
         );
