@@ -8,6 +8,8 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - 'main'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,11 +32,11 @@ jobs:
             x4:
               - '.github/workflows/*.yml'
               - 'CMakeLists.txt'
-              - 'test/CMakeLists.txt'
               - 'include/iris/config.hpp'
               - 'include/iris/core/**/*.hpp'
-              - 'include/iris/x4/**/*'
               - 'include/iris/x4.hpp'
+              - 'include/iris/x4/**/*'
+              - 'test/CMakeLists.txt'
               - 'test/x4/**/*'
 
   # ^^^ TODO: move `config.hpp` and `core/*` to `iris-cpp/iris` and remove the corresponding paths from above
@@ -265,7 +267,7 @@ jobs:
         shell: bash
         run: |
           set -xe
-          cp -rp "${{ github.workspace }}" libs/iris_x4
+          cp -rp "${{ github.workspace }}/." libs/iris_x4
           cd libs/iris_x4
           cmake ${{ steps.deps-info.outputs.IRIS_X4_CMAKE_ARGS }} -B build \
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \

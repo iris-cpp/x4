@@ -15,11 +15,7 @@
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/parse.hpp>
 
-#if IRIS_CI_IS_B2
-# include "catch_amalgamated.hpp"
-#else
-# include <catch2/catch_test_macros.hpp>
-#endif
+#include <catch2/catch_test_macros.hpp>
 
 #include <iterator>
 #include <string_view>
