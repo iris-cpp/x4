@@ -9,15 +9,15 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/directive/matches.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/directive/matches.hpp>
 
 TEST_CASE("matches")
 {
     using x4::matches;
     using x4::char_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(matches['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(matches['x']);
 
     {
         CHECK(parse("x", matches[char_]));

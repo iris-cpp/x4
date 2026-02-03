@@ -8,12 +8,12 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/operator/difference.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/operator/difference.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/kleene.hpp>
 
 #include <string>
 
@@ -24,7 +24,7 @@ TEST_CASE("difference")
     using x4::lit;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
 
     // Basic tests
     {

@@ -9,20 +9,20 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/auxiliary/eoi.hpp>
-#include <boost/spirit/x4/directive/seek.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/auxiliary/eoi.hpp>
+#include <iris/x4/directive/seek.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 #include <vector>
 
 TEST_CASE("seek")
 {
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::seek['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::seek['x']);
 
     // test eoi
     CHECK(parse("", x4::seek[x4::eoi]));

@@ -8,13 +8,13 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/alternative.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/kleene.hpp>
 
 TEST_CASE("rule1")
 {
@@ -25,11 +25,11 @@ TEST_CASE("rule1")
     using x4::phrase_parse;
     using x4::root_skipper_flag;
 
-#ifdef BOOST_SPIRIT_X4_NO_RTTI
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{});
+#ifdef IRIS_X4_NO_RTTI
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{});
 #endif
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"});
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"} = 'x');
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"});
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"} = 'x');
 
     // check attribute advertising
     static_assert( x4::has_attribute_v<rule<class r_, int>>);

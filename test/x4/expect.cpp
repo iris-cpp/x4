@@ -14,38 +14,38 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/negated_char.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/symbols.hpp>
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/auxiliary/attr.hpp>
-#include <boost/spirit/x4/auxiliary/eoi.hpp>
-#include <boost/spirit/x4/auxiliary/eol.hpp>
-#include <boost/spirit/x4/auxiliary/eps.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/directive/with.hpp>
-#include <boost/spirit/x4/core/expectation.hpp>
-#include <boost/spirit/x4/directive/expect.hpp>
-#include <boost/spirit/x4/directive/lexeme.hpp>
-#include <boost/spirit/x4/directive/matches.hpp>
-#include <boost/spirit/x4/directive/no_case.hpp>
-#include <boost/spirit/x4/directive/no_skip.hpp>
-#include <boost/spirit/x4/directive/omit.hpp>
-#include <boost/spirit/x4/directive/raw.hpp>
-#include <boost/spirit/x4/directive/repeat.hpp>
-#include <boost/spirit/x4/directive/seek.hpp>
-#include <boost/spirit/x4/directive/skip.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
-#include <boost/spirit/x4/operator/list.hpp>
-#include <boost/spirit/x4/operator/alternative.hpp>
-#include <boost/spirit/x4/operator/and_predicate.hpp>
-#include <boost/spirit/x4/operator/difference.hpp>
-#include <boost/spirit/x4/operator/not_predicate.hpp>
-#include <boost/spirit/x4/operator/optional.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/negated_char.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/symbols.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/auxiliary/eoi.hpp>
+#include <iris/x4/auxiliary/eol.hpp>
+#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/with.hpp>
+#include <iris/x4/core/expectation.hpp>
+#include <iris/x4/directive/expect.hpp>
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/directive/matches.hpp>
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/directive/no_skip.hpp>
+#include <iris/x4/directive/omit.hpp>
+#include <iris/x4/directive/raw.hpp>
+#include <iris/x4/directive/repeat.hpp>
+#include <iris/x4/directive/seek.hpp>
+#include <iris/x4/directive/skip.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/operator/and_predicate.hpp>
+#include <iris/x4/operator/difference.hpp>
+#include <iris/x4/operator/not_predicate.hpp>
+#include <iris/x4/operator/optional.hpp>
 
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
@@ -315,8 +315,8 @@ TEST_CASE("expect")
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(expect['x']);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ > char_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(expect['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ > char_);
 
     {
         TEST_SUCCESS_PASS("aa", char_ >> expect[char_]);
@@ -346,7 +346,7 @@ TEST_CASE("expect")
     }
 
     {
-    #ifndef BOOST_SPIRIT_X4_NO_RTTI
+    #ifndef IRIS_X4_NO_RTTI
         TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
             CHECK(x.which().find("sequence") != std::string::npos);

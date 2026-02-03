@@ -7,12 +7,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#define BOOST_SPIRIT_X4_UNICODE
+#define IRIS_X4_UNICODE
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/directive/no_case.hpp>
-#include <boost/spirit/x4/numeric/bool.hpp>
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/numeric/bool.hpp>
 
 #include <string_view>
 #include <iterator>
@@ -27,7 +27,7 @@ struct backwards_bool_policies : x4::bool_policies<>
     parse_false(It& first, Se const& last, Attr& attr, CaseCompare const& case_compare)
     {
         using namespace std::string_view_literals;
-        namespace x4 = boost::spirit::x4;
+        namespace x4 = iris::x4;
         if (x4::detail::string_parse("eurt"sv, first, last, unused_container, case_compare)) {
             x4::move_to(false, attr);   // result is false
             return true;
@@ -52,7 +52,7 @@ TEST_CASE("bool")
     static_assert(x4::detail::BoolPolicy<backwards_bool_policies, x4::char_encoding::standard>);
 
     {
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bool_);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(bool_);
 
         CHECK(parse("true", bool_));
         CHECK(parse("false", bool_));
@@ -60,8 +60,8 @@ TEST_CASE("bool")
     }
 
     {
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(true_);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(false_);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(true_);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(false_);
 
         CHECK(parse("true", true_));
         CHECK(!parse("true", false_));
@@ -93,7 +93,7 @@ TEST_CASE("bool")
         using backwards_bool_type = x4::bool_parser<bool, x4::char_encoding::standard, backwards_bool_policies>;
         constexpr backwards_bool_type backwards_bool{};
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(backwards_bool);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(backwards_bool);
 
         CHECK(parse("true", backwards_bool));
         CHECK(parse("eurt", backwards_bool));
@@ -126,7 +126,7 @@ TEST_CASE("bool")
         using bool_test_type = x4::bool_parser<test_bool_type, x4::char_encoding::standard>;
         constexpr bool_test_type test_bool{};
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(test_bool);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(test_bool);
 
         CHECK(parse("true", test_bool));
         CHECK(parse("false", test_bool));

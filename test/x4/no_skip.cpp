@@ -9,13 +9,13 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/char/negated_char.hpp>
-#include <boost/spirit/x4/directive/lexeme.hpp>
-#include <boost/spirit/x4/directive/no_skip.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/char/negated_char.hpp>
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/directive/no_skip.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
 TEST_CASE("no_skip")
 {
@@ -24,7 +24,7 @@ TEST_CASE("no_skip")
     using x4::lexeme;
     using x4::no_skip;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(no_skip['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(no_skip['x']);
 
     // without skipping no_skip is equivalent to lexeme
     {

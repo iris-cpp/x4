@@ -3,29 +3,29 @@
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
-# For Spirit-specific tests.
-add_library(boost_spirit_x4_cxx_test INTERFACE)
-set_target_properties(boost_spirit_x4_cxx_test PROPERTIES CXX_EXTENSIONS OFF)
-target_link_libraries(boost_spirit_x4_cxx_test INTERFACE _boost_spirit_x4_cxx_common)
+# For X4-specific tests.
+add_library(iris_x4_cxx_test INTERFACE)
+set_target_properties(iris_x4_cxx_test PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(iris_x4_cxx_test INTERFACE _iris_x4_cxx_common)
 
 # For external libraries. Excludes strict warning, etc.
-add_library(boost_spirit_x4_cxx_external INTERFACE)
-set_target_properties(boost_spirit_x4_cxx_external PROPERTIES CXX_EXTENSIONS OFF)
-target_link_libraries(boost_spirit_x4_cxx_external INTERFACE _boost_spirit_x4_cxx_common)
+add_library(iris_x4_cxx_external INTERFACE)
+set_target_properties(iris_x4_cxx_external PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(iris_x4_cxx_external INTERFACE _iris_x4_cxx_common)
 
 if(MSVC)
     target_compile_options(
-        boost_spirit_x4_cxx_test
+        iris_x4_cxx_test
         INTERFACE /W4 /analyze /analyze:external-
     )
     target_compile_options(
-        boost_spirit_x4_cxx_external
+        iris_x4_cxx_external
         INTERFACE /analyze-
     )
 
 else() # non-MSVC
     target_compile_options(
-        boost_spirit_x4_cxx_test
+        iris_x4_cxx_test
         INTERFACE
             -Wall -Wextra -pedantic
     )
@@ -48,10 +48,10 @@ FetchContent_MakeAvailable(Catch2)
 
 set_target_properties(Catch2 PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_definitions(Catch2 PUBLIC DO_NOT_USE_WMAIN)
-target_link_libraries(Catch2 PRIVATE boost_spirit_x4_cxx_external)
-target_link_libraries(Catch2WithMain PRIVATE boost_spirit_x4_cxx_external)
+target_link_libraries(Catch2 PRIVATE iris_x4_cxx_external)
+target_link_libraries(Catch2WithMain PRIVATE iris_x4_cxx_external)
 
-target_link_libraries(boost_spirit_x4_cxx_test INTERFACE Catch2::Catch2WithMain)
+target_link_libraries(iris_x4_cxx_test INTERFACE Catch2::Catch2WithMain)
 
 # --------------------------------------------
 

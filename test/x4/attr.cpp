@@ -8,10 +8,10 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/auxiliary/attr.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/char/char.hpp>
+#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/char/char.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 
@@ -86,12 +86,12 @@ TEST_CASE("attr")
         STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string_view<char32_t>>>);
     }
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(attr(1));
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(attr("asd"));
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(attr(1));
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(attr("asd"));
 
     {
         constexpr char s[] = "asd";
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(attr(s));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(attr(s));
     }
 
     {

@@ -8,15 +8,15 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/auxiliary/eps.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/list.hpp>
-#include <boost/spirit/x4/operator/alternative.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
@@ -34,14 +34,14 @@
 
 namespace check_stationary {
 
-x4::rule<class a_r, spirit_test::stationary> const a;
-x4::rule<class b_r, spirit_test::stationary> const b;
+x4::rule<class a_r, x4_test::stationary> const a;
+x4::rule<class b_r, x4_test::stationary> const b;
 
 auto const a_def = '{' >> x4::int_ >> '}';
 auto const b_def = a;
 
-BOOST_SPIRIT_X4_DEFINE(a)
-BOOST_SPIRIT_X4_DEFINE(b)
+IRIS_X4_DEFINE(a)
+IRIS_X4_DEFINE(b)
 
 } // check_stationary
 
@@ -56,7 +56,7 @@ x4::rule<class recursive_grammar_r, node_t> const grammar;
 
 auto const grammar_def = '[' >> grammar % ',' >> ']' | x4::int_;
 
-BOOST_SPIRIT_X4_DEFINE(grammar)
+IRIS_X4_DEFINE(grammar)
 
 } // check_recursive
 
@@ -84,9 +84,9 @@ using iterator_type = std::string_view::const_iterator;
 
 x4::rule<class recursive_tuple_grammar_r, recursive_tuple> const grammar;
 auto const grammar_def = x4::int_ >> ('{' >> grammar % ',' >> '}' | x4::eps);
-BOOST_SPIRIT_X4_DEFINE(grammar)
+IRIS_X4_DEFINE(grammar)
 
-BOOST_SPIRIT_X4_INSTANTIATE(decltype(grammar), iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(decltype(grammar), iterator_type, x4::parse_context_for<iterator_type>)
 
 } // check_recursive_tuple
 
@@ -138,7 +138,7 @@ TEST_CASE("rule3")
 
     // ensure no unneeded synthesization, copying and moving occurred
     {
-        spirit_test::stationary st { 0 };
+        x4_test::stationary st { 0 };
         REQUIRE(parse("{42}", check_stationary::b, st));
         CHECK(st.val == 42);
     }

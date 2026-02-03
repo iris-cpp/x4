@@ -10,9 +10,9 @@
 
 #include "real.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
 TEST_CASE("real1")
 {
@@ -52,7 +52,7 @@ TEST_CASE("real1")
 
         constexpr real_parser<double, ureal_policies<double>> udouble;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(udouble);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(udouble);
 
         {
             double d = 0;

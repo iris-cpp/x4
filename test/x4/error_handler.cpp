@@ -8,14 +8,14 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/debug/annotate_on_success.hpp>
-#include <boost/spirit/x4/debug/error_reporting.hpp>
-#include <boost/spirit/x4/directive/with.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/debug/annotate_on_success.hpp>
+#include <iris/x4/debug/error_reporting.hpp>
+#include <iris/x4/directive/with.hpp>
 
 #include <iterator>
 #include <string>
@@ -42,8 +42,8 @@ x4::rule<test_rule_class> const test_rule;
 auto const test_inner_rule_def = x4::lit("bar");
 auto const test_rule_def = x4::lit("foo") > test_inner_rule > x4::lit("git");
 
-BOOST_SPIRIT_X4_DEFINE(test_inner_rule)
-BOOST_SPIRIT_X4_DEFINE(test_rule)
+IRIS_X4_DEFINE(test_inner_rule)
+IRIS_X4_DEFINE(test_rule)
 
 void do_parse(std::string const& line_break)
 {

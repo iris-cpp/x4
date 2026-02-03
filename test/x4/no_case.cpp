@@ -8,16 +8,16 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/directive/no_case.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/string/string.hpp>
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/string/string.hpp>
 
 TEST_CASE("no_case")
 {
     using x4::no_case;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(no_case['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(no_case['x']);
 
     {
         using namespace x4::standard;

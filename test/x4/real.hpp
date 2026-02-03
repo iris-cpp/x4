@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TEST_X4_REAL_HPP
-#define BOOST_SPIRIT_X4_TEST_X4_REAL_HPP
+#ifndef IRIS_X4_TEST_X4_REAL_HPP
+#define IRIS_X4_TEST_X4_REAL_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2010 Joel de Guzman
@@ -12,9 +12,9 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/numeric/real.hpp>
-#include <boost/spirit/x4/numeric/uint.hpp>
-#include <boost/spirit/x4/char/char.hpp>
+#include <iris/x4/numeric/real.hpp>
+#include <iris/x4/numeric/uint.hpp>
+#include <iris/x4/char/char.hpp>
 
 #include <iterator>
 #include <type_traits>

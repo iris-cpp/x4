@@ -8,11 +8,11 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/directive/lexeme.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 TEST_CASE("lexeme")
 {
@@ -21,7 +21,7 @@ TEST_CASE("lexeme")
     using x4::lexeme;
     using x4::rule;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
 
     CHECK(parse(" 1 2 3 4 5", +digit, space));
     CHECK(!parse(" 1 2 3 4 5", lexeme[+digit], space));

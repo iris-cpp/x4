@@ -8,13 +8,13 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/directive/omit.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/directive/omit.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
@@ -31,8 +31,8 @@ constexpr rule<class indirect_rule, int> indirect_rule = "indirect_rule";
 constexpr auto direct_rule_def = x4::int_;
 constexpr auto indirect_rule_def = direct_rule;
 
-BOOST_SPIRIT_X4_DEFINE(direct_rule)
-BOOST_SPIRIT_X4_DEFINE(indirect_rule)
+IRIS_X4_DEFINE(direct_rule)
+IRIS_X4_DEFINE(indirect_rule)
 
 } // anonymous
 
@@ -46,7 +46,7 @@ TEST_CASE("omit")
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(omit['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(omit['x']);
 
     CHECK(parse("a", omit['a']));
 

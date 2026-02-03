@@ -8,11 +8,11 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/string/tst.hpp>
-#include <boost/spirit/x4/string/case_compare.hpp>
+#include <iris/x4/string/tst.hpp>
+#include <iris/x4/string/case_compare.hpp>
 
-#include <boost/spirit/x4/char_encoding/standard.hpp>
-#include <boost/spirit/x4/char_encoding/standard_wide.hpp>
+#include <iris/x4/char_encoding/standard.hpp>
+#include <iris/x4/char_encoding/standard_wide.hpp>
 
 #include <string>
 #include <cctype>

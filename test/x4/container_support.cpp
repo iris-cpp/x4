@@ -9,14 +9,14 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/directive/lexeme.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/list.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/kleene.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 
@@ -30,7 +30,7 @@
 #include <string>
 #include <type_traits>
 
-namespace x4 = boost::spirit::x4;
+namespace x4 = iris::x4;
 
 // check if we did not break user defined specializations
 namespace check_substitute {
@@ -42,7 +42,7 @@ template<class T> struct is_bar<bar<T>> : std::true_type {};
 
 } // check_substitute
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 using namespace check_substitute;
 
@@ -57,7 +57,7 @@ struct is_substitute<T, U>
     : is_substitute<typename T::type, typename U::type>
 {};
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 namespace check_substitute {
 
@@ -77,8 +77,8 @@ constexpr x4::rule<class string_rule, std::string> string_rule("string");
 constexpr auto pair_rule_def = string_rule >> x4::lit('=') >> string_rule;
 constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
 
-BOOST_SPIRIT_X4_DEFINE(pair_rule)
-BOOST_SPIRIT_X4_DEFINE(string_rule)
+IRIS_X4_DEFINE(pair_rule)
+IRIS_X4_DEFINE(string_rule)
 
 template<class Container>
 void test_map_support()

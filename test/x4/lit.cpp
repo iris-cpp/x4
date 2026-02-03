@@ -7,13 +7,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define BOOST_SPIRIT_X4_UNICODE
+#define IRIS_X4_UNICODE
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>

@@ -20,8 +20,8 @@ TEST_CASE("real3")
         constexpr real_parser<double, strict_ureal_policies<double>> strict_udouble;
         constexpr real_parser<double, strict_real_policies<double>> strict_double;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(strict_udouble);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(strict_double);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(strict_udouble);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(strict_double);
 
         CHECK(!parse("1234", strict_udouble));
         {
@@ -60,8 +60,8 @@ TEST_CASE("real3")
             constexpr real_parser<double, no_trailing_dot_policy<double>> notrdot_real;
             constexpr real_parser<double, no_leading_dot_policy<double>> nolddot_real;
 
-            BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(notrdot_real);
-            BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(nolddot_real);
+            IRIS_X4_ASSERT_CONSTEXPR_CTORS(notrdot_real);
+            IRIS_X4_ASSERT_CONSTEXPR_CTORS(nolddot_real);
 
             CHECK(!parse("1234.", notrdot_real)); // Bad trailing dot
             CHECK(!parse(".1234", nolddot_real)); // Bad leading dot
@@ -73,7 +73,7 @@ TEST_CASE("real3")
         using x4::real_parser;
         constexpr real_parser<double, ts_real_policies<double>> ts_real;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(ts_real);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(ts_real);
 
         CHECK(parse("123.01", ts_real));
         {

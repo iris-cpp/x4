@@ -8,13 +8,13 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/auxiliary/eoi.hpp>
+#include <iris/x4/auxiliary/eoi.hpp>
 
 TEST_CASE("eoi")
 {
     using x4::eoi;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eoi);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(eoi);
 
     CHECK(parse("", eoi));
     CHECK(!(parse("x", eoi)));

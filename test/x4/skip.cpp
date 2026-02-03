@@ -9,12 +9,12 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/directive/lexeme.hpp>
-#include <boost/spirit/x4/directive/skip.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/directive/skip.hpp>
+#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
 TEST_CASE("skip")
 {
@@ -26,7 +26,7 @@ TEST_CASE("skip")
     using x4::reskip;
     using x4::lit;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
 
     CHECK(parse("a b c d", skip(space)[*char_]));
 

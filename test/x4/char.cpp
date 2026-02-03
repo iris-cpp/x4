@@ -8,15 +8,15 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define BOOST_SPIRIT_X4_UNICODE
+#define IRIS_X4_UNICODE
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/char/unicode_char_class.hpp>
-#include <boost/spirit/x4/char/negated_char.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/char/unicode_char_class.hpp>
+#include <iris/x4/char/negated_char.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 #include <string>
 #include <string_view>
@@ -66,13 +66,13 @@ TEST_CASE("char")
     {
         using namespace x4::standard;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_('x'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_('a', 'z'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_('x'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_('a', 'z'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_('x'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_('a', 'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_('x'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_('a', 'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_('x'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_('a', 'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_('x'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_('a', 'z'));
 
         CHECK(parse("x", 'x'));
         CHECK(parse(L"x", L'x'));
@@ -109,13 +109,13 @@ TEST_CASE("char")
     {
         using namespace x4::standard_wide;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_(L'x'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_(L'a', L'z'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'x'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'a', L'z'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'x'));
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'a', L'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_(L'x'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_(L'a', L'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'x'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'a', L'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'x'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'a', L'z'));
 
         CHECK(parse(L"x", char_));
         CHECK(parse(L"x", char_(L'x')));

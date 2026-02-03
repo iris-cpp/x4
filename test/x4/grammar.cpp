@@ -9,12 +9,12 @@
 
 #include "grammar.hpp"
 
-#include <boost/spirit/x4/numeric/int.hpp>
+#include <iris/x4/numeric/int.hpp>
 
 constexpr auto grammar_def = x4::int_;
 
-BOOST_SPIRIT_X4_DEFINE(grammar)
-BOOST_SPIRIT_X4_INSTANTIATE(
+IRIS_X4_DEFINE(grammar)
+IRIS_X4_INSTANTIATE(
     grammar_type,
     std::string_view::const_iterator,
     x4::parse_context_for<std::string_view::const_iterator>

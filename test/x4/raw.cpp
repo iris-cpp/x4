@@ -8,16 +8,16 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/auxiliary/eps.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/directive/raw.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
-#include <boost/spirit/x4/operator/alternative.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/raw.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/alternative.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/variant.hpp>
@@ -35,8 +35,8 @@ rule<class indirect_rule, int> indirect_rule = "indirect_rule";
 auto const direct_rule_def = x4::int_;
 auto const indirect_rule_def = direct_rule;
 
-BOOST_SPIRIT_X4_DEFINE(direct_rule)
-BOOST_SPIRIT_X4_DEFINE(indirect_rule)
+IRIS_X4_DEFINE(direct_rule)
+IRIS_X4_DEFINE(indirect_rule)
 
 } // anonymous
 
@@ -50,7 +50,7 @@ TEST_CASE("raw")
     using x4::int_;
     using x4::char_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(raw['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(raw['x']);
 
     {
         std::ranges::subrange<std::string_view::const_iterator> range;

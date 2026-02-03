@@ -8,14 +8,14 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/directive/omit.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/optional.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/kleene.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/directive/omit.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/optional.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/kleene.hpp>
 
 #include <boost/fusion/adapted/struct.hpp>
 #include <boost/fusion/include/at_c.hpp>
@@ -63,7 +63,7 @@ TEST_CASE("optional")
     using x4::standard::char_;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(-int_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(-int_);
 
     CHECK(parse("1234", -int_));
     CHECK(parse("abcd", -int_).is_partial_match());
@@ -185,8 +185,8 @@ TEST_CASE("optional")
 
     {
         // test move only types
-        std::optional<spirit_test::move_only> o;
-        REQUIRE(parse("s", -spirit_test::synth_move_only, o));
+        std::optional<x4_test::move_only> o;
+        REQUIRE(parse("s", -x4_test::synth_move_only, o));
         CHECK(o.has_value());
     }
 }

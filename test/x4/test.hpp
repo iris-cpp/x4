@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TEST_X4_TEST_HPP
-#define BOOST_SPIRIT_X4_TEST_X4_TEST_HPP
+#ifndef IRIS_X4_TEST_X4_TEST_HPP
+#define IRIS_X4_TEST_X4_TEST_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman
@@ -10,12 +10,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/move_to.hpp>
-#include <boost/spirit/x4/parse.hpp>
+#include <iris/config.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/parse.hpp>
 
-#if BOOST_SPIRIT_CI_IS_B2
+#if IRIS_CI_IS_B2
 # include "catch_amalgamated.hpp"
 #else
 # include <catch2/catch_test_macros.hpp>
@@ -27,15 +27,14 @@
 #include <utility>
 #include <print>
 
-namespace spirit = boost::spirit;
-namespace x4 = spirit::x4;
+namespace x4 = iris::x4;
 
 using x4::unused_type;
 using x4::unused;
 using x4::unused_container_type;
 using x4::unused_container;
 
-namespace spirit_test {
+namespace x4_test {
 
 namespace detail {
 
@@ -178,11 +177,11 @@ constexpr synth_parser<T> synth{};
 
 constexpr synth_parser<move_only> synth_move_only{};
 
-} // spirit_test
+} // x4_test
 
-using spirit_test::parse;
+using x4_test::parse;
 
-#define BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(...) \
-    static_assert(::spirit_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
+#define IRIS_X4_ASSERT_CONSTEXPR_CTORS(...) \
+    static_assert(::x4_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
 
 #endif

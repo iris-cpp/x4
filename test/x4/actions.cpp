@@ -8,17 +8,17 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/operator/alternative.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
 TEST_CASE("action")
 {
     using x4::int_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::int_[std::true_type{}]);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::int_[std::true_type{}]);
 
     {
         int x = 0;
@@ -42,8 +42,8 @@ TEST_CASE("action")
         // ensure no unneeded synthesization, copying and moving occurred
         auto p = '{' >> int_ >> '}';
 
-        spirit_test::stationary st { 0 };
-        static_assert(x4::X4Attribute<spirit_test::stationary>);
+        x4_test::stationary st { 0 };
+        static_assert(x4::X4Attribute<x4_test::stationary>);
 
         REQUIRE(parse("{42}", p[([]{})], st));
         CHECK(st.val == 42);

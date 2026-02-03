@@ -8,12 +8,12 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/directive/with.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/list.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/directive/with.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/list.hpp>
 
 #include <vector>
 #include <concepts>
@@ -59,11 +59,11 @@ constexpr auto value_equals = int_[([](auto&& ctx) {
 
 TEST_CASE("with")
 {
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
 
     {
         constexpr int i = 0;
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
     }
 
     // check various value categories
@@ -108,11 +108,11 @@ TEST_CASE("with")
 
         // lvalue `move_only`
         {
-            spirit_test::move_only mo;
+            x4_test::move_only mo;
             (void)with<my_tag>(mo)[int_];
         }
         {
-            spirit_test::move_only mo;
+            x4_test::move_only mo;
             auto with_gen = with<my_tag>(mo); // passed-by-reference
             (void)with_gen[int_]; // permitted, never copies
             (void)std::move(with_gen)[int_];
@@ -120,10 +120,10 @@ TEST_CASE("with")
 
         // rvalue `move_only`
         {
-            (void)with<my_tag>(spirit_test::move_only{})[int_];
+            (void)with<my_tag>(x4_test::move_only{})[int_];
         }
         {
-            auto with_gen = with<my_tag>(spirit_test::move_only{});
+            auto with_gen = with<my_tag>(x4_test::move_only{});
             // (void)with_gen[int_]; // requires copy-constructible
             (void)std::move(with_gen)[int_];
         }

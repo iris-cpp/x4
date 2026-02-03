@@ -8,14 +8,14 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/string/string.hpp>
-#include <boost/spirit/x4/directive/lexeme.hpp>
-#include <boost/spirit/x4/directive/no_case.hpp>
-#include <boost/spirit/x4/directive/omit.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/string/string.hpp>
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/directive/omit.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
@@ -25,7 +25,7 @@
 
 struct x_attr {};
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<>
 struct container_value<x_attr>
@@ -58,7 +58,7 @@ TEST_CASE("plus")
     using x4::lexeme;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(+char_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(+char_);
 
     CHECK(parse("aaaaaaaa", +char_));
     CHECK(parse("a", +char_));
@@ -142,8 +142,8 @@ TEST_CASE("plus")
 
     {
         // test move only types
-        std::vector<spirit_test::move_only> v;
-        REQUIRE(parse("sss", +spirit_test::synth_move_only, v));
+        std::vector<x4_test::move_only> v;
+        REQUIRE(parse("sss", +x4_test::synth_move_only, v));
         CHECK(v.size() == 3);
     }
 }

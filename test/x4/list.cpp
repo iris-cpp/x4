@@ -8,14 +8,14 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char.hpp>
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/directive/omit.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/list.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/operator/optional.hpp>
-#include <boost/spirit/x4/operator/plus.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/omit.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/optional.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 #include <string>
 #include <vector>
@@ -30,7 +30,7 @@ TEST_CASE("list")
     using x4::omit;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ % ',');
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ % ',');
 
     CHECK(parse("a,b,c,d,e,f,g,h", char_ % ','));
     CHECK(parse("a,b,c,d,e,f,g,h,", char_ % ',').is_partial_match());
@@ -119,8 +119,8 @@ TEST_CASE("list")
 
     {
         // test move only types
-        std::vector<spirit_test::move_only> v;
-        REQUIRE(parse("s.s.s.s", spirit_test::synth_move_only % '.', v));
+        std::vector<x4_test::move_only> v;
+        REQUIRE(parse("s.s.s.s", x4_test::synth_move_only % '.', v));
         CHECK(v.size() == 4);
     }
 }

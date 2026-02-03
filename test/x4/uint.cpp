@@ -10,8 +10,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/numeric/uint.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/numeric/uint.hpp>
 
 #include <string_view>
 
@@ -62,7 +62,7 @@ TEST_CASE("uint")
         using x4::uint_;
         unsigned u = 0;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(uint_);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(uint_);
 
         CHECK(parse("123456", uint_));
         REQUIRE(parse("123456", uint_, u));
@@ -81,7 +81,7 @@ TEST_CASE("uint")
         using x4::bin;
         unsigned u = 0;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(bin);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(bin);
 
         CHECK(parse("11111110", bin));
         REQUIRE(parse("11111110", bin, u));
@@ -100,7 +100,7 @@ TEST_CASE("uint")
         using x4::oct;
         unsigned u = 0;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(oct);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(oct);
 
         CHECK(parse("12545674515", oct));
         REQUIRE(parse("12545674515", oct, u));
@@ -119,7 +119,7 @@ TEST_CASE("uint")
         using x4::hex;
         unsigned u = 0;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(hex);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(hex);
 
         CHECK(parse("95BC8DF", hex));
         REQUIRE(parse("95BC8DF", hex, u));
@@ -143,7 +143,7 @@ TEST_CASE("uint")
 
         {
             constexpr uint_parser<unsigned, 10, 1, 3> uint3{};
-            BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(uint3);
+            IRIS_X4_ASSERT_CONSTEXPR_CTORS(uint3);
 
             CHECK(parse("123456", uint3).is_partial_match());
 
@@ -153,7 +153,7 @@ TEST_CASE("uint")
         }
         {
             constexpr uint_parser<unsigned, 10, 2, 4> uint4{};
-            BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(uint4);
+            IRIS_X4_ASSERT_CONSTEXPR_CTORS(uint4);
 
             CHECK(parse("123456", uint4).is_partial_match());
 
@@ -176,7 +176,7 @@ TEST_CASE("uint")
         }
 
         constexpr uint_parser<unsigned, 10, 4, 4> uint_exact4{};
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(uint_exact4);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(uint_exact4);
 
         {
             unsigned u = 1;
