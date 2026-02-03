@@ -20,7 +20,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace contexts {
 
@@ -164,6 +164,6 @@ constexpr void clear_expectation_failure(Context const& ctx) noexcept
     x4::get<contexts::expectation_failure>(ctx).clear();
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

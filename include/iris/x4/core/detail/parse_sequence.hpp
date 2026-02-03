@@ -29,14 +29,14 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Left, class Right>
 struct sequence;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 struct pass_sequence_attribute_unused
 {
@@ -53,15 +53,15 @@ struct pass_sequence_attribute_unused
 template<class Attr>
 struct pass_sequence_attribute_size_one_view
 {
-    using type = typename fusion::result_of::deref<
-        typename fusion::result_of::begin<Attr>::type
+    using type = typename boost::fusion::result_of::deref<
+        typename boost::fusion::result_of::begin<Attr>::type
     >::type;
 
     [[nodiscard]] static constexpr type
     call(Attr& attribute)
-        noexcept(noexcept(fusion::deref(fusion::begin(attribute))))
+        noexcept(noexcept(boost::fusion::deref(boost::fusion::begin(attribute))))
     {
-        return fusion::deref(fusion::begin(attribute));
+        return boost::fusion::deref(boost::fusion::begin(attribute));
     }
 };
 
@@ -112,7 +112,7 @@ struct partition_attribute
     static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
     static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
 
-    static constexpr std::size_t actual_size = static_cast<std::size_t>(fusion::result_of::size<Attr>::value);
+    static constexpr std::size_t actual_size = static_cast<std::size_t>(boost::fusion::result_of::size<Attr>::value);
     static constexpr std::size_t expected_size = l_size + r_size;
 
     // If you got an error here, then you are trying to pass
@@ -127,27 +127,27 @@ struct partition_attribute
         "Sequence size of the passed attribute is greater than expected."
     );
 
-    using l_begin = fusion::result_of::begin<Attr>::type;
-    using l_end = fusion::result_of::advance_c<l_begin, l_size>::type;
-    using r_end = fusion::result_of::end<Attr>::type;
-    using l_part = fusion::iterator_range<l_begin, l_end>;
-    using r_part = fusion::iterator_range<l_end, r_end>;
+    using l_begin = boost::fusion::result_of::begin<Attr>::type;
+    using l_end = boost::fusion::result_of::advance_c<l_begin, l_size>::type;
+    using r_end = boost::fusion::result_of::end<Attr>::type;
+    using l_part = boost::fusion::iterator_range<l_begin, l_end>;
+    using r_part = boost::fusion::iterator_range<l_end, r_end>;
     using l_pass = pass_sequence_attribute<LParser, l_part>;
     using r_pass = pass_sequence_attribute<RParser, r_part>;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        auto i = fusion::begin(s);
-        return l_part(i, fusion::advance_c<l_size>(i));
+        auto i = boost::fusion::begin(s);
+        return l_part(i, boost::fusion::advance_c<l_size>(i));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
         return r_part(
-            fusion::advance_c<l_size>(fusion::begin(s)),
-            fusion::end(s)
+            boost::fusion::advance_c<l_size>(boost::fusion::begin(s)),
+            boost::fusion::end(s)
         );
     }
 };
@@ -336,6 +336,6 @@ struct parse_into_container_impl<sequence<Left, Right>>
     }
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

@@ -26,7 +26,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 template<class Parser, class Container>
 struct parser_accepts_container
@@ -90,7 +90,7 @@ struct parse_into_container_base_impl
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
             has_attribute_v<Parser> &&
-            (!fusion::traits::is_sequence<Attr>::value)
+            (!boost::fusion::traits::is_sequence<Attr>::value)
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -105,16 +105,16 @@ struct parse_into_container_base_impl
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
             has_attribute_v<Parser> &&
-            fusion::traits::is_sequence<Attr>::value
+            boost::fusion::traits::is_sequence<Attr>::value
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
-    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, fusion::front(attr))))
+    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, boost::fusion::front(attr))))
     {
         static_assert(traits::has_size_v<Attr, 1>, "Expecting a single element fusion sequence");
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, fusion::front(attr));
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, boost::fusion::front(attr));
     }
 
     // Parser has no attribute (pass unused)
@@ -214,6 +214,6 @@ parse_into_container(
     return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
 }
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

@@ -16,7 +16,7 @@
 
 #include <iterator>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 struct eoi_parser : parser<eoi_parser>
 {
@@ -50,6 +50,6 @@ namespace parsers {
 
 using parsers::eoi;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

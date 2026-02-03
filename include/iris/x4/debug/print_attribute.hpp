@@ -22,7 +22,7 @@
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<class Out, class T>
 void print_attribute(Out& out, T const& val);
@@ -56,7 +56,7 @@ struct print_fusion_sequence
 
 // print elements in a variant
 template<class Out>
-struct print_visitor : static_visitor<>
+struct print_visitor : boost::static_visitor<>
 {
     print_visitor(Out& out)
         : out(out)
@@ -118,7 +118,7 @@ struct print_attribute_debug
     static void call(Out& out, CategorizedAttr<tuple_attr> auto const& val)
     {
         out << '[';
-        fusion::for_each(val, detail::print_fusion_sequence<Out>(out));
+        boost::fusion::for_each(val, detail::print_fusion_sequence<Out>(out));
         out << ']';
     }
 
@@ -162,6 +162,6 @@ void print_attribute(Out& out, T const& val)
     print_attribute_debug<Out, T>::call(out, val);
 }
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

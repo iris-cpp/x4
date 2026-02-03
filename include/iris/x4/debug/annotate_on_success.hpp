@@ -17,7 +17,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace contexts {
 
@@ -61,6 +61,6 @@ struct annotate_on_success
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

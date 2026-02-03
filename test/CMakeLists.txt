@@ -3,7 +3,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
-# For Spirit-specific tests.
+# For X4-specific tests.
 add_library(iris_x4_cxx_test INTERFACE)
 set_target_properties(iris_x4_cxx_test PROPERTIES CXX_EXTENSIONS OFF)
 target_link_libraries(iris_x4_cxx_test INTERFACE _iris_x4_cxx_common)

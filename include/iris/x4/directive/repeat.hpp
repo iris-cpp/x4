@@ -21,7 +21,7 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -195,6 +195,6 @@ namespace parsers::directive {
 
 using parsers::directive::repeat;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

@@ -36,7 +36,7 @@
 # define IRIS_X4_NUMERICS_LOOP_UNROLL 3
 #endif
 
-namespace boost::spirit::x4::numeric {
+namespace iris::x4::numeric {
 
 namespace detail {
 
@@ -556,6 +556,6 @@ struct extract_int
     }
 };
 
-} // boost::spirit::x4::numeric
+} // iris::x4::numeric
 
 #endif

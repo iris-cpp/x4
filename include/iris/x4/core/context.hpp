@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class ID, class T, class Next>
 struct context;
@@ -531,6 +531,6 @@ replace_first_context(
 template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
 void replace_first_context(context<ID, T, Next> const&, NewVal const&&) = delete; // dangling
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

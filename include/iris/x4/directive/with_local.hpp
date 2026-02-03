@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace contexts {
 
@@ -100,6 +100,6 @@ template<class T, class ID = contexts::local_var>
 
 using parsers::directive::with_local;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

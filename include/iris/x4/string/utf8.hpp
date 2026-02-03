@@ -14,7 +14,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -156,6 +156,6 @@ to_utf8(std::basic_string<wchar_t> const& str)
 }
 #endif
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

@@ -28,7 +28,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace standard {
 
@@ -257,6 +257,6 @@ struct as_parser<std::basic_string_view<CharT>>
 
 } // extension
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

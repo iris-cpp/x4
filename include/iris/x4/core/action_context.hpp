@@ -12,7 +12,7 @@
 #include <iris/config.hpp>
 #include <iris/x4/core/context.hpp>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace contexts {
 
@@ -115,6 +115,6 @@ inline constexpr detail::_rule_var_fn _val{};
 
 } // cpos
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

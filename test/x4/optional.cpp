@@ -185,8 +185,8 @@ TEST_CASE("optional")
 
     {
         // test move only types
-        std::optional<spirit_test::move_only> o;
-        REQUIRE(parse("s", -spirit_test::synth_move_only, o));
+        std::optional<x4_test::move_only> o;
+        REQUIRE(parse("s", -x4_test::synth_move_only, o));
         CHECK(o.has_value());
     }
 }

@@ -35,7 +35,7 @@
 #define IRIS_X4_DEBUG_INDENT 2
 #endif
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -178,6 +178,6 @@ struct [[nodiscard]] scoped_rule_debug
 
 } // detail
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

@@ -14,7 +14,7 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x4::char_encoding {
+namespace iris::x4::char_encoding {
 
 struct unicode
 {
@@ -431,6 +431,6 @@ struct unicode
 #undef IRIS_X4_SCRIPT
 };
 
-} // boost::spirit::x4::char_encoding
+} // iris::x4::char_encoding
 
 #endif

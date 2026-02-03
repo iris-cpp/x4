@@ -12,7 +12,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 // Customization points for numeric operations
 
@@ -23,6 +23,6 @@ template<class T>
 struct check_overflow : std::bool_constant<std::numeric_limits<T>::is_bounded>
 {};
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

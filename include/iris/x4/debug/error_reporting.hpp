@@ -15,7 +15,7 @@
 #include <string>
 #include <iterator>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 // Tag used to get our error handler from the context
 
@@ -201,6 +201,6 @@ void error_handler<It>::operator()(It err_first, It err_last, std::string const&
     err_out << " <<-- Here" << '\n';
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

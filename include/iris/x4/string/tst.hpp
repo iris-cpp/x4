@@ -21,7 +21,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 struct tst_pass_through
 {
@@ -198,6 +198,6 @@ private:
     node* root_ = nullptr;
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

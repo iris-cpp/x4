@@ -14,7 +14,7 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class ID, class T, class Next>
 struct context;
@@ -64,6 +64,6 @@ assume_container(unused_type const&) noexcept
     return unused_container;
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

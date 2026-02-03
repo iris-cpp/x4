@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 //  Default boolean policies
 template<class T = bool>
@@ -236,6 +236,6 @@ using x4::standard::false_;
 
 } // parsers
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

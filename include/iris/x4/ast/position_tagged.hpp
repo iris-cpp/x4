@@ -14,7 +14,7 @@
 #include <concepts>
 #include <ranges>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace ast {
 
@@ -98,6 +98,6 @@ using position_tagged [[deprecated("Use `ast::`")]] = ast::position_tagged;
 template<class Container>
 using position_cache [[deprecated("Use `ast::`")]] = ast::position_cache<Container>;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

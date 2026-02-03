@@ -24,7 +24,7 @@
 
 #include <concepts>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Encoding>
 struct case_compare
@@ -129,6 +129,6 @@ get_case_compare(Context const&) noexcept
     }
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

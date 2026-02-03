@@ -27,7 +27,7 @@ struct backwards_bool_policies : x4::bool_policies<>
     parse_false(It& first, Se const& last, Attr& attr, CaseCompare const& case_compare)
     {
         using namespace std::string_view_literals;
-        namespace x4 = boost::spirit::x4;
+        namespace x4 = iris::x4;
         if (x4::detail::string_parse("eurt"sv, first, last, unused_container, case_compare)) {
             x4::move_to(false, attr);   // result is false
             return true;

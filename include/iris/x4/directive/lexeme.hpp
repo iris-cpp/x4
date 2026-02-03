@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Subject>
 struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
@@ -84,6 +84,6 @@ namespace parsers::directive {
 
 using parsers::directive::lexeme;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

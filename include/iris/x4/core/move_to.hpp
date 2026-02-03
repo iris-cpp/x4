@@ -27,7 +27,7 @@
 #include <concepts>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Source, class Dest>
 constexpr void move_to(Source&&, Dest&) = delete; // `Source` and `Dest` do not fall into any of the overload below.
@@ -116,10 +116,10 @@ template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_att
     requires traits::is_size_one_sequence_v<Source>
 constexpr void
 move_to(Source&& src, Dest& dest)
-    noexcept(noexcept(dest = std::forward_like<Source>(fusion::front(std::forward<Source>(src)))))
+    noexcept(noexcept(dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
-    dest = std::forward_like<Source>(fusion::front(std::forward<Source>(src)));
+    dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)));
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attr> Dest>
@@ -141,16 +141,16 @@ constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(
         std::is_rvalue_reference_v<Source&&> ?
-        noexcept(fusion::move(std::move(src), dest)) :
-        noexcept(fusion::copy(src, dest))
+        noexcept(boost::fusion::move(std::move(src), dest)) :
+        noexcept(boost::fusion::copy(src, dest))
     )
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
     if constexpr (std::is_rvalue_reference_v<Source&&>) {
-        fusion::move(std::move(src), dest);
+        boost::fusion::move(std::move(src), dest);
     } else {
-        fusion::copy(src, dest);
+        boost::fusion::copy(src, dest);
     }
 }
 
@@ -171,7 +171,7 @@ template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_a
     requires traits::is_size_one_sequence_v<Source> && (!traits::variant_has_substitute_v<Dest, Source>)
 constexpr void
 move_to(Source&& src, Dest& dest)
-    noexcept(noexcept(dest = std::forward_like<Source>(fusion::front(std::forward<Source>(src)))))
+    noexcept(noexcept(dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
@@ -180,11 +180,11 @@ move_to(Source&& src, Dest& dest)
 
     // Make sure that the Dest variant can really hold Source
     static_assert(
-        traits::variant_has_substitute_v<Dest, typename fusion::result_of::front<Source>::type>,
+        traits::variant_has_substitute_v<Dest, typename boost::fusion::result_of::front<Source>::type>,
         "Error! The destination variant (Dest) cannot hold the source type (Source)"
     );
 
-    dest = std::forward_like<Source>(fusion::front(std::forward<Source>(src)));
+    dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)));
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
@@ -245,9 +245,9 @@ template<std::forward_iterator It, std::sentinel_for<It> Se, traits::Categorized
     requires traits::is_size_one_sequence_v<Dest>
 constexpr void
 move_to(It first, Se last, Dest& dest)
-    noexcept(noexcept(x4::move_to(first, last, fusion::front(dest))))
+    noexcept(noexcept(x4::move_to(first, last, boost::fusion::front(dest))))
 {
-    x4::move_to(first, last, fusion::front(dest));
+    x4::move_to(first, last, boost::fusion::front(dest));
 }
 
 // Move non-container `src` into container `dest`.
@@ -288,11 +288,11 @@ template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_att
     requires traits::is_size_one_sequence_v<Dest>
 constexpr void
 move_to(Source&& src, Dest& dest)
-    noexcept(noexcept(x4::move_to(std::forward<Source>(src), fusion::front(dest))))
+    noexcept(noexcept(x4::move_to(std::forward<Source>(src), boost::fusion::front(dest))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    x4::move_to(std::forward<Source>(src), fusion::front(dest));
+    x4::move_to(std::forward<Source>(src), boost::fusion::front(dest));
 }
 
 template<class Source, class Dest>
@@ -300,6 +300,6 @@ concept X4Movable = requires {
     x4::move_to(std::declval<Source>(), std::declval<Dest&>());
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

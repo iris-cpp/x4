@@ -9,7 +9,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace char_classes {
 
@@ -29,6 +29,6 @@ struct upper_tag {};
 
 } // char_classes
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

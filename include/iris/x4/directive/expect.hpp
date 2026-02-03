@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Subject>
 struct expect_directive : proxy_parser<Subject, expect_directive<Subject>>
@@ -68,9 +68,9 @@ namespace parsers::directive {
 
 using parsers::directive::expect;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 // Special case handling for expect expressions.
 template<class Subject>
@@ -100,6 +100,6 @@ struct parse_into_container_impl<expect_directive<Subject>>
     }
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

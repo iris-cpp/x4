@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 // A closed range [first, last]
 template<class CharT>
@@ -37,6 +37,6 @@ struct char_range
     CharT last{};
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

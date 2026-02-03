@@ -25,7 +25,7 @@
 
 #include <concepts>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -132,6 +132,6 @@ using x4::standard::space;
 using x4::standard::blank;
 using x4::standard::upper;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

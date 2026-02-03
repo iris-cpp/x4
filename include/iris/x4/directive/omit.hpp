@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 // `omit_directive` forces the attribute of subject parser
 // to be `unused_type`
@@ -60,6 +60,6 @@ namespace parsers::directive {
 
 using parsers::directive::omit;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

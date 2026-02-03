@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 // `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
 template<class Positive>
@@ -66,6 +66,6 @@ operator~(negated_char_parser<Positive> const& cp) noexcept
     return cp.positive();
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

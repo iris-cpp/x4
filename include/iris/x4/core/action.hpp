@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -237,6 +237,6 @@ operator/(Subject&& p, Action&& f)
     return {as_parser(std::forward<Subject>(p)), std::forward<Action>(f)};
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

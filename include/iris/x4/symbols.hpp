@@ -46,7 +46,7 @@
     "represent this trait, so the usage of the old API is strongly " \
     "discouraged."
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -439,7 +439,7 @@ using x4::unicode::unique_symbols;
 } // parsers::unicode
 #endif
 
-} // boost::spirit::x4
+} // iris::x4
 
 #undef IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING
 

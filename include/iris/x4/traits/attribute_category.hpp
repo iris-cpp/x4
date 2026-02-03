@@ -19,14 +19,14 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 struct unused_type;
 struct unused_container_type;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 struct unused_attr {};
 struct plain_attr {};
@@ -88,8 +88,7 @@ concept NonUnusedAttr =
     !std::is_same_v<typename attribute_category<std::remove_cvref_t<T>>::type, unused_attr>;
 
 template<class T>
-    requires
-        fusion::traits::is_sequence<std::remove_cvref_t<T>>::value
+    requires boost::fusion::traits::is_sequence<std::remove_cvref_t<T>>::value
 struct attribute_category<T>
 {
     using type = tuple_attr;
@@ -123,6 +122,6 @@ struct attribute_category<T>
     using type = container_attr;
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

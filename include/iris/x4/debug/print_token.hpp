@@ -15,7 +15,7 @@
 
 #include <cctype>
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 namespace detail {
 
@@ -81,6 +81,6 @@ void print_token(Out& out, T const& val)
     token_printer_debug<T>::print(out, val);
 }
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

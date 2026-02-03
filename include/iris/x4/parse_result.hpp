@@ -17,7 +17,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<std::forward_iterator It, std::sentinel_for<It> Se = It>
 struct [[nodiscard]] parse_result
@@ -131,6 +131,6 @@ struct range_parse_parser_impl<R>
 template<std::ranges::forward_range R>
 using parse_result_for = typename detail::parse_result_for_impl<R>::type;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

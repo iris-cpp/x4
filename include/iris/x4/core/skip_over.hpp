@@ -19,7 +19,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace contexts {
 
@@ -189,6 +189,6 @@ constexpr void skip_over(It& first, Se const& last, Context const& ctx)
     detail::skip_over(first, last, ctx, x4::get<contexts::skipper>(ctx));
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

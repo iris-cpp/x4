@@ -17,7 +17,7 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 namespace detail {
 
@@ -92,6 +92,6 @@ struct attribute_of_binary
     >::type;
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

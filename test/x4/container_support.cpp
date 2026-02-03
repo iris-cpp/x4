@@ -30,7 +30,7 @@
 #include <string>
 #include <type_traits>
 
-namespace x4 = boost::spirit::x4;
+namespace x4 = iris::x4;
 
 // check if we did not break user defined specializations
 namespace check_substitute {
@@ -42,7 +42,7 @@ template<class T> struct is_bar<bar<T>> : std::true_type {};
 
 } // check_substitute
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 using namespace check_substitute;
 
@@ -57,7 +57,7 @@ struct is_substitute<T, U>
     : is_substitute<typename T::type, typename U::type>
 {};
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 namespace check_substitute {
 

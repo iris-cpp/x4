@@ -14,7 +14,7 @@
 #include <iris/x4/char/detail/cast_char.hpp>
 #include <iris/x4/char_encoding/unicode.hpp>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace char_classes::unicode {
 
@@ -807,6 +807,6 @@ IRIS_X4_CHAR_CLASS(unknown)
 
 #undef IRIS_X4_CHAR_CLASS
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

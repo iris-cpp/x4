@@ -23,7 +23,7 @@
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace standard {
 
@@ -207,6 +207,6 @@ struct as_parser<wchar_t [2]>
 
 } // extension
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

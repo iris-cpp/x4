@@ -19,7 +19,7 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x4::unicode {
+namespace iris::x4::unicode {
 
 using classify_type = std::uint32_t;
 
@@ -379,6 +379,6 @@ enum script
     return r == 0 ? ch : r;
 }
 
-} // boost::spirit::x4::unicode
+} // iris::x4::unicode
 
 #endif

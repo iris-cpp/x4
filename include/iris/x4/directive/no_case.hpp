@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 // propagate no_case information through the context
 template<class Subject>
@@ -66,6 +66,6 @@ namespace parsers::directive {
 
 using parsers::directive::no_case;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

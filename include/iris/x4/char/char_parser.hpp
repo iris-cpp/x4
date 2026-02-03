@@ -18,7 +18,7 @@
 #include <concepts>
 #include <iterator>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Encoding, class Derived>
 struct char_parser : parser<Derived>
@@ -85,6 +85,6 @@ public:
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

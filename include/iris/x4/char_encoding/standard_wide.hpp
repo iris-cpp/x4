@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <cwctype>
 
-namespace boost::spirit::x4::char_encoding {
+namespace iris::x4::char_encoding {
 
 // Test characters for specified conditions (using std wchar_t functions)
 
@@ -157,6 +157,6 @@ struct standard_wide
     }
 };
 
-} // boost::spirit::x4::char_encoding
+} // iris::x4::char_encoding
 
 #endif

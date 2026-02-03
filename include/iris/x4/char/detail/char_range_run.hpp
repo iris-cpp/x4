@@ -18,7 +18,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 // An implementation of a sparse bit (boolean) set. The set uses
 // a sorted vector of disjoint ranges. This class implements the
@@ -172,6 +172,6 @@ private:
     storage_type run_;
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

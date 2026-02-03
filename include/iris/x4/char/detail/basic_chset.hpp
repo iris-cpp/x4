@@ -15,7 +15,7 @@
 #include <bitset>
 #include <climits>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 // basic character set implementation using `char_range_run`
 template<class CharT>
@@ -225,7 +225,7 @@ struct basic_chset<unsigned char>
 
 #endif // #if (CHAR_BIT == 8)
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif
 

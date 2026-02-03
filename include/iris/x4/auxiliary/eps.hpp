@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -124,6 +124,6 @@ namespace parsers {
 
 using parsers::eps;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

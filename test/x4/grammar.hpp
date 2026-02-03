@@ -14,7 +14,7 @@
 
 #include <iris/x4/rule.hpp>
 
-namespace x4 = boost::spirit::x4;
+namespace x4 = iris::x4;
 
 x4::rule<struct grammar_r, int> const grammar;
 using grammar_type = decltype(grammar);

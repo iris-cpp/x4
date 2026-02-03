@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
 struct literal_char : char_parser<Encoding, literal_char<Encoding, Attr>>
@@ -64,6 +64,6 @@ struct get_info<literal_char<Encoding, Attr>>
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

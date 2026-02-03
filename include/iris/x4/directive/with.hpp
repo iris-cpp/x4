@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Subject, class ID, class T>
 struct with_directive;
@@ -217,6 +217,6 @@ template<class ID>
 
 using parsers::directive::with;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

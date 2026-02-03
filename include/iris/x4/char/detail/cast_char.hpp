@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 // Here's the thing... typical encodings (except ASCII) deal with unsigned
 // integers > 127 (ASCII uses only 127). Yet, most char and wchar_t are signed.
@@ -51,6 +51,6 @@ concept cast_char_noexcept = requires(SourceChar ch) {
     { cast_char<TargetChar>(ch) } noexcept -> std::convertible_to<TargetChar>;
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

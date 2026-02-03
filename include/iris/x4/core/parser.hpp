@@ -25,7 +25,7 @@
 #include <typeinfo>
 #endif
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Subject, class Action>
 struct action;
@@ -505,6 +505,6 @@ inline namespace cpos {
 
 } // cpos
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

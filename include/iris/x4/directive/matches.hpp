@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Subject>
 struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
@@ -71,6 +71,6 @@ namespace parsers::directive {
 
 using parsers::directive::matches;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

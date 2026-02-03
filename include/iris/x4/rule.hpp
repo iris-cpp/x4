@@ -39,7 +39,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class RuleID, X4Attribute Attr = unused_type, bool ForceAttribute = false>
 struct rule;
@@ -593,7 +593,7 @@ using x4::rule;
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context> \
     [[nodiscard]] constexpr_ bool \
     parse_rule( \
-        ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
+        ::iris::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
         It& first, Se const& last, \
         Context const& ctx, \
         typename std::remove_cvref_t<rule_type>::attribute_type& attr \
@@ -620,13 +620,13 @@ using x4::rule;
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context> \
     [[nodiscard]] constexpr_ bool \
     parse_rule( \
-        ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<decltype(rule_name)>::id>, \
+        ::iris::x4::detail::rule_id<typename std::remove_cvref_t<decltype(rule_name)>::id>, \
         It& first, Se const& last, \
         Context const& ctx, \
         typename std::remove_cvref_t<decltype(rule_name)>::attribute_type& attr \
     ) { \
         using rule_t = std::remove_cvref_t<decltype(rule_name)>; \
-        return ::boost::spirit::x4::detail::rule_impl< \
+        return ::iris::x4::detail::rule_impl< \
             typename rule_t::id, typename rule_t::attribute_type, true \
         >::call_rule_definition<rule_t::force_attribute>( \
             IRIS_CONCAT(rule_name, _def), rule_name.name, \
@@ -680,7 +680,7 @@ struct instantiate_macro_helper<RuleT, It, Context, void>
 
 #define IRIS_X4_INSTANTIATE_(rule_type, It, Se, Context) \
     template bool parse_rule<It, Se, Context>( \
-        ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
+        ::iris::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
         It&, Se const&, Context const&, \
         typename std::remove_cvref_t<rule_type>::attribute_type& \
     );
@@ -691,10 +691,10 @@ struct instantiate_macro_helper<RuleT, It, Context, void>
 // cannot be used with explicit template instantiation.
 #define IRIS_X4_INSTANTIATE(...) \
     IRIS_X4_INSTANTIATE_( \
-        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::rule_type), \
-        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::iterator_type), \
-        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
-        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::iris::x4::detail::instantiate_macro_helper<__VA_ARGS__>::rule_type), \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::iris::x4::detail::instantiate_macro_helper<__VA_ARGS__>::iterator_type), \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::iris::x4::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::iris::x4::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
     )
 
 #define IRIS_INSTANTIATE(...) \
@@ -704,6 +704,6 @@ struct instantiate_macro_helper<RuleT, It, Context, void>
     ) \
     IRIS_X4_INSTANTIATE(__VA_ARGS__)
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

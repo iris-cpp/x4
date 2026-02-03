@@ -119,8 +119,8 @@ TEST_CASE("list")
 
     {
         // test move only types
-        std::vector<spirit_test::move_only> v;
-        REQUIRE(parse("s.s.s.s", spirit_test::synth_move_only % '.', v));
+        std::vector<x4_test::move_only> v;
+        REQUIRE(parse("s.s.s.s", x4_test::synth_move_only % '.', v));
         CHECK(v.size() == 4);
     }
 }

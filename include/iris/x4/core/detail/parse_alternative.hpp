@@ -25,14 +25,14 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Left, class Right>
 struct alternative;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 struct pass_variant_unused
 {
@@ -110,7 +110,7 @@ template<class Parser, X4Attribute Attr>
 struct pass_non_variant_attribute<Parser, Attr>
 {
     using attr_type = typename std::remove_reference_t<
-        typename fusion::result_of::front<Attr>::type
+        typename boost::fusion::result_of::front<Attr>::type
     >;
     using pass = pass_parser_attribute<Parser, attr_type>;
     using type = typename pass::type;
@@ -118,9 +118,9 @@ struct pass_non_variant_attribute<Parser, Attr>
     template<X4Attribute Attr_>
     [[nodiscard]] static constexpr type
     call(Attr_& attr)
-        noexcept(noexcept(pass::call(fusion::front(attr))))
+        noexcept(noexcept(pass::call(boost::fusion::front(attr))))
     {
-        return pass::call(fusion::front(attr));
+        return pass::call(boost::fusion::front(attr));
     }
 };
 
@@ -253,6 +253,6 @@ struct parse_into_container_impl<alternative<Left, Right>>
     }
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

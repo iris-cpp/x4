@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Left, class Right>
 struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
@@ -51,9 +51,11 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
         }
     }
 
-    // If you're changing these semantics, you should:
-    //   - Understand https://github.com/boostorg/spirit/issues/378
-    //   - Add test to `attribute.cpp`. This is mandatory.
+    // If you're changing these logic, you should read the PR below to
+    // understand the rationale:
+    //   https://github.com/boostorg/spirit_x4/pull/50
+    //
+    // You also should add test to `attribute.cpp`.
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
         requires (!traits::X4Container<Attr>)
@@ -171,6 +173,6 @@ operator|(Left&& left, Right&& right)
     };
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

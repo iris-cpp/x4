@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class T, class HeldValueT = T>
 struct attr_parser : parser<attr_parser<T, HeldValueT>>
@@ -125,6 +125,6 @@ namespace parsers {
 
 using parsers::attr;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

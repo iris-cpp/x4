@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace boost::spirit::x4::unicode::detail {
+namespace iris::x4::unicode::detail {
 
 [[maybe_unused]] inline constexpr std::uint8_t lowercase_stage1[] = {
       0,   1,   2,   3,   4,   5,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
@@ -750,4 +750,4 @@ namespace boost::spirit::x4::unicode::detail {
     return lowercase_stage2[block_offset + ch % 256];
 }
 
-} // boost::spirit::x4::unicode::detail
+} // iris::x4::unicode::detail

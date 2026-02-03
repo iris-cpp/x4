@@ -23,7 +23,7 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 // TODO: define a legit concept for determining variant-like types
 
@@ -34,7 +34,7 @@ template<class T>
 constexpr bool is_variant_v = is_variant<T>::value;
 
 // By declaring a nested struct named `adapted_variant_tag` in
-// your class, you tell spirit that it is regarded as a variant type.
+// your class, you tell X4 that it is regarded as a variant type.
 // The minimum required interface for such a variant is that it has
 // constructors for various types supported by your variant and
 // `::types` which is an mpl sequence of the contained types.
@@ -63,20 +63,20 @@ struct variant_find_substitute
 
     using variant_type = Variant;
     using types = typename variant_type::types;
-    using end = typename mpl::end<types>::type;
+    using end = typename boost::mpl::end<types>::type;
 
-    using iter_1 = typename mpl::find<types, T>::type;
+    using iter_1 = typename boost::mpl::find<types, T>::type;
 
-    using iter = typename mpl::eval_if<
+    using iter = typename boost::mpl::eval_if<
         std::is_same<iter_1, end>,
-        mpl::find_if<types, is_substitute<T, mpl::_1>>,
+        boost::mpl::find_if<types, is_substitute<T, boost::mpl::_1>>,
         std::type_identity<iter_1>
     >::type;
 
-    using type = typename mpl::eval_if<
+    using type = typename boost::mpl::eval_if<
         std::is_same<iter, end>,
         std::type_identity<T>,
-        mpl::deref<iter>
+        boost::mpl::deref<iter>
     >::type;
 };
 
@@ -100,12 +100,12 @@ struct variant_has_substitute_impl
 
     using variant_type = Variant;
     using types = typename variant_type::types;
-    using end = typename mpl::end<types>::type;
-    using iter_1 = typename mpl::find<types, T>::type;
+    using end = typename boost::mpl::end<types>::type;
+    using iter_1 = typename boost::mpl::find<types, T>::type;
 
-    using iter = typename mpl::eval_if<
+    using iter = typename boost::mpl::eval_if<
         std::is_same<iter_1, end>,
-        mpl::find_if<types, is_substitute<T, mpl::_1>>,
+        boost::mpl::find_if<types, is_substitute<T, boost::mpl::_1>>,
         std::type_identity<iter_1>
     >::type;
 
@@ -128,6 +128,6 @@ struct variant_has_substitute<unused_type, Attr> : std::true_type {};
 template<X4Attribute Attr>
 struct variant_has_substitute<unused_type const, Attr> : std::true_type {};
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

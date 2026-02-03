@@ -14,7 +14,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 struct unused_type;
 struct unused_container_type;
@@ -43,9 +43,9 @@ concept X4NonUnusedAttribute =
 template<class T>
 concept X4Attribute = X4UnusedAttribute<T> || X4NonUnusedAttribute<T>;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 // Pseudo attribute is a parser attribute whose actual type can only be determined at
 // parse time. Such attribute is dependent on at least one of It/Se/Context.
@@ -64,6 +64,6 @@ struct pseudo_attribute
     }
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

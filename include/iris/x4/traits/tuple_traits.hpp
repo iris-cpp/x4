@@ -16,13 +16,13 @@
 
 #include <type_traits>
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<class A, class B>
 struct has_same_size
     : std::bool_constant<
-        fusion::result_of::size<std::remove_cvref_t<A>>::value ==
-        fusion::result_of::size<std::remove_cvref_t<B>>::value
+        boost::fusion::result_of::size<std::remove_cvref_t<A>>::value ==
+        boost::fusion::result_of::size<std::remove_cvref_t<B>>::value
     >
 {};
 
@@ -31,7 +31,7 @@ constexpr bool has_same_size_v = has_same_size<A, B>::value;
 
 template<class T, std::size_t N>
 struct has_size
-    : std::bool_constant<fusion::result_of::size<std::remove_cvref_t<T>>::value == N>
+    : std::bool_constant<boost::fusion::result_of::size<std::remove_cvref_t<T>>::value == N>
 {};
 
 template<class T, std::size_t N>
@@ -40,8 +40,8 @@ constexpr bool has_size_v = has_size<T, N>::value;
 template<class A, class B>
 struct is_same_size_sequence
     : std::bool_constant<std::conjunction_v<
-        fusion::traits::is_sequence<std::remove_cvref_t<A>>,
-        fusion::traits::is_sequence<std::remove_cvref_t<B>>,
+        boost::fusion::traits::is_sequence<std::remove_cvref_t<A>>,
+        boost::fusion::traits::is_sequence<std::remove_cvref_t<B>>,
         has_same_size<A, B>
     >>
 {};
@@ -52,7 +52,7 @@ constexpr bool is_same_size_sequence_v = is_same_size_sequence<A, B>::value;
 template<class Seq>
 struct is_size_one_sequence
     : std::bool_constant<std::conjunction_v<
-        fusion::traits::is_sequence<std::remove_cvref_t<Seq>>,
+        boost::fusion::traits::is_sequence<std::remove_cvref_t<Seq>>,
         has_size<Seq, 1>
     >>
 {};
@@ -63,7 +63,7 @@ constexpr bool is_size_one_sequence_v = is_size_one_sequence<Seq>::value;
 template<class View>
 struct is_size_one_view
     : std::bool_constant<std::conjunction_v<
-        fusion::traits::is_view<std::remove_cvref_t<View>>,
+        boost::fusion::traits::is_view<std::remove_cvref_t<View>>,
         has_size<View, 1>
     >>
 {};
@@ -85,9 +85,9 @@ template<class T>
     requires is_size_one_sequence_v<std::remove_cvref_t<T>>
 struct synthesized_value<T>
 {
-    using type = std::remove_cvref_t<typename fusion::result_of::front<T>::type>;
+    using type = std::remove_cvref_t<typename boost::fusion::result_of::front<T>::type>;
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

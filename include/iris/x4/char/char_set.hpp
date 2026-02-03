@@ -18,7 +18,7 @@
 #include <ranges>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 // Parser for a character range
 template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
@@ -125,6 +125,6 @@ struct get_info<char_range<Encoding, Attr>>
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

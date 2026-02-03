@@ -22,7 +22,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<class T>
 struct is_variant;
@@ -51,11 +51,11 @@ struct is_substitute_impl : std::false_type {};
 
 template<class T, X4Attribute Attr>
     requires std::conjunction_v<
-        fusion::traits::is_sequence<T>,
-        fusion::traits::is_sequence<Attr>
+        boost::fusion::traits::is_sequence<T>,
+        boost::fusion::traits::is_sequence<Attr>
     >
 struct is_substitute_impl<T, Attr>
-    : mpl::equal<T, Attr, is_substitute<mpl::_1, mpl::_2>>
+    : boost::mpl::equal<T, Attr, is_substitute<boost::mpl::_1, boost::mpl::_2>>
 {};
 
 template<class T, X4Attribute Attr>
@@ -104,6 +104,6 @@ struct is_substitute<std::optional<T>, std::optional<Attr>>
     : is_substitute<T, Attr>
 {};
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

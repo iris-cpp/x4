@@ -25,7 +25,7 @@
 
 struct x_attr {};
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<>
 struct container_value<x_attr>
@@ -142,8 +142,8 @@ TEST_CASE("plus")
 
     {
         // test move only types
-        std::vector<spirit_test::move_only> v;
-        REQUIRE(parse("sss", +spirit_test::synth_move_only, v));
+        std::vector<x4_test::move_only> v;
+        REQUIRE(parse("sss", +x4_test::synth_move_only, v));
         CHECK(v.size() == 3);
     }
 }

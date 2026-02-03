@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -162,6 +162,6 @@ struct transform_attribute<Transformed, container_appender<Transformed>>
 
 } // traits
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

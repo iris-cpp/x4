@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class String, class Encoding, X4Attribute Attr = std::basic_string<typename Encoding::char_type>>
 struct literal_string : parser<literal_string<String, Encoding, Attr>>
@@ -78,6 +78,6 @@ struct get_info<literal_string<String, Encoding, Attr>>
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

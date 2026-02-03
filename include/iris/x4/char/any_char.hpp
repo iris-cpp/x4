@@ -13,7 +13,7 @@
 #include <iris/x4/char/char_set.hpp>
 #include <iris/x4/traits/string_traits.hpp>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Encoding>
 struct any_char : char_parser<Encoding, any_char<Encoding>>
@@ -84,6 +84,6 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

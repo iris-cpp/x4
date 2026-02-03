@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
@@ -114,6 +114,6 @@ operator>(Left&& left, Right&& right)
     };
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

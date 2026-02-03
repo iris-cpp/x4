@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Left, class Right>
 struct list : binary_parser<Left, Right, list<Left, Right>>
@@ -80,6 +80,6 @@ operator%(Left&& left, Right&& right)
     return {as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right))};
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

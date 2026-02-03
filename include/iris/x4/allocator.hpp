@@ -16,7 +16,7 @@
 
 #include <cassert>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Klass>
 struct allocator_ops
@@ -218,6 +218,6 @@ private:
     }
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

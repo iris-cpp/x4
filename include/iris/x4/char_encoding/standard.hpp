@@ -15,7 +15,7 @@
 #include <cctype>
 #include <climits>
 
-namespace boost::spirit::x4::char_encoding {
+namespace iris::x4::char_encoding {
 
 // Test characters for specified conditions (using std functions)
 struct standard
@@ -158,6 +158,6 @@ struct standard
     }
 };
 
-} // boost::spirit::x4::char_encoding
+} // iris::x4::char_encoding
 
 #endif

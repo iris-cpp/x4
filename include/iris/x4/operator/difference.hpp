@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Left, class Right>
 struct difference : binary_parser<Left, Right, difference<Left, Right>>
@@ -73,6 +73,6 @@ operator-(Left&& left, Right&& right)
     return {as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right))};
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

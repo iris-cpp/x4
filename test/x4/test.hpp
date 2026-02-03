@@ -27,15 +27,14 @@
 #include <utility>
 #include <print>
 
-namespace spirit = boost::spirit;
-namespace x4 = spirit::x4;
+namespace x4 = iris::x4;
 
 using x4::unused_type;
 using x4::unused;
 using x4::unused_container_type;
 using x4::unused_container;
 
-namespace spirit_test {
+namespace x4_test {
 
 namespace detail {
 
@@ -178,11 +177,11 @@ constexpr synth_parser<T> synth{};
 
 constexpr synth_parser<move_only> synth_move_only{};
 
-} // spirit_test
+} // x4_test
 
-using spirit_test::parse;
+using x4_test::parse;
 
 #define IRIS_X4_ASSERT_CONSTEXPR_CTORS(...) \
-    static_assert(::spirit_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
+    static_assert(::x4_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
 
 #endif

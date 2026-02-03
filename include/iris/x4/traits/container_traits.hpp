@@ -24,14 +24,14 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class ContainerAttr>
 struct container_appender;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 // Customization point
 template<class T>
@@ -431,7 +431,7 @@ struct is_container<container_appender<ContainerAttr>>
 template<class T>
     requires
         // required; fusion pollutes ADL on `size`, which is called by `std::ranges::empty` on Clang 22
-        (!fusion::traits::is_sequence<std::remove_cvref_t<T>>::value) &&
+        (!boost::fusion::traits::is_sequence<std::remove_cvref_t<T>>::value) &&
 
         std::default_initializable<T> &&
 
@@ -519,6 +519,6 @@ struct build_container<char32_t>
     using type = std::basic_string<char32_t>;
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

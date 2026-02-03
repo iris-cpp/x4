@@ -19,7 +19,7 @@
 
 // TODO: use `std::from_chars`
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<
     class T,
@@ -81,6 +81,6 @@ using parsers::bin;
 using parsers::oct;
 using parsers::hex;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

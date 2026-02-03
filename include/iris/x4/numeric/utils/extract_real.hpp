@@ -29,7 +29,7 @@
 # pragma warning(disable: 4100)   // 'p': unreferenced formal parameter
 #endif
 
-namespace boost::spirit::x4::extension {
+namespace iris::x4::extension {
 
 template<class T>
 [[nodiscard]] constexpr bool
@@ -123,9 +123,9 @@ negate(bool /*neg*/, unused_type n) noexcept
     // no-op for unused_type
     return n;
 }
-} // boost::spirit::x4::extension
+} // iris::x4::extension
 
-namespace boost::spirit::x4::numeric {
+namespace iris::x4::numeric {
 
 template<class T, class Policy>
 struct extract_real
@@ -256,6 +256,6 @@ struct extract_real
 # pragma warning(pop)
 #endif
 
-} // boost::spirit::x4::numeric
+} // iris::x4::numeric
 
 #endif

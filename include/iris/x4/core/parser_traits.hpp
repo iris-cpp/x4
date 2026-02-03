@@ -11,7 +11,7 @@
 // specialization of any entity defined in this header, the
 // program is ill-formed, no diagnostic required.
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 struct unused_type;
 struct unused_container_type;
@@ -72,7 +72,7 @@ struct get_sequence_size<Parser>
 } // detail
 
 
-// A global facade exposing all traits recognized and used by the Spirit core.
+// A global facade exposing all traits recognized and used by X4 core.
 //
 // This class is not placed under the `traits/` directory because this is NOT
 // a customization point.
@@ -109,6 +109,6 @@ struct parser_traits
     static constexpr bool need_rcontext = Parser::need_rcontext;
 };
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

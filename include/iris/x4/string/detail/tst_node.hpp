@@ -18,7 +18,7 @@
 #include <string>
 #include <utility>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 template<class Char, class T, class Alloc = std::allocator<T>>
 struct tst_node
@@ -164,6 +164,6 @@ struct tst_node
     tst_node* gt = nullptr; // right pointer
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

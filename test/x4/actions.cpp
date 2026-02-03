@@ -42,8 +42,8 @@ TEST_CASE("action")
         // ensure no unneeded synthesization, copying and moving occurred
         auto p = '{' >> int_ >> '}';
 
-        spirit_test::stationary st { 0 };
-        static_assert(x4::X4Attribute<spirit_test::stationary>);
+        x4_test::stationary st { 0 };
+        static_assert(x4::X4Attribute<x4_test::stationary>);
 
         REQUIRE(parse("{42}", p[([]{})], st));
         CHECK(st.val == 42);

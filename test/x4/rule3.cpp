@@ -34,8 +34,8 @@
 
 namespace check_stationary {
 
-x4::rule<class a_r, spirit_test::stationary> const a;
-x4::rule<class b_r, spirit_test::stationary> const b;
+x4::rule<class a_r, x4_test::stationary> const a;
+x4::rule<class b_r, x4_test::stationary> const b;
 
 auto const a_def = '{' >> x4::int_ >> '}';
 auto const b_def = a;
@@ -138,7 +138,7 @@ TEST_CASE("rule3")
 
     // ensure no unneeded synthesization, copying and moving occurred
     {
-        spirit_test::stationary st { 0 };
+        x4_test::stationary st { 0 };
         REQUIRE(parse("{42}", check_stationary::b, st));
         CHECK(st.val == 42);
     }

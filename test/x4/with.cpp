@@ -108,11 +108,11 @@ TEST_CASE("with")
 
         // lvalue `move_only`
         {
-            spirit_test::move_only mo;
+            x4_test::move_only mo;
             (void)with<my_tag>(mo)[int_];
         }
         {
-            spirit_test::move_only mo;
+            x4_test::move_only mo;
             auto with_gen = with<my_tag>(mo); // passed-by-reference
             (void)with_gen[int_]; // permitted, never copies
             (void)std::move(with_gen)[int_];
@@ -120,10 +120,10 @@ TEST_CASE("with")
 
         // rvalue `move_only`
         {
-            (void)with<my_tag>(spirit_test::move_only{})[int_];
+            (void)with<my_tag>(x4_test::move_only{})[int_];
         }
         {
-            auto with_gen = with<my_tag>(spirit_test::move_only{});
+            auto with_gen = with<my_tag>(x4_test::move_only{});
             // (void)with_gen[int_]; // requires copy-constructible
             (void)std::move(with_gen)[int_];
         }

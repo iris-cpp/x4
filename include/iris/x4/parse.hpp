@@ -26,7 +26,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 enum class root_skipper_flag : char
 {
@@ -384,11 +384,11 @@ inline namespace cpos {
 
 [[maybe_unused]] inline constexpr detail::parse_fn parse{};
 
-[[maybe_unused, deprecated("Use `parse(...)`. Spirit can now dispatch overloads correctly.")]]
+[[maybe_unused, deprecated("Use `parse(...)`. X4 can now dispatch overloads correctly.")]]
 inline constexpr detail::parse_fn phrase_parse{};
 
 } // cpos
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

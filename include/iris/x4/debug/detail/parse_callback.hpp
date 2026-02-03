@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 template<class ID, class It, class Se, class Context>
 concept HasImmutableOnErrorOverload =
@@ -146,6 +146,6 @@ struct has_on_success<ID, It, Se, Context, Attr> : std::false_type
     );
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

@@ -19,7 +19,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
@@ -115,6 +115,6 @@ string_parse(
     It&, Se const&, unused_type const&
 ) = delete; // The call site is lacking `x4::assume_container(attr)`
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

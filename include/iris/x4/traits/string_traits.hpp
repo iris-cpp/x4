@@ -32,7 +32,7 @@
 #include <type_traits>
 #include <concepts>
 
-namespace boost::spirit::x4::char_encoding {
+namespace iris::x4::char_encoding {
 
 struct standard;
 
@@ -44,9 +44,9 @@ struct standard_wide;
 struct unicode;
 #endif
 
-} // boost::spirit::x4::char_encoding
+} // iris::x4::char_encoding
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<class T>
 concept CharLike =
@@ -132,6 +132,6 @@ using maybe_owning_string = std::conditional_t<
 template<CharLike CharT>
 using char_encoding_for = typename detail::char_encoding_for_impl<CharT>::type;
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

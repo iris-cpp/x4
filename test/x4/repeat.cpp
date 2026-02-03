@@ -175,8 +175,8 @@ TEST_CASE("repeat")
 
     {
          // test move only types
-        std::vector<spirit_test::move_only> v;
-        REQUIRE(parse("sss", repeat(3)[spirit_test::synth_move_only], v));
+        std::vector<x4_test::move_only> v;
+        REQUIRE(parse("sss", repeat(3)[x4_test::synth_move_only], v));
         CHECK(v.size() == 3);
     }
 }

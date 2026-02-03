@@ -15,15 +15,15 @@
 #include <optional>
 #include <type_traits>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 struct unused_type;
 struct unused_container_type;
 
-} // boost::spirit::x4
+} // iris::x4
 
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<class T>
 struct is_optional : std::false_type {};
@@ -83,6 +83,6 @@ struct optional_value<unused_type const>
     using type = unused_type;
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif

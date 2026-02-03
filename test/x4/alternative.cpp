@@ -251,7 +251,7 @@ TEST_CASE("alternative")
         // ensure no unneeded synthesization, copying and moving occurred
         constexpr auto p = '{' >> int_ >> '}';
 
-        spirit_test::stationary st { 0 };
+        x4_test::stationary st {0};
         REQUIRE(parse("{42}", p | eps | p, st));
         CHECK(st.val == 42);
     }

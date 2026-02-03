@@ -26,7 +26,7 @@
 
 // TODO: use `std::from_chars`
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 // Default unsigned real number policies
 template<class T>
@@ -264,6 +264,6 @@ using parsers::float_;
 using parsers::double_;
 using parsers::long_double;
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

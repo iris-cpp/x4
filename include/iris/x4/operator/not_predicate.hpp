@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 template<class Subject>
 struct not_predicate : unary_parser<Subject, not_predicate<Subject>>
@@ -53,6 +53,6 @@ operator!(Subject&& subject)
     return {as_parser(std::forward<Subject>(subject))};
 }
 
-} // boost::spirit::x4
+} // iris::x4
 
 #endif

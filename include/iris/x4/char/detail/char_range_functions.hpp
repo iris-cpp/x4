@@ -14,7 +14,7 @@
 #include <limits>
 #include <concepts>
 
-namespace boost::spirit::x4::detail {
+namespace iris::x4::detail {
 
 template<class CharT>
 [[nodiscard]] constexpr bool
@@ -103,6 +103,6 @@ struct char_range_compare
     }
 };
 
-} // boost::spirit::x4::detail
+} // iris::x4::detail
 
 #endif

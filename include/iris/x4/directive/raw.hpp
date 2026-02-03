@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::spirit::x4 {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -84,9 +84,9 @@ namespace parsers::directive {
 
 using parsers::directive::raw;
 
-} // boost::spirit::x4
+} // iris::x4
 
-namespace boost::spirit::x4::traits {
+namespace iris::x4::traits {
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
 struct pseudo_attribute<It, Se, Context, x4::detail::raw_attribute_t>
@@ -100,6 +100,6 @@ struct pseudo_attribute<It, Se, Context, x4::detail::raw_attribute_t>
     }
 };
 
-} // boost::spirit::x4::traits
+} // iris::x4::traits
 
 #endif
