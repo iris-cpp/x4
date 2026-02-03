@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CORE_PARSER_HPP
-#define BOOST_SPIRIT_X4_CORE_PARSER_HPP
+#ifndef IRIS_X4_CORE_PARSER_HPP
+#define IRIS_X4_CORE_PARSER_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -21,7 +21,7 @@
 #include <concepts>
 #include <utility>
 
-#ifndef BOOST_SPIRIT_X4_NO_RTTI
+#ifndef IRIS_X4_NO_RTTI
 #include <typeinfo>
 #endif
 
@@ -141,8 +141,8 @@ struct binary_parser : parser<Derived>
     {}
 
     // TODO: [MSVC 2022 BUG] "overruns" in constexpr, test case in `lit.cpp`
-    /*BOOST_SPIRIT_NO_UNIQUE_ADDRESS*/ Left left;
-    /*BOOST_SPIRIT_NO_UNIQUE_ADDRESS*/ Right right;
+    /*IRIS_NO_UNIQUE_ADDRESS*/ Left left;
+    /*IRIS_NO_UNIQUE_ADDRESS*/ Right right;
 };
 
 namespace extension {
@@ -474,7 +474,7 @@ struct get_info
 
         } else {
             (void)subject;
-    #ifndef BOOST_SPIRIT_X4_NO_RTTI
+    #ifndef IRIS_X4_NO_RTTI
             return typeid(Subject).name();
     #else
             return "(get_info undefined)";

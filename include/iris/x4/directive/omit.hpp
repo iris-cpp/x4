@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_OMIT_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_OMIT_HPP
+#ifndef IRIS_X4_DIRECTIVE_OMIT_HPP
+#define IRIS_X4_DIRECTIVE_OMIT_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

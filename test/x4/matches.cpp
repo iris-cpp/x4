@@ -17,7 +17,7 @@ TEST_CASE("matches")
     using x4::matches;
     using x4::char_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(matches['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(matches['x']);
 
     {
         CHECK(parse("x", matches[char_]));

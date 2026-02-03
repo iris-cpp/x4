@@ -14,7 +14,7 @@ TEST_CASE("eol")
 {
     using x4::eol;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eol);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(eol);
 
     CHECK(parse("\r\n", eol));
     CHECK(parse("\r", eol));

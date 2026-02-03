@@ -52,7 +52,7 @@ TEST_CASE("real1")
 
         constexpr real_parser<double, ureal_policies<double>> udouble;
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(udouble);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(udouble);
 
         {
             double d = 0;

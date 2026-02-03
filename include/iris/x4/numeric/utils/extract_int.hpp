@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_NUMERIC_UTILS_EXTRACT_INT_HPP
-#define BOOST_SPIRIT_X4_NUMERIC_UTILS_EXTRACT_INT_HPP
+#ifndef IRIS_X4_NUMERIC_UTILS_EXTRACT_INT_HPP
+#define IRIS_X4_NUMERIC_UTILS_EXTRACT_INT_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -32,8 +32,8 @@
 
 #include <cassert>
 
-#ifndef BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL
-# define BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL 3
+#ifndef IRIS_X4_NUMERICS_LOOP_UNROLL
+# define IRIS_X4_NUMERICS_LOOP_UNROLL 3
 #endif
 
 namespace boost::spirit::x4::numeric {
@@ -53,7 +53,7 @@ template<int Digits, unsigned Radix>
 struct digits2_to_n;
 
 // lookup table for log2(x) : 2 <= x <= 36
-#define BOOST_SPIRIT_X4_LOG2 (#error)(#error) \
+#define IRIS_X4_LOG2 (#error)(#error) \
     (1000000)(1584960)(2000000)(2321920)(2584960)(2807350) \
     (3000000)(3169920)(3321920)(3459430)(3584960)(3700430) \
     (3807350)(3906890)(4000000)(4087460)(4169920)(4247920) \
@@ -66,14 +66,14 @@ struct digits2_to_n;
     template<int Digits> struct digits2_to_n<Digits, Radix> \
     { \
         static constexpr int value = static_cast<int>( \
-            (Digits * 1000000) / BOOST_PP_SEQ_ELEM(Radix, BOOST_SPIRIT_X4_LOG2)); \
+            (Digits * 1000000) / BOOST_PP_SEQ_ELEM(Radix, IRIS_X4_LOG2)); \
     };
 
 #define BOOST_PP_LOCAL_LIMITS (2, 36)
 #include BOOST_PP_LOCAL_ITERATE()
 #undef BOOST_PP_LOCAL_MACRO
 
-#undef BOOST_SPIRIT_X4_LOG2
+#undef IRIS_X4_LOG2
 
 template<class T, unsigned Radix>
 struct digits_traits : digits2_to_n<std::numeric_limits<T>::digits, Radix>
@@ -246,7 +246,7 @@ struct check_max_digits<-1>
 };
 
 // extract_int: main code for extracting integers
-#define BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP(z, x, data) \
+#define IRIS_X4_NUMERIC_INNER_LOOP(z, x, data) \
     if (!check_max_digits<MaxDigits>::call(count + leading_zeros) || it == last) break; \
     ch = *it; \
     if (!radix_check::is_valid(ch) || !extractor::call(ch, count, val)) break; \
@@ -289,7 +289,7 @@ struct extract_int
         char_type ch;
 
         while (true) {
-            BOOST_PP_REPEAT(BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP, _)
+            BOOST_PP_REPEAT(IRIS_X4_NUMERICS_LOOP_UNROLL, IRIS_X4_NUMERIC_INNER_LOOP, _)
         }
 
         if (count + leading_zeros >= MinDigits) {
@@ -327,11 +327,11 @@ struct extract_int
         return extract_int::parse_main(first, last, attr);
     }
 };
-#undef BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP
+#undef IRIS_X4_NUMERIC_INNER_LOOP
 
 // extract_int: main code for extracting integers
 // common case where MinDigits == 1 and MaxDigits = -1
-#define BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP(z, x, data) \
+#define IRIS_X4_NUMERIC_INNER_LOOP(z, x, data) \
     if (it == last) break; \
     ch = *it; \
     if (!radix_check::is_valid(ch)) break; \
@@ -389,7 +389,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         count = 0;
         ++it;
         while (true) {
-            BOOST_PP_REPEAT(BOOST_SPIRIT_X4_NUMERICS_LOOP_UNROLL, BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP, _)
+            BOOST_PP_REPEAT(IRIS_X4_NUMERICS_LOOP_UNROLL, IRIS_X4_NUMERIC_INNER_LOOP, _)
         }
 
         x4::move_to(std::move(val), attr);
@@ -425,7 +425,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
     }
 };
 
-#undef BOOST_SPIRIT_X4_NUMERIC_INNER_LOOP
+#undef IRIS_X4_NUMERIC_INNER_LOOP
 
 //  Extract the prefix sign (- or +), return true if a '-' was found
 template<std::forward_iterator It, std::sentinel_for<It> Se>

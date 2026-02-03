@@ -31,10 +31,10 @@ TEST_CASE("repeat")
     using x4::lexeme;
     using x4::char_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(*x4::lit('x'));
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(repeat(3)['x']);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(repeat(3, 5)['x']);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(repeat(3, repeat_inf)['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(*x4::lit('x'));
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(repeat(3)['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(repeat(3, 5)['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(repeat(3, repeat_inf)['x']);
 
     {
         CHECK(parse("aaaaaaaa", *char_));

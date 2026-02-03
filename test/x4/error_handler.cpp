@@ -42,8 +42,8 @@ x4::rule<test_rule_class> const test_rule;
 auto const test_inner_rule_def = x4::lit("bar");
 auto const test_rule_def = x4::lit("foo") > test_inner_rule > x4::lit("git");
 
-BOOST_SPIRIT_X4_DEFINE(test_inner_rule)
-BOOST_SPIRIT_X4_DEFINE(test_rule)
+IRIS_X4_DEFINE(test_inner_rule)
+IRIS_X4_DEFINE(test_rule)
 
 void do_parse(std::string const& line_break)
 {

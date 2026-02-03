@@ -7,7 +7,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define BOOST_SPIRIT_X4_UNICODE
+#define IRIS_X4_UNICODE
 
 #include "test.hpp"
 
@@ -40,18 +40,18 @@ TEST_CASE("char_class")
 
     {
         using namespace x4::standard;
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(upper);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alnum);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alpha);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(digit);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(graph);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(lower);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(print);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(punct);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(space);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(blank);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(upper);
         CHECK(parse("1", alnum));
         CHECK(!parse(" ", alnum));
         CHECK(!parse("1", alpha));
@@ -79,18 +79,18 @@ TEST_CASE("char_class")
 
     {
         using namespace x4::standard_wide;
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(upper);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alnum);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alpha);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(digit);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(graph);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(lower);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(print);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(punct);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(space);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(blank);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(upper);
         CHECK(parse(L"1", alnum));
         CHECK(!parse(L" ", alnum));
         CHECK(!parse(L"1", alpha));
@@ -117,18 +117,18 @@ TEST_CASE("char_class")
 
     {
         using namespace x4::unicode;
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alnum);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(alpha);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(digit);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(graph);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lower);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(print);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(punct);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(space);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(blank);
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(upper);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alnum);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alpha);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(digit);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(graph);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(lower);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(print);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(punct);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(space);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(blank);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(upper);
         CHECK(parse(U"1", alnum));
         CHECK(!parse(U" ", alnum));
         CHECK(!parse(U"1", alpha));

@@ -15,7 +15,7 @@ TEST_CASE("and_predicate")
 {
     using x4::int_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(&int_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(&int_);
 
     CHECK(parse("1234", &int_).is_partial_match());
     CHECK(!parse("abcd", &int_));

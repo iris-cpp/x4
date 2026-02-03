@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DEBUG_SIMPLE_TRACE_HPP
-#define BOOST_SPIRIT_X4_DEBUG_SIMPLE_TRACE_HPP
+#ifndef IRIS_X4_DEBUG_SIMPLE_TRACE_HPP
+#define IRIS_X4_DEBUG_SIMPLE_TRACE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -21,18 +21,18 @@
 #include <iostream>
 
 //  The stream to use for debug output
-#ifndef BOOST_SPIRIT_X4_DEBUG_OUT
-#define BOOST_SPIRIT_X4_DEBUG_OUT std::cerr
+#ifndef IRIS_X4_DEBUG_OUT
+#define IRIS_X4_DEBUG_OUT std::cerr
 #endif
 
 //  number of tokens to print while debugging
-#ifndef BOOST_SPIRIT_X4_DEBUG_PRINT_SOME
-#define BOOST_SPIRIT_X4_DEBUG_PRINT_SOME 20
+#ifndef IRIS_X4_DEBUG_PRINT_SOME
+#define IRIS_X4_DEBUG_PRINT_SOME 20
 #endif
 
 //  number of spaces to indent
-#ifndef BOOST_SPIRIT_X4_DEBUG_INDENT
-#define BOOST_SPIRIT_X4_DEBUG_INDENT 2
+#ifndef IRIS_X4_DEBUG_INDENT
+#define IRIS_X4_DEBUG_INDENT 2
 #endif
 
 namespace boost::spirit::x4 {
@@ -124,14 +124,14 @@ struct simple_trace
 namespace detail {
 
 using simple_trace_type = simple_trace<
-    BOOST_SPIRIT_X4_DEBUG_INDENT,
-    BOOST_SPIRIT_X4_DEBUG_PRINT_SOME
+    IRIS_X4_DEBUG_INDENT,
+    IRIS_X4_DEBUG_PRINT_SOME
 >;
 
 [[nodiscard]] inline simple_trace_type&
 get_simple_trace()
 {
-    static simple_trace_type tracer(BOOST_SPIRIT_X4_DEBUG_OUT);
+    static simple_trace_type tracer(IRIS_X4_DEBUG_OUT);
     return tracer;
 }
 

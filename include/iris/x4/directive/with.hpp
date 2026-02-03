@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_WITH_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_WITH_HPP
+#ifndef IRIS_X4_DIRECTIVE_WITH_HPP
+#define IRIS_X4_DIRECTIVE_WITH_HPP
 
 /*=============================================================================
     Copyright (c) 2014 Joel de Guzman
@@ -75,7 +75,7 @@ struct with_directive_impl<Subject, ID, T&>
         requires
             std::is_constructible_v<base_type, SubjectT> &&
             std::is_constructible_v<T&, U&>
-    constexpr with_directive_impl(SubjectT&& subject, U& val BOOST_SPIRIT_LIFETIMEBOUND)
+    constexpr with_directive_impl(SubjectT&& subject, U& val IRIS_LIFETIMEBOUND)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
         : base_type(std::forward<SubjectT>(subject))
         , val_(val)
@@ -113,7 +113,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
 
     // The internal context type. This can be used to determine the composed
     // context type used in `x4::parse`/`x4::phrase_parse`. It is required for
-    // the argument of `BOOST_SPIRIT_X4_INSTANTIATE`.
+    // the argument of `IRIS_X4_INSTANTIATE`.
     template<class Context>
     using context_t = context<ID, std::remove_reference_t<T>, Context>;
 

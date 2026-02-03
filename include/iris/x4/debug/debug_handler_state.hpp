@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DEBUG_DEBUG_HANDLER_STATE_HPP
-#define BOOST_SPIRIT_X4_DEBUG_DEBUG_HANDLER_STATE_HPP
+#ifndef IRIS_X4_DEBUG_DEBUG_HANDLER_STATE_HPP
+#define IRIS_X4_DEBUG_DEBUG_HANDLER_STATE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

@@ -31,8 +31,8 @@ constexpr rule<class indirect_rule, int> indirect_rule = "indirect_rule";
 constexpr auto direct_rule_def = x4::int_;
 constexpr auto indirect_rule_def = direct_rule;
 
-BOOST_SPIRIT_X4_DEFINE(direct_rule)
-BOOST_SPIRIT_X4_DEFINE(indirect_rule)
+IRIS_X4_DEFINE(direct_rule)
+IRIS_X4_DEFINE(indirect_rule)
 
 } // anonymous
 
@@ -46,7 +46,7 @@ TEST_CASE("omit")
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(omit['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(omit['x']);
 
     CHECK(parse("a", omit['a']));
 

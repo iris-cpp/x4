@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TEST_X4_TEST_HPP
-#define BOOST_SPIRIT_X4_TEST_X4_TEST_HPP
+#ifndef IRIS_X4_TEST_X4_TEST_HPP
+#define IRIS_X4_TEST_X4_TEST_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman
@@ -15,7 +15,7 @@
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/parse.hpp>
 
-#if BOOST_SPIRIT_CI_IS_B2
+#if IRIS_CI_IS_B2
 # include "catch_amalgamated.hpp"
 #else
 # include <catch2/catch_test_macros.hpp>
@@ -182,7 +182,7 @@ constexpr synth_parser<move_only> synth_move_only{};
 
 using spirit_test::parse;
 
-#define BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(...) \
+#define IRIS_X4_ASSERT_CONSTEXPR_CTORS(...) \
     static_assert(::spirit_test::test_constexpr_copy_move_ctors(__VA_ARGS__))
 
 #endif

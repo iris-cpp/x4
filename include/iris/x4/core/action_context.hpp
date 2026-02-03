@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CORE_ACTION_CONTEXT_HPP
-#define BOOST_SPIRIT_X4_CORE_ACTION_CONTEXT_HPP
+#ifndef IRIS_X4_CORE_ACTION_CONTEXT_HPP
+#define IRIS_X4_CORE_ACTION_CONTEXT_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -56,7 +56,7 @@ struct _rule_var_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
-    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx IRIS_LIFETIMEBOUND) noexcept
     {
         return x4::get<contexts::rule_var>(ctx);
     }
@@ -69,7 +69,7 @@ struct _as_var_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
-    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx IRIS_LIFETIMEBOUND) noexcept
     {
         return x4::get<contexts::as_var>(ctx);
     }
@@ -89,7 +89,7 @@ struct _attr_fn
 {
     template<class Context>
     [[nodiscard]] static constexpr auto&&
-    operator()(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    operator()(Context const& ctx IRIS_LIFETIMEBOUND) noexcept
     {
         return x4::get<contexts::attr>(ctx);
     }

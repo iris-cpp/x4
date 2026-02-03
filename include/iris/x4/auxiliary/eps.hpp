@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_AUXILIARY_EPS_HPP
-#define BOOST_SPIRIT_X4_AUXILIARY_EPS_HPP
+#ifndef IRIS_X4_AUXILIARY_EPS_HPP
+#define IRIS_X4_AUXILIARY_EPS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

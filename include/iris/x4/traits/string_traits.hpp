@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TRAITS_STRING_TRAITS_HPP
-#define BOOST_SPIRIT_X4_TRAITS_STRING_TRAITS_HPP
+#ifndef IRIS_X4_TRAITS_STRING_TRAITS_HPP
+#define IRIS_X4_TRAITS_STRING_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -11,20 +11,20 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
 
-#if defined(BOOST_SPIRIT_UNICODE) && !defined(BOOST_SPIRIT_X4_UNICODE)
-# error "`BOOST_SPIRIT_UNICODE` has no effect on X4. #define `BOOST_SPIRIT_X4_UNICODE`"
+#if defined(IRIS_UNICODE) && !defined(IRIS_X4_UNICODE)
+# error "`IRIS_UNICODE` has no effect on X4. #define `IRIS_X4_UNICODE`"
 #endif
 
-#if defined(BOOST_SPIRIT_X3_UNICODE) && !defined(BOOST_SPIRIT_X4_UNICODE)
-# error "`BOOST_SPIRIT_X3_UNICODE` has no effect on X4. #define `BOOST_SPIRIT_X4_UNICODE`"
+#if defined(IRIS_X3_UNICODE) && !defined(IRIS_X4_UNICODE)
+# error "`IRIS_X3_UNICODE` has no effect on X4. #define `IRIS_X4_UNICODE`"
 #endif
 
-#if defined(BOOST_SPIRIT_NO_STANDARD_WIDE) && !defined(BOOST_SPIRIT_X4_NO_STANDARD_WIDE)
-# error "`BOOST_SPIRIT_NO_STANDARD_WIDE` has no effect on X4. #define `BOOST_SPIRIT_X4_NO_STANDARD_WIDE`"
+#if defined(IRIS_NO_STANDARD_WIDE) && !defined(IRIS_X4_NO_STANDARD_WIDE)
+# error "`IRIS_NO_STANDARD_WIDE` has no effect on X4. #define `IRIS_X4_NO_STANDARD_WIDE`"
 #endif
 
-#if defined(BOOST_SPIRIT_X3_NO_STANDARD_WIDE) && !defined(BOOST_SPIRIT_X4_NO_STANDARD_WIDE)
-# error "`BOOST_SPIRIT_X3_NO_STANDARD_WIDE` has no effect on X4. #define `BOOST_SPIRIT_X4_NO_STANDARD_WIDE`"
+#if defined(IRIS_X3_NO_STANDARD_WIDE) && !defined(IRIS_X4_NO_STANDARD_WIDE)
+# error "`IRIS_X3_NO_STANDARD_WIDE` has no effect on X4. #define `IRIS_X4_NO_STANDARD_WIDE`"
 #endif
 
 #include <string>
@@ -36,11 +36,11 @@ namespace boost::spirit::x4::char_encoding {
 
 struct standard;
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 struct standard_wide;
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 struct unicode;
 #endif
 
@@ -111,11 +111,11 @@ namespace detail {
     template<CharLike CharT> struct char_encoding_for_impl;
     template<> struct char_encoding_for_impl<char> { using type = char_encoding::standard; };
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
     template<> struct char_encoding_for_impl<wchar_t> { using type = char_encoding::standard_wide; };
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
     template<> struct char_encoding_for_impl<char8_t> { using type = char_encoding::unicode; };
     template<> struct char_encoding_for_impl<char16_t> { using type = char_encoding::unicode; };
     template<> struct char_encoding_for_impl<char32_t> { using type = char_encoding::unicode; };

@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_SEEK_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_SEEK_HPP
+#ifndef IRIS_X4_DIRECTIVE_SEEK_HPP
+#define IRIS_X4_DIRECTIVE_SEEK_HPP
 
 /*=============================================================================
     Copyright (c) 2011 Jamboree

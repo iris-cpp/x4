@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_STRING_TST_HPP
-#define BOOST_SPIRIT_X4_STRING_TST_HPP
+#ifndef IRIS_X4_STRING_TST_HPP
+#define IRIS_X4_STRING_TST_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -193,8 +193,8 @@ private:
         }
     }
 
-    BOOST_SPIRIT_NO_UNIQUE_ADDRESS Alloc alloc_;
-    BOOST_SPIRIT_NO_UNIQUE_ADDRESS node_allocator_type node_alloc_;
+    IRIS_NO_UNIQUE_ADDRESS Alloc alloc_;
+    IRIS_NO_UNIQUE_ADDRESS node_allocator_type node_alloc_;
     node* root_ = nullptr;
 };
 

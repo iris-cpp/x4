@@ -30,7 +30,7 @@ TEST_CASE("list")
     using x4::omit;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ % ',');
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ % ',');
 
     CHECK(parse("a,b,c,d,e,f,g,h", char_ % ','));
     CHECK(parse("a,b,c,d,e,f,g,h,", char_ % ',').is_partial_match());

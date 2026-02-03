@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_RULE_HPP
-#define BOOST_SPIRIT_X4_RULE_HPP
+#ifndef IRIS_X4_RULE_HPP
+#define IRIS_X4_RULE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -22,7 +22,7 @@
 
 #include <iris/x4/traits/transform_attribute.hpp>
 
-#ifdef BOOST_SPIRIT_X4_DEBUG
+#ifdef IRIS_X4_DEBUG
 # include <iris/x4/debug/simple_trace.hpp>
 #endif
 
@@ -60,7 +60,7 @@ enum struct default_parse_rule_result : bool {};
 // This overload will only be selected when there exists no user-defined
 // definition for `parse_rule`.
 //
-// When a user invokes `BOOST_SPIRIT_X4_DEFINE_`, an unconstrained overload
+// When a user invokes `IRIS_X4_DEFINE_`, an unconstrained overload
 // is generated at the user's namespace scope. It will never conflict with
 // this (vvvvv) overload, as the generated one is never directly called with
 // a context containing `RuleID`.
@@ -86,7 +86,7 @@ template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class
     requires (!has_context_v<Context, RuleID>)
 constexpr void
 parse_rule(rule_id<RuleID>, It&, Se const&, Context const&, Attr&)
-    = delete; // BOOST_SPIRIT_X4_DEFINE undefined for this rule
+    = delete; // IRIS_X4_DEFINE undefined for this rule
 
 
 template<class RuleID, X4Attribute Attr, bool SkipDefinitionInjection = false>
@@ -122,7 +122,7 @@ private:
 
     template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
     [[nodiscard]] static constexpr Context const&
-    make_rcontext(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND, RHSAttr&) noexcept
+    make_rcontext(Context const& ctx IRIS_LIFETIMEBOUND, RHSAttr&) noexcept
     {
         static_assert(!need_rcontext<RHS, It, Context, RHSAttr>); // sanity check
 
@@ -155,7 +155,7 @@ private:
     template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
         requires need_rcontext<RHS, It, Context, RHSAttr>
     [[nodiscard]] static constexpr decltype(auto)
-    make_rcontext(Context const& ctx BOOST_SPIRIT_LIFETIMEBOUND, RHSAttr& rhs_attr BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    make_rcontext(Context const& ctx IRIS_LIFETIMEBOUND, RHSAttr& rhs_attr IRIS_LIFETIMEBOUND) noexcept
     {
         return x4::replace_first_context<contexts::rule_var>(ctx, rhs_attr);
     }
@@ -171,7 +171,7 @@ public:
         RContext const& rcontext, RHSAttr& rhs_attr
     ) // never noexcept; requires complex handling
     {
-        // See if the user has `BOOST_SPIRIT_X4_DEFINE` for this rule
+        // See if the user has `IRIS_X4_DEFINE` for this rule
         constexpr bool is_default_parse_rule = std::same_as<
             decltype(parse_rule( // ADL
                 std::declval<rule_id<RuleID>>(), first, last,
@@ -195,7 +195,7 @@ public:
             ok = rhs.parse(first, last, rcontext, rhs_attr);
 
         } else {
-            // If there is no `BOOST_SPIRIT_X4_DEFINE` for this rule,
+            // If there is no `IRIS_X4_DEFINE` for this rule,
             // we'll make a context for this rule tagged by its `RuleID`
             // so we can extract the rule later on in the default
             // `parse_rule` overload.
@@ -263,7 +263,7 @@ public:
         // called inside the following scope.
         bool parse_ok;
         {
-        #ifdef BOOST_SPIRIT_X4_DEBUG
+        #ifdef IRIS_X4_DEBUG
             parse_ok = false;
 
             // Debug on destructor, i.e., before any modifications are made to the
@@ -434,7 +434,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         // the (potentially ADL-found) `parse_rule` function to be rule-agnostic.
         // If we don't do this, the specialized function signature becomes
         // nondeterministic, and we lose the opportunity to do explicit template
-        // instantiation in `BOOST_SPIRIT_X4_INSTANTIATE`.
+        // instantiation in `IRIS_X4_INSTANTIATE`.
         //
         // Note that this removal is possible only because the actual invocation of
         // `parse_rule` *ALWAYS* results in subsequent invocation of `call_rule_definition`,
@@ -586,10 +586,10 @@ using x4::rule;
 
 // -------------------------------------------------------------
 
-#define BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN_I(x) _Pragma(#x)
-#define BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN(msg) BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN_I(message(msg))
+#define IRIS_X4_DEPRECATED_MACRO_WARN_I(x) _Pragma(#x)
+#define IRIS_X4_DEPRECATED_MACRO_WARN(msg) IRIS_X4_DEPRECATED_MACRO_WARN_I(message(msg))
 
-#define BOOST_SPIRIT_X4_DECLARE_(r, constexpr_, rule_type) \
+#define IRIS_X4_DECLARE_(r, constexpr_, rule_type) \
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context> \
     [[nodiscard]] constexpr_ bool \
     parse_rule( \
@@ -599,24 +599,24 @@ using x4::rule;
         typename std::remove_cvref_t<rule_type>::attribute_type& attr \
     );
 
-#define BOOST_SPIRIT_X4_DECLARE(rule_type) BOOST_SPIRIT_X4_DECLARE_(,, rule_type)
-#define BOOST_SPIRIT_X4_DECLARE_CONSTEXPR(rule_type) BOOST_SPIRIT_X4_DECLARE_(, constexpr, rule_type)
+#define IRIS_X4_DECLARE(rule_type) IRIS_X4_DECLARE_(,, rule_type)
+#define IRIS_X4_DECLARE_CONSTEXPR(rule_type) IRIS_X4_DECLARE_(, constexpr, rule_type)
 
 // NB: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation. We simply
-// can't drop (legit) use cases of `BOOST_SPIRIT_X4_INSTANTIATE`, so
+// can't drop (legit) use cases of `IRIS_X4_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
-// support in your rule, use `BOOST_SPIRIT_X4_DECLARE_CONSTEXPR`.
-#define BOOST_SPIRIT_DECLARE(...) \
-    BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN( \
-        "Use of variadic arguments with `BOOST_SPIRIT_DECLARE` is deprecated due to the heavy compile-time cost of " \
-    "`BOOST_PP_SEQ_*`. Just apply `BOOST_SPIRIT_X4_DECLARE` for each of your rules." \
+// support in your rule, use `IRIS_X4_DECLARE_CONSTEXPR`.
+#define IRIS_DECLARE(...) \
+    IRIS_X4_DEPRECATED_MACRO_WARN( \
+        "Use of variadic arguments with `IRIS_DECLARE` is deprecated due to the heavy compile-time cost of " \
+    "`BOOST_PP_SEQ_*`. Just apply `IRIS_X4_DECLARE` for each of your rules." \
     ) \
-    BOOST_PP_SEQ_FOR_EACH(BOOST_SPIRIT_X4_DECLARE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+    BOOST_PP_SEQ_FOR_EACH(IRIS_X4_DECLARE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
 // -------------------------------------------------------------
 
-#define BOOST_SPIRIT_X4_DEFINE_(r, constexpr_, rule_name) \
+#define IRIS_X4_DEFINE_(r, constexpr_, rule_name) \
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context> \
     [[nodiscard]] constexpr_ bool \
     parse_rule( \
@@ -629,25 +629,25 @@ using x4::rule;
         return ::boost::spirit::x4::detail::rule_impl< \
             typename rule_t::id, typename rule_t::attribute_type, true \
         >::call_rule_definition<rule_t::force_attribute>( \
-            BOOST_SPIRIT_CONCAT(rule_name, _def), rule_name.name, \
+            IRIS_CONCAT(rule_name, _def), rule_name.name, \
             first, last, ctx, attr \
         ); \
     }
 
-#define BOOST_SPIRIT_X4_DEFINE(rule_type) BOOST_SPIRIT_X4_DEFINE_(,, rule_type)
-#define BOOST_SPIRIT_X4_DEFINE_CONSTEXPR(rule_type) BOOST_SPIRIT_X4_DEFINE_(, constexpr, rule_type)
+#define IRIS_X4_DEFINE(rule_type) IRIS_X4_DEFINE_(,, rule_type)
+#define IRIS_X4_DEFINE_CONSTEXPR(rule_type) IRIS_X4_DEFINE_(, constexpr, rule_type)
 
 // NB: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation. We simply
-// can't drop (legit) use cases of `BOOST_SPIRIT_INSTANTIATE`, so
+// can't drop (legit) use cases of `IRIS_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
-// support in your rule, use `BOOST_SPIRIT_X4_DEFINE_CONSTEXPR`.
-#define BOOST_SPIRIT_DEFINE(...) \
-    BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN( \
-        "Use of variadic arguments with `BOOST_SPIRIT_DEFINE` is deprecated due to the heavy compile-time cost of " \
-    "`BOOST_PP_SEQ_*`. Just apply `BOOST_SPIRIT_X4_DEFINE` for each of your rules." \
+// support in your rule, use `IRIS_X4_DEFINE_CONSTEXPR`.
+#define IRIS_DEFINE(...) \
+    IRIS_X4_DEPRECATED_MACRO_WARN( \
+        "Use of variadic arguments with `IRIS_DEFINE` is deprecated due to the heavy compile-time cost of " \
+    "`BOOST_PP_SEQ_*`. Just apply `IRIS_X4_DEFINE` for each of your rules." \
     ) \
-    BOOST_PP_SEQ_FOR_EACH(BOOST_SPIRIT_X4_DEFINE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+    BOOST_PP_SEQ_FOR_EACH(IRIS_X4_DEFINE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
 // -------------------------------------------------------------
 
@@ -678,31 +678,31 @@ struct instantiate_macro_helper<RuleT, It, Context, void>
 
 } // detail
 
-#define BOOST_SPIRIT_X4_INSTANTIATE_(rule_type, It, Se, Context) \
+#define IRIS_X4_INSTANTIATE_(rule_type, It, Se, Context) \
     template bool parse_rule<It, Se, Context>( \
         ::boost::spirit::x4::detail::rule_id<typename std::remove_cvref_t<rule_type>::id>, \
         It&, Se const&, Context const&, \
         typename std::remove_cvref_t<rule_type>::attribute_type& \
     );
 
-#define BOOST_SPIRIT_X4_INSTANTIATE_WRAP(...) __VA_ARGS__
+#define IRIS_X4_INSTANTIATE_WRAP(...) __VA_ARGS__
 
 // NB: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation.
-#define BOOST_SPIRIT_X4_INSTANTIATE(...) \
-    BOOST_SPIRIT_X4_INSTANTIATE_( \
-        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::rule_type), \
-        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::iterator_type), \
-        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
-        BOOST_SPIRIT_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
+#define IRIS_X4_INSTANTIATE(...) \
+    IRIS_X4_INSTANTIATE_( \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::rule_type), \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::iterator_type), \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
+        IRIS_X4_INSTANTIATE_WRAP(typename ::boost::spirit::x4::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
     )
 
-#define BOOST_SPIRIT_INSTANTIATE(...) \
-    BOOST_SPIRIT_X4_DEPRECATED_MACRO_WARN( \
-        "Use `BOOST_SPIRIT_X4_INSTANTIATE`. `BOOST_SPIRIT_INSTANTIATE` is deprecated because " \
+#define IRIS_INSTANTIATE(...) \
+    IRIS_X4_DEPRECATED_MACRO_WARN( \
+        "Use `IRIS_X4_INSTANTIATE`. `IRIS_INSTANTIATE` is deprecated because " \
         "the name was not correctly prefixed with `X4`." \
     ) \
-    BOOST_SPIRIT_X4_INSTANTIATE(__VA_ARGS__)
+    IRIS_X4_INSTANTIATE(__VA_ARGS__)
 
 } // boost::spirit::x4
 

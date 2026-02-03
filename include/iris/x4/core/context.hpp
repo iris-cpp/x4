@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CORE_CONTEXT_HPP
-#define BOOST_SPIRIT_X4_CORE_CONTEXT_HPP
+#ifndef IRIS_X4_CORE_CONTEXT_HPP
+#define IRIS_X4_CORE_CONTEXT_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -138,13 +138,13 @@ struct context_storage
     static_assert(ContextNextType<Next>);
 
     // lvalue{lvalue} or non-reference{lvalue}
-    constexpr context_storage(T& val BOOST_SPIRIT_LIFETIMEBOUND, std::remove_cvref_t<Next> const& next) noexcept
+    constexpr context_storage(T& val IRIS_LIFETIMEBOUND, std::remove_cvref_t<Next> const& next) noexcept
         : val(val)
         , next(next)
     {}
 
     // non-reference{rvalue}
-    constexpr context_storage(T& val BOOST_SPIRIT_LIFETIMEBOUND, std::remove_cvref_t<Next>&& next)
+    constexpr context_storage(T& val IRIS_LIFETIMEBOUND, std::remove_cvref_t<Next>&& next)
         noexcept(std::is_nothrow_constructible_v<Next, std::remove_const_t<Next>>)
         requires (!std::is_lvalue_reference_v<Next>)
         : val(val)
@@ -152,7 +152,7 @@ struct context_storage
     {}
 
     // non-reference{const rvalue}
-    constexpr context_storage(T& val BOOST_SPIRIT_LIFETIMEBOUND, std::remove_cvref_t<Next> const&& next)
+    constexpr context_storage(T& val IRIS_LIFETIMEBOUND, std::remove_cvref_t<Next> const&& next)
         noexcept(std::is_nothrow_constructible_v<Next, std::remove_const_t<Next> const>)
         requires (!std::is_lvalue_reference_v<Next>)
         : val(val)
@@ -163,18 +163,18 @@ struct context_storage
     context_storage(std::remove_const_t<T> const&, std::remove_cvref_t<Next> const&&) requires std::is_lvalue_reference_v<Next> = delete;
     context_storage(std::remove_const_t<T> const&&, std::remove_cvref_t<Next> const&) = delete;
 
-    [[nodiscard]] constexpr T& get(std::type_identity<ID> const&) const noexcept BOOST_SPIRIT_LIFETIMEBOUND
+    [[nodiscard]] constexpr T& get(std::type_identity<ID> const&) const noexcept IRIS_LIFETIMEBOUND
     {
         return val;
     }
 
-    [[nodiscard]] constexpr decltype(auto) get(auto const& id) const noexcept BOOST_SPIRIT_LIFETIMEBOUND
+    [[nodiscard]] constexpr decltype(auto) get(auto const& id) const noexcept IRIS_LIFETIMEBOUND
     {
         return next.get(id);
     }
 
     T& val;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-    BOOST_SPIRIT_NO_UNIQUE_ADDRESS Next next;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+    IRIS_NO_UNIQUE_ADDRESS Next next;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 template<class ID, class T, class Next>
@@ -183,18 +183,18 @@ struct context_storage<ID, T, Next>
 {
     static_assert(ContextValueType<T>);
 
-    constexpr explicit context_storage(T& val BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+    constexpr explicit context_storage(T& val IRIS_LIFETIMEBOUND) noexcept
         : val(val)
     {}
 
-    constexpr context_storage(T& val BOOST_SPIRIT_LIFETIMEBOUND, unused_type const&) noexcept
+    constexpr context_storage(T& val IRIS_LIFETIMEBOUND, unused_type const&) noexcept
         : val(val)
     {}
 
     context_storage(std::remove_const_t<T> const&&) = delete;
     context_storage(std::remove_const_t<T> const&&, unused_type const&) = delete;
 
-    [[nodiscard]] constexpr T& get(std::type_identity<ID> const&) const noexcept BOOST_SPIRIT_LIFETIMEBOUND
+    [[nodiscard]] constexpr T& get(std::type_identity<ID> const&) const noexcept IRIS_LIFETIMEBOUND
     {
         return val;
     }
@@ -204,7 +204,7 @@ struct context_storage<ID, T, Next>
     T& val;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
-#define BOOST_SPIRIT_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR \
+#define IRIS_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR \
     "Assigning `unused` to a unique context is prohibited for maintainability because " \
     "unique context is binary: it either holds a value or is empty. Introducing " \
     "`unused` makes it tri-state. If you want to propagate `unused` as a placeholder " \
@@ -218,7 +218,7 @@ struct context_storage<ID, T, Next>
 
     static_assert(
         !detail::UniqueContextID<ID> || detail::AllowUnusedContextID<ID>,
-        BOOST_SPIRIT_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR
+        IRIS_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR
     );
 
     // lvalue{lvalue} or non-reference{lvalue}
@@ -253,7 +253,7 @@ struct context_storage<ID, T, Next>
         return next.get(id);
     }
 
-    BOOST_SPIRIT_NO_UNIQUE_ADDRESS Next next;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+    IRIS_NO_UNIQUE_ADDRESS Next next;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 template<class ID, class T, class Next>
@@ -264,7 +264,7 @@ struct context_storage<ID, T, Next>
 {
     static_assert(
         !detail::UniqueContextID<ID> || detail::AllowUnusedContextID<ID>,
-        BOOST_SPIRIT_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR
+        IRIS_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR
     );
 
     constexpr context_storage() noexcept = default;
@@ -279,7 +279,7 @@ struct context_storage<ID, T, Next>
     static void get(auto const&) = delete; // ID not found
 };
 
-#undef BOOST_SPIRIT_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR
+#undef IRIS_X4_UNUSED_CONTEXT_VALUE_TYPE_ERROR
 
 } // detail
 
@@ -454,7 +454,7 @@ template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
 [[nodiscard]] constexpr decltype(auto)
 replace_first_context(
     context<ID, T, Next> const& ctx,
-    NewVal& new_val BOOST_SPIRIT_LIFETIMEBOUND
+    NewVal& new_val IRIS_LIFETIMEBOUND
 ) noexcept
 {
     static_assert(!is_ttp_specialization_of_v<std::remove_const_t<NewVal>, context>, "context's value type cannot be context");
@@ -510,7 +510,7 @@ template<class ID_To_Replace, class NewVal>
 [[nodiscard]] constexpr decltype(auto)
 replace_first_context(
     unused_type const&,
-    NewVal& new_val BOOST_SPIRIT_LIFETIMEBOUND
+    NewVal& new_val IRIS_LIFETIMEBOUND
 ) noexcept
 {
     static_assert(!is_ttp_specialization_of_v<std::remove_const_t<NewVal>, context>, "context's value type cannot be context");

@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_PARSE_RESULT_HPP
-#define BOOST_SPIRIT_X4_PARSE_RESULT_HPP
+#ifndef IRIS_X4_PARSE_RESULT_HPP
+#define IRIS_X4_PARSE_RESULT_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka

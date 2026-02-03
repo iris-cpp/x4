@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_MATCHES_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_MATCHES_HPP
+#ifndef IRIS_X4_DIRECTIVE_MATCHES_HPP
+#define IRIS_X4_DIRECTIVE_MATCHES_HPP
 
 /*=============================================================================
     Copyright (c) 2015 Mario Lang

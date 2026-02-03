@@ -24,7 +24,7 @@ TEST_CASE("no_skip")
     using x4::lexeme;
     using x4::no_skip;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(no_skip['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(no_skip['x']);
 
     // without skipping no_skip is equivalent to lexeme
     {

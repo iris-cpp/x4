@@ -18,7 +18,7 @@ TEST_CASE("action")
 {
     using x4::int_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::int_[std::true_type{}]);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::int_[std::true_type{}]);
 
     {
         int x = 0;

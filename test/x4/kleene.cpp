@@ -49,7 +49,7 @@ TEST_CASE("kleene")
     using x4::int_;
     using x4::lexeme;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(*char_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(*char_);
 
     CHECK(parse("aaaaaaaa", *char_));
     CHECK(parse("a", *char_));

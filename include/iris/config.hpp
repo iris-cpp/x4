@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CONFIG_HPP
-#define BOOST_SPIRIT_X4_CONFIG_HPP
+#ifndef IRIS_X4_CONFIG_HPP
+#define IRIS_X4_CONFIG_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka
@@ -10,12 +10,12 @@
 
 #include <version>
 
-#define BOOST_SPIRIT_STRINGIZE_I(x) #x
-#define BOOST_SPIRIT_STRINGIZE(x) BOOST_SPIRIT_STRINGIZE_I(x)
+#define IRIS_STRINGIZE_I(x) #x
+#define IRIS_STRINGIZE(x) IRIS_STRINGIZE_I(x)
 
-#define BOOST_SPIRIT_CONCAT_I_I(a, b) a##b
-#define BOOST_SPIRIT_CONCAT_I(a, b) BOOST_SPIRIT_CONCAT_I_I(a, b)
-#define BOOST_SPIRIT_CONCAT(a, b) BOOST_SPIRIT_CONCAT_I(a, b)
+#define IRIS_CONCAT_I_I(a, b) a##b
+#define IRIS_CONCAT_I(a, b) IRIS_CONCAT_I_I(a, b)
+#define IRIS_CONCAT(a, b) IRIS_CONCAT_I(a, b)
 
 #if _MSC_VER
 # include <CodeAnalysis/CppCoreCheck/warnings.h>
@@ -29,22 +29,22 @@
 #endif
 
 #if _MSC_VER && __INTELLISENSE__ // Memory Layout view shows wrong layout without this workaround
-# define BOOST_SPIRIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address, no_unique_address]]
+# define IRIS_NO_UNIQUE_ADDRESS [[msvc::no_unique_address, no_unique_address]]
 
 #elif _MSC_VER // normal MSVC
-# define BOOST_SPIRIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+# define IRIS_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 
 #else // other compilers
-# define BOOST_SPIRIT_NO_UNIQUE_ADDRESS [[no_unique_address]]
+# define IRIS_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #endif
 
-#ifndef BOOST_SPIRIT_LIFETIMEBOUND
+#ifndef IRIS_LIFETIMEBOUND
 # ifdef __clang__
-#  define BOOST_SPIRIT_LIFETIMEBOUND [[clang::lifetimebound]]
+#  define IRIS_LIFETIMEBOUND [[clang::lifetimebound]]
 # elifdef _MSC_VER
-#  define BOOST_SPIRIT_LIFETIMEBOUND [[msvc::lifetimebound]]
+#  define IRIS_LIFETIMEBOUND [[msvc::lifetimebound]]
 # else
-#  define BOOST_SPIRIT_LIFETIMEBOUND
+#  define IRIS_LIFETIMEBOUND
 # endif
 #endif
 

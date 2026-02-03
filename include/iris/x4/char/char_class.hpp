@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CHAR_CHAR_CLASS_HPP
-#define BOOST_SPIRIT_X4_CHAR_CHAR_CLASS_HPP
+#ifndef IRIS_X4_CHAR_CHAR_CLASS_HPP
+#define IRIS_X4_CHAR_CHAR_CLASS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -19,7 +19,7 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 # include <iris/x4/char_encoding/standard_wide.hpp>
 #endif
 
@@ -34,7 +34,7 @@ struct char_class_base
 {
     using classify_type = typename Encoding::classify_type;
 
-#define BOOST_SPIRIT_X4_CLASSIFY(name) \
+#define IRIS_X4_CLASSIFY(name) \
     template<class Char> \
     [[nodiscard]] static constexpr bool \
     is(char_classes::name##_tag, Char ch) noexcept \
@@ -43,21 +43,21 @@ struct char_class_base
         return (Encoding::is##name)(detail::cast_char<classify_type>(ch)); \
     }
 
-    BOOST_SPIRIT_X4_CLASSIFY(char)
-    BOOST_SPIRIT_X4_CLASSIFY(alnum)
-    BOOST_SPIRIT_X4_CLASSIFY(alpha)
-    BOOST_SPIRIT_X4_CLASSIFY(digit)
-    BOOST_SPIRIT_X4_CLASSIFY(xdigit)
-    BOOST_SPIRIT_X4_CLASSIFY(cntrl)
-    BOOST_SPIRIT_X4_CLASSIFY(graph)
-    BOOST_SPIRIT_X4_CLASSIFY(lower)
-    BOOST_SPIRIT_X4_CLASSIFY(print)
-    BOOST_SPIRIT_X4_CLASSIFY(punct)
-    BOOST_SPIRIT_X4_CLASSIFY(space)
-    BOOST_SPIRIT_X4_CLASSIFY(blank)
-    BOOST_SPIRIT_X4_CLASSIFY(upper)
+    IRIS_X4_CLASSIFY(char)
+    IRIS_X4_CLASSIFY(alnum)
+    IRIS_X4_CLASSIFY(alpha)
+    IRIS_X4_CLASSIFY(digit)
+    IRIS_X4_CLASSIFY(xdigit)
+    IRIS_X4_CLASSIFY(cntrl)
+    IRIS_X4_CLASSIFY(graph)
+    IRIS_X4_CLASSIFY(lower)
+    IRIS_X4_CLASSIFY(print)
+    IRIS_X4_CLASSIFY(punct)
+    IRIS_X4_CLASSIFY(space)
+    IRIS_X4_CLASSIFY(blank)
+    IRIS_X4_CLASSIFY(upper)
 
-#undef BOOST_SPIRIT_X4_CLASSIFY
+#undef IRIS_X4_CLASSIFY
 };
 
 } // detail
@@ -86,7 +86,7 @@ struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag
     test(auto const, auto const&) = delete; // Mixing incompatible char types is not allowed. Did you forget `static_cast<typename Encoding::classify_type>(ch)`?
 };
 
-#define BOOST_SPIRIT_X4_CHAR_CLASS(encoding, name) \
+#define IRIS_X4_CHAR_CLASS(encoding, name) \
     namespace encoding { \
     [[maybe_unused]] inline constexpr char_class_parser<char_encoding::encoding, char_classes::name##_tag> name{}; \
     } /* encoding */ \
@@ -94,28 +94,28 @@ struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag
     using x4::encoding::name; \
     } /* parsers::encoding */
 
-#define BOOST_SPIRIT_X4_CHAR_CLASSES(encoding) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alnum) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, alpha) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, digit) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, xdigit) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, cntrl) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, graph) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, lower) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, print) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, punct) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, space) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, blank) \
-    BOOST_SPIRIT_X4_CHAR_CLASS(encoding, upper)
+#define IRIS_X4_CHAR_CLASSES(encoding) \
+    IRIS_X4_CHAR_CLASS(encoding, alnum) \
+    IRIS_X4_CHAR_CLASS(encoding, alpha) \
+    IRIS_X4_CHAR_CLASS(encoding, digit) \
+    IRIS_X4_CHAR_CLASS(encoding, xdigit) \
+    IRIS_X4_CHAR_CLASS(encoding, cntrl) \
+    IRIS_X4_CHAR_CLASS(encoding, graph) \
+    IRIS_X4_CHAR_CLASS(encoding, lower) \
+    IRIS_X4_CHAR_CLASS(encoding, print) \
+    IRIS_X4_CHAR_CLASS(encoding, punct) \
+    IRIS_X4_CHAR_CLASS(encoding, space) \
+    IRIS_X4_CHAR_CLASS(encoding, blank) \
+    IRIS_X4_CHAR_CLASS(encoding, upper)
 
-BOOST_SPIRIT_X4_CHAR_CLASSES(standard)
+IRIS_X4_CHAR_CLASSES(standard)
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
-BOOST_SPIRIT_X4_CHAR_CLASSES(standard_wide)
+#ifndef IRIS_X4_NO_STANDARD_WIDE
+IRIS_X4_CHAR_CLASSES(standard_wide)
 #endif
 
-#undef BOOST_SPIRIT_X4_CHAR_CLASS
-#undef BOOST_SPIRIT_X4_CHAR_CLASSES
+#undef IRIS_X4_CHAR_CLASS
+#undef IRIS_X4_CHAR_CLASSES
 
 // Don't put these in namespace `parsers`, these are too much
 

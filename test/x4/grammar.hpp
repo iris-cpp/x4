@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TEST_X4_GRAMMAR_HPP
-#define BOOST_SPIRIT_X4_TEST_X4_GRAMMAR_HPP
+#ifndef IRIS_X4_TEST_X4_GRAMMAR_HPP
+#define IRIS_X4_TEST_X4_GRAMMAR_HPP
 
 /*=============================================================================
     Copyright (c) 2019 Joel de Guzman
@@ -18,6 +18,6 @@ namespace x4 = boost::spirit::x4;
 
 x4::rule<struct grammar_r, int> const grammar;
 using grammar_type = decltype(grammar);
-BOOST_SPIRIT_X4_DECLARE(grammar_type)
+IRIS_X4_DECLARE(grammar_type)
 
 #endif

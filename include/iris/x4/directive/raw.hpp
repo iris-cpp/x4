@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_RAW_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_RAW_HPP
+#ifndef IRIS_X4_DIRECTIVE_RAW_HPP
+#define IRIS_X4_DIRECTIVE_RAW_HPP
 
 /*=============================================================================
     Copyright (c) 2014 Joel de Guzman

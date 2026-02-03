@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TRAITS_CHAR_ENCODING_TRAITS_HPP
-#define BOOST_SPIRIT_X4_TRAITS_CHAR_ENCODING_TRAITS_HPP
+#ifndef IRIS_X4_TRAITS_CHAR_ENCODING_TRAITS_HPP
+#define IRIS_X4_TRAITS_CHAR_ENCODING_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka
@@ -10,11 +10,11 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 # include <iris/x4/char_encoding/standard_wide.hpp>
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
@@ -50,12 +50,12 @@ struct char_encoding_traits;
 template<>
 struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 template<>
 struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 template<>
 struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
 #endif

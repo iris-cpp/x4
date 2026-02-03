@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DIRECTIVE_NO_CASE_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_NO_CASE_HPP
+#ifndef IRIS_X4_DIRECTIVE_NO_CASE_HPP
+#define IRIS_X4_DIRECTIVE_NO_CASE_HPP
 
 /*=============================================================================
     Copyright (c) 2014 Thomas Bernard

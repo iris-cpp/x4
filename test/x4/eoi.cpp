@@ -14,7 +14,7 @@ TEST_CASE("eoi")
 {
     using x4::eoi;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eoi);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(eoi);
 
     CHECK(parse("", eoi));
     CHECK(!(parse("x", eoi)));

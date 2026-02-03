@@ -21,7 +21,7 @@ TEST_CASE("lexeme")
     using x4::lexeme;
     using x4::rule;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
 
     CHECK(parse(" 1 2 3 4 5", +digit, space));
     CHECK(!parse(" 1 2 3 4 5", lexeme[+digit], space));

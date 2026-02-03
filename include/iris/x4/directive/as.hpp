@@ -1,5 +1,5 @@
-﻿#ifndef BOOST_SPIRIT_X4_DIRECTIVE_AS_HPP
-#define BOOST_SPIRIT_X4_DIRECTIVE_AS_HPP
+﻿#ifndef IRIS_X4_DIRECTIVE_AS_HPP
+#define IRIS_X4_DIRECTIVE_AS_HPP
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>

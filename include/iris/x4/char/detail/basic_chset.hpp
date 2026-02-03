@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CHAR_DETAIL_BASIC_CHSET_HPP
-#define BOOST_SPIRIT_X4_CHAR_DETAIL_BASIC_CHSET_HPP
+#ifndef IRIS_X4_CHAR_DETAIL_BASIC_CHSET_HPP
+#define IRIS_X4_CHAR_DETAIL_BASIC_CHSET_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman

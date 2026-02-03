@@ -63,7 +63,7 @@ TEST_CASE("optional")
     using x4::standard::char_;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(-int_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(-int_);
 
     CHECK(parse("1234", -int_));
     CHECK(parse("abcd", -int_).is_partial_match());

@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_HPP
-#define BOOST_SPIRIT_X4_HPP
+#ifndef IRIS_X4_HPP
+#define IRIS_X4_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman

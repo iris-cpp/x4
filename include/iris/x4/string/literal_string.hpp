@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_STRING_LITERAL_STRING_HPP
-#define BOOST_SPIRIT_X4_STRING_LITERAL_STRING_HPP
+#ifndef IRIS_X4_STRING_LITERAL_STRING_HPP
+#define IRIS_X4_STRING_LITERAL_STRING_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

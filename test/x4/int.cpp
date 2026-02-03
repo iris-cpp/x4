@@ -76,11 +76,11 @@ TEST_CASE("int")
     using x4::_attr;
     using x4::int_parser;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(int8);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(short_);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(int_);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(long_);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(long_long);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(int8);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(short_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(int_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(long_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(long_long);
 
     // signed integer tests
     {
@@ -199,7 +199,7 @@ TEST_CASE("int")
     // int_parser<unused_type> tests
     {
         constexpr int_parser<unused_type> any_int{};
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(any_int);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(any_int);
 
         CHECK(parse("123456", any_int));
         CHECK(parse("-123456", any_int));

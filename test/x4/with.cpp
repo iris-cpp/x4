@@ -59,11 +59,11 @@ constexpr auto value_equals = int_[([](auto&& ctx) {
 
 TEST_CASE("with")
 {
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(0)['x']);
 
     {
         constexpr int i = 0;
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(with<my_tag>(i)['x']);
     }
 
     // check various value categories

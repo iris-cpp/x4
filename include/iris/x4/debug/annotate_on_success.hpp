@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
-#define BOOST_SPIRIT_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
+#ifndef IRIS_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
+#define IRIS_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman

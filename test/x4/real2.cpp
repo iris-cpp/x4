@@ -62,9 +62,9 @@ TEST_CASE("real2")
 {
     using x4::double_;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::float_);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::double_);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::long_double);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::float_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::double_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::long_double);
 
     // signed real number tests
     basic_real_parser_test<float>(x4::float_);

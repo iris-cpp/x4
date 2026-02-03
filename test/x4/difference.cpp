@@ -24,7 +24,7 @@ TEST_CASE("difference")
     using x4::lit;
     using x4::_attr;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
 
     // Basic tests
     {

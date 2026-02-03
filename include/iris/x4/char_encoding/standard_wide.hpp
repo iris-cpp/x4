@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CHAR_ENCODING_STANDARD_WIDE_HPP
-#define BOOST_SPIRIT_X4_CHAR_ENCODING_STANDARD_WIDE_HPP
+#ifndef IRIS_X4_CHAR_ENCODING_STANDARD_WIDE_HPP
+#define IRIS_X4_CHAR_ENCODING_STANDARD_WIDE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Hartmut Kaiser

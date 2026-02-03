@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_CORE_TYPE_TRAITS_HPP
-#define BOOST_SPIRIT_CORE_TYPE_TRAITS_HPP
+#ifndef IRIS_CORE_TYPE_TRAITS_HPP
+#define IRIS_CORE_TYPE_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka

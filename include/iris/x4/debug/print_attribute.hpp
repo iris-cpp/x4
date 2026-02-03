@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_DEBUG_PRINT_ATTRIBUTE_HPP
-#define BOOST_SPIRIT_X4_DEBUG_PRINT_ATTRIBUTE_HPP
+#ifndef IRIS_X4_DEBUG_PRINT_ATTRIBUTE_HPP
+#define IRIS_X4_DEBUG_PRINT_ATTRIBUTE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -18,7 +18,7 @@
 #include <boost/variant.hpp>
 #include <boost/variant/apply_visitor.hpp> // TODO: remove this
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
@@ -91,7 +91,7 @@ struct print_attribute_debug
         out << val;
     }
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
     static void call(Out& out, char_encoding::unicode::char_type const& val)
     {
         if (val >= 0 && val < 127) {

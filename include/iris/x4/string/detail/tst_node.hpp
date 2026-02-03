@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_STRING_DETAIL_TST_NODE_HPP
-#define BOOST_SPIRIT_X4_STRING_DETAIL_TST_NODE_HPP
+#ifndef IRIS_X4_STRING_DETAIL_TST_NODE_HPP
+#define IRIS_X4_STRING_DETAIL_TST_NODE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -155,8 +155,8 @@ struct tst_node
 
     friend struct allocator_ops<tst_node>;
 
-    BOOST_SPIRIT_NO_UNIQUE_ADDRESS Alloc alloc;
-    BOOST_SPIRIT_NO_UNIQUE_ADDRESS node_allocator_type node_alloc;
+    IRIS_NO_UNIQUE_ADDRESS Alloc alloc;
+    IRIS_NO_UNIQUE_ADDRESS node_allocator_type node_alloc;
     Char id;                // the node's identity character
     T* data = nullptr;      // optional data
     tst_node* lt = nullptr; // left pointer

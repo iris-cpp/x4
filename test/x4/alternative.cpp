@@ -62,7 +62,7 @@ TEST_CASE("alternative")
     using x4::omit;
     using x4::eps;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
     {
         CHECK(parse("a", char_ | char_));

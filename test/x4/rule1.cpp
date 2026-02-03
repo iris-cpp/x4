@@ -25,11 +25,11 @@ TEST_CASE("rule1")
     using x4::phrase_parse;
     using x4::root_skipper_flag;
 
-#ifdef BOOST_SPIRIT_X4_NO_RTTI
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{});
+#ifdef IRIS_X4_NO_RTTI
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{});
 #endif
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"});
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"} = 'x');
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"});
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(rule<class r_>{"r"} = 'x');
 
     // check attribute advertising
     static_assert( x4::has_attribute_v<rule<class r_, int>>);

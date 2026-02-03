@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_STRING_STRING_HPP
-#define BOOST_SPIRIT_X4_STRING_STRING_HPP
+#ifndef IRIS_X4_STRING_STRING_HPP
+#define IRIS_X4_STRING_STRING_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -15,11 +15,11 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 # include <iris/x4/char_encoding/standard_wide.hpp>
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
@@ -75,7 +75,7 @@ constexpr void string(T&&) = delete; // Mixing incompatible character types is n
 using standard::helpers::string;
 using standard::helpers::lit;
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
 inline namespace helpers {
@@ -122,7 +122,7 @@ using standard_wide::helpers::string;
 using standard_wide::helpers::lit;
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 namespace unicode {
 
 inline namespace helpers {
@@ -178,14 +178,14 @@ using x4::standard::string;
 using x4::standard::lit;
 } // standard
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 using x4::standard_wide::string;
 using x4::standard_wide::lit;
 } // standard_wide
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 namespace unicode {
 using x4::unicode::string;
 using x4::unicode::lit;

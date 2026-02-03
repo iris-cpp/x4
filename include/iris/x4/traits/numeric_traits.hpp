@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_TRAITS_NUMERIC_TRAITS_HPP
-#define BOOST_SPIRIT_X4_TRAITS_NUMERIC_TRAITS_HPP
+#ifndef IRIS_X4_TRAITS_NUMERIC_TRAITS_HPP
+#define IRIS_X4_TRAITS_NUMERIC_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Hartmut Kaiser

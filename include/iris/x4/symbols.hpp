@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_SYMBOLS_HPP
-#define BOOST_SPIRIT_X4_SYMBOLS_HPP
+#ifndef IRIS_X4_SYMBOLS_HPP
+#define IRIS_X4_SYMBOLS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -24,7 +24,7 @@
 #include <iris/x4/char_encoding/standard.hpp>
 #include <iris/x4/char_encoding/standard_wide.hpp>
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
@@ -37,7 +37,7 @@
 #include <type_traits>
 #include <utility>
 
-#define BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING(old_api) \
+#define IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING(old_api) \
     "Use `unique_" old_api "` instead. `" old_api "` has had a " \
     "*implicit* trait where the underlying storage is shared via " \
     "`std::shared_ptr`. This disallows `constexpr` usage in generic " \
@@ -338,7 +338,7 @@ struct shared_symbols_parser
 };
 
 template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
-struct [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
+struct [[deprecated(IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
 symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
 {
     using base_type = shared_symbols_parser<Encoding, T, Lookup>;
@@ -380,7 +380,7 @@ struct get_info<unique_symbols_parser<Encoding, T, Lookup>>
 namespace standard {
 
 template<class T = unused_type>
-using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
+using symbols [[deprecated(IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
     = shared_symbols_parser<char_encoding::standard, T>;
 
 template<class T = unused_type>
@@ -401,11 +401,11 @@ using x4::standard::shared_symbols;
 using x4::standard::unique_symbols;
 } // parsers::standard
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
 template<class T = unused_type>
-using symbols [[deprecated(BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
+using symbols [[deprecated(IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
     = shared_symbols_parser<char_encoding::standard_wide, T>;
 
 template<class T = unused_type>
@@ -422,7 +422,7 @@ using x4::standard_wide::unique_symbols;
 } // parsers::standard_wide
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 namespace unicode {
 
 template<class T = unused_type>
@@ -441,6 +441,6 @@ using x4::unicode::unique_symbols;
 
 } // boost::spirit::x4
 
-#undef BOOST_SPIRIT_X4_IMPLICIT_SHARED_SYMBOLS_WARNING
+#undef IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING
 
 #endif

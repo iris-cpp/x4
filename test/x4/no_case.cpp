@@ -17,7 +17,7 @@ TEST_CASE("no_case")
 {
     using x4::no_case;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(no_case['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(no_case['x']);
 
     {
         using namespace x4::standard;

@@ -16,7 +16,7 @@ TEST_CASE("eps")
     using x4::eps;
 
     {
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps);
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(eps);
         CHECK(parse("", eps));
         CHECK(parse("xxx", eps).is_partial_match());
         CHECK(!parse("", !eps));
@@ -24,7 +24,7 @@ TEST_CASE("eps")
     {
         // test non-lazy semantic predicate
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps(true));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(eps(true));
         CHECK(parse("", eps(true)));
         CHECK(!parse("", eps(false)));
         CHECK(parse("", !eps(false)));
@@ -35,7 +35,7 @@ TEST_CASE("eps")
         constexpr auto true_fn = [] { return true; };
         constexpr auto false_Fn = [] { return false; };
 
-        BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(eps(std::true_type{}));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(eps(std::true_type{}));
         CHECK(parse("", eps(true_fn)));
         CHECK(!parse("", eps(false_Fn)));
         CHECK(parse("", !eps(false_Fn)));

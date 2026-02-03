@@ -20,19 +20,19 @@ constexpr auto nop = [](auto const&) {};
 
 constexpr x4::rule<class used_attr1_r, int> used_attr1 = "used_attr1";
 constexpr auto used_attr1_def = used_attr::grammar[nop];
-BOOST_SPIRIT_X4_DEFINE(used_attr1);
+IRIS_X4_DEFINE(used_attr1);
 
 constexpr x4::rule<class used_attr2_r, int> used_attr2 = "used_attr2";
 constexpr auto used_attr2_def = unused_attr::grammar[nop];
-BOOST_SPIRIT_X4_DEFINE(used_attr2);
+IRIS_X4_DEFINE(used_attr2);
 
 constexpr x4::rule<class unused_attr1_r> unused_attr1 = "unused_attr1";
 constexpr auto unused_attr1_def = used_attr::grammar[nop];
-BOOST_SPIRIT_X4_DEFINE(unused_attr1);
+IRIS_X4_DEFINE(unused_attr1);
 
 constexpr x4::rule<class unused_attr2_r> unused_attr2 = "unused_attr2";
 constexpr auto unused_attr2_def = unused_attr::grammar[nop];
-BOOST_SPIRIT_X4_DEFINE(unused_attr2);
+IRIS_X4_DEFINE(unused_attr2);
 
 } // sem_act
 

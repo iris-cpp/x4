@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CHAR_HPP
-#define BOOST_SPIRIT_X4_CHAR_HPP
+#ifndef IRIS_X4_CHAR_HPP
+#define IRIS_X4_CHAR_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -16,7 +16,7 @@
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char/char_set.hpp>
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char/unicode_char_class.hpp>
 #endif
 

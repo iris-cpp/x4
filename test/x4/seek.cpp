@@ -22,7 +22,7 @@
 
 TEST_CASE("seek")
 {
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(x4::seek['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::seek['x']);
 
     // test eoi
     CHECK(parse("", x4::seek[x4::eoi]));

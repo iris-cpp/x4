@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_NUMERIC_BOOL_HPP
-#define BOOST_SPIRIT_X4_NUMERIC_BOOL_HPP
+#ifndef IRIS_X4_NUMERIC_BOOL_HPP
+#define IRIS_X4_NUMERIC_BOOL_HPP
 
 /*=============================================================================
     Copyright (c) 2009 Hartmut Kaiser
@@ -204,7 +204,7 @@ using x4::standard::false_;
 
 } // parsers::standard
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
 [[maybe_unused]] inline constexpr bool_parser<bool, char_encoding::standard_wide> bool_{};

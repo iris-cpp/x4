@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_ALLOCATOR_HPP
-#define BOOST_SPIRIT_X4_ALLOCATOR_HPP
+#ifndef IRIS_X4_ALLOCATOR_HPP
+#define IRIS_X4_ALLOCATOR_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka

@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_STRING_CASE_COMPARE_HPP
-#define BOOST_SPIRIT_X4_STRING_CASE_COMPARE_HPP
+#ifndef IRIS_X4_STRING_CASE_COMPARE_HPP
+#define IRIS_X4_STRING_CASE_COMPARE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -14,11 +14,11 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 # include <iris/x4/char_encoding/standard_wide.hpp>
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 

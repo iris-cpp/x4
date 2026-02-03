@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CORE_SKIP_OVER_HPP
-#define BOOST_SPIRIT_X4_CORE_SKIP_OVER_HPP
+#ifndef IRIS_X4_CORE_SKIP_OVER_HPP
+#define IRIS_X4_CORE_SKIP_OVER_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -69,7 +69,7 @@ struct is_unused_skipper<unused_type> : std::true_type {};
 
 template<class Skipper>
 [[nodiscard]] constexpr Skipper const&
-get_unused_skipper(Skipper const& skipper BOOST_SPIRIT_LIFETIMEBOUND) noexcept
+get_unused_skipper(Skipper const& skipper IRIS_LIFETIMEBOUND) noexcept
 {
     static_assert(X4Subject<Skipper>);
     return skipper;

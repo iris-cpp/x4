@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CHAR_CHAR_HPP
-#define BOOST_SPIRIT_X4_CHAR_CHAR_HPP
+#ifndef IRIS_X4_CHAR_CHAR_HPP
+#define IRIS_X4_CHAR_CHAR_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -15,11 +15,11 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 # include <iris/x4/char_encoding/standard_wide.hpp>
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
@@ -61,7 +61,7 @@ constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing 
 using standard::helpers::lit;
 
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 
 [[maybe_unused]] inline constexpr any_char<char_encoding::standard_wide> char_{};
@@ -88,10 +88,10 @@ constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto) = delete; // Mixi
 } // standard_wide
 
 using standard_wide::helpers::lit;
-#endif // BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#endif // IRIS_X4_NO_STANDARD_WIDE
 
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 namespace unicode {
 
 [[maybe_unused]] inline constexpr any_char<char_encoding::unicode> char_{};
@@ -121,7 +121,7 @@ constexpr void lit(traits::CharIncompatibleWith<char32_t> auto) = delete; // Mix
 
 using unicode::helpers::lit;
 
-#endif // BOOST_SPIRIT_X4_UNICODE
+#endif // IRIS_X4_UNICODE
 
 
 namespace parsers {
@@ -131,14 +131,14 @@ using x4::standard::char_;
 using x4::standard::lit;
 } // standard
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
 using x4::standard_wide::char_;
 using x4::standard_wide::lit;
 } // standard_wide
 #endif
 
-#ifdef BOOST_SPIRIT_X4_UNICODE
+#ifdef IRIS_X4_UNICODE
 namespace unicode {
 using x4::unicode::char_;
 using x4::unicode::lit;
@@ -165,7 +165,7 @@ struct as_parser<char>
     }
 };
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 template<>
 struct as_parser<wchar_t>
 {
@@ -191,7 +191,7 @@ struct as_parser<char [2]>
     }
 };
 
-#ifndef BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#ifndef IRIS_X4_NO_STANDARD_WIDE
 template<>
 struct as_parser<wchar_t [2]>
 {
@@ -203,7 +203,7 @@ struct as_parser<wchar_t [2]>
         return {ch[0]};
     }
 };
-#endif // BOOST_SPIRIT_X4_NO_STANDARD_WIDE
+#endif // IRIS_X4_NO_STANDARD_WIDE
 
 } // extension
 

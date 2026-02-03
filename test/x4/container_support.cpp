@@ -77,8 +77,8 @@ constexpr x4::rule<class string_rule, std::string> string_rule("string");
 constexpr auto pair_rule_def = string_rule >> x4::lit('=') >> string_rule;
 constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
 
-BOOST_SPIRIT_X4_DEFINE(pair_rule)
-BOOST_SPIRIT_X4_DEFINE(string_rule)
+IRIS_X4_DEFINE(pair_rule)
+IRIS_X4_DEFINE(string_rule)
 
 template<class Container>
 void test_map_support()

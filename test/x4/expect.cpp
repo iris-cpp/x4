@@ -315,8 +315,8 @@ TEST_CASE("expect")
     using boost::fusion::vector;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(expect['x']);
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ > char_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(expect['x']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ > char_);
 
     {
         TEST_SUCCESS_PASS("aa", char_ >> expect[char_]);
@@ -346,7 +346,7 @@ TEST_CASE("expect")
     }
 
     {
-    #ifndef BOOST_SPIRIT_X4_NO_RTTI
+    #ifndef IRIS_X4_NO_RTTI
         TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
             CHECK(x.which().find("sequence") != std::string::npos);

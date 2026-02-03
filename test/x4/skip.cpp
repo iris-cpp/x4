@@ -26,7 +26,7 @@ TEST_CASE("skip")
     using x4::reskip;
     using x4::lit;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
 
     CHECK(parse("a b c d", skip(space)[*char_]));
 

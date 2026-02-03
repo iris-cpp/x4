@@ -57,7 +57,7 @@ TEST_CASE("sequence")
     using boost::fusion::deque;
     using boost::fusion::at_c;
 
-    BOOST_SPIRIT_X4_ASSERT_CONSTEXPR_CTORS(char_ >> char_);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ >> char_);
 
     CHECK(parse("aa", char_ >> char_));
     CHECK(parse("aa", char_ >> 'a'));

@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_PARSE_HPP
-#define BOOST_SPIRIT_X4_PARSE_HPP
+#ifndef IRIS_X4_PARSE_HPP
+#define IRIS_X4_PARSE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -82,13 +82,13 @@ struct phrase_parse_context_for_impl<Skipper, R>
 
 } // detail
 
-// Used for determining the context type required in `BOOST_SPIRIT_X4_INSTANTIATE`.
+// Used for determining the context type required in `IRIS_X4_INSTANTIATE`.
 // Note that sentinel is not required, because only the iterator is needed for error info.
 // We keep the empty parameter as the noop placeholder to make the interface consistent with `phrase_parse_context_for`.
 template<class ItOrRange, class = void>
 using parse_context_for = typename detail::parse_context_for_impl<ItOrRange>::type;
 
-// Used for determining the context type required in `BOOST_SPIRIT_X4_INSTANTIATE`.
+// Used for determining the context type required in `IRIS_X4_INSTANTIATE`.
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 

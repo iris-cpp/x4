@@ -1,5 +1,5 @@
-#ifndef BOOST_SPIRIT_X4_CORE_UNUSED_HPP
-#define BOOST_SPIRIT_X4_CORE_UNUSED_HPP
+#ifndef IRIS_X4_CORE_UNUSED_HPP
+#define IRIS_X4_CORE_UNUSED_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
