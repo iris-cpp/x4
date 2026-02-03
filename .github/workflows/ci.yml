@@ -14,14 +14,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BOOST_SPIRIT_X4_BUILD_JOBS: 4
+  IRIS_X4_BUILD_JOBS: 4
 
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      spirit_component: ${{ steps.filter.outputs.changes }}
-      x4: ${{ steps.filter.outputs.x4 }}
+      x4_component: ${{ steps.filter.outputs.changes }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
@@ -32,15 +31,19 @@ jobs:
               - '.github/workflows/*.yml'
               - 'CMakeLists.txt'
               - 'test/CMakeLists.txt'
-              - 'include/boost/spirit/x4/**/*'
-              - 'include/boost/spirit/x4.hpp'
+              - 'include/iris/config.hpp'
+              - 'include/iris/core/**/*.hpp'
+              - 'include/iris/x4/**/*'
+              - 'include/iris/x4.hpp'
               - 'test/x4/**/*'
 
+  # ^^^ TODO: move `config.hpp` and `core/*` to `iris-cpp/iris` and remove the corresponding paths from above
+
   build:
-    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.spirit_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
+    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.x4_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
 
     needs: changes
-    if: ${{ needs.changes.outputs.spirit_component != '[]' && needs.changes.outputs.spirit_component != '' }}
+    if: ${{ needs.changes.outputs.x4_component != '[]' && needs.changes.outputs.x4_component != '' }}
 
     runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
 
@@ -80,7 +83,7 @@ jobs:
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-        spirit_component: ${{ fromJSON(needs.changes.outputs.spirit_component) }}
+        x4_component: ${{ fromJSON(needs.changes.outputs.x4_component) }}
 
         exclude:
           # Blacklist all invalid combinations of environments
@@ -212,7 +215,7 @@ jobs:
         shell: bash
         run: |
           set -xe
-          rm -rf libs/spirit_x4
+          rm -rf libs/iris_x4
           ./bootstrap.sh --with-toolset=${{ matrix.compiler.toolset }}
           ./b2 -d0 headers
 
@@ -223,7 +226,7 @@ jobs:
         working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
         shell: cmd
         run: |
-          rd /s /q libs\spirit_x4
+          rd /s /q libs\iris_x4
           .\bootstrap.bat --with-toolset=${{ matrix.compiler.toolset }}
           .\b2 -d0 headers
 
@@ -241,7 +244,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           key: deps-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.env-info.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
-          path: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4/build/_deps
+          path: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4/build/_deps
 
       # Adapt CMP0168; enable caching in CI
       # https://cmake.org/cmake/help/latest/module/FetchContent.html#variable:FETCHCONTENT_UPDATES_DISCONNECTED
@@ -250,9 +253,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.cache-deps.outputs.cache-hit }}" = "true" ]; then
-            echo "BOOST_SPIRIT_X4_CMAKE_ARGS=-DFETCHCONTENT_FULLY_DISCONNECTED=ON" >> "$GITHUB_OUTPUT"
+            echo "IRIS_X4_CMAKE_ARGS=-DFETCHCONTENT_FULLY_DISCONNECTED=ON" >> "$GITHUB_OUTPUT"
           else
-            echo "BOOST_SPIRIT_X4_CMAKE_ARGS=" >> "$GITHUB_OUTPUT"
+            echo "IRIS_X4_CMAKE_ARGS=" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Configure
@@ -262,9 +265,9 @@ jobs:
         shell: bash
         run: |
           set -xe
-          cp -rp "${{ github.workspace }}" libs/spirit_x4
-          cd libs/spirit_x4
-          cmake ${{ steps.deps-info.outputs.BOOST_SPIRIT_X4_CMAKE_ARGS }} -B build \
+          cp -rp "${{ github.workspace }}" libs/iris_x4
+          cd libs/iris_x4
+          cmake ${{ steps.deps-info.outputs.IRIS_X4_CMAKE_ARGS }} -B build \
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
@@ -272,19 +275,19 @@ jobs:
             -S .
 
       - name: Build Tests
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4
+        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4
         run: |
-          cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.BOOST_SPIRIT_X4_BUILD_JOBS }} ${{ matrix.compiler.builder_additional_args }}
+          cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ matrix.compiler.builder_additional_args }}
 
       - name: Cache CMake Dependencies (save)
         if: steps.cache-deps.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           key: ${{ steps.cache-deps.outputs.cache-primary-key }}
-          path: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4/build/_deps
+          path: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4/build/_deps
 
       - name: Test
         env:
           CLICOLOR_FORCE: 1
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/spirit_x4/build/test
+        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4/build/test
         run: ctest --output-on-failure -C ${{ matrix.build_type.name }}
