@@ -99,14 +99,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          # required for upstream Boost version detection
-          # sadly not working due to upstream bug: https://github.com/actions/checkout/issues/1471
-          fetch-tags: true
-
-      - name: Fetch git tags
-        run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Initialize Ubuntu
         if: matrix.os.name == 'ubuntu'
@@ -152,7 +144,7 @@ jobs:
           echo "COMPILER_FULL_VERSION=$COMPILER_FULL_VERSION"
           echo "compiler-full-version=$COMPILER_FULL_VERSION" >> "$GITHUB_OUTPUT"
 
-          export BOOST_RELEASE_VERSION_NAME=$(git for-each-ref refs/tags --sort=-refname --format='%(refname:lstrip=-1)' --count=1)
+          export BOOST_RELEASE_VERSION_NAME=boost-1.89.0 # Fixed on the timing of X4's fork
           echo "BOOST_RELEASE_VERSION_NAME: $BOOST_RELEASE_VERSION_NAME"
           echo "BOOST_RELEASE_VERSION_NAME=$BOOST_RELEASE_VERSION_NAME" >> "$GITHUB_OUTPUT"
 
