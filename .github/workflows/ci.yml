@@ -35,7 +35,6 @@ jobs:
               - 'include/boost/spirit/x4/**/*'
               - 'include/boost/spirit/x4.hpp'
               - 'test/x4/**/*'
-              - '!**/Jamfile'
 
   build:
     name: "[${{ matrix.cpp_version.name }}] ${{ matrix.spirit_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
@@ -100,14 +99,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          # required for upstream Boost version detection
-          # sadly not working due to upstream bug: https://github.com/actions/checkout/issues/1471
-          fetch-tags: true
-
-      - name: Fetch git tags
-        run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Initialize Ubuntu
         if: matrix.os.name == 'ubuntu'
@@ -153,7 +144,7 @@ jobs:
           echo "COMPILER_FULL_VERSION=$COMPILER_FULL_VERSION"
           echo "compiler-full-version=$COMPILER_FULL_VERSION" >> "$GITHUB_OUTPUT"
 
-          export BOOST_RELEASE_VERSION_NAME=$(git for-each-ref refs/tags --sort=-refname --format='%(refname:lstrip=-1)' --count=1)
+          export BOOST_RELEASE_VERSION_NAME=boost-1.89.0 # Fixed on the timing of X4's fork
           echo "BOOST_RELEASE_VERSION_NAME: $BOOST_RELEASE_VERSION_NAME"
           echo "BOOST_RELEASE_VERSION_NAME=$BOOST_RELEASE_VERSION_NAME" >> "$GITHUB_OUTPUT"
 
@@ -271,7 +262,7 @@ jobs:
         shell: bash
         run: |
           set -xe
-          cp -rp "${{ github.workspace }}" libs/
+          cp -rp "${{ github.workspace }}" libs/spirit_x4
           cd libs/spirit_x4
           cmake ${{ steps.deps-info.outputs.BOOST_SPIRIT_X4_CMAKE_ARGS }} -B build \
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
