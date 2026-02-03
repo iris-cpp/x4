@@ -11,8 +11,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/directive/no_case.hpp>
-#include <boost/spirit/x4/numeric/bool.hpp>
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/numeric/bool.hpp>
 
 #include <string_view>
 #include <iterator>

@@ -1,8 +1,8 @@
 ﻿#ifndef BOOST_SPIRIT_X4_DIRECTIVE_WITH_LOCAL_HPP
 #define BOOST_SPIRIT_X4_DIRECTIVE_WITH_LOCAL_HPP
 
-#include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/context.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/context.hpp>
 
 #include <concepts>
 #include <iterator>

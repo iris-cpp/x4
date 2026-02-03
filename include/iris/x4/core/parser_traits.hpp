@@ -1,7 +1,7 @@
 ﻿#ifndef BOOST_SPIRIT_X4_CORE_PARSER_TRAITS_HPP
 #define BOOST_SPIRIT_X4_CORE_PARSER_TRAITS_HPP
 
-#include <boost/spirit/config.hpp>
+#include <iris/config.hpp>
 
 #include <type_traits>
 

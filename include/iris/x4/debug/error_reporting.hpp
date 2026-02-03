@@ -9,8 +9,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <boost/spirit/x4/ast/position_tagged.hpp>
-#include <boost/spirit/x4/string/utf8.hpp>
+#include <iris/x4/ast/position_tagged.hpp>
+#include <iris/x4/string/utf8.hpp>
 
 #include <string>
 #include <iterator>

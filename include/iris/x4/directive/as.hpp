@@ -1,9 +1,9 @@
 ﻿#ifndef BOOST_SPIRIT_X4_DIRECTIVE_AS_HPP
 #define BOOST_SPIRIT_X4_DIRECTIVE_AS_HPP
 
-#include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/move_to.hpp>
-#include <boost/spirit/x4/core/unused.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/unused.hpp>
 
 #include <concepts>
 #include <iterator>

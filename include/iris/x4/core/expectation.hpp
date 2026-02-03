@@ -9,9 +9,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/core/parser.hpp> // for `x4::what`
-#include <boost/spirit/x4/core/context.hpp>
+#include <iris/config.hpp>
+#include <iris/x4/core/parser.hpp> // for `x4::what`
+#include <iris/x4/core/context.hpp>
 
 #include <iterator>
 #include <string>

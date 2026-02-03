@@ -12,10 +12,10 @@
     table builder) (c) Peter Kankowski, 2008
 ==============================================================================*/
 
-#include <boost/spirit/x4/char_encoding/unicode/detail/category_table.hpp>
-#include <boost/spirit/x4/char_encoding/unicode/detail/script_table.hpp>
-#include <boost/spirit/x4/char_encoding/unicode/detail/lowercase_table.hpp>
-#include <boost/spirit/x4/char_encoding/unicode/detail/uppercase_table.hpp>
+#include <iris/x4/char_encoding/unicode/detail/category_table.hpp>
+#include <iris/x4/char_encoding/unicode/detail/script_table.hpp>
+#include <iris/x4/char_encoding/unicode/detail/lowercase_table.hpp>
+#include <iris/x4/char_encoding/unicode/detail/uppercase_table.hpp>
 
 #include <cstdint>
 

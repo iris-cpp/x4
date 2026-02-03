@@ -24,7 +24,7 @@ function(x4_define_test test_name)
     if(MSVC)
         # Prevent "Warning: Conflicting <Type> entries detected" error
         # set_source_files_properties(
-        #     "${PROJECT_SOURCE_DIR}/boost_spirit_x4.natvis"
+        #     "${PROJECT_SOURCE_DIR}/iris_x4.natvis"
         #     TARGET_DIRECTORY x4_${test_name}_test
         #     PROPERTIES VS_SETTINGS "ExcludedFromBuild=true"
         # )
@@ -34,7 +34,7 @@ function(x4_define_test test_name)
 
     target_link_libraries(
         x4_${test_name}_test
-        PRIVATE Boost::spirit_x4 boost_spirit_x4_cxx_test
+        PRIVATE Iris::X4 iris_x4_cxx_test
     )
     add_test(
         NAME x4_${test_name}_test

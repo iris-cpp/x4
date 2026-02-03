@@ -10,8 +10,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
 
-#include <boost/spirit/x4/traits/attribute_category.hpp>
-#include <boost/spirit/x4/traits/variant_traits.hpp>
+#include <iris/x4/traits/attribute_category.hpp>
+#include <iris/x4/traits/variant_traits.hpp>
 
 #include <boost/fusion/include/for_each.hpp>
 
@@ -19,7 +19,7 @@
 #include <boost/variant/apply_visitor.hpp> // TODO: remove this
 
 #ifdef BOOST_SPIRIT_X4_UNICODE
-# include <boost/spirit/x4/char_encoding/unicode.hpp>
+# include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
 namespace boost::spirit::x4::traits {

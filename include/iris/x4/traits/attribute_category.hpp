@@ -9,10 +9,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/x4/traits/subrange_traits.hpp>
-#include <boost/spirit/x4/traits/variant_traits.hpp>
-#include <boost/spirit/x4/traits/container_traits.hpp>
-#include <boost/spirit/x4/traits/optional_traits.hpp>
+#include <iris/x4/traits/subrange_traits.hpp>
+#include <iris/x4/traits/variant_traits.hpp>
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/traits/optional_traits.hpp>
 
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/fusion/support/category_of.hpp>

@@ -8,8 +8,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/auxiliary/eps.hpp>
-#include <boost/spirit/x4/operator/not_predicate.hpp>
+#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/operator/not_predicate.hpp>
 
 TEST_CASE("eps")
 {

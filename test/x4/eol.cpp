@@ -8,7 +8,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/auxiliary/eol.hpp>
+#include <iris/x4/auxiliary/eol.hpp>
 
 TEST_CASE("eol")
 {

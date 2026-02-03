@@ -10,10 +10,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/move_to.hpp>
-#include <boost/spirit/x4/parse.hpp>
+#include <iris/config.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/parse.hpp>
 
 #if BOOST_SPIRIT_CI_IS_B2
 # include "catch_amalgamated.hpp"

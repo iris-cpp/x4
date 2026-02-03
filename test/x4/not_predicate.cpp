@@ -8,8 +8,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/not_predicate.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/not_predicate.hpp>
 
 TEST_CASE("not_predicate")
 {

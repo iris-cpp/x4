@@ -9,8 +9,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/string/literal_string.hpp>
-#include <boost/spirit/x4/string/string.hpp>
+#include <iris/config.hpp>
+#include <iris/x4/string/literal_string.hpp>
+#include <iris/x4/string/string.hpp>
 
 #endif

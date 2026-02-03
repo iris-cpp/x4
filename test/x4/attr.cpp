@@ -8,10 +8,10 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/auxiliary/attr.hpp>
-#include <boost/spirit/x4/numeric/int.hpp>
-#include <boost/spirit/x4/operator/sequence.hpp>
-#include <boost/spirit/x4/char/char.hpp>
+#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/char/char.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 

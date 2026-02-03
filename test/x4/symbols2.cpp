@@ -8,8 +8,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
-#include <boost/spirit/x4/symbols.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/symbols.hpp>
 
 TEST_CASE("symbols2")
 {

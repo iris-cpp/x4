@@ -9,12 +9,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/container_appender.hpp>
+#include <iris/config.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/container_appender.hpp>
 
-#include <boost/spirit/x4/traits/container_traits.hpp>
-#include <boost/spirit/x4/traits/substitution.hpp>
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/traits/substitution.hpp>
 
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
 #include <boost/fusion/sequence/intrinsic/front.hpp>

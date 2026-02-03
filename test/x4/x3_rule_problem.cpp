@@ -7,7 +7,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
+#include <iris/x4/rule.hpp>
 
 #include <vector>
 #include <set>

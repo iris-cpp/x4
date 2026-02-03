@@ -11,7 +11,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
+#include <iris/x4/rule.hpp>
 
 // Check that `BOOST_SPIRIT_X4_INSTANTIATE` instantiates `parse_rule` with proper
 // types when the rule has no attribute.

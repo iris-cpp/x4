@@ -12,7 +12,7 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/rule.hpp>
+#include <iris/x4/rule.hpp>
 
 namespace x4 = boost::spirit::x4;
 

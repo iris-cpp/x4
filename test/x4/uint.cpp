@@ -10,8 +10,8 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/char/char_class.hpp>
-#include <boost/spirit/x4/numeric/uint.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/numeric/uint.hpp>
 
 #include <string_view>
 

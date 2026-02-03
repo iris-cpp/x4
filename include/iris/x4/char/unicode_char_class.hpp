@@ -9,10 +9,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <boost/spirit/x4/char/char_class_tags.hpp>
-#include <boost/spirit/x4/char/char_parser.hpp>
-#include <boost/spirit/x4/char/detail/cast_char.hpp>
-#include <boost/spirit/x4/char_encoding/unicode.hpp>
+#include <iris/x4/char/char_class_tags.hpp>
+#include <iris/x4/char/char_parser.hpp>
+#include <iris/x4/char/detail/cast_char.hpp>
+#include <iris/x4/char_encoding/unicode.hpp>
 
 namespace boost::spirit::x4 {
 

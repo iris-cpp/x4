@@ -10,13 +10,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <boost/spirit/x4/core/expectation.hpp>
-#include <boost/spirit/x4/core/parser.hpp>
-#include <boost/spirit/x4/core/detail/parse_sequence.hpp>
+#include <iris/x4/core/expectation.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/detail/parse_sequence.hpp>
 
-#include <boost/spirit/x4/traits/attribute_of_binary.hpp>
+#include <iris/x4/traits/attribute_of_binary.hpp>
 
-#include <boost/spirit/x4/directive/expect.hpp>
+#include <iris/x4/directive/expect.hpp>
 
 #include <boost/fusion/include/deque_fwd.hpp> // TODO: remove this
 

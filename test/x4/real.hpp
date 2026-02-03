@@ -12,9 +12,9 @@
 
 #include "test.hpp"
 
-#include <boost/spirit/x4/numeric/real.hpp>
-#include <boost/spirit/x4/numeric/uint.hpp>
-#include <boost/spirit/x4/char/char.hpp>
+#include <iris/x4/numeric/real.hpp>
+#include <iris/x4/numeric/uint.hpp>
+#include <iris/x4/char/char.hpp>
 
 #include <iterator>
 #include <type_traits>
