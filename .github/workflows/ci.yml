@@ -267,7 +267,7 @@ jobs:
         shell: bash
         run: |
           set -xe
-          cp -rp "${{ github.workspace }}" libs/iris_x4
+          cp -rp "${{ github.workspace }}/." libs/iris_x4
           cd libs/iris_x4
           cmake ${{ steps.deps-info.outputs.IRIS_X4_CMAKE_ARGS }} -B build \
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
