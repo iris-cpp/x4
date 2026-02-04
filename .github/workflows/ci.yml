@@ -32,15 +32,12 @@ jobs:
           filters: |
             x4:
               - '.github/workflows/*.yml'
+              - 'modules/iris'
               - 'CMakeLists.txt'
-              - 'include/iris/config.hpp'
-              - 'include/iris/core/**/*.hpp'
               - 'include/iris/x4.hpp'
               - 'include/iris/x4/**/*'
               - 'test/CMakeLists.txt'
               - 'test/x4/**/*'
-
-  # ^^^ TODO: move `config.hpp` and `core/*` to `iris-cpp/iris` and remove the corresponding paths from above
 
   build:
     name: "[${{ matrix.cpp_version.name }}] ${{ matrix.x4_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
