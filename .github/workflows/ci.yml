@@ -102,8 +102,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: recursive
+        # with:
+        #   submodules: recursive
+        # ^^^ does not work for self-hosted Windows runner
+
+      - name: Checkout submodules
+        run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+          git submodule foreach --recursive git config --local gc.auto 0
 
       - name: Initialize Ubuntu
         if: matrix.os.name == 'ubuntu'
