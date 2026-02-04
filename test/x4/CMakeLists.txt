@@ -1,25 +1,15 @@
-# Copyright 2025 Nana Sakisaka
+# Copyright 2025-2026 Nana Sakisaka
 #
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
 function(x4_define_test_headers test_name)
-    target_sources(
-        x4_${test_name}_test
-        PRIVATE FILE_SET HEADERS FILES
-            ${ARGN}
-    )
+    iris_define_test_headers(x4_${test_name} PRIVATE FILE_SET HEADERS FILES ${ARGN})
 endfunction()
 
 function(x4_define_test test_name)
-    # message("test_name: ${test_name}, sources: ${ARGN}")
-    add_executable(x4_${test_name}_test ${ARGN})
-    x4_define_test_headers(${test_name} test.hpp)
-
-    set_target_properties(
-        x4_${test_name}_test
-        PROPERTIES CXX_EXTENSIONS OFF
-    )
+    iris_define_test(x4_${test_name} ${ARGN})
+    target_link_libraries(x4_${test_name}_test PRIVATE Iris::X4)
 
     if(MSVC)
         # Prevent "Warning: Conflicting <Type> entries detected" error
@@ -31,15 +21,6 @@ function(x4_define_test test_name)
 
         # target_sources(x4_${test_name}_test PRIVATE cpp.hint)
     endif()
-
-    target_link_libraries(
-        x4_${test_name}_test
-        PRIVATE Iris::X4 iris_x4_cxx_test
-    )
-    add_test(
-        NAME x4_${test_name}_test
-        COMMAND x4_${test_name}_test --colour-mode=ansi
-    )
 endfunction()
 
 function(x4_define_tests)

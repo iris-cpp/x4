@@ -11,7 +11,7 @@
 =============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/core/type_traits.hpp>
+#include <iris/type_traits.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>

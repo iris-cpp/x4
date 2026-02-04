@@ -1,5 +1,5 @@
 # Copyright 2020 Peter Dimov
-# Copyright 2025 Nana Sakisaka
+# Copyright 2025-2026 Nana Sakisaka
 #
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
@@ -7,38 +7,22 @@
 cmake_minimum_required(VERSION 3.30)
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE
-        "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING ""
-    )
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 endif()
 
 project(iris_x4 VERSION 1.0.0 LANGUAGES CXX)
 
 
 # -----------------------------------------------------------------
-# Global settings
-# Handle with care, keep these to the ones that can't be
-# accomplished by target-specific settings.
+# Load Iris
+# This sets many basic settings and common targets automatically.
 
-set(CMAKE_COLOR_DIAGNOSTICS ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-option(IRIS_X4_REMOVE_MINSIZEREL_CONFIG "Remove rarely used MinSizeRel config" ON)
-
-if(MSVC)
-    if(IRIS_X4_REMOVE_MINSIZEREL_CONFIG OR PROJECT_IS_TOP_LEVEL)
-        list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES MinSizeRel)
-    endif()
+if(PROJECT_IS_TOP_LEVEL)
+    include(CTest) # sets BUILD_TESTING
 endif()
 
+add_subdirectory(modules/iris)
 
-# -----------------------------------------------------------------
-# Create common base targets
-
-# Private component; do not depend on this.
-add_library(_iris_x4_cxx_common INTERFACE)
-set_target_properties(_iris_x4_cxx_common PROPERTIES CXX_EXTENSIONS OFF)
 
 # -----------------------------------------------------------------
 # Create the main X4 target
@@ -55,71 +39,15 @@ if(MSVC)
             # "${PROJECT_SOURCE_DIR}/iris_x4.natvis" # TODO
     )
 
+    target_link_libraries(iris_x4 PUBLIC Iris::Iris)
+
 else()
     add_library(iris_x4 INTERFACE)
+    target_link_libraries(iris_x4 INTERFACE Iris::Iris)
 endif()
 
 add_library(Iris::X4 ALIAS iris_x4)
 set_target_properties(iris_x4 PROPERTIES CXX_EXTENSIONS OFF)
-target_link_libraries(iris_x4 INTERFACE _iris_x4_cxx_common)
-
-
-# -----------------------------------------------------------------
-# Configure C++ version
-
-# Set minimal C++ version explicitly; avoid "/std:c++latest"
-set(IRIS_X4_CXX_FEATURE cxx_std_23)
-if(MSVC)
-    if(CMAKE_CXX_STANDARD EQUAL 23)
-        set(CMAKE_CXX23_STANDARD_COMPILE_OPTION "/std:c++23preview")
-        set(CMAKE_CXX23_EXTENSION_COMPILE_OPTION "/std:c++23preview")
-        target_compile_options(_iris_x4_cxx_common INTERFACE /std:c++23preview)
-        target_compile_options(iris_x4 PRIVATE /std:c++23preview) # Set strict version for dummy.cpp
-    else()
-        # may become /std:c++latest only on this case
-        target_compile_features(_iris_x4_cxx_common INTERFACE ${IRIS_X4_CXX_FEATURE})
-        target_link_libraries(iris_x4 PRIVATE _iris_x4_cxx_common) # Virtually sets `/std:c++latest` for dummy.cpp
-    endif()
-else() # Non-MSVC
-    target_compile_features(_iris_x4_cxx_common INTERFACE ${IRIS_X4_CXX_FEATURE}) # Sets appropriate `-std=c++XX`
-endif()
-unset(IRIS_X4_CXX_FEATURE)
-
-
-# -----------------------------------------------------------------
-# Advanced compile/link settings
-
-if(MSVC)
-    # Don't set too strict flags for this! They must go to `iris_x4_cxx_test`.
-    # ABI-dependent configurations MUST be set here.
-    target_compile_definitions(
-        _iris_x4_cxx_common
-        INTERFACE UNICODE _UNICODE
-    )
-    target_compile_options(
-        _iris_x4_cxx_common
-        INTERFACE
-            /EHsc /MP /utf-8 /Zc:preprocessor /permissive-
-            # $<$<CONFIG:Debug,RelWithDebInfo>:/fsanitize=address> # TODO
-    )
-    target_link_options(
-        _iris_x4_cxx_common
-        INTERFACE
-            # $<$<CONFIG:Debug,RelWithDebInfo>:/INCREMENTAL:NO> # TODO
-    )
-
-else()
-    target_compile_options(
-        _iris_x4_cxx_common
-        INTERFACE
-            # $<$<CONFIG:Debug>:-fsanitize=undefined,address> # TODO
-    )
-    target_link_options(
-        _iris_x4_cxx_common
-        INTERFACE
-            # $<$<CONFIG:Debug>:-fsanitize=undefined,address> # TODO
-    )
-endif()
 
 
 # -----------------------------------------------------------------
@@ -188,17 +116,8 @@ foreach(dep IN LISTS iris_x4_boost_deps)
     add_subdirectory(../${dep} build_deps/${dep})
 endforeach()
 
-# find_package(...)
-# target_link_libraries(iris_x4 INTERFACE ...)
-
-# TODO: link Iris::iris
-
 foreach(dep IN LISTS iris_x4_boost_deps)
-    target_link_libraries(
-        iris_x4
-        INTERFACE
-            Boost::${dep}
-    )
+    target_link_libraries(iris_x4 INTERFACE Boost::${dep})
 endforeach()
 
 
@@ -227,14 +146,10 @@ target_include_directories(
 # -----------------------------------------------------------------
 # Test
 
-if(PROJECT_IS_TOP_LEVEL)
-    include(CTest)
-endif()
-
 if(BUILD_TESTING)
     add_subdirectory(test)
 
-    if(MSVC)
+    if(MSVC AND PROJECT_IS_TOP_LEVEL)
         set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Iris::X4)
     endif()
 endif()
