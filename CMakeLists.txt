@@ -44,16 +44,17 @@ set_target_properties(_iris_x4_cxx_common PROPERTIES CXX_EXTENSIONS OFF)
 # Create the main X4 target
 
 if(MSVC)
+    # This needs to be `OBJECT` target to set correct `/std:` flags on IDE
     add_library(iris_x4 OBJECT EXCLUDE_FROM_ALL)
+    set_target_properties(iris_x4 PROPERTIES LINKER_LANGUAGE CXX)
+
     target_sources(
         iris_x4
         PRIVATE
-            # required for determining correct `/std:` flag
-            "${PROJECT_SOURCE_DIR}/test/dummy.cpp"
-
             # "${PROJECT_SOURCE_DIR}/cpp.hint" # TODO
             # "${PROJECT_SOURCE_DIR}/iris_x4.natvis" # TODO
     )
+
 else()
     add_library(iris_x4 INTERFACE)
 endif()

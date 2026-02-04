@@ -11,7 +11,7 @@ X4 scales from quick prototypes to production parsers for DSLs, data formats, an
 - C++23 and C++26
 - GCC 14
 - Clang 21
-- MSVC 2022
+- MSVC 2022 and 2026
 
 ## How to use X4
 
