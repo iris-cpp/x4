@@ -104,6 +104,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
       - name: Initialize Ubuntu
         if: matrix.os.name == 'ubuntu'
