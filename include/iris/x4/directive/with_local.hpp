@@ -1,6 +1,14 @@
 ﻿#ifndef IRIS_X4_DIRECTIVE_WITH_LOCAL_HPP
 #define IRIS_X4_DIRECTIVE_WITH_LOCAL_HPP
 
+/*=============================================================================
+    Copyright (c) 2025 Nana Sakisaka
+    Copyright (c) 2026 The Iris Project Contributors
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+=============================================================================*/
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/context.hpp>
 
