@@ -1,0 +1,3 @@
+[submodule "modules/iris"]
+	path = modules/iris
+	url = https://github.com/iris-cpp/iris.git

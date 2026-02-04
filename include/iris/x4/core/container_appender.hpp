@@ -1,7 +1,9 @@
 ﻿#ifndef IRIS_X4_CORE_CONTAINER_APPENDER_HPP
 #define IRIS_X4_CORE_CONTAINER_APPENDER_HPP
 
-#include <iris/core/type_traits.hpp>
+#include <iris/config.hpp>
+#include <iris/type_traits.hpp>
+
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/transform_attribute.hpp>
 
