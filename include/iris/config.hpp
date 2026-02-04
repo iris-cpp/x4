@@ -18,7 +18,7 @@
 #define IRIS_CONCAT(a, b) IRIS_CONCAT_I(a, b)
 
 #if _MSC_VER
-# include <CodeAnalysis/CppCoreCheck/warnings.h>
+# include <CppCoreCheck/warnings.h>
 # pragma warning(default: CPPCORECHECK_LIFETIME_WARNINGS)
 #endif
 
