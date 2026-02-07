@@ -12,6 +12,7 @@ function(x4_define_test test_name)
     iris_define_test(x4_${test_name} ${ARGN})
     iris_define_test_headers(x4_${test_name} iris_x4_test.hpp)
     target_link_libraries(x4_${test_name}_test PRIVATE Iris::X4)
+    set_target_properties(x4_${test_name}_test PROPERTIES FOLDER "test/x4")
 
     if(MSVC)
         # Prevent "Warning: Conflicting <Type> entries detected" error
@@ -28,7 +29,6 @@ endfunction()
 function(x4_define_tests)
     foreach(test_name IN LISTS ARGV)
         x4_define_test(${test_name} ${test_name}.cpp)
-        set_target_properties(x4_${test_name}_test PROPERTIES FOLDER "test/x4")
     endforeach()
 endfunction()
 
@@ -71,6 +71,7 @@ x4_define_tests(
     real1
     real2
     real3
+    recursive
     repeat
     rule1
     rule2

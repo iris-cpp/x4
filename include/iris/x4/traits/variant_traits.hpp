@@ -47,22 +47,18 @@ template<class Attr, class First, class... Rest>
 struct variant_find_substitute_impl<Attr, First, Rest...>
 {
     using type = std::conditional_t<
-        is_substitute_v<Attr, iris::unwrap_recursive_t<First>>,
+        is_substitute_v<Attr, iris::unwrap_recursive_type<First>>,
 
-        // TODO
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter
         // because:
         //   - It means that the user has supplied at least one explicit type
-        //     (possibly a rule attribute type) that is `recursive_wrapper<T>`,
-        //   - Constructing `T` and then moving it to `recursive_wrapper<T>`
+        //     (i.e. exposed attribute type, possibly a rule attribute type) that
+        //     is `recursive_wrapper<T>`, and
+        //   - constructing `T` and then moving it to `recursive_wrapper<T>`
         //     involves copying from stack to heap.
         //
-        // This is to-do because the above optimization is currently not
-        // implementable in a straightforward way. We need to add
-        // `unwrap_recursive(attr)` to every places where any parser attempts
-        // to modify the content.
-        iris::unwrap_recursive_t<First>,
+        First, // no need to unwrap due to the reason described above
 
         typename variant_find_substitute_impl<Attr, Rest...>::type
     >;

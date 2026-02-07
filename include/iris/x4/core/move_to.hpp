@@ -46,6 +46,7 @@ template<traits::NonUnusedAttr T>
 constexpr void move_to(T const&& src, T& dest)
     noexcept(std::is_nothrow_assignable_v<T&, T const&&>)
 {
+    static_assert(std::is_assignable_v<T&, T const>);
     dest = std::move(src);
 }
 
@@ -53,6 +54,7 @@ template<traits::NonUnusedAttr T>
 constexpr void move_to(T&& src, T& dest)
     noexcept(std::is_nothrow_assignable_v<T&, T&&>)
 {
+    static_assert(std::is_assignable_v<T&, T>);
     dest = std::forward<T>(src);
 }
 
@@ -60,6 +62,7 @@ template<traits::NonUnusedAttr T>
 constexpr void move_to(T const& src, T& dest)
     noexcept(std::is_nothrow_copy_assignable_v<T>)
 {
+    static_assert(std::is_assignable_v<T&, T const&>);
     dest = src;
 }
 
@@ -120,6 +123,7 @@ move_to(Source&& src, Dest& dest)
     noexcept(noexcept(dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
+    // TODO: preliminarily invoke static_assert to check if the assignment is valid
     dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)));
 }
 
@@ -130,7 +134,7 @@ move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
-    static_assert(std::is_assignable_v<Dest&, Source&&>);
+    static_assert(std::is_assignable_v<Dest&, Source>);
     dest = std::forward<Source>(src);
 }
 
@@ -147,6 +151,8 @@ move_to(Source&& src, Dest& dest)
     )
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
+
+    // TODO: preliminarily invoke static_assert to check if the assignment is valid
 
     if constexpr (std::is_rvalue_reference_v<Source&&>) {
         boost::fusion::move(std::move(src), dest);
@@ -165,6 +171,7 @@ move_to(Source&& src, Dest& dest)
 
     // dest is a variant, src is a single element fusion sequence that the variant
     // *can* directly hold.
+    static_assert(std::is_assignable_v<Dest&, Source>);
     dest = std::forward<Source>(src);
 }
 
@@ -185,6 +192,7 @@ move_to(Source&& src, Dest& dest)
         "Error! The destination variant (Dest) cannot hold the source type (Source)"
     );
 
+    // TODO: preliminarily invoke static_assert to check if the assignment is valid
     dest = std::forward_like<Source>(boost::fusion::front(std::forward<Source>(src)));
 }
 
@@ -195,6 +203,7 @@ move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
+    static_assert(std::is_assignable_v<Dest&, Source>);
     dest = std::forward<Source>(src);
 }
 
@@ -204,6 +213,7 @@ move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
+    static_assert(std::is_assignable_v<Dest&, Source>);
     dest = std::forward<Source>(src);
 }
 
