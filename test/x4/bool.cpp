@@ -10,7 +10,7 @@
 
 #define IRIS_X4_UNICODE
 
-#include "test.hpp"
+#include "iris_x4_test.hpp"
 
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/numeric/bool.hpp>

@@ -13,7 +13,7 @@
 # pragma warning(disable: 6262) // Function uses 'XXXXX' bytes of stack
 #endif
 
-#include "test.hpp"
+#include "iris_x4_test.hpp"
 
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/negated_char.hpp>

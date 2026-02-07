@@ -9,7 +9,7 @@
 
 #define IRIS_X4_DEBUG
 
-#include "test.hpp"
+#include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
 #include <iris/x4/debug/error_reporting.hpp>

@@ -11,7 +11,7 @@
 
 #define IRIS_X4_UNICODE
 
-#include "test.hpp"
+#include "iris_x4_test.hpp"
 
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>

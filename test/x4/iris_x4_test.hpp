@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TEST_X4_TEST_HPP
-#define IRIS_X4_TEST_X4_TEST_HPP
+#ifndef IRIS_X4_TEST_IRIS_X4_TEST_HPP
+#define IRIS_X4_TEST_IRIS_X4_TEST_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman
@@ -11,12 +11,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include "iris_test.hpp"
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/parse.hpp>
-
-#include <catch2/catch_test_macros.hpp>
 
 #include <iterator>
 #include <string_view>

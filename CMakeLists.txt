@@ -22,7 +22,11 @@ if(PROJECT_IS_TOP_LEVEL)
     include(CTest) # sets BUILD_TESTING
 endif()
 
-add_subdirectory(modules/iris)
+if(NOT DEFINED IRIS_ROOT)
+    set(IRIS_ROOT "${CMAKE_CURRENT_LIST_DIR}/modules/iris")
+endif()
+
+add_subdirectory("${IRIS_ROOT}")
 
 
 # -----------------------------------------------------------------
@@ -96,6 +100,9 @@ list(REMOVE_DUPLICATES iris_x4_boost_deps)
 foreach(dep IN LISTS iris_x4_boost_deps)
     add_subdirectory(../${dep} build_deps/${dep})
 endforeach()
+
+set_target_properties(boost_assert PROPERTIES FOLDER "_deps")
+set_target_properties(boost_core PROPERTIES FOLDER "_deps")
 
 foreach(dep IN LISTS iris_x4_boost_deps)
     target_link_libraries(iris_x4 INTERFACE Boost::${dep})

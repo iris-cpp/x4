@@ -11,7 +11,7 @@
 #define IRIS_X4_DEBUG
 #define IRIS_X4_UNICODE
 
-#include "test.hpp"
+#include "iris_x4_test.hpp"
 
 #include <iris/x4/symbols.hpp>
 #include <iris/x4/char_encoding/unicode.hpp>

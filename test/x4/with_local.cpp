@@ -6,7 +6,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include "test.hpp"
+#include "iris_x4_test.hpp"
 
 #include <iris/x4/directive/with_local.hpp>
 #include <iris/x4/directive/as.hpp>
