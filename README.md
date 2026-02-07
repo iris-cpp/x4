@@ -48,9 +48,9 @@ git submodule update --init --depth 1 --recursive -- \
     tools/build tools/boost_install libs/assert libs/bind libs/config \
     libs/container_hash libs/core libs/describe libs/detail \
     libs/function libs/function_types libs/functional libs/fusion \
-    libs/integer libs/io libs/mp11 libs/mpl libs/predef libs/preprocessor \
-    libs/static_assert libs/throw_exception libs/tuple libs/type_index \
-    libs/type_traits libs/typeof libs/utility libs/variant
+    libs/io libs/mp11 libs/mpl libs/predef libs/preprocessor \
+    libs/static_assert libs/throw_exception libs/tuple \
+    libs/type_traits libs/typeof libs/utility
 
 # Linux
 ./bootstrap.sh

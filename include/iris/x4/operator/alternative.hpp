@@ -19,7 +19,7 @@
 #include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
-#include <boost/variant/variant.hpp> // TODO: remove this
+#include <iris/rvariant/rvariant.hpp>
 
 #include <concepts>
 #include <iterator>
@@ -31,7 +31,7 @@ namespace iris::x4 {
 template<class Left, class Right>
 struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
 {
-    using attribute_type = traits::attribute_of_binary<boost::variant, alternative, Left, Right>::type;
+    using attribute_type = traits::attribute_of_binary<iris::rvariant, alternative, Left, Right>::type;
 
     using binary_parser<Left, Right, alternative>::binary_parser;
 

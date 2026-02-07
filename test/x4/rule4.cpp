@@ -1,6 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
+    Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,10 +16,10 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
+#include <iris/rvariant.hpp>
+
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
-
-#include <boost/variant.hpp>
 
 #include <iterator>
 #include <string>
@@ -153,12 +154,12 @@ TEST_CASE("rule4")
     }
 
     {
-        using v_type = boost::variant<double, int>;
+        using v_type = iris::rvariant<double, int>;
         auto r1 = rule<class r1_id, v_type>{} = int_;
         v_type v;
         REQUIRE(parse("1", r1, v));
-        REQUIRE(v.which() == 1);
-        CHECK(boost::get<int>(v) == 1);
+        REQUIRE(v.index() == 1);
+        CHECK(iris::get<int>(v) == 1);
 
         using ov_type = std::optional<int>;
         auto r2 = rule<class r2_id, ov_type>{} = int_;

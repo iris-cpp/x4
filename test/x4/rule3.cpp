@@ -1,6 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2012 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
+    Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -18,10 +19,11 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
 
+#include <iris/rvariant/rvariant.hpp>
+#include <iris/rvariant/recursive_wrapper.hpp>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
-
-#include <boost/variant.hpp>
 
 #include <string>
 #include <vector>
@@ -47,10 +49,17 @@ IRIS_X4_DEFINE(b)
 
 namespace check_recursive {
 
-using node_t = boost::make_recursive_variant<
+struct node_array;
+
+using node_t = iris::rvariant<
    int,
-   std::vector<boost::recursive_variant_>
->::type;
+   iris::recursive_wrapper<node_array>
+>;
+
+struct node_array : std::vector<node_t>
+{
+    using std::vector<node_t>::vector;
+};
 
 x4::rule<class recursive_grammar_r, node_t> const grammar;
 
@@ -63,6 +72,7 @@ IRIS_X4_DEFINE(grammar)
 namespace check_recursive_scoped {
 
 using check_recursive::node_t;
+using check_recursive::node_array;
 
 x4::rule<class intvec_r, node_t> const intvec;
 auto const grammar = intvec = '[' >> intvec % ',' >> ']' | x4::int_;
@@ -147,12 +157,12 @@ TEST_CASE("rule3")
         using namespace check_recursive;
         node_t v;
         REQUIRE(parse("[4,2]", grammar, v));
-        CHECK((node_t{std::vector<node_t>{{4}, {2}}} == v));
+        CHECK((node_t{node_array{{4}, {2}}} == v));
     }
     {
         using namespace check_recursive_scoped;
         node_t v;
         REQUIRE(parse("[4,2]", grammar, v));
-        CHECK((node_t{std::vector<node_t>{{4}, {2}}} == v));
+        CHECK((node_t{node_array{{4}, {2}}} == v));
     }
 }

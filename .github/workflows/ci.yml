@@ -194,7 +194,6 @@ jobs:
             libs/function_types \
             libs/functional \
             libs/fusion \
-            libs/integer \
             libs/io \
             libs/mp11 \
             libs/mpl \
@@ -203,11 +202,9 @@ jobs:
             libs/static_assert \
             libs/throw_exception \
             libs/tuple \
-            libs/type_index \
             libs/type_traits \
             libs/typeof \
-            libs/utility \
-            libs/variant
+            libs/utility
 
       - name: Build upstream Boost libraries (Ubuntu)
         if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'

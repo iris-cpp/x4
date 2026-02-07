@@ -14,19 +14,11 @@
 
 #include <iris/x4/traits/substitution.hpp>
 
-#include <boost/variant/variant_fwd.hpp> // TODO: remove this
-
-#include <boost/mpl/find.hpp> // TODO: remove this
-#include <boost/mpl/deref.hpp> // TODO: remove this
-#include <boost/mpl/find_if.hpp> // TODO: remove this
-#include <boost/mpl/eval_if.hpp> // TODO: remove this
-#include <boost/mpl/begin_end.hpp> // TODO: remove this
+#include <iris/rvariant/variant_helper.hpp>
 
 #include <type_traits>
 
 namespace iris::x4::traits {
-
-// TODO: define a legit concept for determining variant-like types
 
 template<class T>
 struct is_variant : std::false_type {};
@@ -34,100 +26,101 @@ struct is_variant : std::false_type {};
 template<class T>
 constexpr bool is_variant_v = is_variant<T>::value;
 
-// By declaring a nested struct named `adapted_variant_tag` in
-// your class, you tell X4 that it is regarded as a variant type.
-// The minimum required interface for such a variant is that it has
-// constructors for various types supported by your variant and
-// `::types` which is an mpl sequence of the contained types.
-// Note (2025): The above spec is obsolete and will change in the near future.
-//
-// This is an intrusive interface. For a non-intrusive interface,
-// specialize the is_variant trait.
-template<class T>
-    requires requires {
-        typename T::adapted_variant_tag;
-    }
-struct is_variant<T> : std::true_type
-{};
+// `std::variant` is not supported, as it does can't handle recursive types
 
-template<BOOST_VARIANT_ENUM_PARAMS(typename T)>
-struct is_variant<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>>
-    : std::true_type
-{};
-
-
-template<class Variant, X4Attribute T>
-struct variant_find_substitute
-{
-    // Get the type from the Variant that can be a substitute for T.
-    // If none is found, just return T
-
-    using variant_type = Variant;
-    using types = typename variant_type::types;
-    using end = typename boost::mpl::end<types>::type;
-
-    using iter_1 = typename boost::mpl::find<types, T>::type;
-
-    using iter = typename boost::mpl::eval_if<
-        std::is_same<iter_1, end>,
-        boost::mpl::find_if<types, is_substitute<T, boost::mpl::_1>>,
-        std::type_identity<iter_1>
-    >::type;
-
-    using type = typename boost::mpl::eval_if<
-        std::is_same<iter, end>,
-        std::type_identity<T>,
-        boost::mpl::deref<iter>
-    >::type;
-};
-
-template<class Variant, X4Attribute T>
-using variant_find_substitute_t = typename variant_find_substitute<Variant, T>::type;
-
-template<class Variant>
-struct variant_find_substitute<Variant, Variant>
-{
-    using type = Variant;
-};
+template<class... Ts>
+struct is_variant<iris::rvariant<Ts...>> : std::true_type {};
 
 
 namespace detail {
 
-template<class Variant, X4Attribute T>
-struct variant_has_substitute_impl
+template<class Attr, class... Ts>
+struct variant_find_substitute_impl;
+
+template<class Attr>
+struct variant_find_substitute_impl<Attr>
 {
-    // Find a type from the Variant that can be a substitute for T.
-    // return true_ if one is found, else false_
+    using type = Attr;
+};
 
-    using variant_type = Variant;
-    using types = typename variant_type::types;
-    using end = typename boost::mpl::end<types>::type;
-    using iter_1 = typename boost::mpl::find<types, T>::type;
+template<class Attr, class First, class... Rest>
+struct variant_find_substitute_impl<Attr, First, Rest...>
+{
+    using type = std::conditional_t<
+        is_substitute_v<Attr, iris::unwrap_recursive_t<First>>,
 
-    using iter = typename boost::mpl::eval_if<
-        std::is_same<iter_1, end>,
-        boost::mpl::find_if<types, is_substitute<T, boost::mpl::_1>>,
-        std::type_identity<iter_1>
-    >::type;
+        // TODO
+        // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
+        // during attribute resolution, X4 should ideally materialize the latter
+        // because:
+        //   - It means that the user has supplied at least one explicit type
+        //     (possibly a rule attribute type) that is `recursive_wrapper<T>`,
+        //   - Constructing `T` and then moving it to `recursive_wrapper<T>`
+        //     involves copying from stack to heap.
+        //
+        // This is to-do because the above optimization is currently not
+        // implementable in a straightforward way. We need to add
+        // `unwrap_recursive(attr)` to every places where any parser attempts
+        // to modify the content.
+        iris::unwrap_recursive_t<First>,
 
-    using type = std::bool_constant<!std::is_same_v<iter, end>>;
+        typename variant_find_substitute_impl<Attr, Rest...>::type
+    >;
 };
 
 } // detail
 
+
 template<class Variant, X4Attribute Attr>
-struct variant_has_substitute
-    : detail::variant_has_substitute_impl<Variant, Attr>::type
-{};
+struct variant_find_substitute;
+
+template<class Variant, X4Attribute Attr>
+using variant_find_substitute_t = typename variant_find_substitute<Variant, Attr>::type;
+
+template<X4Attribute Attr>
+struct variant_find_substitute<Attr, Attr>
+{
+    using type = Attr;
+};
+
+// Recursively find the first type from the variant that can be a substitute for `Attr`.
+// If none is found, returns `Attr`.
+template<X4Attribute Attr, class... Ts>
+    requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
+struct variant_find_substitute<iris::rvariant<Ts...>, Attr>
+{
+    using type = typename detail::variant_find_substitute_impl<Attr, Ts...>::type;
+};
+
+
+template<class Variant, X4Attribute Attr>
+struct variant_has_substitute;
 
 template<class Variant, X4Attribute Attr>
 constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, Attr>::value;
 
 template<X4Attribute Attr>
-struct variant_has_substitute<unused_type, Attr> : std::true_type {};
+struct variant_has_substitute<Attr, Attr>
+    : std::true_type
+{};
 
 template<X4Attribute Attr>
-struct variant_has_substitute<unused_type const, Attr> : std::true_type {};
+struct variant_has_substitute<unused_type, Attr>
+    : std::true_type
+{};
+
+template<X4Attribute Attr>
+struct variant_has_substitute<unused_type const, Attr>
+    : std::true_type
+{};
+
+// Recursively find the first type from the variant that can be a substitute for `T`.
+// Returns boolean value whether it was found.
+template<X4Attribute Attr, class... Ts>
+    requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
+struct variant_has_substitute<iris::rvariant<Ts...>, Attr>
+    : std::disjunction<is_substitute<Attr, Ts>...>
+{};
 
 } // iris::x4::traits
 

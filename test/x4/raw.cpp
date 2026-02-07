@@ -1,6 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
+    Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,8 +20,9 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/alternative.hpp>
 
+#include <iris/rvariant.hpp>
+
 #include <boost/fusion/include/std_pair.hpp>
-#include <boost/variant.hpp>
 
 #include <ranges>
 #include <string>
@@ -97,10 +99,10 @@ TEST_CASE("raw")
 
     {
         using range = std::ranges::subrange<std::string_view::const_iterator>;
-        boost::variant<int, range> attr;
+        iris::rvariant<int, range> attr;
 
         REQUIRE(parse("test", (int_ | raw[*char_]), attr));
-        auto const& rng = boost::get<range>(attr);
+        auto const& rng = iris::get<range>(attr);
         CHECK(std::string(rng.begin(), rng.end()) == "test");
     }
 

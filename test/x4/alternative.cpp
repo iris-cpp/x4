@@ -2,6 +2,7 @@
     Copyright (c) 2001-2015 Joel de Guzman
     Copyright (c) 2001-2011 Hartmut Kaiser
     Copyright (c) 2025 Nana Sakisaka
+    Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -23,11 +24,11 @@
 #include <iris/x4/operator/list.hpp>
 #include <iris/x4/operator/optional.hpp>
 
+#include <iris/rvariant.hpp>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
-
-#include <boost/variant.hpp>
 
 #include <string>
 #include <vector>
@@ -76,47 +77,47 @@ TEST_CASE("alternative")
     }
 
     {
-        using attr_type = boost::variant<undefined, int, char>;
+        using attr_type = iris::rvariant<undefined, int, char>;
         {
             attr_type v;
             REQUIRE(parse("12345", int_ | char_, v));
-            CHECK(boost::get<int>(v) == 12345);
+            CHECK(iris::get<int>(v) == 12345);
         }
         {
             attr_type v;
             REQUIRE(parse("12345", lit("rock") | int_ | char_, v));
-            CHECK(boost::get<int>(v) == 12345);
+            CHECK(iris::get<int>(v) == 12345);
         }
         {
             attr_type v;
             REQUIRE(parse("rock", lit("rock") | int_ | char_, v));
-            CHECK(v.which() == 0);
+            CHECK(v.index() == 0);
         }
         {
             attr_type v;
             REQUIRE(parse("x", lit("rock") | int_ | char_, v));
-            CHECK(boost::get<char>(v) == 'x');
+            CHECK(iris::get<char>(v) == 'x');
         }
     }
 
     {
         // Make sure that we are using the actual supplied attribute types
         // from the variant and not the expected type.
-        using attr_type = boost::variant<int, std::string>;
+        using attr_type = iris::rvariant<int, std::string>;
         {
             attr_type v;
             REQUIRE(parse("12345", int_ | +char_, v));
-            CHECK(boost::get<int>(v) == 12345);
+            CHECK(iris::get<int>(v) == 12345);
         }
         {
             attr_type v;
             REQUIRE(parse("abc", int_ | +char_, v));
-            CHECK(boost::get<std::string>(v) == "abc");
+            CHECK(iris::get<std::string>(v) == "abc");
         }
         {
             attr_type v;
             REQUIRE(parse("12345", +char_ | int_, v));
-            CHECK(boost::get<std::string>(v) == "12345");
+            CHECK(iris::get<std::string>(v) == "12345");
         }
     }
 
@@ -201,7 +202,7 @@ TEST_CASE("alternative")
 
     {
         //compile test only (bug_march_10_2011_8_35_am)
-        using value_type = boost::variant<double, std::string>;
+        using value_type = iris::rvariant<double, std::string>;
 
         using x4::rule;
 
@@ -211,7 +212,7 @@ TEST_CASE("alternative")
 
     {
         using x4::rule;
-        using d_line = boost::variant<di_ignore, di_include>;
+        using d_line = iris::rvariant<di_ignore, di_include>;
 
         rule<class ignore, di_ignore> ignore;
         rule<class include, di_include> include;
@@ -223,14 +224,14 @@ TEST_CASE("alternative")
 
     // single-element fusion vector tests
     {
-        boost::fusion::vector<boost::variant<int, std::string>> fv;
+        boost::fusion::vector<iris::rvariant<int, std::string>> fv;
         REQUIRE(parse("12345", int_ | +char_, fv));
-        CHECK(boost::get<int>(boost::fusion::at_c<0>(fv)) == 12345);
+        CHECK(iris::get<int>(boost::fusion::at_c<0>(fv)) == 12345);
     }
     {
-        boost::fusion::vector<boost::variant<int, std::string>> fvi;
+        boost::fusion::vector<iris::rvariant<int, std::string>> fvi;
         REQUIRE(parse("12345", int_ | int_, fvi));
-        CHECK(boost::get<int>(boost::fusion::at_c<0>(fvi)) == 12345);
+        CHECK(iris::get<int>(boost::fusion::at_c<0>(fvi)) == 12345);
     }
 
     // alternative over single element sequences as part of another sequence
@@ -240,11 +241,11 @@ TEST_CASE("alternative")
         constexpr auto keys = key1 | key2;
         constexpr auto pair = keys >> lit("=") >> +char_;
 
-        boost::fusion::deque<boost::variant<long, char>, std::string> attr_;
+        boost::fusion::deque<iris::rvariant<long, char>, std::string> attr_;
 
         REQUIRE(parse("long=ABC", pair, attr_));
-        CHECK(boost::get<long>(&boost::fusion::front(attr_)) != nullptr);
-        CHECK(boost::get<char>(&boost::fusion::front(attr_)) == nullptr);
+        CHECK(iris::get_if<long>(&boost::fusion::front(attr_)) != nullptr);
+        CHECK(iris::get_if<char>(&boost::fusion::front(attr_)) == nullptr);
     }
 
     {
@@ -271,7 +272,7 @@ TEST_CASE("alternative")
     {
         // regressing test for #603
         struct X {};
-        std::vector<boost::variant<std::string, int, X>> v;
+        std::vector<iris::rvariant<std::string, int, X>> v;
         REQUIRE(parse("xx42x9y", *(int_ | +char_('x') | 'y' >> attr(X{})), v));
         CHECK(v.size() == 5);
     }
@@ -288,21 +289,21 @@ TEST_CASE("alternative")
         struct X {};
         struct Y {};
         struct Z {};
-        boost::variant<X, Y, Z> v;
-        boost::variant<Y, X> x{X{}};
-        v = x; // boost::variant supports that convertion
+        iris::rvariant<X, Y, Z> v;
+        iris::rvariant<Y, X> x{X{}};
+        v = x; // iris::rvariant supports that convertion
         auto const p = 'x' >> attr(x) | 'z' >> attr(Z{});
         REQUIRE(parse("z", p, v));
-        CHECK(boost::get<Z>(&v) != nullptr);
+        CHECK(iris::get_if<Z>(&v) != nullptr);
         REQUIRE(parse("x", p, v));
-        CHECK(boost::get<X>(&v) != nullptr);
+        CHECK(iris::get_if<X>(&v) != nullptr);
     }
 
     {
         // regression test for #679
-        using Qaz = std::vector<boost::variant<int>>;
-        using Foo = std::vector<boost::variant<Qaz, int>>;
-        using Bar = std::vector<boost::variant<Foo, int>>;
+        using Qaz = std::vector<iris::rvariant<int>>;
+        using Foo = std::vector<iris::rvariant<Qaz, int>>;
+        using Bar = std::vector<iris::rvariant<Foo, int>>;
         Bar x;
         CHECK(parse("abaabb", +('a' >> attr(Foo{}) | 'b' >> attr(int{})), x));
     }
