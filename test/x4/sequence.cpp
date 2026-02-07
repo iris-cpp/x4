@@ -1,6 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman
     Copyright (c) 2025 Nana Sakisaka
+    Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -24,6 +25,8 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/alternative.hpp>
+
+#include <iris/rvariant/rvariant.hpp>
 
 #include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/vector.hpp>
@@ -388,7 +391,7 @@ TEST_CASE("sequence")
     }
 
     {
-        using Attr = boost::variant<int, float>;
+        using Attr = iris::rvariant<int, float>;
         constexpr auto term = rule<class term_id, Attr>("term") = int_ | float_;
         constexpr auto expr = rule<class expr_id, Attr>("expr") = term | ('(' > term > ')');
         Attr var;

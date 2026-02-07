@@ -14,10 +14,9 @@
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
-#include <boost/fusion/include/for_each.hpp>
+#include <iris/rvariant/rvariant_io.hpp>
 
-#include <boost/variant.hpp>
-#include <boost/variant/apply_visitor.hpp> // TODO: remove this
+#include <boost/fusion/include/for_each.hpp>
 
 #ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
@@ -57,9 +56,9 @@ struct print_fusion_sequence
 
 // print elements in a variant
 template<class Out>
-struct print_visitor : boost::static_visitor<>
+struct print_visitor
 {
-    print_visitor(Out& out)
+    explicit print_visitor(Out& out)
         : out(out)
     {}
 
@@ -144,7 +143,7 @@ struct print_attribute_debug
     // for variant types
     static void call(Out& out, CategorizedAttr<variant_attr> auto const& val)
     {
-        boost::apply_visitor(detail::print_visitor<Out>(out), val);
+        iris::visit(detail::print_visitor<Out>{out}, val);
     }
 
     static void call(Out& out, CategorizedAttr<optional_attr> auto const& val)

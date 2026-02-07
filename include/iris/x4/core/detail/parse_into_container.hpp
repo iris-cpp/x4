@@ -22,8 +22,6 @@
 #include <boost/fusion/sequence/intrinsic/front.hpp>
 #include <boost/fusion/sequence/intrinsic/back.hpp>
 
-#include <boost/variant/variant.hpp> // TODO: remove Boost.Variant usage
-
 #include <iterator>
 #include <type_traits>
 #include <utility>
