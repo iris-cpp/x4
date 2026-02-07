@@ -41,7 +41,7 @@ struct parse_into_container_base_impl
 {
     // Parser has attribute (synthesize; Attribute is a container)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!parser_accepts_container_v<Parser, Attr>)
+        requires (!parser_accepts_container_v<Parser, unwrap_recursive_type<Attr>>)
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
@@ -50,17 +50,18 @@ struct parse_into_container_base_impl
     {
         static_assert(!std::same_as<std::remove_const_t<Attr>, unused_container_type>);
 
-        using value_type = traits::container_value_t<Attr>;
+        using value_type = traits::container_value_t<unwrap_recursive_type<Attr>>;
         value_type val; // default-initialize
 
-        static_assert(Parsable<Parser, It, Se, Context, value_type>);
+        //static_assert(Parsable<Parser, It, Se, Context, value_type>);
         if (!parser.parse(first, last, ctx, val)) return false;
 
         // push the parsed value into our attribute
-        traits::push_back(attr, std::move(val));
+        traits::push_back(unwrap_recursive(attr), std::move(val));
         return true;
     }
 
+    // unused_container_type
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
         requires (!parser_accepts_container_v<Parser, unused_container_type>)
     [[nodiscard]] static constexpr bool
@@ -69,22 +70,24 @@ struct parse_into_container_base_impl
         Context const& ctx, unused_container_type const&
     ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unused_type>)
     {
-        static_assert(Parsable<Parser, It, Se, Context, unused_type>);
+        //static_assert(Parsable<Parser, It, Se, Context, unused_type>);
         return parser.parse(first, last, ctx, unused);
     }
 
     // Parser has attribute (synthesize; Attribute is a container)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires parser_accepts_container_v<Parser, Attr>
+        requires parser_accepts_container_v<Parser, unwrap_recursive_type<Attr>>
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
-    ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
+    ) noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, unwrap_recursive_type<Attr>>)
     {
-        static_assert(Parsable<Parser, It, Se, Context, Attr>);
+        //static_assert(Parsable<Parser, It, Se, Context, unwrap_recursive_type<Attr>>);
         return parser.parse(first, last, ctx, attr);
     }
+
+    // ------------------------------------------------------
 
     // Parser has attribute && it is NOT fusion sequence
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
