@@ -275,6 +275,8 @@ jobs:
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
+            -DIRIS_TEST_ALLOY=${{ case(matrix.components.general == 'true' || matrix.components.alloy == 'true', 'ON', 'OFF') }}
+            -DIRIS_TEST_X4=${{ case(matrix.components.general == 'true' || matrix.components.x4 == 'true', 'ON', 'OFF') }}
             -S .
 
       - name: Build Tests
