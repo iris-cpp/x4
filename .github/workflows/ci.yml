@@ -23,27 +23,31 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      x4_component: ${{ steps.filter.outputs.changes }}
+      components: ${{ steps.filter.outputs.changes }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            x4:
-              - '.github/workflows/*.yml'
-              - 'modules/iris'
+            general:
+              - '.github/workflows/*.yml' 
               - 'CMakeLists.txt'
+              - 'modules/iris'
+              - 'test/CMakeLists.txt'
+            alloy:
+              - 'include/iris/alloy/**/*'
+              - 'test/alloy/**/*'
+            x4:
               - 'include/iris/x4.hpp'
               - 'include/iris/x4/**/*'
-              - 'test/CMakeLists.txt'
               - 'test/x4/**/*'
 
   build:
-    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.x4_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
+    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.components }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
 
     needs: changes
-    if: ${{ needs.changes.outputs.x4_component != '[]' && needs.changes.outputs.x4_component != '' }}
+    if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
 
     runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
 
@@ -83,7 +87,7 @@ jobs:
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-        x4_component: ${{ fromJSON(needs.changes.outputs.x4_component) }}
+        components: ${{ fromJSON(needs.changes.outputs.components) }}
 
         exclude:
           # Blacklist all invalid combinations of environments

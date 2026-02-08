@@ -5,5 +5,6 @@
 # https://www.boost.org/LICENSE_1_0.txt
 
 if(PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(alloy)
     add_subdirectory(x4)
 endif()

@@ -114,8 +114,9 @@ endforeach()
 
 file(
     GLOB_RECURSE IRIS_X4_HEADERS
-    ${PROJECT_SOURCE_DIR}/include/iris/*.hpp
-    ${PROJECT_SOURCE_DIR}/include/iris/*.ipp
+    ${PROJECT_SOURCE_DIR}/include/iris/x4/*.hpp
+    ${PROJECT_SOURCE_DIR}/include/iris/x4/*.ipp
+    ${PROJECT_SOURCE_DIR}/include/iris/x4.hpp
 )
 
 target_sources(
@@ -127,6 +128,45 @@ source_group(
 )
 target_include_directories(
     iris_x4
+    INTERFACE ${PROJECT_SOURCE_DIR}/include
+)
+
+# -----------------------------------------------------------------
+# Create the alloy target
+
+if(MSVC)
+    # This needs to be `OBJECT` target to set correct `/std:` flags on IDE
+    add_library(iris_alloy OBJECT EXCLUDE_FROM_ALL)
+    set_target_properties(iris_alloy PROPERTIES LINKER_LANGUAGE CXX)
+
+    target_link_libraries(iris_alloy PUBLIC Iris::Iris)
+
+else()
+    add_library(iris_alloy INTERFACE)
+    target_link_libraries(iris_alloy INTERFACE Iris::Iris)
+endif()
+
+add_library(Iris::Alloy ALIAS iris_alloy)
+set_target_properties(iris_alloy PROPERTIES CXX_EXTENSIONS OFF)
+
+# -----------------------------------------------------------------
+# Configure alloy target
+
+file(
+    GLOB_RECURSE IRIS_ALLOY_HEADERS
+    ${PROJECT_SOURCE_DIR}/include/iris/alloy/*.hpp
+    ${PROJECT_SOURCE_DIR}/include/iris/alloy/*.ipp
+)
+
+target_sources(
+    iris_alloy
+    PRIVATE FILE_SET HEADERS TYPE HEADERS FILES ${IRIS_ALLOY_HEADERS}
+)
+source_group(
+    TREE ${PROJECT_SOURCE_DIR}/include/iris PREFIX iris FILES ${IRIS_ALLOY_HEADERS}
+)
+target_include_directories(
+    iris_alloy
     INTERFACE ${PROJECT_SOURCE_DIR}/include
 )
 
