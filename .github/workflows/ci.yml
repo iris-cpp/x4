@@ -23,7 +23,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      components: ${{ steps.filter.outputs.changes }}
+      components: ${{ steps.processed.outputs.changes }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
@@ -42,6 +42,18 @@ jobs:
               - 'include/iris/x4.hpp'
               - 'include/iris/x4/**/*'
               - 'test/x4/**/*'
+      - uses: actions/github-script@v8
+        id: processed
+        env:
+          CHANGES: ${{ steps.filter.outputs.changes }}
+        with:
+          script: |
+            const changes = JSON.parse(process.env.CHANGES);
+            let result = [];
+            if (changes.includes('general') || changes.includes('alloy')) result.append('alloy');
+            if (changes.includes('general') || changes.includes('x4')) result.append('x4');
+            return result;
+
 
   build:
     name: "[${{ matrix.cpp_version.name }}] ${{ matrix.components }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
@@ -275,8 +287,8 @@ jobs:
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
-            -DIRIS_TEST_ALLOY=${{ case(matrix.components.general == 'true' || matrix.components.alloy == 'true', 'ON', 'OFF') }}
-            -DIRIS_TEST_X4=${{ case(matrix.components.general == 'true' || matrix.components.x4 == 'true', 'ON', 'OFF') }}
+            -DIRIS_TEST_ALLOY=${{ case(matrix.components.general == 'true' || matrix.components.alloy == 'true', 'ON', 'OFF') }} \
+            -DIRIS_TEST_X4=${{ case(matrix.components.general == 'true' || matrix.components.x4 == 'true', 'ON', 'OFF') }} \
             -S .
 
       - name: Build Tests
