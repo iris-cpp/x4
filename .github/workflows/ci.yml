@@ -50,8 +50,8 @@ jobs:
           script: |
             const changes = JSON.parse(process.env.CHANGES);
             let result = [];
-            if (changes.includes('general') || changes.includes('alloy')) result.append('alloy');
-            if (changes.includes('general') || changes.includes('x4')) result.append('x4');
+            if (changes.includes('general') || changes.includes('alloy')) result.push('alloy');
+            if (changes.includes('general') || changes.includes('x4')) result.push('x4');
             return result;
 
 
