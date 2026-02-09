@@ -1,6 +1,6 @@
 AccessModifierOffset: -4
 AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
-BreakTemplateDeclarations: Yes
+AlwaysBreakTemplateDeclarations : true
 ColumnLimit: 160
 FixNamespaceComments: false
 IndentWidth: 4
