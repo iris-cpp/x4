@@ -11,11 +11,11 @@
 
 #include <iris/config.hpp>
 
-#include <iris/alloy/detail/forward_like_t.hpp>
-#include <iris/alloy/detail/pack_indexing.hpp>
 #include <iris/alloy/detail/tuple_comparison.hpp>
 
 #include <iris/alloy/traits.hpp>
+
+#include <iris/type_traits.hpp>
 
 #include <type_traits>
 
@@ -128,25 +128,25 @@ public:
         swap(_0, other._0);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0>& get() & noexcept
+    constexpr pack_indexing_t<I, T0>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -254,7 +254,7 @@ public:
         swap(_1, other._1);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -262,7 +262,7 @@ public:
             return _1;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -270,7 +270,7 @@ public:
             return _1;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -278,7 +278,7 @@ public:
             return static_cast<decltype(_1)&&>(_1);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -400,7 +400,7 @@ public:
         swap(_2, other._2);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -410,7 +410,7 @@ public:
             return _2;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -420,7 +420,7 @@ public:
             return _2;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -430,7 +430,7 @@ public:
             return static_cast<decltype(_2)&&>(_2);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -571,7 +571,7 @@ public:
         swap(_3, other._3);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -583,7 +583,7 @@ public:
             return _3;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -595,7 +595,7 @@ public:
             return _3;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -607,7 +607,7 @@ public:
             return static_cast<decltype(_3)&&>(_3);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -761,7 +761,7 @@ public:
         swap(_4, other._4);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -775,7 +775,7 @@ public:
             return _4;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -789,7 +789,7 @@ public:
             return _4;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -803,7 +803,7 @@ public:
             return static_cast<decltype(_4)&&>(_4);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -967,7 +967,7 @@ public:
         swap(_5, other._5);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -983,7 +983,7 @@ public:
             return _5;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -999,7 +999,7 @@ public:
             return _5;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -1015,7 +1015,7 @@ public:
             return static_cast<decltype(_5)&&>(_5);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -1202,7 +1202,7 @@ public:
         swap(_6, other._6);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -1220,7 +1220,7 @@ public:
             return _6;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -1238,7 +1238,7 @@ public:
             return _6;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -1256,7 +1256,7 @@ public:
             return static_cast<decltype(_6)&&>(_6);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -1452,7 +1452,7 @@ public:
         swap(_7, other._7);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -1472,7 +1472,7 @@ public:
             return _7;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -1492,7 +1492,7 @@ public:
             return _7;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -1512,7 +1512,7 @@ public:
             return static_cast<decltype(_7)&&>(_7);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -1719,7 +1719,7 @@ public:
         swap(_8, other._8);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -1741,7 +1741,7 @@ public:
             return _8;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -1763,7 +1763,7 @@ public:
             return _8;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -1785,7 +1785,7 @@ public:
             return static_cast<decltype(_8)&&>(_8);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -2014,7 +2014,7 @@ public:
         swap(_9, other._9);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -2038,7 +2038,7 @@ public:
             return _9;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -2062,7 +2062,7 @@ public:
             return _9;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -2086,7 +2086,7 @@ public:
             return static_cast<decltype(_9)&&>(_9);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -2327,7 +2327,7 @@ public:
         swap(_10, other._10);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -2353,7 +2353,7 @@ public:
             return _10;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -2379,7 +2379,7 @@ public:
             return _10;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -2405,7 +2405,7 @@ public:
             return static_cast<decltype(_10)&&>(_10);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -2657,7 +2657,7 @@ public:
         swap(_11, other._11);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -2685,7 +2685,7 @@ public:
             return _11;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -2713,7 +2713,7 @@ public:
             return _11;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -2741,7 +2741,7 @@ public:
             return static_cast<decltype(_11)&&>(_11);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -3015,7 +3015,7 @@ public:
         swap(_12, other._12);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -3045,7 +3045,7 @@ public:
             return _12;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -3075,7 +3075,7 @@ public:
             return _12;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -3105,7 +3105,7 @@ public:
             return static_cast<decltype(_12)&&>(_12);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -3390,7 +3390,7 @@ public:
         swap(_13, other._13);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -3422,7 +3422,7 @@ public:
             return _13;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -3454,7 +3454,7 @@ public:
             return _13;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -3486,7 +3486,7 @@ public:
             return static_cast<decltype(_13)&&>(_13);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -3790,7 +3790,7 @@ public:
         swap(_14, other._14);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -3824,7 +3824,7 @@ public:
             return _14;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -3858,7 +3858,7 @@ public:
             return _14;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -3892,7 +3892,7 @@ public:
             return static_cast<decltype(_14)&&>(_14);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -4219,7 +4219,7 @@ public:
         swap(_15, other._15);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -4255,7 +4255,7 @@ public:
             return _15;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -4291,7 +4291,7 @@ public:
             return _15;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -4327,7 +4327,7 @@ public:
             return static_cast<decltype(_15)&&>(_15);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -4665,7 +4665,7 @@ public:
         swap(_16, other._16);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -4703,7 +4703,7 @@ public:
             return _16;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -4741,7 +4741,7 @@ public:
             return _16;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -4779,7 +4779,7 @@ public:
             return static_cast<decltype(_16)&&>(_16);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -5126,7 +5126,7 @@ public:
         swap(_17, other._17);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -5166,7 +5166,7 @@ public:
             return _17;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -5206,7 +5206,7 @@ public:
             return _17;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -5246,7 +5246,7 @@ public:
             return static_cast<decltype(_17)&&>(_17);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -5615,7 +5615,7 @@ public:
         swap(_18, other._18);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -5657,7 +5657,7 @@ public:
             return _18;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -5699,7 +5699,7 @@ public:
             return _18;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -5741,7 +5741,7 @@ public:
             return static_cast<decltype(_18)&&>(_18);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -6122,7 +6122,7 @@ public:
         swap(_19, other._19);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -6166,7 +6166,7 @@ public:
             return _19;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> const& get() const& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> const& get() const& noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -6210,7 +6210,7 @@ public:
             return _19;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -6254,7 +6254,7 @@ public:
             return static_cast<decltype(_19)&&>(_19);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> const&& get() const&& noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> const&& get() const&& noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0) const&&>(_0);
@@ -6649,7 +6649,7 @@ public:
         swap(_20, other._20);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -6695,7 +6695,7 @@ public:
             return _20;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> const&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> const&
     get() const& noexcept
     {
         if constexpr (I == 0)
@@ -6742,7 +6742,7 @@ public:
             return _20;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -6788,7 +6788,7 @@ public:
             return static_cast<decltype(_20)&&>(_20);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> const&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> const&&
     get() const&& noexcept
     {
         if constexpr (I == 0)
@@ -7208,7 +7208,7 @@ public:
         swap(_21, other._21);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -7256,7 +7256,7 @@ public:
             return _21;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> const&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> const&
     get() const& noexcept
     {
         if constexpr (I == 0)
@@ -7305,7 +7305,7 @@ public:
             return _21;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>&& get() && noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>&& get() && noexcept
     {
         if constexpr (I == 0)
             return static_cast<decltype(_0)&&>(_0);
@@ -7353,7 +7353,7 @@ public:
             return static_cast<decltype(_21)&&>(_21);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> const&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> const&&
     get() const&& noexcept
     {
         if constexpr (I == 0)
@@ -7786,7 +7786,7 @@ public:
         swap(_22, other._22);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>& get() & noexcept
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>& get() & noexcept
     {
         if constexpr (I == 0)
             return _0;
@@ -7836,7 +7836,7 @@ public:
             return _22;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> const&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> const&
     get() const& noexcept
     {
         if constexpr (I == 0)
@@ -7887,7 +7887,7 @@ public:
             return _22;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>&&
     get() && noexcept
     {
         if constexpr (I == 0)
@@ -7938,7 +7938,7 @@ public:
             return static_cast<decltype(_22)&&>(_22);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> const&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> const&&
     get() const&& noexcept
     {
         if constexpr (I == 0)
@@ -8387,7 +8387,7 @@ public:
         swap(_23, other._23);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>&
     get() & noexcept
     {
         if constexpr (I == 0)
@@ -8440,7 +8440,7 @@ public:
             return _23;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> const&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> const&
     get() const& noexcept
     {
         if constexpr (I == 0)
@@ -8493,7 +8493,7 @@ public:
             return _23;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>&&
     get() && noexcept
     {
         if constexpr (I == 0)
@@ -8546,7 +8546,7 @@ public:
             return static_cast<decltype(_23)&&>(_23);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> const&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> const&&
     get() const&& noexcept
     {
         if constexpr (I == 0)
@@ -9018,7 +9018,7 @@ public:
         swap(_24, other._24);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>&
     get() & noexcept
     {
         if constexpr (I == 0)
@@ -9073,7 +9073,7 @@ public:
             return _24;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> const&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> const&
     get() const& noexcept
     {
         if constexpr (I == 0)
@@ -9128,7 +9128,7 @@ public:
             return _24;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>&&
     get() && noexcept
     {
         if constexpr (I == 0)
@@ -9183,7 +9183,7 @@ public:
             return static_cast<decltype(_24)&&>(_24);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> const&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> const&&
     get() const&& noexcept
     {
         if constexpr (I == 0)
@@ -9665,7 +9665,7 @@ public:
         swap(_25, other._25);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>&
     get() & noexcept
     {
         if constexpr (I == 0)
@@ -9722,7 +9722,7 @@ public:
             return _25;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24,
                                    T25> const&
     get() const& noexcept
     {
@@ -9780,7 +9780,7 @@ public:
             return _25;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>&&
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>&&
     get() && noexcept
     {
         if constexpr (I == 0)
@@ -9837,7 +9837,7 @@ public:
             return static_cast<decltype(_25)&&>(_25);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24,
                                    T25> const&&
     get() const&& noexcept
     {
@@ -10331,7 +10331,7 @@ public:
         swap(_26, other._26);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26>&
     get() & noexcept
     {
@@ -10391,7 +10391,7 @@ public:
             return _26;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26> const&
     get() const& noexcept
     {
@@ -10451,7 +10451,7 @@ public:
             return _26;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26>&&
     get() && noexcept
     {
@@ -10511,7 +10511,7 @@ public:
             return static_cast<decltype(_26)&&>(_26);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26> const&&
     get() const&& noexcept
     {
@@ -11035,7 +11035,7 @@ public:
         swap(_27, other._27);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27>&
     get() & noexcept
     {
@@ -11097,7 +11097,7 @@ public:
             return _27;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27> const&
     get() const& noexcept
     {
@@ -11159,7 +11159,7 @@ public:
             return _27;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27>&&
     get() && noexcept
     {
@@ -11221,7 +11221,7 @@ public:
             return static_cast<decltype(_27)&&>(_27);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27> const&&
     get() const&& noexcept
     {
@@ -11757,7 +11757,7 @@ public:
         swap(_28, other._28);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28>&
     get() & noexcept
     {
@@ -11821,7 +11821,7 @@ public:
             return _28;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28> const&
     get() const& noexcept
     {
@@ -11885,7 +11885,7 @@ public:
             return _28;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28>&&
     get() && noexcept
     {
@@ -11949,7 +11949,7 @@ public:
             return static_cast<decltype(_28)&&>(_28);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28> const&&
     get() const&& noexcept
     {
@@ -12498,7 +12498,7 @@ public:
         swap(_29, other._29);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29>&
     get() & noexcept
     {
@@ -12564,7 +12564,7 @@ public:
             return _29;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29> const&
     get() const& noexcept
     {
@@ -12630,7 +12630,7 @@ public:
             return _29;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29>&&
     get() && noexcept
     {
@@ -12696,7 +12696,7 @@ public:
             return static_cast<decltype(_29)&&>(_29);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29> const&&
     get() const&& noexcept
     {
@@ -13266,7 +13266,7 @@ public:
         swap(_30, other._30);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30>&
     get() & noexcept
     {
@@ -13334,7 +13334,7 @@ public:
             return _30;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30> const&
     get() const& noexcept
     {
@@ -13402,7 +13402,7 @@ public:
             return _30;
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30>&&
     get() && noexcept
     {
@@ -13470,7 +13470,7 @@ public:
             return static_cast<decltype(_30)&&>(_30);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30> const&&
     get() const&& noexcept
     {
@@ -14071,7 +14071,7 @@ public:
         rest.swap(other.rest);
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30, T31, Ts...>&
     get() & noexcept
     {
@@ -14143,7 +14143,7 @@ public:
             return rest.template get<I - 32>();
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30, T31, Ts...> const&
     get() const& noexcept
     {
@@ -14215,7 +14215,7 @@ public:
             return rest.template get<I - 32>();
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30, T31, Ts...>&&
     get() && noexcept
     {
@@ -14287,7 +14287,7 @@ public:
             return std::move(rest).template get<I - 32>();
     }
     template<std::size_t I>
-    constexpr type_pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
+    constexpr pack_indexing_t<I, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25,
                                    T26, T27, T28, T29, T30, T31, Ts...> const&&
     get() const&& noexcept
     {

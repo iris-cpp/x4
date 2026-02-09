@@ -11,11 +11,11 @@
 
 #include <iris/config.hpp>
 
-#include <iris/alloy/detail/forward_like_t.hpp>
-#include <iris/alloy/detail/pack_indexing.hpp>
 #include <iris/alloy/detail/tuple_comparison.hpp>
 
 #include <iris/alloy/traits.hpp>
+
+#include <iris/type_traits.hpp>
 
 #include <type_traits>
 

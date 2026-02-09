@@ -13,11 +13,11 @@
 
 #include <iris/config.hpp>
 
-#include <iris/alloy/detail/forward_like_t.hpp>
-#include <iris/alloy/detail/pack_indexing.hpp>
 #include <iris/alloy/detail/tuple_comparison.hpp>
 
 #include <iris/alloy/traits.hpp>
+
+#include <iris/type_traits.hpp>
 
 #include <type_traits>
 
@@ -266,26 +266,26 @@ public:
         } \
 \
         template<std::size_t I> \
-        constexpr type_pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)>& get() & noexcept \
+        constexpr pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)>& get() & noexcept \
         { \
             BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_LVALUE_GET, ) \
         } \
 \
         template<std::size_t I> \
-        constexpr type_pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)> const& \
+        constexpr pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)> const& \
         get() const& noexcept \
         { \
             BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_LVALUE_GET, ) \
         } \
 \
         template<std::size_t I> \
-        constexpr type_pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)>&& get() && noexcept \
+        constexpr pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)>&& get() && noexcept \
         { \
             BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_FORWARDING_GET, ) \
         } \
 \
         template<std::size_t I> \
-        constexpr type_pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)> const&& \
+        constexpr pack_indexing_t<I, BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1)> const&& \
         get() const&& noexcept \
         { \
             BOOST_PP_REPEAT(n, IRIS_ALLOY_DETAIL_FORWARDING_GET, const) \
@@ -444,7 +444,7 @@ public:
     }
 
     template<std::size_t I>
-    constexpr type_pack_indexing_t<
+    constexpr pack_indexing_t<
         I,
         BOOST_PP_REPEAT(IRIS_ALLOY_TUPLE_LIMIT, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1),
         Ts...
@@ -456,7 +456,7 @@ public:
     }
 
     template<std::size_t I>
-    constexpr type_pack_indexing_t<
+    constexpr pack_indexing_t<
         I,
         BOOST_PP_REPEAT(IRIS_ALLOY_TUPLE_LIMIT, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1),
         Ts...
@@ -468,7 +468,7 @@ public:
     }
 
     template<std::size_t I>
-    constexpr type_pack_indexing_t<
+    constexpr pack_indexing_t<
         I,
         BOOST_PP_REPEAT(IRIS_ALLOY_TUPLE_LIMIT, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1),
         Ts...
@@ -480,7 +480,7 @@ public:
     }
 
     template<std::size_t I>
-    constexpr type_pack_indexing_t<
+    constexpr pack_indexing_t<
         I,
         BOOST_PP_REPEAT(IRIS_ALLOY_TUPLE_LIMIT, IRIS_ALLOY_DETAIL_ARGS, IRIS_ALLOY_DETAIL_TEMPLATE_PARAM_1),
         Ts...

@@ -19,9 +19,7 @@
 #include <iris/alloy/detail/tuple_impl.hpp>
 #endif
 
-#include <iris/alloy/detail/forward_like_t.hpp>
 #include <iris/alloy/detail/integer_seq_transform.hpp>
-#include <iris/alloy/detail/pack_indexing.hpp>
 #include <iris/alloy/detail/tuple_comparison.hpp>
 
 #include <type_traits>
@@ -59,7 +57,7 @@ struct tuple_traits : tuple_traits_impl<std::index_sequence_for<Ts...>, UTuple, 
 template<class UTuple, class... Ts>
 struct tuple_one_element_is_constructible_from_tuple
     : std::bool_constant<(sizeof...(Ts) == 1) &&
-                         (std::is_convertible_v<UTuple, type_pack_indexing_t<0, Ts...>> || std::is_constructible_v<type_pack_indexing_t<0, Ts...>, UTuple>)>
+                         (std::is_convertible_v<UTuple, IRIS_CORE_PACK_INDEXING(0, Ts...)> || std::is_constructible_v<IRIS_CORE_PACK_INDEXING(0, Ts...), UTuple>)>
 {};
 
 template<class UTuple, class... Ts>
@@ -77,7 +75,7 @@ private:
     template<class... Us>
     static constexpr bool disambiguating_constraint = []() {
         if constexpr (sizeof...(Ts) == 1) {
-            return !std::is_same_v<std::remove_cvref_t<detail::type_pack_indexing_t<0, Us...>>, tuple>;
+            return !std::is_same_v<std::remove_cvref_t<IRIS_CORE_PACK_INDEXING(0, Us...)>, tuple>;
         } else {
             return true;
         }

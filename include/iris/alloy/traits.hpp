@@ -10,7 +10,6 @@
 ==============================================================================*/
 
 #include <iris/alloy/detail/deduce.hpp>
-#include <iris/alloy/detail/pack_indexing.hpp>
 
 #include <iris/type_traits.hpp>
 
@@ -36,7 +35,7 @@ template<std::size_t I, class NonTypeList>
 struct non_type_list_indexing {};
 
 template<std::size_t I, template<auto...> class TList, auto... Vs>
-struct non_type_list_indexing<I, TList<Vs...>> : non_type_pack_indexing<I, Vs...> {};
+struct non_type_list_indexing<I, TList<Vs...>> : cpack_indexing<I, Vs...> {};
 
 } // detail
 
@@ -93,7 +92,7 @@ struct tuple_element {};
 template<std::size_t I, class... Ts>
 struct tuple_element<I, tuple<Ts...>>
 {
-    using type = detail::type_pack_indexing_t<I, Ts...>;
+    using type = IRIS_CORE_PACK_INDEXING(I, Ts...);
 };
 
 template<std::size_t I, class Tuple>
