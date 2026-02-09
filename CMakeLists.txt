@@ -70,6 +70,13 @@ list(APPEND iris_x4_boost_deps config)
 list(APPEND iris_x4_boost_deps static_assert)
 list(APPEND iris_x4_boost_deps throw_exception)
 
+# Everything required by `mpl`
+list(APPEND iris_x4_boost_deps mpl)
+list(APPEND iris_x4_boost_deps io)
+list(APPEND iris_x4_boost_deps predef)
+list(APPEND iris_x4_boost_deps type_traits)
+list(APPEND iris_x4_boost_deps utility)
+
 # ---------------------------------------------
 list(REMOVE_DUPLICATES iris_x4_boost_deps)
 
