@@ -135,6 +135,15 @@ set_target_properties(iris_alloy PROPERTIES CXX_EXTENSIONS OFF)
 # -----------------------------------------------------------------
 # Configure alloy target
 
+set_property(
+    DIRECTORY ${PROJECT_SOURCE_DIR}
+    PROPERTY CMAKE_CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
+)
+execute_process(
+    COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
 file(
     GLOB_RECURSE IRIS_ALLOY_HEADERS
     ${PROJECT_SOURCE_DIR}/include/iris/alloy/*.hpp
