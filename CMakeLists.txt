@@ -135,19 +135,21 @@ set_target_properties(iris_alloy PROPERTIES CXX_EXTENSIONS OFF)
 # -----------------------------------------------------------------
 # Configure alloy target
 
-set_property(
-    DIRECTORY ${PROJECT_SOURCE_DIR}
-    PROPERTY CMAKE_CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
-)
 if(MSVC)
-    execute_process(
+    add_custom_command(
+        OUTPUT include/iris/alloy/detail/preprocessed/tuple_impl.hpp
         COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.bat
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        DEPENDS include/iris/alloy/detail/tuple_impl.hpp
+        VERBATIM
     )
 else()
-    execute_process(
+    add_custom_command(
+        OUTPUT include/iris/alloy/detail/preprocessed/tuple_impl.hpp
         COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        DEPENDS include/iris/alloy/detail/tuple_impl.hpp
+        VERBATIM
     )
 endif()
 
