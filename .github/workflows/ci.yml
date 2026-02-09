@@ -211,7 +211,7 @@ jobs:
             libs/static_assert \
             libs/throw_exception \
             libs/type_traits \
-            libs/utilty
+            libs/utility
 
       - name: Build upstream Boost libraries (Ubuntu)
         if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'
