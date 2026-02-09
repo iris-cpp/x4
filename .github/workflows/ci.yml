@@ -49,9 +49,11 @@ jobs:
         with:
           script: |
             const changes = JSON.parse(process.env.CHANGES);
+            console.log('changes: ', changes);
             let result = [];
             if (changes.includes('general') || changes.includes('alloy')) result.push('alloy');
             if (changes.includes('general') || changes.includes('x4')) result.push('x4');
+            console.log('result: ', result);
             return result;
 
 
