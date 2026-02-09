@@ -209,8 +209,8 @@ jobs:
             libs/predef \
             libs/preprocessor \
             libs/static_assert \
-            libs/type_traits \
             libs/throw_exception \
+            libs/type_traits \
             libs/utilty
 
       - name: Build upstream Boost libraries (Ubuntu)
