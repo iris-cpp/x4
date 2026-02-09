@@ -15,8 +15,7 @@
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/optional_traits.hpp>
 
-#include <boost/fusion/include/is_sequence.hpp>
-#include <boost/fusion/support/category_of.hpp>
+#include <iris/alloy/traits.hpp>
 
 #include <type_traits>
 
@@ -89,7 +88,7 @@ concept NonUnusedAttr =
     !std::is_same_v<typename attribute_category<std::remove_cvref_t<T>>::type, unused_attr>;
 
 template<class T>
-    requires boost::fusion::traits::is_sequence<std::remove_cvref_t<T>>::value
+    requires alloy::is_tuple_like_v<T>
 struct attribute_category<T>
 {
     using type = tuple_attr;

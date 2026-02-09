@@ -17,8 +17,7 @@
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
-#include <boost/fusion/include/at_c.hpp>
-#include <boost/fusion/include/vector.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <string>
 
@@ -44,9 +43,6 @@ TEST_CASE("omit")
     using x4::int_;
     using x4::_attr;
 
-    using boost::fusion::vector;
-    using boost::fusion::at_c;
-
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(omit['x']);
 
     CHECK(parse("a", omit['a']));
@@ -60,8 +56,8 @@ TEST_CASE("omit")
 
     {
         // If all elements except 1 is omitted, the attribute is
-        // a single-element sequence. For this case alone, we allow
-        // naked attributes (unwrapped in a fusion sequence).
+        // a single-element tuple. For this case alone, we allow
+        // naked attributes.
         char attr{};
         REQUIRE(parse("abc", omit[char_] >> 'b' >> char_, attr));
         CHECK(attr == 'c');
@@ -69,7 +65,7 @@ TEST_CASE("omit")
 
     {
         // omit[] means we don't receive the attribute
-        vector<> attr;
+        iris::alloy::tuple<> attr;
         CHECK(parse("abc", omit[char_] >> omit['b'] >> omit[char_], attr));
     }
 
@@ -85,18 +81,18 @@ TEST_CASE("omit")
         // omit[] means we don't receive the attribute, if all elements of a
         // sequence have unused attributes, the whole sequence has an unused
         // attribute as well
-        vector<char, char> attr;
+        iris::alloy::tuple<char, char> attr;
         REQUIRE(parse("abcde", char_ >> (omit[char_] >> omit['c'] >> omit[char_]) >> char_, attr));
-        CHECK(at_c<0>(attr) == 'a');
-        CHECK(at_c<1>(attr) == 'e');
+        CHECK(iris::alloy::get<0>(attr) == 'a');
+        CHECK(iris::alloy::get<1>(attr) == 'e');
     }
 
     {
         // "hello" has an unused_type. unused attrubutes are not part of the sequence
-        vector<char, char> attr;
+        iris::alloy::tuple<char, char> attr;
         REQUIRE(parse("a hello c", char_ >> "hello" >> char_, space, attr));
-        CHECK(at_c<0>(attr) == 'a');
-        CHECK(at_c<1>(attr) == 'c');
+        CHECK(iris::alloy::get<0>(attr) == 'a');
+        CHECK(iris::alloy::get<1>(attr) == 'c');
     }
 
     {

@@ -18,8 +18,7 @@
 
 #include <iris/rvariant.hpp>
 
-#include <boost/fusion/include/at_c.hpp>
-#include <boost/fusion/include/vector.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <iterator>
 #include <string>
@@ -169,15 +168,13 @@ TEST_CASE("rule4")
         CHECK(*ov == 1);
     }
 
-    // test handling of single element fusion sequences
+    // test handling of single element tuple
     {
-        using boost::fusion::vector;
-        using boost::fusion::at_c;
-        auto r = rule<class r_id, vector<int>>{} = int_;
+        auto r = rule<class r_id, iris::alloy::tuple<int>>{} = int_;
 
-        vector<int> v(0);
+        iris::alloy::tuple<int> v(0);
         REQUIRE(parse("1", r, v));
-        CHECK(at_c<0>(v) == 1);
+        CHECK(iris::alloy::get<0>(v) == 1);
     }
 
     // attribute compatibility test

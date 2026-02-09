@@ -45,12 +45,8 @@ Note: Boost dependency is going to be removed entirely in the near future.
 
 ```console
 git submodule update --init --depth 1 --recursive -- \
-    tools/build tools/boost_install libs/assert libs/bind libs/config \
-    libs/container_hash libs/core libs/describe libs/detail \
-    libs/function libs/function_types libs/functional libs/fusion \
-    libs/io libs/mp11 libs/mpl libs/predef libs/preprocessor \
-    libs/static_assert libs/throw_exception libs/tuple \
-    libs/type_traits libs/typeof libs/utility
+    tools/build tools/boost_install libs/assert libs/config \
+    libs/core libs/preprocessor libs/static_assert libs/throw_exception
 
 # Linux
 ./bootstrap.sh

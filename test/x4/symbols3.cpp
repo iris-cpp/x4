@@ -18,9 +18,8 @@
 #include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
-#include <boost/fusion/include/at.hpp>
-#include <boost/fusion/include/vector.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
+#include <iris/alloy/adapt.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <optional>
 #include <numeric>
@@ -32,9 +31,10 @@ struct roman
     std::optional<int> c;
 };
 
-BOOST_FUSION_ADAPT_STRUCT(roman,
-    a, b, c
-)
+template<>
+struct iris::alloy::adaptor<roman> {
+    using getters_list = make_getters_list<&roman::a, &roman::b, &roman::c>;
+};
 
 namespace {
 

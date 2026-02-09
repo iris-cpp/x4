@@ -52,7 +52,7 @@ jobs:
             console.log('changes: ', changes);
             let result = [];
             if (changes.includes('general') || changes.includes('alloy')) result.push('alloy');
-            if (changes.includes('general') || changes.includes('x4')) result.push('x4');
+            if (changes.includes('general') || changes.includes('alloy') || changes.includes('x4')) result.push('x4');
             console.log('result: ', result);
             return result;
 
@@ -202,27 +202,11 @@ jobs:
             tools/build \
             tools/boost_install \
             libs/assert \
-            libs/bind \
             libs/config \
-            libs/container_hash \
             libs/core \
-            libs/describe \
-            libs/detail \
-            libs/function \
-            libs/function_types \
-            libs/functional \
-            libs/fusion \
-            libs/io \
-            libs/mp11 \
-            libs/mpl \
-            libs/predef \
             libs/preprocessor \
             libs/static_assert \
             libs/throw_exception \
-            libs/tuple \
-            libs/type_traits \
-            libs/typeof \
-            libs/utility
 
       - name: Build upstream Boost libraries (Ubuntu)
         if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'

@@ -149,13 +149,18 @@ struct tuple_element<I, T>
 
 namespace detail {
 
-template<class T, class IndexSeq = std::make_index_sequence<tuple_size_v<T>>>
-    requires is_tuple_like_v<T>
-struct is_view;
+template<class T, class IndexSeq>
+struct is_view_impl {};
 
 template<class T, std::size_t... Is>
+struct is_view_impl<T, std::index_sequence<Is...>> : std::conjunction<std::is_lvalue_reference<tuple_element_t<Is, T>>...> {};
+
+template<class T>
+struct is_view : std::false_type {};
+
+template<class T>
     requires is_tuple_like_v<T>
-struct is_view<T, std::index_sequence<Is...>> : std::conjunction<std::is_lvalue_reference<tuple_element_t<Is, T>>...> {};
+struct is_view<T> : is_view_impl<T, std::make_index_sequence<tuple_size_v<T>>> {};
 
 } // detail
 

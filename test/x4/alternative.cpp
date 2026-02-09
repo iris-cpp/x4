@@ -26,9 +26,8 @@
 
 #include <iris/rvariant.hpp>
 
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/fusion/include/at_c.hpp>
-#include <boost/fusion/include/vector.hpp>
+#include <iris/alloy/adapt.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <string>
 #include <vector>
@@ -43,13 +42,15 @@ struct di_include
     std::string FileName;
 };
 
-BOOST_FUSION_ADAPT_STRUCT(di_ignore,
-    text
-)
+template<>
+struct iris::alloy::adaptor<di_ignore> {
+    using getters_list = make_getters_list<&di_ignore::text>;
+};
 
-BOOST_FUSION_ADAPT_STRUCT(di_include,
-    FileName
-)
+template<>
+struct iris::alloy::adaptor<di_include> {
+    using getters_list = make_getters_list<&di_include::FileName>;
+};
 
 struct undefined {};
 
@@ -130,13 +131,10 @@ TEST_CASE("alternative")
         // test if alternatives with all components having unused
         // attributes have an unused attribute
 
-        using boost::fusion::vector;
-        using boost::fusion::at_c;
-
-        vector<char, char> v;
+        iris::alloy::tuple<char, char> v;
         REQUIRE((parse("abc", char_ >> (omit[char_] | omit[char_]) >> char_, v)));
-        CHECK((at_c<0>(v) == 'a'));
-        CHECK((at_c<1>(v) == 'c'));
+        CHECK((iris::alloy::get<0>(v) == 'a'));
+        CHECK((iris::alloy::get<1>(v) == 'c'));
     }
 
     {
@@ -222,30 +220,30 @@ TEST_CASE("alternative")
         (void)line;
     }
 
-    // single-element fusion vector tests
+    // single-element tuple tests
     {
-        boost::fusion::vector<iris::rvariant<int, std::string>> fv;
+        iris::alloy::tuple<iris::rvariant<int, std::string>> fv;
         REQUIRE(parse("12345", int_ | +char_, fv));
-        CHECK(iris::get<int>(boost::fusion::at_c<0>(fv)) == 12345);
+        CHECK(iris::get<int>(iris::alloy::get<0>(fv)) == 12345);
     }
     {
-        boost::fusion::vector<iris::rvariant<int, std::string>> fvi;
+        iris::alloy::tuple<iris::rvariant<int, std::string>> fvi;
         REQUIRE(parse("12345", int_ | int_, fvi));
-        CHECK(iris::get<int>(boost::fusion::at_c<0>(fvi)) == 12345);
+        CHECK(iris::get<int>(iris::alloy::get<0>(fvi)) == 12345);
     }
 
-    // alternative over single element sequences as part of another sequence
+    // alternative over single element tuple as part of another tuple
     {
         constexpr auto key1 = lit("long") >> attr(long());
         constexpr auto key2 = lit("char") >> attr(char());
         constexpr auto keys = key1 | key2;
         constexpr auto pair = keys >> lit("=") >> +char_;
 
-        boost::fusion::deque<iris::rvariant<long, char>, std::string> attr_;
+        iris::alloy::tuple<iris::rvariant<long, char>, std::string> attr_;
 
         REQUIRE(parse("long=ABC", pair, attr_));
-        CHECK(iris::get_if<long>(&boost::fusion::front(attr_)) != nullptr);
-        CHECK(iris::get_if<char>(&boost::fusion::front(attr_)) == nullptr);
+        CHECK(iris::get_if<long>(&iris::alloy::get<0>(attr_)) != nullptr);
+        CHECK(iris::get_if<char>(&iris::alloy::get<0>(attr_)) == nullptr);
     }
 
     {

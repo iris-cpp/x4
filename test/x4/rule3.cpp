@@ -22,8 +22,8 @@
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/rvariant/recursive_wrapper.hpp>
 
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/fusion/include/std_pair.hpp>
+#include <iris/alloy/adapted/std_pair.hpp>
+#include <iris/alloy/adapt.hpp>
 
 #include <string>
 #include <vector>
@@ -85,7 +85,10 @@ struct recursive_tuple
     std::vector<recursive_tuple> children;
 };
 
-BOOST_FUSION_ADAPT_STRUCT(recursive_tuple, value, children)
+template<>
+struct iris::alloy::adaptor<recursive_tuple> {
+    using getters_list = make_getters_list<&recursive_tuple::value, &recursive_tuple::children>;
+};
 
 // regression test for #461
 namespace check_recursive_tuple {

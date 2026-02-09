@@ -22,7 +22,7 @@
 
 #include <iris/rvariant.hpp>
 
-#include <boost/fusion/include/std_pair.hpp>
+#include <iris/alloy/adapted/std_pair.hpp>
 
 #include <ranges>
 #include <string>
