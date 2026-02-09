@@ -166,7 +166,7 @@ template<class T>
 concept TupleLikeView = TupleLike<T> && detail::is_view<std::remove_cvref_t<T>>::value;
 
 template<class T>
-inline constexpr bool is_tuple_like_view_v = is_tuple_like<T>::value;
+inline constexpr bool is_tuple_like_view_v = is_tuple_like_view<T>::value;
 
 namespace detail {
 
