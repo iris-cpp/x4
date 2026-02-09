@@ -51,18 +51,18 @@ set_target_properties(iris_alloy PROPERTIES CXX_EXTENSIONS OFF)
 
 if(MSVC)
     add_custom_command(
-        OUTPUT include/iris/alloy/detail/preprocessed/tuple_impl.hpp
+        OUTPUT ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/preprocessed/tuple_impl.hpp
         COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.bat
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        DEPENDS include/iris/alloy/detail/tuple_impl.hpp
+        DEPENDS ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/tuple_impl.hpp
         VERBATIM
     )
 else()
     add_custom_command(
-        OUTPUT include/iris/alloy/detail/preprocessed/tuple_impl.hpp
+        OUTPUT ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/preprocessed/tuple_impl.hpp
         COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        DEPENDS include/iris/alloy/detail/tuple_impl.hpp
+        DEPENDS ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/tuple_impl.hpp
         VERBATIM
     )
 endif()
@@ -73,7 +73,7 @@ file(
     ${PROJECT_SOURCE_DIR}/include/iris/alloy/*.ipp
 )
 
-list(APPEND IRIS_ALLOY_HEADERS include/iris/alloy/detail/preprocessed/tuple_impl.hpp)
+list(APPEND IRIS_ALLOY_HEADERS ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/preprocessed/tuple_impl.hpp)
 
 target_sources(
     iris_alloy
