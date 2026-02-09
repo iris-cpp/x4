@@ -139,10 +139,17 @@ set_property(
     DIRECTORY ${PROJECT_SOURCE_DIR}
     PROPERTY CMAKE_CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
 )
-execute_process(
-    COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
+if(MSVC)
+    execute_process(
+        COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.bat
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+else()
+    execute_process(
+        COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+endif()
 
 file(
     GLOB_RECURSE IRIS_ALLOY_HEADERS
