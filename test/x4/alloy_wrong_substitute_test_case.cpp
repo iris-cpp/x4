@@ -1,10 +1,13 @@
 #include "iris_x4_test.hpp"
 
-#include <iris/x4.hpp>
+#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/rule.hpp>
 
 #include <iris/alloy/adapt.hpp>
 #include <iris/alloy/tuple.hpp>
 
+#include <iris/rvariant.hpp>
 
 namespace alloy_wrong_substitute_test_case {
 
@@ -56,9 +59,9 @@ using AorB = iris::rvariant<
 
 } // ast
 
-using ARule = iris::x4::rule<struct a_tag, ast::A>;
-using BRule = iris::x4::rule<struct b_tag, ast::B>;
-using AorBRule = iris::x4::rule<struct a_or_b_tag, ast::AorB>;
+using ARule = x4::rule<struct a_tag, ast::A>;
+using BRule = x4::rule<struct b_tag, ast::B>;
+using AorBRule = x4::rule<struct a_or_b_tag, ast::AorB>;
 
 constexpr ARule a;
 constexpr BRule b;
@@ -78,4 +81,11 @@ IRIS_X4_DEFINE(a);
 IRIS_X4_DEFINE(b);
 IRIS_X4_DEFINE(a_or_b);
 
-IRIS_X4_INSTANTIATE(AorBRule, const char*, iris::x4::parse_context_for<const char*>);
+IRIS_X4_INSTANTIATE(AorBRule, const char*, x4::unused_type);
+
+TEST_CASE("alloy_wrong_substitute_test_case")
+{
+    const char* ptr = nullptr;
+    ast::AorB result;
+    (void)a_or_b.parse(ptr, nullptr, x4::unused, result);
+}
