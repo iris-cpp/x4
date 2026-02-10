@@ -15,61 +15,16 @@ X4 scales from quick prototypes to production parsers for DSLs, data formats, an
 
 ## How to use X4
 
-### Step 1. Setup the Boost superproject
-
-Note: Boost dependency is going to be removed entirely in the near future.
-
-#### For applications:
+Add Iris.X4 to your application:
 
 ```console
 cd my_app
-
-git submodule add https://github.com/boostorg/boost.git modules/boost
-cd modules/boost
-
-git submodule add https://github.com/iris-cpp/x4.git libs/iris_x4
+git submodule add https://github.com/iris-cpp/x4.git modules/iris_x4
 ```
-
-#### For X4 development:
-
-```console
-git clone https://github.com/boostorg/boost.git
-cd boost
-
-git clone https://github.com/iris-cpp/x4.git libs/iris_x4
-```
-
-### Step 2. Setup the dependent Boost libraries
-
-Note: Boost dependency is going to be removed entirely in the near future.
-
-```console
-git submodule update --init --depth 1 --recursive -- \
-    tools/build tools/boost_install libs/preprocessor
-
-# Linux
-./bootstrap.sh
-./b2 headers
-
-# Windows
-.\bootstrap.bat
-.\b2 headers
-```
-
-### Step 3. Start using X4
-
-#### For applications:
 
 Edit your `CMakeLists.txt`:
 
 ```cmake
-add_subdirectory(modules/boost/libs/iris_x4)
+add_subdirectory(modules/iris_x4)
 target_link_libraries(my_app PRIVATE Iris::X4)
-```
-
-#### For developing X4:
-
-```console
-cd iris_x4
-cmake -B build
 ```

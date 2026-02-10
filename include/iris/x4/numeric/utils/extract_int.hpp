@@ -20,11 +20,6 @@
 #include <iris/x4/traits/numeric_traits.hpp>
 #include <iris/x4/traits/char_encoding_traits.hpp>
 
-#include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/preprocessor/iteration/local.hpp>
-#include <boost/preprocessor/comparison/less.hpp>
-#include <boost/preprocessor/seq/elem.hpp>
-
 #include <concepts>
 #include <limits>
 #include <iterator>
@@ -32,10 +27,6 @@
 #include <utility>
 
 #include <cassert>
-
-#ifndef IRIS_X4_NUMERICS_LOOP_UNROLL
-# define IRIS_X4_NUMERICS_LOOP_UNROLL 3
-#endif
 
 namespace iris::x4::numeric {
 
@@ -54,27 +45,42 @@ template<int Digits, unsigned Radix>
 struct digits2_to_n;
 
 // lookup table for log2(x) : 2 <= x <= 36
-#define IRIS_X4_LOG2 (#error)(#error) \
-    (1000000)(1584960)(2000000)(2321920)(2584960)(2807350) \
-    (3000000)(3169920)(3321920)(3459430)(3584960)(3700430) \
-    (3807350)(3906890)(4000000)(4087460)(4169920)(4247920) \
-    (4321920)(4392310)(4459430)(4523560)(4584960)(4643850) \
-    (4700430)(4754880)(4807350)(4857980)(4906890)(4954190) \
-    (5000000)(5044390)(5087460)(5129280)(5169925)
+template<int Digits> struct digits2_to_n<Digits,  2> { static constexpr int value = static_cast<int>((Digits * 1000000) / 1000000); };
+template<int Digits> struct digits2_to_n<Digits,  3> { static constexpr int value = static_cast<int>((Digits * 1000000) / 1584960); };
+template<int Digits> struct digits2_to_n<Digits,  4> { static constexpr int value = static_cast<int>((Digits * 1000000) / 2000000); };
+template<int Digits> struct digits2_to_n<Digits,  5> { static constexpr int value = static_cast<int>((Digits * 1000000) / 2321920); };
+template<int Digits> struct digits2_to_n<Digits,  6> { static constexpr int value = static_cast<int>((Digits * 1000000) / 2584960); };
+template<int Digits> struct digits2_to_n<Digits,  7> { static constexpr int value = static_cast<int>((Digits * 1000000) / 2807350); };
+template<int Digits> struct digits2_to_n<Digits,  8> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3000000); };
+template<int Digits> struct digits2_to_n<Digits,  9> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3169920); };
+template<int Digits> struct digits2_to_n<Digits, 10> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3321920); };
+template<int Digits> struct digits2_to_n<Digits, 11> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3459430); };
+template<int Digits> struct digits2_to_n<Digits, 12> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3584960); };
+template<int Digits> struct digits2_to_n<Digits, 13> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3700430); };
+template<int Digits> struct digits2_to_n<Digits, 14> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3807350); };
+template<int Digits> struct digits2_to_n<Digits, 15> { static constexpr int value = static_cast<int>((Digits * 1000000) / 3906890); };
+template<int Digits> struct digits2_to_n<Digits, 16> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4000000); };
+template<int Digits> struct digits2_to_n<Digits, 17> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4087460); };
+template<int Digits> struct digits2_to_n<Digits, 18> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4169920); };
+template<int Digits> struct digits2_to_n<Digits, 19> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4247920); };
+template<int Digits> struct digits2_to_n<Digits, 20> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4321920); };
+template<int Digits> struct digits2_to_n<Digits, 21> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4392310); };
+template<int Digits> struct digits2_to_n<Digits, 22> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4459430); };
+template<int Digits> struct digits2_to_n<Digits, 23> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4523560); };
+template<int Digits> struct digits2_to_n<Digits, 24> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4584960); };
+template<int Digits> struct digits2_to_n<Digits, 25> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4643850); };
+template<int Digits> struct digits2_to_n<Digits, 26> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4700430); };
+template<int Digits> struct digits2_to_n<Digits, 27> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4754880); };
+template<int Digits> struct digits2_to_n<Digits, 28> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4807350); };
+template<int Digits> struct digits2_to_n<Digits, 29> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4857980); };
+template<int Digits> struct digits2_to_n<Digits, 30> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4906890); };
+template<int Digits> struct digits2_to_n<Digits, 31> { static constexpr int value = static_cast<int>((Digits * 1000000) / 4954190); };
+template<int Digits> struct digits2_to_n<Digits, 32> { static constexpr int value = static_cast<int>((Digits * 1000000) / 5000000); };
+template<int Digits> struct digits2_to_n<Digits, 33> { static constexpr int value = static_cast<int>((Digits * 1000000) / 5044390); };
+template<int Digits> struct digits2_to_n<Digits, 34> { static constexpr int value = static_cast<int>((Digits * 1000000) / 5087460); };
+template<int Digits> struct digits2_to_n<Digits, 35> { static constexpr int value = static_cast<int>((Digits * 1000000) / 5129280); };
+template<int Digits> struct digits2_to_n<Digits, 36> { static constexpr int value = static_cast<int>((Digits * 1000000) / 5169925); };
 
-#undef BOOST_PP_LOCAL_MACRO
-#define BOOST_PP_LOCAL_MACRO(Radix) \
-    template<int Digits> struct digits2_to_n<Digits, Radix> \
-    { \
-        static constexpr int value = static_cast<int>( \
-            (Digits * 1000000) / BOOST_PP_SEQ_ELEM(Radix, IRIS_X4_LOG2)); \
-    };
-
-#define BOOST_PP_LOCAL_LIMITS (2, 36)
-#include BOOST_PP_LOCAL_ITERATE()
-#undef BOOST_PP_LOCAL_MACRO
-
-#undef IRIS_X4_LOG2
 
 template<class T, unsigned Radix>
 struct digits_traits : digits2_to_n<std::numeric_limits<T>::digits, Radix>
@@ -247,13 +253,6 @@ struct check_max_digits<-1>
 };
 
 // extract_int: main code for extracting integers
-#define IRIS_X4_NUMERIC_INNER_LOOP(z, x, data) \
-    if (!check_max_digits<MaxDigits>::call(count + leading_zeros) || it == last) break; \
-    ch = *it; \
-    if (!radix_check::is_valid(ch) || !extractor::call(ch, count, val)) break; \
-    ++it; \
-    ++count;
-
 template<
     class T, unsigned Radix, unsigned MinDigits, int MaxDigits,
     class Accumulator = positive_accumulator<Radix>,
@@ -290,7 +289,16 @@ struct extract_int
         char_type ch;
 
         while (true) {
-            BOOST_PP_REPEAT(IRIS_X4_NUMERICS_LOOP_UNROLL, IRIS_X4_NUMERIC_INNER_LOOP, _)
+            if (!check_max_digits<MaxDigits>::call(count + leading_zeros) || it == last) {
+                break;
+            }
+            ch = *it;
+
+            if (!radix_check::is_valid(ch) || !extractor::call(ch, count, val)) {
+                break;
+            }
+            ++it;
+            ++count;
         }
 
         if (count + leading_zeros >= MinDigits) {
@@ -332,13 +340,6 @@ struct extract_int
 
 // extract_int: main code for extracting integers
 // common case where MinDigits == 1 and MaxDigits = -1
-#define IRIS_X4_NUMERIC_INNER_LOOP(z, x, data) \
-    if (it == last) break; \
-    ch = *it; \
-    if (!radix_check::is_valid(ch)) break; \
-    if (!extractor::call(ch, count, val)) return false; \
-    ++it; \
-    ++count;
 
 template<class T, unsigned Radix, class Accumulator, bool Accumulate>
 struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
@@ -390,7 +391,12 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         count = 0;
         ++it;
         while (true) {
-            BOOST_PP_REPEAT(IRIS_X4_NUMERICS_LOOP_UNROLL, IRIS_X4_NUMERIC_INNER_LOOP, _)
+            if (it == last) break;
+            ch = *it;
+            if (!radix_check::is_valid(ch)) break;
+            if (!extractor::call(ch, count, val)) return false;
+            ++it;
+            ++count;
         }
 
         x4::move_to(std::move(val), attr);

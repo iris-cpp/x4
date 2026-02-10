@@ -29,9 +29,6 @@
 
 #include <iris/x4/debug/detail/parse_callback.hpp>
 
-#include <boost/preprocessor/variadic/to_seq.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-
 #include <string_view>
 #include <concepts>
 #include <iterator>
@@ -600,20 +597,13 @@ using x4::rule;
         typename std::remove_cvref_t<rule_type>::attribute_type& attr \
     );
 
-#define IRIS_X4_DECLARE(rule_type) IRIS_X4_DECLARE_(,, rule_type)
-#define IRIS_X4_DECLARE_CONSTEXPR(rule_type) IRIS_X4_DECLARE_(, constexpr, rule_type)
-
-// NB: This can't be `constexpr`, because a constexpr declaration
+// Note: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation. We simply
 // can't drop (legit) use cases of `IRIS_X4_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
 // support in your rule, use `IRIS_X4_DECLARE_CONSTEXPR`.
-#define IRIS_DECLARE(...) \
-    IRIS_X4_DEPRECATED_MACRO_WARN( \
-        "Use of variadic arguments with `IRIS_DECLARE` is deprecated due to the heavy compile-time cost of " \
-    "`BOOST_PP_SEQ_*`. Just apply `IRIS_X4_DECLARE` for each of your rules." \
-    ) \
-    BOOST_PP_SEQ_FOR_EACH(IRIS_X4_DECLARE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+#define IRIS_X4_DECLARE(rule_type) IRIS_X4_DECLARE_(,, rule_type)
+#define IRIS_X4_DECLARE_CONSTEXPR(rule_type) IRIS_X4_DECLARE_(, constexpr, rule_type)
 
 // -------------------------------------------------------------
 
@@ -635,20 +625,13 @@ using x4::rule;
         ); \
     }
 
-#define IRIS_X4_DEFINE(rule_type) IRIS_X4_DEFINE_(,, rule_type)
-#define IRIS_X4_DEFINE_CONSTEXPR(rule_type) IRIS_X4_DEFINE_(, constexpr, rule_type)
-
-// NB: This can't be `constexpr`, because a constexpr declaration
+// Note: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation. We simply
 // can't drop (legit) use cases of `IRIS_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
 // support in your rule, use `IRIS_X4_DEFINE_CONSTEXPR`.
-#define IRIS_DEFINE(...) \
-    IRIS_X4_DEPRECATED_MACRO_WARN( \
-        "Use of variadic arguments with `IRIS_DEFINE` is deprecated due to the heavy compile-time cost of " \
-    "`BOOST_PP_SEQ_*`. Just apply `IRIS_X4_DEFINE` for each of your rules." \
-    ) \
-    BOOST_PP_SEQ_FOR_EACH(IRIS_X4_DEFINE_,, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+#define IRIS_X4_DEFINE(rule_type) IRIS_X4_DEFINE_(,, rule_type)
+#define IRIS_X4_DEFINE_CONSTEXPR(rule_type) IRIS_X4_DEFINE_(, constexpr, rule_type)
 
 // -------------------------------------------------------------
 
@@ -688,7 +671,7 @@ struct instantiate_macro_helper<RuleT, It, Context, void>
 
 #define IRIS_X4_INSTANTIATE_WRAP(...) __VA_ARGS__
 
-// NB: This can't be `constexpr`, because a constexpr declaration
+// Note: This can't be `constexpr`, because a constexpr declaration
 // cannot be used with explicit template instantiation.
 #define IRIS_X4_INSTANTIATE(...) \
     IRIS_X4_INSTANTIATE_( \
@@ -697,13 +680,6 @@ struct instantiate_macro_helper<RuleT, It, Context, void>
         IRIS_X4_INSTANTIATE_WRAP(typename ::iris::x4::detail::instantiate_macro_helper<__VA_ARGS__>::sentinel_type), \
         IRIS_X4_INSTANTIATE_WRAP(typename ::iris::x4::detail::instantiate_macro_helper<__VA_ARGS__>::context_type) \
     )
-
-#define IRIS_INSTANTIATE(...) \
-    IRIS_X4_DEPRECATED_MACRO_WARN( \
-        "Use `IRIS_X4_INSTANTIATE`. `IRIS_INSTANTIATE` is deprecated because " \
-        "the name was not correctly prefixed with `X4`." \
-    ) \
-    IRIS_X4_INSTANTIATE(__VA_ARGS__)
 
 } // iris::x4
 

@@ -50,9 +50,6 @@
 
 #include <iris/alloy/tuple.hpp>
 
-#include <boost/preprocessor/facilities/overload.hpp>
-#include <boost/preprocessor/facilities/expand.hpp>
-
 #include <optional>
 #include <vector>
 #include <string>
@@ -62,14 +59,14 @@
 
 // NOLINTBEGIN(bugprone-chained-comparison)
 
-#define TEST_SUCCESS_IMPL(tester, input, parser, ...) \
+#define X4_TEST_SUCCESS_IMPL(tester, input, parser, ...) \
     do { \
         auto const res = parse(input, parser __VA_OPT__(,) __VA_ARGS__); \
         CHECK(tester res.completed()); \
         CHECK(!res.expect_failure.has_value()); \
     } while (false)
 
-#define TEST_FAILURE_IMPL_4(tester, input, parser, catch_stmt) \
+#define X4_TEST_FAILURE_IMPL_4(tester, input, parser, catch_stmt) \
     do { \
         auto const res = parse(input, parser); \
         REQUIRE(tester res.completed()); \
@@ -80,7 +77,7 @@
         catch_stmt \
     } while (false)
 
-#define TEST_FAILURE_IMPL_5(tester, input, parser, arg0, catch_stmt) \
+#define X4_TEST_FAILURE_IMPL_5(tester, input, parser, arg0, catch_stmt) \
     do { \
         auto const res = parse(input, parser, arg0); \
         REQUIRE(tester res.completed()); \
@@ -91,7 +88,7 @@
         catch_stmt \
     } while (false)
 
-#define TEST_FAILURE_IMPL_6(tester, input, parser, arg0, arg1, catch_stmt) \
+#define X4_TEST_FAILURE_IMPL_6(tester, input, parser, arg0, arg1, catch_stmt) \
     do { \
         auto const res = parse(input, parser, arg0, arg1); \
         REQUIRE(tester res.completed()); \
@@ -102,28 +99,27 @@
         catch_stmt \
     } while (false)
 
-#define TEST_FAILURE_IMPL(...) BOOST_PP_EXPAND(BOOST_PP_OVERLOAD(TEST_FAILURE_IMPL_, __VA_ARGS__) (__VA_ARGS__))
-
 // Comments below are intentionally written verbosely
 // to provide human-friendly intellisense tooltip for testers
 
 // parser = ok, exception = none, expectation_failure = none
-#define TEST_SUCCESS_PASS(...)      TEST_SUCCESS_IMPL(, __VA_ARGS__)
+#define X4_TEST_SUCCESS_PASS(...)      X4_TEST_SUCCESS_IMPL(, __VA_ARGS__)
 
 // parser = ok, exception = none, expectation_failure = none
-#define TEST_ATTR_SUCCESS_PASS(...) TEST_SUCCESS_IMPL(, __VA_ARGS__)
+#define X4_TEST_ATTR_SUCCESS_PASS(...) X4_TEST_SUCCESS_IMPL(, __VA_ARGS__)
 
 // parser = fail, exception = none, expectation_failure = none
-#define TEST_SUCCESS_FAIL(...)      TEST_SUCCESS_IMPL(!, __VA_ARGS__)
+#define X4_TEST_SUCCESS_FAIL(...)      X4_TEST_SUCCESS_IMPL(!, __VA_ARGS__)
 
 // parser = fail, exception = none, expectation_failure = none
-#define TEST_ATTR_SUCCESS_FAIL(...) TEST_SUCCESS_IMPL(!, __VA_ARGS__)
+#define X4_TEST_ATTR_SUCCESS_FAIL(...) X4_TEST_SUCCESS_IMPL(!, __VA_ARGS__)
 
 // parser = fail, exception = none, expectation_failure = yes
-#define TEST_FAILURE(...)           TEST_FAILURE_IMPL(!, __VA_ARGS__)
+#define X4_TEST_FAILURE(...)           X4_TEST_FAILURE_IMPL_4(!, __VA_ARGS__)
+#define X4_TEST_FAILURE_EX(...)        X4_TEST_FAILURE_IMPL_5(!, __VA_ARGS__)
 
 // parser = fail, exception = none, expectation_failure = yes
-#define TEST_ATTR_FAILURE(...)      TEST_FAILURE_IMPL(!, __VA_ARGS__)
+#define X4_TEST_ATTR_FAILURE(...)      X4_TEST_FAILURE_IMPL_6(!, __VA_ARGS__)
 
 
 // For testers; development QOL purpose only.
@@ -316,26 +312,26 @@ TEST_CASE("expect")
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ > char_);
 
     {
-        TEST_SUCCESS_PASS("aa", char_ >> expect[char_]);
-        TEST_SUCCESS_PASS("aaa", char_ >> expect[char_ >> char_('a')]);
-        TEST_SUCCESS_PASS("xi", char_('x') >> expect[char_('i')]);
-        TEST_SUCCESS_FAIL("xi", char_('y') >> expect[char_('o')]); // should not throw!
-        TEST_SUCCESS_PASS("xin", char_('x') >> expect[char_('i') >> char_('n')]);
+        X4_TEST_SUCCESS_PASS("aa", char_ >> expect[char_]);
+        X4_TEST_SUCCESS_PASS("aaa", char_ >> expect[char_ >> char_('a')]);
+        X4_TEST_SUCCESS_PASS("xi", char_('x') >> expect[char_('i')]);
+        X4_TEST_SUCCESS_FAIL("xi", char_('y') >> expect[char_('o')]); // should not throw!
+        X4_TEST_SUCCESS_PASS("xin", char_('x') >> expect[char_('i') >> char_('n')]);
 
-        TEST_FAILURE("xi", char_('x') >> expect[char_('o')], {
+        X4_TEST_FAILURE("xi", char_('x') >> expect[char_('o')], {
             CHECK(which == "'o'"sv);
             CHECK(where == "i"sv);
         });
     }
 
     {
-        TEST_SUCCESS_PASS("aa", char_ > char_);
-        TEST_SUCCESS_PASS("aaa", char_ > char_ > char_('a'));
-        TEST_SUCCESS_PASS("xi", char_('x') > char_('i'));
-        TEST_SUCCESS_FAIL("xi", char_('y') > char_('o')); // should not throw!
-        TEST_SUCCESS_PASS("xin", char_('x') > char_('i') > char_('n'));
+        X4_TEST_SUCCESS_PASS("aa", char_ > char_);
+        X4_TEST_SUCCESS_PASS("aaa", char_ > char_ > char_('a'));
+        X4_TEST_SUCCESS_PASS("xi", char_('x') > char_('i'));
+        X4_TEST_SUCCESS_FAIL("xi", char_('y') > char_('o')); // should not throw!
+        X4_TEST_SUCCESS_PASS("xin", char_('x') > char_('i') > char_('n'));
 
-        TEST_FAILURE("xi", char_('x') > char_('o'),
+        X4_TEST_FAILURE("xi", char_('x') > char_('o'),
         {
             CHECK(which == "'o'"sv);
             CHECK(where == "i"sv);
@@ -344,13 +340,13 @@ TEST_CASE("expect")
 
     {
     #ifndef IRIS_X4_NO_RTTI
-        TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
+        X4_TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
             CHECK(x.which().find("sequence") != std::string::npos);
             CHECK(where == "y:a"sv);
         });
     #else
-        TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
+        X4_TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
             CHECK(which == "undefined"sv);
             CHECK(where == "y:a"sv);
@@ -366,7 +362,7 @@ TEST_CASE("expect")
     // Test that attributes with > (sequences) work just like >> (sequences)
     {
         alloy::tuple<char, char, char> attr;
-        TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ > char_, space, attr);
+        X4_TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ > char_, space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));
         CHECK((alloy::get<2>(attr) == 'c'));
@@ -374,7 +370,7 @@ TEST_CASE("expect")
 
     {
         alloy::tuple<char, char, char> attr;
-        TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ >> char_, space, attr);
+        X4_TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ >> char_, space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));
         CHECK((alloy::get<2>(attr) == 'c'));
@@ -382,7 +378,7 @@ TEST_CASE("expect")
 
     {
         alloy::tuple<char, char, char> attr;
-        TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' > char_ >> ',' > char_, space, attr);
+        X4_TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' > char_ >> ',' > char_, space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));
         CHECK((alloy::get<2>(attr) == 'c'));
@@ -390,7 +386,7 @@ TEST_CASE("expect")
 
     {
         std::string attr;
-        TEST_ATTR_SUCCESS_PASS("'azaaz'", "'" > *(char_("a") | char_("z")) > "'", space, attr);
+        X4_TEST_ATTR_SUCCESS_PASS("'azaaz'", "'" > *(char_("a") | char_("z")) > "'", space, attr);
         CHECK(attr == "azaaz");
     }
 
@@ -399,17 +395,17 @@ TEST_CASE("expect")
 #endif
 
     {
-        TEST_SUCCESS_PASS(" a a", char_ > char_, space);
-        TEST_SUCCESS_PASS(" x i", char_('x') > char_('i'), space);
+        X4_TEST_SUCCESS_PASS(" a a", char_ > char_, space);
+        X4_TEST_SUCCESS_PASS(" x i", char_('x') > char_('i'), space);
 
-        TEST_FAILURE(" x i", char_('x') > char_('o'), space, {
+        X4_TEST_FAILURE_EX(" x i", char_('x') > char_('o'), space, {
             CHECK(which == "'o'"sv);
             CHECK(where == "i"sv);
         });
     }
 
     {
-        TEST_FAILURE("bar", expect[lit("foo")],
+        X4_TEST_FAILURE("bar", expect[lit("foo")],
         {
             CHECK(which == "\"foo\""sv);
             CHECK(where == "bar"sv);
@@ -419,7 +415,7 @@ TEST_CASE("expect")
 
     // skipper
     {
-        TEST_FAILURE("accb", repeat(7)[alpha], (lit('a') > 'b') | (lit('c') > 'd'), {
+        X4_TEST_FAILURE_EX("accb", repeat(7)[alpha], (lit('a') > 'b') | (lit('c') > 'd'), {
             CHECK(which == "'b'"sv);
             CHECK(where == "ccb"sv);
         });
@@ -445,15 +441,15 @@ TEST_CASE("expect")
     // sanity check: test expectation_failure propagation
     // on custom skippers
     {
-        TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', lit('.') >> '.');
-        TEST_SUCCESS_FAIL("a..b", lit('a') >> 'b', lit('.') >> 'z');
+        X4_TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', lit('.') >> '.');
+        X4_TEST_SUCCESS_FAIL("a..b", lit('a') >> 'b', lit('.') >> 'z');
 
-        TEST_SUCCESS_PASS("a  b", lit('a') >> 'b', blank);
-        TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', +lit('.'));
-        TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', lit('.') >> '.');
+        X4_TEST_SUCCESS_PASS("a  b", lit('a') >> 'b', blank);
+        X4_TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', +lit('.'));
+        X4_TEST_SUCCESS_PASS("a..b", lit('a') >> 'b', lit('.') >> '.');
 
         // if this test fails, there might be a problem in x4::skip_over
-        TEST_FAILURE     ("a..b", lit('a') >> 'b', lit('.') >> expect[lit('z')], {
+        X4_TEST_FAILURE_EX("a..b", lit('a') >> 'b', lit('.') >> expect[lit('z')], {
             CHECK(which == "'z'"sv);
             CHECK(where == ".b"sv);
         });
@@ -462,15 +458,15 @@ TEST_CASE("expect")
         // skip(...) version of the code above
         // we must test against semantically identical cases!
 
-        TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
-        TEST_SUCCESS_FAIL("a..b", skip(lit('.') >> 'z')[lit('a') >> 'b']);
+        X4_TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
+        X4_TEST_SUCCESS_FAIL("a..b", skip(lit('.') >> 'z')[lit('a') >> 'b']);
 
-        TEST_SUCCESS_PASS("a  b", skip(blank)[lit('a') >> 'b']);
-        TEST_SUCCESS_PASS("a..b", skip(+lit('.'))[lit('a') >> 'b']);
-        TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
+        X4_TEST_SUCCESS_PASS("a  b", skip(blank)[lit('a') >> 'b']);
+        X4_TEST_SUCCESS_PASS("a..b", skip(+lit('.'))[lit('a') >> 'b']);
+        X4_TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
 
         // if this test fails, there might be a problem in x4::skip_over and/or x4::skip_directive
-        TEST_FAILURE     ("a..b", skip(lit('.') >> expect[lit('z')])[lit('a') >> 'b'], {
+        X4_TEST_FAILURE     ("a..b", skip(lit('.') >> expect[lit('z')])[lit('a') >> 'b'], {
             CHECK(which == "'z'"sv);
             CHECK(where == ".b"sv);
         });
@@ -478,15 +474,15 @@ TEST_CASE("expect")
 
     // sanity check; test `post_skip` in `x4::phrase_parse(...)`
     {
-        TEST_SUCCESS_PASS("a..b..", lit('a') >> 'b', lit('.') >> '.');
-        TEST_SUCCESS_FAIL("a..b..", lit('a') >> 'z', lit('.') >> '.');
-        TEST_SUCCESS_FAIL("a..b..", lit('a') >> 'b', lit('.') >> 'z');
+        X4_TEST_SUCCESS_PASS("a..b..", lit('a') >> 'b', lit('.') >> '.');
+        X4_TEST_SUCCESS_FAIL("a..b..", lit('a') >> 'z', lit('.') >> '.');
+        X4_TEST_SUCCESS_FAIL("a..b..", lit('a') >> 'b', lit('.') >> 'z');
 
         // should fail in `post_skip`
-        TEST_SUCCESS_FAIL("a..b.z", lit('a') >> 'b', lit('.') >> '.');
+        X4_TEST_SUCCESS_FAIL("a..b.z", lit('a') >> 'b', lit('.') >> '.');
 
         // if this test fails, x4::skip_over is BUGGED when `post_skip` is run
-        TEST_FAILURE("a..b.z", lit('a') >> 'b', lit('.') > '.', {
+        X4_TEST_FAILURE_EX("a..b.z", lit('a') >> 'b', lit('.') > '.', {
             CHECK(which == "'.'"sv);
             CHECK(where == "z"sv);
         });
@@ -494,14 +490,14 @@ TEST_CASE("expect")
 
     // sequence
     {
-        TEST_SUCCESS_PASS("ab", lit('a') >> 'b');
-        TEST_SUCCESS_FAIL("ac", lit('a') >> 'b');
+        X4_TEST_SUCCESS_PASS("ab", lit('a') >> 'b');
+        X4_TEST_SUCCESS_FAIL("ac", lit('a') >> 'b');
 
-        TEST_FAILURE("ac", lit('a') >> expect[lit('b')], {
+        X4_TEST_FAILURE("ac", lit('a') >> expect[lit('b')], {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
-        TEST_FAILURE("ac", lit('a') > lit('b'), {
+        X4_TEST_FAILURE("ac", lit('a') > lit('b'), {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
@@ -509,53 +505,53 @@ TEST_CASE("expect")
 
     // auxilary parsers
     {
-        TEST_SUCCESS_PASS("a12", lit('a') > eps > +digit);
-        TEST_SUCCESS_PASS("a12", lit('a') > +digit > eoi);
-        TEST_SUCCESS_PASS("a12\n", lit('a') > +digit > eol);
+        X4_TEST_SUCCESS_PASS("a12", lit('a') > eps > +digit);
+        X4_TEST_SUCCESS_PASS("a12", lit('a') > +digit > eoi);
+        X4_TEST_SUCCESS_PASS("a12\n", lit('a') > +digit > eol);
 
-        TEST_FAILURE("a12", lit('a') > eps(false) > +digit, {
+        X4_TEST_FAILURE("a12", lit('a') > eps(false) > +digit, {
             CHECK(where == "12"sv);
         });
-        TEST_FAILURE("a12", lit('a') > eoi > +digit, {
+        X4_TEST_FAILURE("a12", lit('a') > eoi > +digit, {
             CHECK(where == "12"sv);
         });
-        TEST_FAILURE("a12\n", lit('a') > eol > +digit, {
+        X4_TEST_FAILURE("a12\n", lit('a') > eol > +digit, {
             CHECK(where == "12\n"sv);
         });
 
         int n = 0;
-        TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::attr(12) > eoi, n);
+        X4_TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::attr(12) > eoi, n);
         CHECK(n == 12);
     }
 
     // numeric, char, string parsers
     {
-        TEST_SUCCESS_PASS("abc12", +alpha > int_);
-        TEST_SUCCESS_PASS("12a", +digit > lit('a'));
+        X4_TEST_SUCCESS_PASS("abc12", +alpha > int_);
+        X4_TEST_SUCCESS_PASS("12a", +digit > lit('a'));
 
-        TEST_FAILURE("abc", +alpha > int_, {
+        X4_TEST_FAILURE("abc", +alpha > int_, {
             CHECK(where == ""sv);
         });
-        TEST_FAILURE("12a", +digit > lit('b'), {
+        X4_TEST_FAILURE("12a", +digit > lit('b'), {
             CHECK(which == "'b'"sv);
             CHECK(where == "a"sv);
         });
 
         shared_symbols<> s;
         s.add("cat");
-        TEST_SUCCESS_PASS("12cat", +digit > s);
-        TEST_FAILURE("12dog", +digit > s, {
+        X4_TEST_SUCCESS_PASS("12cat", +digit > s);
+        X4_TEST_FAILURE("12dog", +digit > s, {
             CHECK(where == "dog"sv);
         });
     }
 
     // expect
     {
-        TEST_SUCCESS_PASS("abc", lit('a') >> expect[lit('b') >> 'c']);
-        TEST_FAILURE("abc", lit('a') >> expect[lit('b') >> 'd'], {
+        X4_TEST_SUCCESS_PASS("abc", lit('a') >> expect[lit('b') >> 'c']);
+        X4_TEST_FAILURE("abc", lit('a') >> expect[lit('b') >> 'd'], {
             CHECK(where == "bc"sv);
         });
-        TEST_FAILURE("abc", lit('a') >> expect[lit('b') > 'd'], {
+        X4_TEST_FAILURE("abc", lit('a') >> expect[lit('b') > 'd'], {
             CHECK(which == "'d'"sv);
             CHECK(where == "c"sv);
         });
@@ -563,8 +559,8 @@ TEST_CASE("expect")
 
     // lexeme
     {
-        TEST_SUCCESS_PASS("12 ab", int_ >> lexeme[lit('a') > 'b'], space);
-        TEST_FAILURE("12 a b", int_ >> lexeme[lit('a') > 'b'], space, {
+        X4_TEST_SUCCESS_PASS("12 ab", int_ >> lexeme[lit('a') > 'b'], space);
+        X4_TEST_FAILURE_EX("12 a b", int_ >> lexeme[lit('a') > 'b'], space, {
             CHECK(which == "'b'"sv);
             CHECK(where == " b"sv);
         });
@@ -572,23 +568,23 @@ TEST_CASE("expect")
 
     // matches
     {
-        TEST_SUCCESS_PASS("ab", matches[lit('a') >> 'b']);
-        TEST_SUCCESS_PASS("ac", matches[lit('a') >> 'b'] >> "ac");
-        TEST_SUCCESS_PASS("ab", matches[lit('a') > 'b']);
-        TEST_FAILURE("ac", matches[lit('a') > 'b'] >> "ac", {
+        X4_TEST_SUCCESS_PASS("ab", matches[lit('a') >> 'b']);
+        X4_TEST_SUCCESS_PASS("ac", matches[lit('a') >> 'b'] >> "ac");
+        X4_TEST_SUCCESS_PASS("ab", matches[lit('a') > 'b']);
+        X4_TEST_FAILURE("ac", matches[lit('a') > 'b'] >> "ac", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
 
         bool attr = false;
-        TEST_ATTR_SUCCESS_PASS("ab", matches[lit('a') > 'b'], attr);
+        X4_TEST_ATTR_SUCCESS_PASS("ab", matches[lit('a') > 'b'], attr);
         CHECK(attr == true);
     }
 
     // no_case
     {
-        TEST_SUCCESS_PASS("12 aB", int_ >> no_case[lit('a') > 'b'], space);
-        TEST_FAILURE("12 aB", int_ >> no_case[lit('a') > 'c'], space, {
+        X4_TEST_SUCCESS_PASS("12 aB", int_ >> no_case[lit('a') > 'b'], space);
+        X4_TEST_FAILURE_EX("12 aB", int_ >> no_case[lit('a') > 'c'], space, {
             CHECK(which == "'c'"sv);
             CHECK(where == "B"sv);
         });
@@ -596,8 +592,8 @@ TEST_CASE("expect")
 
     // no_skip
     {
-        TEST_SUCCESS_PASS("12 3ab", int_ >> int_ >> no_skip[lit('a') > 'b'], space);
-        TEST_FAILURE("12 3ab", int_ >> int_ >> no_skip[lit('a') > 'c'], space, {
+        X4_TEST_SUCCESS_PASS("12 3ab", int_ >> int_ >> no_skip[lit('a') > 'b'], space);
+        X4_TEST_FAILURE_EX("12 3ab", int_ >> int_ >> no_skip[lit('a') > 'c'], space, {
             CHECK(which == "'c'"sv);
             CHECK(where == "b"sv);
         });
@@ -605,18 +601,18 @@ TEST_CASE("expect")
 
     // skip
     {
-        TEST_SUCCESS_PASS("ab[]c[]d", skip(lit('[') > ']')[+alpha]);
-        TEST_FAILURE("ab[]c[5]d", skip(lit('[') > ']')[+alpha], {
+        X4_TEST_SUCCESS_PASS("ab[]c[]d", skip(lit('[') > ']')[+alpha]);
+        X4_TEST_FAILURE("ab[]c[5]d", skip(lit('[') > ']')[+alpha], {
             CHECK(which == "']'"sv);
             CHECK(where == "5]d"sv);
         });
 
-        TEST_SUCCESS_PASS("a1[]b2c3[]d4", skip(lit('[') > ']')[+(alpha > digit)]);
-        TEST_FAILURE("a1[]b2c3[]d", skip(lit('[') > ']')[+(alpha > digit)], {
+        X4_TEST_SUCCESS_PASS("a1[]b2c3[]d4", skip(lit('[') > ']')[+(alpha > digit)]);
+        X4_TEST_FAILURE("a1[]b2c3[]d", skip(lit('[') > ']')[+(alpha > digit)], {
             CHECK(where == ""sv);
         });
 
-        TEST_FAILURE("a b c", lit('a') > 'c', space, {
+        X4_TEST_FAILURE_EX("a b c", lit('a') > 'c', space, {
             CHECK(which == "'c'"sv);
             CHECK(where == "b c"sv);
         });
@@ -624,7 +620,7 @@ TEST_CASE("expect")
 
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d", skip(space)[*char_ > lit('z')], s, {
+            X4_TEST_FAILURE_EX("a b c d", skip(space)[*char_ > lit('z')], s, {
                 CHECK(which == "'z'"sv);
                 CHECK(where == ""sv);
             });
@@ -632,25 +628,25 @@ TEST_CASE("expect")
 
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('d')], blank, s);
+            X4_TEST_ATTR_SUCCESS_PASS("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('d')], blank, s);
             CHECK(s == "abcd");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('z') > skip(space)[char_('c') > char_('d')], blank, s, {
+            X4_TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('z') > skip(space)[char_('c') > char_('d')], blank, s, {
                 CHECK(which == "'z'"sv);
                 CHECK(where == "b\n c\n d"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('z') > char_('d')], blank, s, {
+            X4_TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('z') > char_('d')], blank, s, {
                 CHECK(where == "\n c\n d"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], blank, s, {
+            X4_TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], blank, s, {
                 CHECK(which == "'z'"sv);
                 CHECK(where == "d"sv);
             });
@@ -659,12 +655,12 @@ TEST_CASE("expect")
         // reskip
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d')]], blank, s);
+            X4_TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d')]], blank, s);
             CHECK(s == "abcd");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z')]], blank, s, {
+            X4_TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z')]], blank, s, {
                 CHECK(where == "d"sv);
             });
         }
@@ -672,18 +668,18 @@ TEST_CASE("expect")
         // reskip with expectation failure context propagation
         {
             std::string s;
-            TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('e')]], blank, s);
+            X4_TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('e')]], blank, s);
             CHECK(s == "abcde");
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z') > char_('e')]], blank, s, {
+            X4_TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z') > char_('e')]], blank, s, {
                 CHECK(where == " d e"sv);
             });
         }
         {
             std::string s;
-            TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('z')]], blank, s, {
+            X4_TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('z')]], blank, s, {
                 CHECK(which == "'z'"sv);
                 CHECK(where == "e"sv);
             });
@@ -692,8 +688,8 @@ TEST_CASE("expect")
 
     // omit
     {
-        TEST_SUCCESS_PASS("ab", omit[lit('a') > 'b']);
-        TEST_FAILURE("ab", omit[lit('a') > 'c'], {
+        X4_TEST_SUCCESS_PASS("ab", omit[lit('a') > 'b']);
+        X4_TEST_FAILURE("ab", omit[lit('a') > 'c'], {
             CHECK(which == "'c'"sv);
             CHECK(where == "b"sv);
         });
@@ -701,8 +697,8 @@ TEST_CASE("expect")
 
     // raw
     {
-        TEST_SUCCESS_PASS("ab", raw[lit('a') > 'b']);
-        TEST_FAILURE("ab", raw[lit('a') > 'c'], {
+        X4_TEST_SUCCESS_PASS("ab", raw[lit('a') > 'b']);
+        X4_TEST_FAILURE("ab", raw[lit('a') > 'c'], {
             CHECK(which == "'c'"sv);
             CHECK(where == "b"sv);
         });
@@ -710,24 +706,24 @@ TEST_CASE("expect")
 
     // repeat
     {
-        TEST_SUCCESS_PASS("ababac", repeat(1, 3)[lit('a') >> 'b'] >> "ac" | +alpha);
+        X4_TEST_SUCCESS_PASS("ababac", repeat(1, 3)[lit('a') >> 'b'] >> "ac" | +alpha);
 
-        TEST_FAILURE("ababac", repeat(1, 3)[lit('a') > 'b'] | +alpha, {
+        X4_TEST_FAILURE("ababac", repeat(1, 3)[lit('a') > 'b'] | +alpha, {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
-        TEST_FAILURE("acab", repeat(2, 3)[lit('a') > 'b'] | +alpha, {
+        X4_TEST_FAILURE("acab", repeat(2, 3)[lit('a') > 'b'] | +alpha, {
             CHECK(which == "'b'"sv);
             CHECK(where == "cab"sv);
         });
 
-        TEST_SUCCESS_PASS("bcab", repeat(2, 3)[lit('a') > 'b'] | +alpha);
+        X4_TEST_SUCCESS_PASS("bcab", repeat(2, 3)[lit('a') > 'b'] | +alpha);
     }
 
     // seek
     {
-        TEST_SUCCESS_PASS("a1b1c1", seek[lit('c') > '1']);
-        TEST_FAILURE("a1b1c2c1", seek[lit('c') > '1'], {
+        X4_TEST_SUCCESS_PASS("a1b1c1", seek[lit('c') > '1']);
+        X4_TEST_FAILURE("a1b1c2c1", seek[lit('c') > '1'], {
             CHECK(which == "'1'"sv);
             CHECK(where == "2c1"sv);
         });
@@ -735,14 +731,14 @@ TEST_CASE("expect")
 
     // alternative
     {
-        TEST_SUCCESS_PASS("ac", lit('a') >> 'b' | "ac");
-        TEST_SUCCESS_PASS("ac", lit('a') >> 'b' | lit('a') >> 'd' | "ac");
+        X4_TEST_SUCCESS_PASS("ac", lit('a') >> 'b' | "ac");
+        X4_TEST_SUCCESS_PASS("ac", lit('a') >> 'b' | lit('a') >> 'd' | "ac");
 
-        TEST_FAILURE("ac", (lit('a') > 'b') | "ac", {
+        X4_TEST_FAILURE("ac", (lit('a') > 'b') | "ac", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
-        TEST_FAILURE("ac", lit('a') >> 'b' | (lit('a') > 'd') | "ac", {
+        X4_TEST_FAILURE("ac", lit('a') >> 'b' | (lit('a') > 'd') | "ac", {
             CHECK(which == "'d'"sv);
             CHECK(where == "c"sv);
         });
@@ -750,8 +746,8 @@ TEST_CASE("expect")
 
     // predicate
     {
-        TEST_SUCCESS_PASS("abc", lit('a') >> &(lit('b') > 'c') >> "bc");
-        TEST_FAILURE("abc", lit('a') >> &(lit('b') > 'd') >> "bc", {
+        X4_TEST_SUCCESS_PASS("abc", lit('a') >> &(lit('b') > 'c') >> "bc");
+        X4_TEST_FAILURE("abc", lit('a') >> &(lit('b') > 'd') >> "bc", {
             CHECK(which == "'d'"sv);
             CHECK(where == "c"sv);
         });
@@ -759,9 +755,9 @@ TEST_CASE("expect")
 
     // difference
     {
-        TEST_SUCCESS_PASS("bcac", *(char_ - (lit('a') >> 'b')));
-        TEST_SUCCESS_PASS("bcab", *(char_ - (lit('a') > 'b')) >> "ab");
-        TEST_FAILURE("bcac", *(char_ - (lit('a') > 'b')) >> "ab", {
+        X4_TEST_SUCCESS_PASS("bcac", *(char_ - (lit('a') >> 'b')));
+        X4_TEST_SUCCESS_PASS("bcab", *(char_ - (lit('a') > 'b')) >> "ab");
+        X4_TEST_FAILURE("bcac", *(char_ - (lit('a') > 'b')) >> "ab", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
@@ -769,9 +765,9 @@ TEST_CASE("expect")
 
     // kleene
     {
-        TEST_SUCCESS_PASS("abac", *(lit('a') >> 'b') >> "ac");
-        TEST_SUCCESS_PASS("abbc", *(lit('a') > 'b') >> "bc");
-        TEST_FAILURE("abac", *(lit('a') > 'b') >> "ac", {
+        X4_TEST_SUCCESS_PASS("abac", *(lit('a') >> 'b') >> "ac");
+        X4_TEST_SUCCESS_PASS("abbc", *(lit('a') > 'b') >> "bc");
+        X4_TEST_FAILURE("abac", *(lit('a') > 'b') >> "ac", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
@@ -779,14 +775,14 @@ TEST_CASE("expect")
 
     // list
     {
-        TEST_SUCCESS_PASS("ab::ab::ac", (lit('a') >> 'b') % (lit(':') >> ':') >> "::ac");
-        TEST_SUCCESS_PASS("ab::ab:ac", (lit('a') > 'b') % (lit(':') >> ':') >> ":ac");
+        X4_TEST_SUCCESS_PASS("ab::ab::ac", (lit('a') >> 'b') % (lit(':') >> ':') >> "::ac");
+        X4_TEST_SUCCESS_PASS("ab::ab:ac", (lit('a') > 'b') % (lit(':') >> ':') >> ":ac");
 
-        TEST_FAILURE("ab::ab::ac", (lit('a') > 'b') % (lit(':') >> ':') >> "::ac", {
+        X4_TEST_FAILURE("ab::ab::ac", (lit('a') > 'b') % (lit(':') >> ':') >> "::ac", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
-        TEST_FAILURE("ab::ab:ab", (lit('a') >> 'b') % (lit(':') > ':') >> ":ab", {
+        X4_TEST_FAILURE("ab::ab:ab", (lit('a') >> 'b') % (lit(':') > ':') >> ":ab", {
             CHECK(which == "':'"sv);
             CHECK(where == "ab"sv);
         });
@@ -794,9 +790,9 @@ TEST_CASE("expect")
 
     // not
     {
-        TEST_SUCCESS_PASS("[ac]", lit('[') >> !(lit('a') >> 'b') >> +alpha >> ']');
-        TEST_SUCCESS_PASS("[bc]", lit('[') >> !(lit('a') > 'b') >> +alpha >> ']');
-        TEST_FAILURE("[ac]", lit('[') >> !(lit('a') > 'b') >> +alpha >> ']', {
+        X4_TEST_SUCCESS_PASS("[ac]", lit('[') >> !(lit('a') >> 'b') >> +alpha >> ']');
+        X4_TEST_SUCCESS_PASS("[bc]", lit('[') >> !(lit('a') > 'b') >> +alpha >> ']');
+        X4_TEST_FAILURE("[ac]", lit('[') >> !(lit('a') > 'b') >> +alpha >> ']', {
             CHECK(which == "'b'"sv);
             CHECK(where == "c]"sv);
         });
@@ -804,9 +800,9 @@ TEST_CASE("expect")
 
     // optional
     {
-        TEST_SUCCESS_PASS("ac", -(lit('a') >> 'b') >> "ac");
-        TEST_SUCCESS_PASS("ab", -(lit('a') > 'b'));
-        TEST_FAILURE("ac", -(lit('a') > 'b') >> "ac", {
+        X4_TEST_SUCCESS_PASS("ac", -(lit('a') >> 'b') >> "ac");
+        X4_TEST_SUCCESS_PASS("ab", -(lit('a') > 'b'));
+        X4_TEST_FAILURE("ac", -(lit('a') > 'b') >> "ac", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });
@@ -814,9 +810,9 @@ TEST_CASE("expect")
 
     // plus
     {
-        TEST_SUCCESS_PASS("abac", +(lit('a') >> 'b') >> "ac");
-        TEST_SUCCESS_PASS("abbc", +(lit('a') > 'b') >> "bc");
-        TEST_FAILURE("abac", +(lit('a') > 'b') >> "ac", {
+        X4_TEST_SUCCESS_PASS("abac", +(lit('a') >> 'b') >> "ac");
+        X4_TEST_SUCCESS_PASS("abbc", +(lit('a') > 'b') >> "bc");
+        X4_TEST_FAILURE("abac", +(lit('a') > 'b') >> "ac", {
             CHECK(which == "'b'"sv);
             CHECK(where == "c"sv);
         });

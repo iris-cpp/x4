@@ -116,21 +116,8 @@ set_target_properties(iris_x4 PROPERTIES CXX_EXTENSIONS OFF)
 # -----------------------------------------------------------------
 # External libraries
 
-set(iris_x4_boost_deps "")
-
-# Everything required by `preprocessor` (manually confirmed)
-list(APPEND iris_x4_boost_deps preprocessor)
-
-# ---------------------------------------------
-list(REMOVE_DUPLICATES iris_x4_boost_deps)
-
-foreach(dep IN LISTS iris_x4_boost_deps)
-    add_subdirectory(../${dep} build_deps/${dep})
-endforeach()
-
-foreach(dep IN LISTS iris_x4_boost_deps)
-    target_link_libraries(iris_x4 INTERFACE Boost::${dep})
-endforeach()
+add_subdirectory(modules/boost_preprocessor)
+target_link_libraries(iris_alloy INTERFACE Boost::preprocessor)
 
 
 # -----------------------------------------------------------------
