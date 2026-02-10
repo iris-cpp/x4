@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# Copyright 2026 The Iris Project Contributors
+#
+# Distributed under the Boost Software License, Version 1.0.
+# https://www.boost.org/LICENSE_1_0.txt
+
 N = 32
 
 print('<?xml version="1.0" encoding="utf-8"?>')
