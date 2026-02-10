@@ -24,8 +24,7 @@
 #include <cassert>
 #include <cmath>
 
-// TODO: fix this
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4100)   // 'p': unreferenced formal parameter
 #endif
@@ -253,7 +252,7 @@ struct extract_real
     }
 };
 
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#ifdef _MSC_VER
 # pragma warning(pop)
 #endif
 

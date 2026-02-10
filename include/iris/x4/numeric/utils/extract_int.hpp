@@ -261,7 +261,7 @@ template<
 >
 struct extract_int
 {
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4127)   // conditional expression is constant
 # pragma warning(disable: 4459)   // declaration hides global declaration
@@ -300,7 +300,7 @@ struct extract_int
         }
         return false;
     }
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#ifdef _MSC_VER
 # pragma warning(pop)
 #endif
 
@@ -343,7 +343,7 @@ struct extract_int
 template<class T, unsigned Radix, class Accumulator, bool Accumulate>
 struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
 {
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4127)   // conditional expression is constant
 # pragma warning(disable: 4459)   // declaration hides global declaration
@@ -397,7 +397,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         first = it;
         return true;
     }
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#ifdef _MSC_VER
 # pragma warning(pop)
 #endif
 
