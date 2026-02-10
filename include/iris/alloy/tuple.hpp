@@ -139,7 +139,7 @@ public:
 #endif
     constexpr explicit(!detail::tuple_traits<tuple<Us...>&, Ts...>::all_convertible) tuple(tuple<Us...>& other)
         noexcept(detail::tuple_traits<tuple<Us...>&, Ts...>::all_nothrow_constructible)
-        : base_type(other)
+        : base_type(static_cast<detail::tuple_impl<Us...>&>(other))
     {}
 
     template<class... Us>
@@ -154,7 +154,7 @@ public:
 #endif
     constexpr explicit(!detail::tuple_traits<tuple<Us...> const&, Ts...>::all_convertible) tuple(tuple<Us...> const& other)
         noexcept(detail::tuple_traits<tuple<Us...> const&, Ts...>::all_nothrow_constructible)
-        : base_type(other)
+        : base_type(static_cast<detail::tuple_impl<Us...> const&>(other))
     {}
 
     template<class... Us>
@@ -169,7 +169,7 @@ public:
 #endif
     constexpr explicit(!detail::tuple_traits<tuple<Us...>&&, Ts...>::all_convertible) tuple(tuple<Us...>&& other)
         noexcept(detail::tuple_traits<tuple<Us...>&&, Ts...>::all_nothrow_constructible)
-        : base_type(static_cast<tuple<Us...>&&>(other))
+        : base_type(static_cast<detail::tuple_impl<Us...>&&>(other))
     {}
 
     template<class... Us>
@@ -184,7 +184,7 @@ public:
 #endif
     constexpr explicit(!detail::tuple_traits<tuple<Us...> const&&, Ts...>::all_convertible) tuple(tuple<Us...> const&& other)
         noexcept(detail::tuple_traits<tuple<Us...> const&&, Ts...>::all_nothrow_constructible)
-        : base_type(static_cast<tuple<Us...> const&&>(other))
+        : base_type(static_cast<detail::tuple_impl<Us...> const&&>(other))
     {}
 
     template<TupleLike UTuple>

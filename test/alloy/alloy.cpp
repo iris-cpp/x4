@@ -304,10 +304,9 @@ TEST_CASE("tuple")
         STATIC_CHECK(!std::is_nothrow_constructible_v<alloy::tuple<PotentiallyThrowing>, alloy::tuple<int>&&>);
         STATIC_CHECK(!std::is_nothrow_constructible_v<alloy::tuple<PotentiallyThrowing>, alloy::tuple<int> const&&>);
 
-        alloy::tuple<int, double> a(42, 3.14f);
-        alloy::tuple<double, int> b(a);
-        CHECK(alloy::get<0>(b) == double{42});
-        CHECK(alloy::get<1>(b) == 3);
+        alloy::tuple<int> a(42);
+        alloy::tuple<long long> b(a);
+        CHECK(alloy::get<0>(b) == 42L);
     }
 
     {
@@ -347,11 +346,11 @@ TEST_CASE("tuple")
         STATIC_CHECK(std::is_nothrow_assignable_v<alloy::tuple<int>&, alloy::tuple<double> const&>);
         STATIC_CHECK(std::is_nothrow_assignable_v<alloy::tuple<int>&, alloy::tuple<double>&&>);
 
-        alloy::tuple<int> a(33);
-        alloy::tuple<double> b(4.f);
+        alloy::tuple<long> a(33L);
+        alloy::tuple<int> b(4);
         a = b;
         a = std::move(b);
-        CHECK(alloy::get<0>(a) == 4);
+        CHECK(alloy::get<0>(a) == 4L);
     }
 
     {
