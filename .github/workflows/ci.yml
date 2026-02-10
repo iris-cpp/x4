@@ -31,7 +31,7 @@ jobs:
         with:
           filters: |
             general:
-              - '.github/workflows/*.yml' 
+              - '.github/workflows/*.yml'
               - 'CMakeLists.txt'
               - 'modules/iris'
               - 'test/CMakeLists.txt'
@@ -201,12 +201,7 @@ jobs:
           git submodule update --init --depth 1 --recursive -- \
             tools/build \
             tools/boost_install \
-            libs/assert \
-            libs/config \
-            libs/core \
-            libs/preprocessor \
-            libs/static_assert \
-            libs/throw_exception
+            libs/preprocessor
 
       - name: Build upstream Boost libraries (Ubuntu)
         if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'
