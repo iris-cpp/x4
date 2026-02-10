@@ -298,7 +298,7 @@ public:
     constexpr tuple& operator=(tuple<Us...> const& other)
         noexcept(detail::tuple_traits<tuple<Us...> const&, Ts...>::all_nothrow_assignable)
     {
-        base_type::operator=(other);
+        base_type::operator=(static_cast<detail::tuple_impl<Us...> const&>(other));
         return *this;
     }
     
@@ -310,7 +310,7 @@ public:
     constexpr tuple& operator=(tuple<Us...>&& other)
         noexcept(detail::tuple_traits<tuple<Us...>&&, Ts...>::all_nothrow_assignable)
     {
-        base_type::operator=(other);
+        base_type::operator=(static_cast<detail::tuple_impl<Us...> &&>(other));
         return *this;
     }
 
