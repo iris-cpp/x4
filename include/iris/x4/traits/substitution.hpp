@@ -16,10 +16,6 @@
 
 #include <iris/alloy/traits.hpp>
 
-#include <boost/mpl/placeholders.hpp>
-#include <boost/mpl/equal.hpp>
-#include <boost/mpl/filter_view.hpp>
-
 #include <optional>
 #include <type_traits>
 
@@ -42,6 +38,20 @@ struct variant_has_substitute;
 
 namespace detail {
 
+template<class TTuple, class UTuple, class IndexSeq = std::make_index_sequence<alloy::tuple_size_v<TTuple>>>
+struct is_all_substitute_for_tuple_impl {};
+
+template<class TTuple, class UTuple, std::size_t... Is>
+struct is_all_substitute_for_tuple_impl<TTuple, UTuple, std::index_sequence<Is...>>
+    : std::conjunction<is_substitute<alloy::tuple_element_t<Is, TTuple>, alloy::tuple_element_t<Is, UTuple>>...> {};
+
+template<class TTuple, class UTuple>
+struct is_all_substitute_for_tuple : std::false_type {};
+
+template<class TTuple, class UTuple>
+    requires is_same_size_sequence_v<TTuple, UTuple>
+struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
+
 template<class T, X4Attribute Attr>
 struct value_type_is_substitute
     : is_substitute<container_value_t<T>, container_value_t<Attr>>
@@ -56,7 +66,7 @@ template<class T, X4Attribute Attr>
         alloy::is_tuple_like<Attr>
     >
 struct is_substitute_impl<T, Attr>
-    : boost::mpl::equal<T, Attr, is_substitute<boost::mpl::_1, boost::mpl::_2>>
+    : is_all_substitute_for_tuple<T, Attr>
 {};
 
 template<class T, X4Attribute Attr>
