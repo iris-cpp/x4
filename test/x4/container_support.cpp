@@ -19,7 +19,7 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
 
-#include <boost/fusion/include/std_pair.hpp>
+#include <iris/alloy/adapted/std_pair.hpp>
 
 #include <map>
 #include <set>

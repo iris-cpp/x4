@@ -20,11 +20,8 @@
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/substitution.hpp>
 
-#include <boost/fusion/include/begin.hpp>
-#include <boost/fusion/include/end.hpp>
-#include <boost/fusion/include/advance.hpp>
-#include <boost/fusion/include/deref.hpp>
-#include <boost/fusion/include/iterator_range.hpp>
+#include <iris/alloy/tuple.hpp>
+#include <iris/alloy/utility.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -55,15 +52,13 @@ struct pass_sequence_attribute_unused
 template<class Attr>
 struct pass_sequence_attribute_size_one_view
 {
-    using type = typename boost::fusion::result_of::deref<
-        typename boost::fusion::result_of::begin<Attr>::type
-    >::type;
+    using type = alloy::tuple_element_t<0, Attr>;
 
     [[nodiscard]] static constexpr type
     call(Attr& attribute)
-        noexcept(noexcept(boost::fusion::deref(boost::fusion::begin(attribute))))
+        noexcept(noexcept(alloy::get<0>(attribute)))
     {
-        return boost::fusion::deref(boost::fusion::begin(attribute));
+        return alloy::get<0>(attribute);
     }
 };
 
@@ -114,11 +109,11 @@ struct partition_attribute
     static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
     static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
 
-    static constexpr std::size_t actual_size = static_cast<std::size_t>(boost::fusion::result_of::size<Attr>::value);
+    static constexpr std::size_t actual_size = alloy::tuple_size_v<Attr>;
     static constexpr std::size_t expected_size = l_size + r_size;
 
     // If you got an error here, then you are trying to pass
-    // a fusion sequence with the wrong number of elements
+    // a tuple-like with the wrong number of elements
     // as that expected by the (sequence) parser.
     static_assert(
         actual_size >= expected_size,
@@ -129,28 +124,23 @@ struct partition_attribute
         "Sequence size of the passed attribute is greater than expected."
     );
 
-    using l_begin = boost::fusion::result_of::begin<Attr>::type;
-    using l_end = boost::fusion::result_of::advance_c<l_begin, l_size>::type;
-    using r_end = boost::fusion::result_of::end<Attr>::type;
-    using l_part = boost::fusion::iterator_range<l_begin, l_end>;
-    using r_part = boost::fusion::iterator_range<l_end, r_end>;
+    using view = alloy::tuple_ref_t<Attr>;
+    using splitted = alloy::tuple_split_t<view, l_size, r_size>;
+    using l_part = alloy::tuple_element_t<0, splitted>;
+    using r_part = alloy::tuple_element_t<1, splitted>;
     using l_pass = pass_sequence_attribute<LParser, l_part>;
     using r_pass = pass_sequence_attribute<RParser, r_part>;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        auto i = boost::fusion::begin(s);
-        return l_part(i, boost::fusion::advance_c<l_size>(i));
+        return alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return r_part(
-            boost::fusion::advance_c<l_size>(boost::fusion::begin(s)),
-            boost::fusion::end(s)
-        );
+        return alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
     }
 };
 

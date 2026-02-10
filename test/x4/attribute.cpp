@@ -18,7 +18,7 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/alternative.hpp>
 
-#include <boost/fusion/adapted/std_pair.hpp>
+#include <iris/alloy/adapted/std_pair.hpp>
 
 #include <iostream>
 #include <vector>

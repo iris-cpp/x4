@@ -16,8 +16,7 @@
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
-#include <boost/fusion/include/at_c.hpp>
-#include <boost/fusion/include/vector.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <string>
 
@@ -148,9 +147,9 @@ TEST_CASE("lit")
     }
 
     {
-        // single-element fusion vector tests
-        boost::fusion::vector<std::string> s;
+        // single-element tuple tests
+        alloy::tuple<std::string> s;
         REQUIRE(parse("kimpo", x4::standard::string("kimpo"), s));
-        CHECK(boost::fusion::at_c<0>(s) == "kimpo");
+        CHECK(alloy::get<0>(s) == "kimpo");
     }
 }

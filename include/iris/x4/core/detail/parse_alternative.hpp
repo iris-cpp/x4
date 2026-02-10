@@ -21,7 +21,7 @@
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
-#include <boost/fusion/include/front.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <concepts>
 #include <iterator>
@@ -112,7 +112,7 @@ template<class Parser, X4Attribute Attr>
 struct pass_non_variant_attribute<Parser, Attr>
 {
     using attr_type = typename std::remove_reference_t<
-        typename boost::fusion::result_of::front<Attr>::type
+        alloy::tuple_element_t<0, Attr>
     >;
     using pass = pass_parser_attribute<Parser, attr_type>;
     using type = typename pass::type;
@@ -120,9 +120,9 @@ struct pass_non_variant_attribute<Parser, Attr>
     template<X4Attribute Attr_>
     [[nodiscard]] static constexpr type
     call(Attr_& attr)
-        noexcept(noexcept(pass::call(boost::fusion::front(attr))))
+        noexcept(noexcept(pass::call(alloy::get<0>(attr))))
     {
-        return pass::call(boost::fusion::front(attr));
+        return pass::call(alloy::get<0>(attr));
     }
 };
 

@@ -23,27 +23,45 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      x4_component: ${{ steps.filter.outputs.changes }}
+      components: ${{ steps.processed.outputs.result }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            x4:
-              - '.github/workflows/*.yml'
-              - 'modules/iris'
+            general:
+              - '.github/workflows/*.yml' 
               - 'CMakeLists.txt'
+              - 'modules/iris'
+              - 'test/CMakeLists.txt'
+            alloy:
+              - 'include/iris/alloy/**/*'
+              - 'test/alloy/**/*'
+            x4:
               - 'include/iris/x4.hpp'
               - 'include/iris/x4/**/*'
-              - 'test/CMakeLists.txt'
               - 'test/x4/**/*'
+      - uses: actions/github-script@v8
+        id: processed
+        env:
+          CHANGES: ${{ steps.filter.outputs.changes }}
+        with:
+          script: |
+            const changes = JSON.parse(process.env.CHANGES);
+            console.log('changes: ', changes);
+            let result = [];
+            if (changes.includes('general') || changes.includes('alloy')) result.push('alloy');
+            if (changes.includes('general') || changes.includes('alloy') || changes.includes('x4')) result.push('x4');
+            console.log('result: ', result);
+            return result;
+
 
   build:
-    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.x4_component }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
+    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.components }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
 
     needs: changes
-    if: ${{ needs.changes.outputs.x4_component != '[]' && needs.changes.outputs.x4_component != '' }}
+    if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
 
     runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
 
@@ -83,7 +101,7 @@ jobs:
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-        x4_component: ${{ fromJSON(needs.changes.outputs.x4_component) }}
+        components: ${{ fromJSON(needs.changes.outputs.components) }}
 
         exclude:
           # Blacklist all invalid combinations of environments
@@ -184,26 +202,15 @@ jobs:
             tools/build \
             tools/boost_install \
             libs/assert \
-            libs/bind \
             libs/config \
-            libs/container_hash \
             libs/core \
-            libs/describe \
-            libs/detail \
-            libs/function \
-            libs/function_types \
-            libs/functional \
-            libs/fusion \
             libs/io \
-            libs/mp11 \
             libs/mpl \
             libs/predef \
             libs/preprocessor \
             libs/static_assert \
             libs/throw_exception \
-            libs/tuple \
             libs/type_traits \
-            libs/typeof \
             libs/utility
 
       - name: Build upstream Boost libraries (Ubuntu)
@@ -271,6 +278,8 @@ jobs:
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
+            -DIRIS_TEST_ALLOY=${{ case(matrix.components == 'alloy' || matrix.components == 'x4', 'ON', 'OFF') }} \
+            -DIRIS_TEST_X4=${{ case(matrix.components == 'x4', 'ON', 'OFF') }} \
             -S .
 
       - name: Build Tests

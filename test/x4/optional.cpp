@@ -18,9 +18,8 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 
-#include <boost/fusion/adapted/struct.hpp>
-#include <boost/fusion/include/at_c.hpp>
-#include <boost/fusion/include/vector.hpp>
+#include <iris/alloy/adapt.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <concepts>
 #include <optional>
@@ -37,9 +36,10 @@ struct adata
     std::optional<int> b;
 };
 
-BOOST_FUSION_ADAPT_STRUCT(adata,
-    a, b
-)
+template<>
+struct alloy::adaptor<adata> {
+    using getters_list = make_getters_list<&adata::a, &adata::b>;
+};
 
 namespace {
 
@@ -94,8 +94,6 @@ TEST_CASE("optional")
 
     {
         // test propagation of unused
-        using boost::fusion::at_c;
-        using boost::fusion::vector;
 
         // optional of `unused_type`
         {
@@ -107,10 +105,10 @@ TEST_CASE("optional")
             static_assert(!x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::has_attribute);
             static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::attribute_type, unused_type>);
 
-            vector<char, char> v;
+            alloy::tuple<char, char> v;
             REQUIRE(parse("a1234c", char_ >> -omit[int_] >> char_, v));
-            CHECK(at_c<0>(v) == 'a');
-            CHECK(at_c<1>(v) == 'c');
+            CHECK(alloy::get<0>(v) == 'a');
+            CHECK(alloy::get<1>(v) == 'c');
         }
         // optional of `unused_container_type`
         {
@@ -134,10 +132,10 @@ TEST_CASE("optional")
             }
         }
         {
-            vector<char, char> v;
+            alloy::tuple<char, char> v;
             REQUIRE(parse("a1234c", char_ >> omit[-int_] >> char_, v));
-            CHECK(at_c<0>(v) == 'a');
-            CHECK(at_c<1>(v) == 'c');
+            CHECK(alloy::get<0>(v) == 'a');
+            CHECK(alloy::get<1>(v) == 'c');
         }
 
         {

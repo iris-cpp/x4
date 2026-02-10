@@ -5,5 +5,12 @@
 # https://www.boost.org/LICENSE_1_0.txt
 
 if(PROJECT_IS_TOP_LEVEL)
-    add_subdirectory(x4)
+    option(IRIS_TEST_ALLOY "test alloy" ON)
+    if(IRIS_TEST_ALLOY)
+        add_subdirectory(alloy)
+    endif()
+    option(IRIS_TEST_X4 "test x4" ON)
+    if(IRIS_TEST_X4)
+        add_subdirectory(x4)
+    endif()
 endif()

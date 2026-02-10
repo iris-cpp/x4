@@ -18,9 +18,7 @@
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/substitution.hpp>
 
-#include <boost/fusion/sequence/intrinsic/at_key.hpp>
-#include <boost/fusion/sequence/intrinsic/front.hpp>
-#include <boost/fusion/sequence/intrinsic/back.hpp>
+#include <iris/alloy/tuple.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -89,11 +87,11 @@ struct parse_into_container_base_impl
 
     // ------------------------------------------------------
 
-    // Parser has attribute && it is NOT fusion sequence
+    // Parser has attribute && it is NOT tuple-like
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
             has_attribute_v<Parser> &&
-            (!boost::fusion::traits::is_sequence<Attr>::value)
+            (!alloy::is_tuple_like_v<Attr>)
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -104,20 +102,20 @@ struct parse_into_container_base_impl
         return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, attr);
     }
 
-    // Parser has attribute && it is fusion sequence
+    // Parser has attribute && it is tuple-like
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
             has_attribute_v<Parser> &&
-            boost::fusion::traits::is_sequence<Attr>::value
+            alloy::is_tuple_like_v<Attr>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
-    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, boost::fusion::front(attr))))
+    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, alloy::get<0>(attr))))
     {
-        static_assert(traits::has_size_v<Attr, 1>, "Expecting a single element fusion sequence");
+        static_assert(traits::has_size_v<Attr, 1>, "Expecting a single element tuple-like");
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, boost::fusion::front(attr));
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, alloy::get<0>(attr));
     }
 
     // Parser has no attribute (pass unused)
