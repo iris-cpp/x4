@@ -9,6 +9,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/requirements.hpp>
+
 #include <concepts>
 #include <type_traits>
 
@@ -19,21 +21,13 @@ class tuple;
 
 namespace detail {
 
-template<class T>
-concept boolean_testable_impl = std::convertible_to<T, bool>;
-
-template<class T>
-concept boolean_testable = boolean_testable_impl<T> && requires(T&& x) {
-    { !static_cast<T&&>(x) } -> boolean_testable_impl;
-};
-
 namespace equality_operator_poison_barrier {
 
 bool operator==(auto, auto) = delete;  // poison-pill
 
 template<class T, class U>
 concept has_equality_operator = requires(T&& x, U&& y) {
-    { static_cast<T&&>(x) == static_cast<U&&>(y) } -> boolean_testable;
+    { static_cast<T&&>(x) == static_cast<U&&>(y) } -> req::boolean_testable;
 };
 
 template<class T, class U>
