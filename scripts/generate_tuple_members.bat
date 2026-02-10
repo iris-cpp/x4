@@ -1,7 +1,7 @@
-" Copyright 2026 The Iris Project Contributors
-"
-" Distributed under the Boost Software License, Version 1.0.
-" https://www.boost.org/LICENSE_1_0.txt
+REM Copyright 2026 The Iris Project Contributors
+REM
+REM Distributed under the Boost Software License, Version 1.0.
+REM https://www.boost.org/LICENSE_1_0.txt
 @echo off
 cl /TP /std:c++23preview /Iinclude /I..\preprocessor\include /Imodules\iris\include /P /EP /C /DIRIS_ALLOY_GENERATE_PREPROCESSED /Fiinclude\iris\alloy\detail\preprocessed\temp.hpp include\iris\alloy\detail\tuple_impl.hpp
 pushd include\iris\alloy\detail\preprocessed
