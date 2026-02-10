@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer
+    xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schemas.microsoft.com/vstudio/debugger/natvis/2010 file:///C:/Program%20Files/Microsoft%20Visual%20Studio/18/Community/Xml/Schemas/1033/natvis.xsd"
+>
+	<Type Name="iris::alloy::tuple&lt;*&gt;">
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25}, {_26}, {_27}, {_28}, {_29}, {_30}, {_31})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25}, {_26}, {_27}, {_28}, {_29}, {_30})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25}, {_26}, {_27}, {_28}, {_29})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25}, {_26}, {_27}, {_28})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25}, {_26}, {_27})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25}, {_26})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24}, {_25})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23}, {_24})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22}, {_23})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21}, {_22})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20}, {_21})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19}, {_20})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18}, {_19})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17}, {_18})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16}, {_17})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15}, {_16})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14}, {_15})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13}, {_14})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12}, {_13})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11}, {_12})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10}, {_11})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9}, {_10})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8}, {_9})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7}, {_8})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6}, {_7})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5}, {_6})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4}, {_5})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3}, {_4})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2}, {_3})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1}, {_2})</DisplayString>
+		<DisplayString Optional="true">({_0}, {_1})</DisplayString>
+		<DisplayString Optional="true">({_0})</DisplayString>
+
+		<Expand>
+			<Item Name="[0]" Condition="_0, true" Optional="true">_0</Item>
+			<Item Name="[1]" Condition="_1, true" Optional="true">_1</Item>
+			<Item Name="[2]" Condition="_2, true" Optional="true">_2</Item>
+			<Item Name="[3]" Condition="_3, true" Optional="true">_3</Item>
+			<Item Name="[4]" Condition="_4, true" Optional="true">_4</Item>
+			<Item Name="[5]" Condition="_5, true" Optional="true">_5</Item>
+			<Item Name="[6]" Condition="_6, true" Optional="true">_6</Item>
+			<Item Name="[7]" Condition="_7, true" Optional="true">_7</Item>
+			<Item Name="[8]" Condition="_8, true" Optional="true">_8</Item>
+			<Item Name="[9]" Condition="_9, true" Optional="true">_9</Item>
+			<Item Name="[10]" Condition="_10, true" Optional="true">_10</Item>
+			<Item Name="[11]" Condition="_11, true" Optional="true">_11</Item>
+			<Item Name="[12]" Condition="_12, true" Optional="true">_12</Item>
+			<Item Name="[13]" Condition="_13, true" Optional="true">_13</Item>
+			<Item Name="[14]" Condition="_14, true" Optional="true">_14</Item>
+			<Item Name="[15]" Condition="_15, true" Optional="true">_15</Item>
+			<Item Name="[16]" Condition="_16, true" Optional="true">_16</Item>
+			<Item Name="[17]" Condition="_17, true" Optional="true">_17</Item>
+			<Item Name="[18]" Condition="_18, true" Optional="true">_18</Item>
+			<Item Name="[19]" Condition="_19, true" Optional="true">_19</Item>
+			<Item Name="[20]" Condition="_20, true" Optional="true">_20</Item>
+			<Item Name="[21]" Condition="_21, true" Optional="true">_21</Item>
+			<Item Name="[22]" Condition="_22, true" Optional="true">_22</Item>
+			<Item Name="[23]" Condition="_23, true" Optional="true">_23</Item>
+			<Item Name="[24]" Condition="_24, true" Optional="true">_24</Item>
+			<Item Name="[25]" Condition="_25, true" Optional="true">_25</Item>
+			<Item Name="[26]" Condition="_26, true" Optional="true">_26</Item>
+			<Item Name="[27]" Condition="_27, true" Optional="true">_27</Item>
+			<Item Name="[28]" Condition="_28, true" Optional="true">_28</Item>
+			<Item Name="[29]" Condition="_29, true" Optional="true">_29</Item>
+			<Item Name="[30]" Condition="_30, true" Optional="true">_30</Item>
+			<Item Name="[31]" Condition="_31, true" Optional="true">_31</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>
