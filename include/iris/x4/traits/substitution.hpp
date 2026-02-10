@@ -34,8 +34,6 @@ constexpr bool is_substitute_v = is_substitute<T, Attr>::value;
 template<class Variant, X4Attribute Attr>
 struct variant_has_substitute;
 
-// TODO: reduce MPL usage
-
 namespace detail {
 
 template<class TTuple, class UTuple, class IndexSeq = std::make_index_sequence<alloy::tuple_size_v<TTuple>>>
