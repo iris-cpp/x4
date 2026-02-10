@@ -121,22 +121,12 @@ set(iris_x4_boost_deps "")
 # Everything required by `preprocessor` (manually confirmed)
 list(APPEND iris_x4_boost_deps preprocessor)
 
-# Everything required by `core` (manually confirmed)
-list(APPEND iris_x4_boost_deps core)
-list(APPEND iris_x4_boost_deps assert)
-list(APPEND iris_x4_boost_deps config)
-list(APPEND iris_x4_boost_deps static_assert)
-list(APPEND iris_x4_boost_deps throw_exception)
-
 # ---------------------------------------------
 list(REMOVE_DUPLICATES iris_x4_boost_deps)
 
 foreach(dep IN LISTS iris_x4_boost_deps)
     add_subdirectory(../${dep} build_deps/${dep})
 endforeach()
-
-set_target_properties(boost_assert PROPERTIES FOLDER "_deps")
-set_target_properties(boost_core PROPERTIES FOLDER "_deps")
 
 foreach(dep IN LISTS iris_x4_boost_deps)
     target_link_libraries(iris_x4 INTERFACE Boost::${dep})
