@@ -43,12 +43,12 @@ struct di_include
 };
 
 template<>
-struct iris::alloy::adaptor<di_ignore> {
+struct alloy::adaptor<di_ignore> {
     using getters_list = make_getters_list<&di_ignore::text>;
 };
 
 template<>
-struct iris::alloy::adaptor<di_include> {
+struct alloy::adaptor<di_include> {
     using getters_list = make_getters_list<&di_include::FileName>;
 };
 
@@ -131,10 +131,10 @@ TEST_CASE("alternative")
         // test if alternatives with all components having unused
         // attributes have an unused attribute
 
-        iris::alloy::tuple<char, char> v;
+        alloy::tuple<char, char> v;
         REQUIRE((parse("abc", char_ >> (omit[char_] | omit[char_]) >> char_, v)));
-        CHECK((iris::alloy::get<0>(v) == 'a'));
-        CHECK((iris::alloy::get<1>(v) == 'c'));
+        CHECK((alloy::get<0>(v) == 'a'));
+        CHECK((alloy::get<1>(v) == 'c'));
     }
 
     {
@@ -222,14 +222,14 @@ TEST_CASE("alternative")
 
     // single-element tuple tests
     {
-        iris::alloy::tuple<iris::rvariant<int, std::string>> fv;
+        alloy::tuple<iris::rvariant<int, std::string>> fv;
         REQUIRE(parse("12345", int_ | +char_, fv));
-        CHECK(iris::get<int>(iris::alloy::get<0>(fv)) == 12345);
+        CHECK(iris::get<int>(alloy::get<0>(fv)) == 12345);
     }
     {
-        iris::alloy::tuple<iris::rvariant<int, std::string>> fvi;
+        alloy::tuple<iris::rvariant<int, std::string>> fvi;
         REQUIRE(parse("12345", int_ | int_, fvi));
-        CHECK(iris::get<int>(iris::alloy::get<0>(fvi)) == 12345);
+        CHECK(iris::get<int>(alloy::get<0>(fvi)) == 12345);
     }
 
     // alternative over single element tuple as part of another tuple
@@ -239,11 +239,11 @@ TEST_CASE("alternative")
         constexpr auto keys = key1 | key2;
         constexpr auto pair = keys >> lit("=") >> +char_;
 
-        iris::alloy::tuple<iris::rvariant<long, char>, std::string> attr_;
+        alloy::tuple<iris::rvariant<long, char>, std::string> attr_;
 
         REQUIRE(parse("long=ABC", pair, attr_));
-        CHECK(iris::get_if<long>(&iris::alloy::get<0>(attr_)) != nullptr);
-        CHECK(iris::get_if<char>(&iris::alloy::get<0>(attr_)) == nullptr);
+        CHECK(iris::get_if<long>(&alloy::get<0>(attr_)) != nullptr);
+        CHECK(iris::get_if<char>(&alloy::get<0>(attr_)) == nullptr);
     }
 
     {

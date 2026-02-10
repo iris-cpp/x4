@@ -120,7 +120,7 @@ TEST_CASE("debug")
     {
         // std::container attributes
 
-        using tpl = iris::alloy::tuple<int, char>;
+        using tpl = alloy::tuple<int, char>;
         rule<class start, std::vector<tpl>> start("start");
         auto start_def = start = *(int_ >> alpha);
 

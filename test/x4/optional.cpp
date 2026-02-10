@@ -37,7 +37,7 @@ struct adata
 };
 
 template<>
-struct iris::alloy::adaptor<adata> {
+struct alloy::adaptor<adata> {
     using getters_list = make_getters_list<&adata::a, &adata::b>;
 };
 
@@ -105,10 +105,10 @@ TEST_CASE("optional")
             static_assert(!x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::has_attribute);
             static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::attribute_type, unused_type>);
 
-            iris::alloy::tuple<char, char> v;
+            alloy::tuple<char, char> v;
             REQUIRE(parse("a1234c", char_ >> -omit[int_] >> char_, v));
-            CHECK(iris::alloy::get<0>(v) == 'a');
-            CHECK(iris::alloy::get<1>(v) == 'c');
+            CHECK(alloy::get<0>(v) == 'a');
+            CHECK(alloy::get<1>(v) == 'c');
         }
         // optional of `unused_container_type`
         {
@@ -132,10 +132,10 @@ TEST_CASE("optional")
             }
         }
         {
-            iris::alloy::tuple<char, char> v;
+            alloy::tuple<char, char> v;
             REQUIRE(parse("a1234c", char_ >> omit[-int_] >> char_, v));
-            CHECK(iris::alloy::get<0>(v) == 'a');
-            CHECK(iris::alloy::get<1>(v) == 'c');
+            CHECK(alloy::get<0>(v) == 'a');
+            CHECK(alloy::get<1>(v) == 'c');
         }
 
         {

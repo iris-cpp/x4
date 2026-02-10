@@ -97,7 +97,7 @@ void gen_tests(Values const&... values)
 {
     gen_single_item_tests<Expected...>(values...);
 
-    iris::alloy::tuple<Expected...> attribute(values...);
+    alloy::tuple<Expected...> attribute(values...);
     gen_sequence_tests<Expected...>(attribute, values...);
 }
 
@@ -109,13 +109,13 @@ void make_test(Attributes const&... attrs)
     gen_tests<Attributes...>(attrs...);
     gen_tests<
         std::optional<Attributes>...,
-        iris::alloy::tuple<Attributes>...
+        alloy::tuple<Attributes>...
     >(attrs..., attrs...);
 
     gen_tests<
-        std::optional<iris::alloy::tuple<Attributes>>...,
-        iris::alloy::tuple<std::optional<Attributes>>...
-    >(iris::alloy::tuple<Attributes>(attrs)..., attrs...);
+        std::optional<alloy::tuple<Attributes>>...,
+        alloy::tuple<std::optional<Attributes>>...
+    >(alloy::tuple<Attributes>(attrs)..., attrs...);
 }
 
 } // anonymous

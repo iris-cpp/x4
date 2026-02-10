@@ -135,9 +135,9 @@ TEST_CASE("plus")
 
     // single-element tuple tests
     {
-        iris::alloy::tuple<std::string> fs;
+        alloy::tuple<std::string> fs;
         REQUIRE(parse("12345", +char_, fs));
-        CHECK(iris::alloy::get<0>(fs) == "12345");
+        CHECK(alloy::get<0>(fs) == "12345");
     }
 
     {

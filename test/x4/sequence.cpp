@@ -69,42 +69,42 @@ TEST_CASE("sequence")
     CHECK(parse(" Hello, World", lit("Hello") >> ',' >> "World", space));
 
     {
-        iris::alloy::tuple<char, char> vec;
+        alloy::tuple<char, char> vec;
         REQUIRE(parse("ab", char_ >> char_, vec));
-        CHECK(iris::alloy::get<0>(vec) == 'a');
-        CHECK(iris::alloy::get<1>(vec) == 'b');
+        CHECK(alloy::get<0>(vec) == 'a');
+        CHECK(alloy::get<1>(vec) == 'b');
     }
 
     {
-        iris::alloy::tuple<char, char, char> vec;
+        alloy::tuple<char, char, char> vec;
         REQUIRE(parse(" a\n  b\n  c", char_ >> char_ >> char_, space, vec));
-        CHECK(iris::alloy::get<0>(vec) == 'a');
-        CHECK(iris::alloy::get<1>(vec) == 'b');
-        CHECK(iris::alloy::get<2>(vec) == 'c');
+        CHECK(alloy::get<0>(vec) == 'a');
+        CHECK(alloy::get<1>(vec) == 'b');
+        CHECK(alloy::get<2>(vec) == 'c');
     }
 
     {
         // 'b' has an unused_type. unused attributes are not part of the sequence
-        iris::alloy::tuple<char, char> vec;
+        alloy::tuple<char, char> vec;
         REQUIRE(parse("abc", char_ >> 'b' >> char_, vec));
-        CHECK(iris::alloy::get<0>(vec) == 'a');
-        CHECK(iris::alloy::get<1>(vec) == 'c');
+        CHECK(alloy::get<0>(vec) == 'a');
+        CHECK(alloy::get<1>(vec) == 'c');
     }
 
     {
         // 'b' has an unused_type. unused attributes are not part of the sequence
-        iris::alloy::tuple<char, char> vec;
+        alloy::tuple<char, char> vec;
         REQUIRE(parse("acb", char_ >> char_ >> 'b', vec));
-        CHECK(iris::alloy::get<0>(vec) == 'a');
-        CHECK(iris::alloy::get<1>(vec) == 'c');
+        CHECK(alloy::get<0>(vec) == 'a');
+        CHECK(alloy::get<1>(vec) == 'c');
     }
 
     {
         // "hello" has an unused_type. unused attributes are not part of the sequence
-        iris::alloy::tuple<char, char> vec;
+        alloy::tuple<char, char> vec;
         REQUIRE(parse("a hello c", char_ >> "hello" >> char_, space, vec));
-        CHECK(iris::alloy::get<0>(vec) == 'a');
-        CHECK(iris::alloy::get<1>(vec) == 'c');
+        CHECK(alloy::get<0>(vec) == 'a');
+        CHECK(alloy::get<1>(vec) == 'c');
     }
 
     {
@@ -116,9 +116,9 @@ TEST_CASE("sequence")
 
     {
         // a single element tuple
-        iris::alloy::tuple<char> vec;
+        alloy::tuple<char> vec;
         REQUIRE(parse("ab", char_ >> 'b', vec));
-        CHECK(iris::alloy::get<0>(vec) == 'a');
+        CHECK(alloy::get<0>(vec) == 'a');
     }
 
     {
@@ -129,7 +129,7 @@ TEST_CASE("sequence")
         // unwrap it). It's odd that the RHS (r) does not really have a
         // single element tuple, so the original comment is not accurate.
 
-        using attr_type = iris::alloy::tuple<char, int>;
+        using attr_type = alloy::tuple<char, int>;
         attr_type tpl;
 
         auto r = rule<class r_id, attr_type>{} = char_ >> ',' >> int_;
@@ -143,7 +143,7 @@ TEST_CASE("sequence")
         // has a single element tuple as its attribute. This is a correction
         // of the test above.
 
-        using attr_type = iris::alloy::tuple<int>;
+        using attr_type = alloy::tuple<int>;
         attr_type tpl;
 
         auto r = rule<class r_id, attr_type>{} = int_;
@@ -336,33 +336,33 @@ TEST_CASE("sequence")
     // Test from spirit mailing list
     // "Error with container within sequence"
     {
-        using attr_type = iris::alloy::tuple<std::string>;
+        using attr_type = alloy::tuple<std::string>;
         attr_type vec;
 
         constexpr auto r = *alnum;
 
         REQUIRE(parse("abcdef", r, vec));
-        CHECK(iris::alloy::get<0>(vec) == "abcdef");
+        CHECK(alloy::get<0>(vec) == "abcdef");
     }
     {
-        using attr_type = iris::alloy::tuple<std::vector<int>>;
+        using attr_type = alloy::tuple<std::vector<int>>;
         attr_type vec;
 
         constexpr auto r = *int_;
 
         REQUIRE(parse("123 456", r, space, vec));
-        REQUIRE(iris::alloy::get<0>(vec).size() == 2);
-        CHECK(iris::alloy::get<0>(vec)[0] == 123);
-        CHECK(iris::alloy::get<0>(vec)[1] == 456);
+        REQUIRE(alloy::get<0>(vec).size() == 2);
+        CHECK(alloy::get<0>(vec)[0] == 123);
+        CHECK(alloy::get<0>(vec)[1] == 456);
     }
 
     {
         // Non-flat optional
-        iris::alloy::tuple<int, std::optional<iris::alloy::tuple<int, int>>> v;
+        alloy::tuple<int, std::optional<alloy::tuple<int, int>>> v;
         constexpr auto p = int_ >> -(':' >> int_ >> '-' >> int_);
         REQUIRE(parse("1:2-3", p, v));
-        REQUIRE(iris::alloy::get<1>(v).has_value());
-        CHECK(iris::alloy::get<0>(*iris::alloy::get<1>(v)) == 2);
+        REQUIRE(alloy::get<1>(v).has_value());
+        CHECK(alloy::get<0>(*alloy::get<1>(v)) == 2);
     }
 
     // optional with container attribute
@@ -370,15 +370,15 @@ TEST_CASE("sequence")
         constexpr auto p = char_ >> -(':' >> +char_);
 
         {
-            iris::alloy::tuple<char, std::optional<std::string>> v;
+            alloy::tuple<char, std::optional<std::string>> v;
             REQUIRE(parse("x", p, v));
-            CHECK(!iris::alloy::get<1>(v).has_value());
+            CHECK(!alloy::get<1>(v).has_value());
         }
         {
-            iris::alloy::tuple<char, std::optional<std::string>> v;
+            alloy::tuple<char, std::optional<std::string>> v;
             REQUIRE(parse("x:abc", p, v));
-            REQUIRE(iris::alloy::get<1>(v).has_value());
-            CHECK(*iris::alloy::get<1>(v) == "abc");
+            REQUIRE(alloy::get<1>(v).has_value());
+            CHECK(*alloy::get<1>(v) == "abc");
         }
     }
 
@@ -410,8 +410,8 @@ TEST_CASE("sequence")
         char c = 0;
         int n = 0;
         auto f = [&](auto&& ctx) {
-            c = iris::alloy::get<0>(_attr(ctx));
-            n = iris::alloy::get<1>(_attr(ctx));
+            c = alloy::get<0>(_attr(ctx));
+            n = alloy::get<1>(_attr(ctx));
         };
 
         REQUIRE(parse("x123\"a string\"", (char_ >> int_ >> "\"a string\"")[f]));
@@ -424,8 +424,8 @@ TEST_CASE("sequence")
         char c = 0;
         int n = 0;
         auto f = [&](auto&& ctx) {
-            c = iris::alloy::get<0>(_attr(ctx));
-            n = iris::alloy::get<1>(_attr(ctx));
+            c = alloy::get<0>(_attr(ctx));
+            n = alloy::get<1>(_attr(ctx));
         };
 
         REQUIRE(parse("x 123 \"a string\"", (char_ >> int_ >> "\"a string\"")[f], space));

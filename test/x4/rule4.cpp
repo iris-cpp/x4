@@ -170,11 +170,11 @@ TEST_CASE("rule4")
 
     // test handling of single element tuple
     {
-        auto r = rule<class r_id, iris::alloy::tuple<int>>{} = int_;
+        auto r = rule<class r_id, alloy::tuple<int>>{} = int_;
 
-        iris::alloy::tuple<int> v(0);
+        alloy::tuple<int> v(0);
         REQUIRE(parse("1", r, v));
-        CHECK(iris::alloy::get<0>(v) == 1);
+        CHECK(alloy::get<0>(v) == 1);
     }
 
     // attribute compatibility test

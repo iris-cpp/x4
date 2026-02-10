@@ -233,9 +233,9 @@ TEST_CASE("int")
 
     // single-element tuple tests
     {
-        iris::alloy::tuple<int> i{};
+        alloy::tuple<int> i{};
 
         REQUIRE(parse("-123456", int_, i));
-        CHECK(iris::alloy::get<0>(i) == -123456);
+        CHECK(alloy::get<0>(i) == -123456);
     }
 }

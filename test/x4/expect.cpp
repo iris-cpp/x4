@@ -365,27 +365,27 @@ TEST_CASE("expect")
 
     // Test that attributes with > (sequences) work just like >> (sequences)
     {
-        iris::alloy::tuple<char, char, char> attr;
+        alloy::tuple<char, char, char> attr;
         TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ > char_, space, attr);
-        CHECK((iris::alloy::get<0>(attr) == 'a'));
-        CHECK((iris::alloy::get<1>(attr) == 'b'));
-        CHECK((iris::alloy::get<2>(attr) == 'c'));
+        CHECK((alloy::get<0>(attr) == 'a'));
+        CHECK((alloy::get<1>(attr) == 'b'));
+        CHECK((alloy::get<2>(attr) == 'c'));
     }
 
     {
-        iris::alloy::tuple<char, char, char> attr;
+        alloy::tuple<char, char, char> attr;
         TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ >> char_, space, attr);
-        CHECK((iris::alloy::get<0>(attr) == 'a'));
-        CHECK((iris::alloy::get<1>(attr) == 'b'));
-        CHECK((iris::alloy::get<2>(attr) == 'c'));
+        CHECK((alloy::get<0>(attr) == 'a'));
+        CHECK((alloy::get<1>(attr) == 'b'));
+        CHECK((alloy::get<2>(attr) == 'c'));
     }
 
     {
-        iris::alloy::tuple<char, char, char> attr;
+        alloy::tuple<char, char, char> attr;
         TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' > char_ >> ',' > char_, space, attr);
-        CHECK((iris::alloy::get<0>(attr) == 'a'));
-        CHECK((iris::alloy::get<1>(attr) == 'b'));
-        CHECK((iris::alloy::get<2>(attr) == 'c'));
+        CHECK((alloy::get<0>(attr) == 'a'));
+        CHECK((alloy::get<1>(attr) == 'b'));
+        CHECK((alloy::get<2>(attr) == 'c'));
     }
 
     {

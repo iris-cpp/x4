@@ -148,8 +148,8 @@ TEST_CASE("lit")
 
     {
         // single-element tuple tests
-        iris::alloy::tuple<std::string> s;
+        alloy::tuple<std::string> s;
         REQUIRE(parse("kimpo", x4::standard::string("kimpo"), s));
-        CHECK(iris::alloy::get<0>(s) == "kimpo");
+        CHECK(alloy::get<0>(s) == "kimpo");
     }
 }

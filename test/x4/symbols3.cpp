@@ -32,7 +32,7 @@ struct roman
 };
 
 template<>
-struct iris::alloy::adaptor<roman> {
+struct alloy::adaptor<roman> {
     using getters_list = make_getters_list<&roman::a, &roman::b, &roman::c>;
 };
 

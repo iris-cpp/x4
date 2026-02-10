@@ -86,7 +86,7 @@ struct recursive_tuple
 };
 
 template<>
-struct iris::alloy::adaptor<recursive_tuple> {
+struct alloy::adaptor<recursive_tuple> {
     using getters_list = make_getters_list<&recursive_tuple::value, &recursive_tuple::children>;
 };
 

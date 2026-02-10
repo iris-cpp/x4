@@ -65,7 +65,7 @@ TEST_CASE("omit")
 
     {
         // omit[] means we don't receive the attribute
-        iris::alloy::tuple<> attr;
+        alloy::tuple<> attr;
         CHECK(parse("abc", omit[char_] >> omit['b'] >> omit[char_], attr));
     }
 
@@ -81,18 +81,18 @@ TEST_CASE("omit")
         // omit[] means we don't receive the attribute, if all elements of a
         // sequence have unused attributes, the whole sequence has an unused
         // attribute as well
-        iris::alloy::tuple<char, char> attr;
+        alloy::tuple<char, char> attr;
         REQUIRE(parse("abcde", char_ >> (omit[char_] >> omit['c'] >> omit[char_]) >> char_, attr));
-        CHECK(iris::alloy::get<0>(attr) == 'a');
-        CHECK(iris::alloy::get<1>(attr) == 'e');
+        CHECK(alloy::get<0>(attr) == 'a');
+        CHECK(alloy::get<1>(attr) == 'e');
     }
 
     {
         // "hello" has an unused_type. unused attrubutes are not part of the sequence
-        iris::alloy::tuple<char, char> attr;
+        alloy::tuple<char, char> attr;
         REQUIRE(parse("a hello c", char_ >> "hello" >> char_, space, attr));
-        CHECK(iris::alloy::get<0>(attr) == 'a');
-        CHECK(iris::alloy::get<1>(attr) == 'c');
+        CHECK(alloy::get<0>(attr) == 'a');
+        CHECK(alloy::get<1>(attr) == 'c');
     }
 
     {

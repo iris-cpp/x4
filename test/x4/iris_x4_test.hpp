@@ -23,6 +23,7 @@
 #include <utility>
 #include <print>
 
+namespace alloy = iris::alloy;
 namespace x4 = iris::x4;
 
 using x4::unused_type;

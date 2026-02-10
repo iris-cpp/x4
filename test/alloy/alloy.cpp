@@ -15,7 +15,6 @@
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/utility.hpp>
 
-
 namespace alloy = iris::alloy;
 
 struct NonAdaptedStruct
