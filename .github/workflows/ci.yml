@@ -167,80 +167,12 @@ jobs:
           echo "COMPILER_FULL_VERSION=$COMPILER_FULL_VERSION"
           echo "compiler-full-version=$COMPILER_FULL_VERSION" >> "$GITHUB_OUTPUT"
 
-          export BOOST_RELEASE_VERSION_NAME=boost-1.89.0 # Fixed on the timing of X4's fork
-          echo "BOOST_RELEASE_VERSION_NAME: $BOOST_RELEASE_VERSION_NAME"
-          echo "BOOST_RELEASE_VERSION_NAME=$BOOST_RELEASE_VERSION_NAME" >> "$GITHUB_OUTPUT"
-
-          if [ "${{ matrix.os.name }}" = "windows" ]; then
-            export BOOST_ROOT=$(cygpath -w $HOME/boost)
-          else
-            export BOOST_ROOT=$HOME/boost
-          fi
-          echo "BOOST_ROOT: $BOOST_ROOT"
-          echo "BOOST_ROOT=$BOOST_ROOT" >> "$GITHUB_OUTPUT"
-
-      - name: Cache upstream Boost libraries (restore)
-        id: cache-boost
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ steps.env-info.outputs.BOOST_RELEASE_VERSION_NAME }}-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.env-info.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
-          path: |
-            ${{ steps.env-info.outputs.BOOST_ROOT }}
-            !${{ steps.env-info.outputs.BOOST_ROOT }}/.git
-
-      - name: Clone upstream Boost libraries
-        if: steps.cache-boost.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          git -c advice.detachedHead=false clone --no-tags \
-            --single-branch --branch=${{ steps.env-info.outputs.BOOST_RELEASE_VERSION_NAME }} \
-            --depth=1 --filter=blob:none --quiet https://github.com/boostorg/boost.git \
-            "${{ steps.env-info.outputs.BOOST_ROOT }}"
-
-          cd "${{ steps.env-info.outputs.BOOST_ROOT }}"
-          git submodule update --init --depth 1 --recursive -- \
-            tools/build \
-            tools/boost_install \
-            libs/preprocessor
-
-      - name: Build upstream Boost libraries (Ubuntu)
-        if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'
-        env:
-          BOOST_ROOT: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        shell: bash
-        run: |
-          set -xe
-          rm -rf libs/iris_x4
-          ./bootstrap.sh --with-toolset=${{ matrix.compiler.toolset }}
-          ./b2 -d0 headers
-
-      - name: Build upstream Boost libraries (Windows)
-        if: matrix.os.name == 'windows' && steps.cache-boost.outputs.cache-hit != 'true'
-        env:
-          BOOST_ROOT: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        shell: cmd
-        run: |
-          rd /s /q libs\iris_x4
-          .\bootstrap.bat --with-toolset=${{ matrix.compiler.toolset }}
-          .\b2 -d0 headers
-
-      - name: Cache upstream Boost libraries (save)
-        if: steps.cache-boost.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          key: ${{ steps.cache-boost.outputs.cache-primary-key }}
-          path: |
-            ${{ steps.env-info.outputs.BOOST_ROOT }}
-            !${{ steps.env-info.outputs.BOOST_ROOT }}/.git
-
       - name: Cache CMake Dependencies (restore)
         id: cache-deps
         uses: actions/cache/restore@v4
         with:
           key: deps-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.env-info.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
-          path: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4/build/_deps
+          path: ${{ github.workspace }}/build/_deps
 
       # Adapt CMP0168; enable caching in CI
       # https://cmake.org/cmake/help/latest/module/FetchContent.html#variable:FETCHCONTENT_FULLY_DISCONNECTED
@@ -255,14 +187,9 @@ jobs:
           fi
 
       - name: Configure
-        env:
-          BOOST_ROOT: ${{ steps.env-info.outputs.BOOST_ROOT }}
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}
         shell: bash
         run: |
           set -xe
-          cp -rp "${{ github.workspace }}/." libs/iris_x4
-          cd libs/iris_x4
           cmake ${{ steps.deps-info.outputs.IRIS_X4_CMAKE_ARGS }} -B build \
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
@@ -273,7 +200,6 @@ jobs:
             -S .
 
       - name: Build Tests
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4
         run: |
           cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ matrix.compiler.builder_additional_args }}
 
@@ -282,10 +208,10 @@ jobs:
         uses: actions/cache/save@v4
         with:
           key: ${{ steps.cache-deps.outputs.cache-primary-key }}
-          path: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4/build/_deps
+          path: ${{ github.workspace }}/build/_deps
 
       - name: Test
         env:
           CLICOLOR_FORCE: 1
-        working-directory: ${{ steps.env-info.outputs.BOOST_ROOT }}/libs/iris_x4/build/test
+        working-directory: ${{ github.workspace }}/build/test
         run: ctest --output-on-failure -C ${{ matrix.build_type.name }}
