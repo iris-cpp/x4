@@ -91,6 +91,7 @@ x4_define_tests(
     with
     with_local
     x3_rule_problem
+    alloy_wrong_substitute_test_case
 )
 
 x4_define_test(rule_separate_tu rule_separate_tu.cpp rule_separate_tu_grammar.cpp)

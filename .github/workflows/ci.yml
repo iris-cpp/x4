@@ -204,14 +204,9 @@ jobs:
             libs/assert \
             libs/config \
             libs/core \
-            libs/io \
-            libs/mpl \
-            libs/predef \
             libs/preprocessor \
             libs/static_assert \
-            libs/throw_exception \
-            libs/type_traits \
-            libs/utility
+            libs/throw_exception
 
       - name: Build upstream Boost libraries (Ubuntu)
         if: matrix.os.name == 'ubuntu' && steps.cache-boost.outputs.cache-hit != 'true'
