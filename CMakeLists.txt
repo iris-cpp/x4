@@ -99,7 +99,7 @@ if(MSVC)
         iris_x4
         PRIVATE
             # "${PROJECT_SOURCE_DIR}/cpp.hint" # TODO
-            # "${PROJECT_SOURCE_DIR}/iris_x4.natvis" # TODO
+            "${PROJECT_SOURCE_DIR}/iris_x4.natvis"
     )
 
     target_link_libraries(iris_x4 PUBLIC Iris::Iris)
