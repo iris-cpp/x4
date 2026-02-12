@@ -10,12 +10,11 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/char/char.hpp>
-#include <iris/x4/char/char_class.hpp>
-#include <iris/x4/string/string.hpp>
-#include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/debug/annotate_on_success.hpp>
-#include <iris/x4/debug/error_reporting.hpp>
+#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/directive/expect.hpp>
+#include <iris/x4/debug/annotate.hpp>
+#include <iris/x4/debug/error_handler.hpp>
+#include <iris/x4/debug/default_error_handler.hpp>
 #include <iris/x4/directive/with.hpp>
 
 #include <iterator>
@@ -24,80 +23,108 @@
 
 namespace {
 
-struct error_handler_base
+using enum x4::annotated_rule_kind;
+
+template<std::forward_iterator It>
+struct test_error_handler
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Failure>
-    void on_error(It const&, Se const&, Context const& ctx, Failure const& x) const
+    template<std::sentinel_for<It> Se>
+    test_error_handler(It /*script_first*/, Se /*script_last*/, std::ostream& os)
+        : os_(os)
+    {}
+
+    template<class Context, x4::X4Attribute Attr>
+    void on_success(It const& /*first*/, std::sentinel_for<It> auto const& /*last*/, Context const& /*ctx*/, Attr& /*attr*/)
     {
-        std::string message = "Error! Expecting: " + x.which() + " here:";
-        auto& error_handler = x4::get<x4::contexts::error_handler>(ctx).get();
-        error_handler(x.where(), message);
+        os_ << "on_success";
     }
+
+    template<class Context>
+    void on_expectation_failure(It const& /*first*/, std::sentinel_for<It> auto const& /*last*/, Context const& /*ctx*/, x4::expectation_failure<It> const& /*failure*/)
+    {
+        os_ << "on_expectation_failure";
+    }
+
+    template<class Context, x4::X4Attribute Attr>
+    void on_trace(
+        It const& /*first*/,
+        std::sentinel_for<It> auto const& /*last*/,
+        Context const& /*ctx*/,
+        Attr const& /*attr*/,
+        std::string_view const /*rule_name*/,
+        x4::tracer_state const state
+    )
+    {
+        if (state == x4::tracer_state::pre_parse) {
+            os_ << "trace";
+        }
+    }
+
+private:
+    std::ostream& os_;
 };
-
-struct test_inner_rule_class;
-struct test_rule_class : x4::annotate_on_success, error_handler_base {};
-
-x4::rule<test_inner_rule_class> const test_inner_rule = "\"bar\"";
-x4::rule<test_rule_class> const test_rule;
-auto const test_inner_rule_def = x4::lit("bar");
-auto const test_rule_def = x4::lit("foo") > test_inner_rule > x4::lit("git");
-
-IRIS_X4_DEFINE(test_inner_rule)
-IRIS_X4_DEFINE(test_rule)
-
-void do_parse(std::string const& line_break)
-{
-    std::string const input("foo" + line_break + "  foo" + line_break + "git");
-    auto const begin = std::begin(input);
-    auto const end = std::end(input);
-
-    {
-        std::stringstream stream;
-        x4::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
-
-        auto const parser = x4::with<x4::contexts::error_handler>(std::ref(error_handler))[test_rule];
-        (void)parse(begin, end, parser, x4::standard::space);
-
-        CHECK(stream.str() == "In line 2:\nError! Expecting: \"bar\" here:\n  foo\n__^_\n");
-    }
-
-    {
-        // TODO: cleanup when error_handler is reenterable
-        std::stringstream stream;
-        x4::error_handler<std::string::const_iterator> error_handler{ begin, end, stream };
-
-        auto const parser = x4::with<x4::contexts::error_handler>(std::ref(error_handler))[test_rule];
-        (void)parse(begin, end, parser);
-
-        CHECK(stream.str() == "In line 1:\nError! Expecting: \"bar\" here:\nfoo\n___^_\n");
-    }
-}
-
-void test_line_break_first(std::string const& line_break)
-{
-    std::string const input(line_break + "foo  foo" + line_break + "git");
-    auto const begin = std::begin(input);
-    auto const end = std::end(input);
-
-    std::stringstream stream;
-    x4::error_handler<std::string::const_iterator> error_handler{begin, end, stream};
-
-    auto const parser = x4::with<x4::contexts::error_handler>(std::ref(error_handler))[test_rule];
-    (void)parse(begin, end, parser, x4::space);
-
-    CHECK(stream.str() == "In line 2:\nError! Expecting: \"bar\" here:\nfoo  foo\n_____^_\n");
-}
 
 } // anonymous
 
 TEST_CASE("error_handler")
 {
-    do_parse("\n");
-    do_parse("\r");
-    do_parse("\r\n");
+    {
+        using Context = x4::context<x4::contexts::expectation_failure, x4::expectation_failure<char const*>>;
 
-    test_line_break_first("\n");
-    test_line_break_first("\r");
-    test_line_break_first("\r\n");
+        STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success>, char const*, char const*, Context, unused_type>::value);
+        STATIC_CHECK(!x4::has_on_expectation_failure<x4::annotated_rule<annotate_success>, char const*, char const*, Context>::value);
+        STATIC_CHECK(!x4::has_trace<x4::annotated_rule<annotate_success>, char const*, char const*, Context, unused_type>::value);
+
+        STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context, unused_type>::value);
+        STATIC_CHECK(x4::has_on_expectation_failure<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context>::value);
+        STATIC_CHECK(!x4::has_trace<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context, unused_type>::value);
+
+        STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context, unused_type>::value);
+        STATIC_CHECK(x4::has_on_expectation_failure<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context>::value);
+        STATIC_CHECK(x4::has_trace<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context, unused_type>::value);
+    }
+
+    {
+        std::string_view const input = "foo";
+        auto first = input.begin();
+        auto const last = input.end();
+
+        std::ostringstream oss;
+        test_error_handler error_handler{first, last, oss};
+
+        struct RuleID : x4::annotated_rule<annotate_success> {};
+        constexpr auto rule = x4::rule<RuleID, int>{} = x4::eps;
+        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[rule], unused);
+
+        CHECK(oss.str() == "on_success");
+    }
+    {
+        std::string_view const input = "foo";
+        auto first = input.begin();
+        auto const last = input.end();
+
+        std::ostringstream oss;
+        test_error_handler error_handler{first, last, oss};
+
+        struct RuleID : x4::annotated_rule<annotate_expectation_failure> {};
+        constexpr auto rule = x4::rule<RuleID, int>{} = x4::expect[x4::eps(false)];
+        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[rule], unused);
+
+        CHECK(oss.str() == "on_expectation_failure");
+    }
+
+    {
+        std::string_view const input = "foo";
+        auto first = input.begin();
+        auto const last = input.end();
+
+        std::ostringstream oss;
+        test_error_handler error_handler{first, last, oss};
+
+        struct RuleID : x4::annotated_rule<annotate_trace> {};
+        constexpr auto rule = x4::rule<RuleID, int>{} = x4::eps;
+        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[rule], unused);
+
+        CHECK(oss.str() == "trace");
+    }
 }
