@@ -25,6 +25,8 @@
 
 #include <iris/x4/debug/error_handler.hpp>
 
+#include <iris/pp/cat.hpp>
+
 #include <string_view>
 #include <concepts>
 #include <iterator>
@@ -606,7 +608,7 @@ using x4::rule;
         return ::iris::x4::detail::rule_impl< \
             typename rule_t::id, typename rule_t::attribute_type, true \
         >::call_rule_definition<rule_t::force_attribute>( \
-            IRIS_CONCAT(rule_name, _def), rule_name.name, \
+            IRIS_PP_CAT(rule_name, _def), rule_name.name, \
             first, last, ctx, attr \
         ); \
     }
