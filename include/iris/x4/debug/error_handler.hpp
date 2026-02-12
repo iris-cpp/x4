@@ -38,11 +38,12 @@ enum class tracer_state : char
 };
 
 
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
 struct has_on_expectation_failure : std::false_type
 {
     static_assert(
-        !requires(RuleID id) {
+        !requires(T id) {
             id.on_error(
                 std::declval<It const&>(),
                 std::declval<Se const&>(),
@@ -54,8 +55,9 @@ struct has_on_expectation_failure : std::false_type
     );
 };
 
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    requires requires(RuleID id) {
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    requires requires(T id) {
         id.on_expectation_failure(
             std::declval<It const&>(),
             std::declval<Se const&>(),
@@ -63,11 +65,11 @@ template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class
             std::declval<expectation_failure<It> const&>()
         );
     }
-struct has_on_expectation_failure<RuleID, It, Se, Context> : std::true_type
+struct has_on_expectation_failure<T, It, Se, Context> : std::true_type
 {
     static_assert(
         std::is_void_v<decltype(
-            RuleID{}.on_expectation_failure(
+            std::declval<T&>().on_expectation_failure(
                 std::declval<It const&>(),
                 std::declval<Se const&>(),
                 std::declval<Context const&>(),
@@ -79,11 +81,13 @@ struct has_on_expectation_failure<RuleID, It, Se, Context> : std::true_type
 };
 
 
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 struct has_on_success : std::false_type {};
 
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires requires(RuleID id) {
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    requires requires(T id) {
         id.on_success(
             std::declval<It const&>(),
             std::declval<Se const&>(),
@@ -91,15 +95,17 @@ template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class
             std::declval<Attr&>()
         );
     }
-struct has_on_success<RuleID, It, Se, Context, Attr> : std::true_type
+struct has_on_success<T, It, Se, Context, Attr> : std::true_type
 {};
 
 
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 struct has_trace : std::false_type {};
 
-template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires requires(RuleID id) {
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    requires requires(T id) {
         id.on_trace(
             std::declval<It const&>(),
             std::declval<Se const&>(),
@@ -109,7 +115,7 @@ template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class
             std::declval<tracer_state>()
         );
     }
-struct has_trace<RuleID, It, Se, Context, Attr> : std::true_type
+struct has_trace<T, It, Se, Context, Attr> : std::true_type
 {};
 
 

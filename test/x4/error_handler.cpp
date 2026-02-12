@@ -69,7 +69,11 @@ private:
 TEST_CASE("error_handler")
 {
     {
-        using Context = x4::context<x4::contexts::expectation_failure, x4::expectation_failure<char const*>>;
+        using Context = x4::context<
+            x4::contexts::error_handler,
+            test_error_handler<char const*>,
+            x4::context<x4::contexts::expectation_failure, x4::expectation_failure<char const*>>
+        >;
 
         STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success>, char const*, char const*, Context, unused_type>::value);
         STATIC_CHECK(!x4::has_on_expectation_failure<x4::annotated_rule<annotate_success>, char const*, char const*, Context>::value);

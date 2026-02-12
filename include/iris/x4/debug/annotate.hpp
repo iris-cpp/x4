@@ -54,37 +54,46 @@ template<annotated_rule_kind anno>
 struct annotated_rule
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (iris::contains_single_bit(anno, annotated_rule_kind::annotate_success))
+        requires
+            (iris::contains_single_bit(anno, annotated_rule_kind::annotate_success)) &&
+            requires (
+                get_context_plain_t<contexts::error_handler, Context>& error_handler,
+                It const& first, Se const& last, Context const& ctx, Attr& attr
+            ) {
+                error_handler.on_success(first, last, ctx, attr);
+            }
     static constexpr void on_success(It const& first, Se const& last, Context const& ctx, Attr& attr)
     {
         auto&& error_handler = x4::get<contexts::error_handler>(ctx);
-
-        static_assert(
-            !std::same_as<std::remove_cvref_t<decltype(error_handler)>, unused_type>,
-            "This rule has enabled annotation for `on_success`, but no context was detected for "
-            "`x4::contexts::error_handler`. You must provide a viable error handler via `x4::with`."
-        );
-
         error_handler.on_success(first, last, ctx, attr);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-        requires (iris::contains_single_bit(anno, annotated_rule_kind::annotate_expectation_failure))
+        requires
+            (iris::contains_single_bit(anno, annotated_rule_kind::annotate_expectation_failure)) &&
+            requires (
+                get_context_plain_t<contexts::error_handler, Context>& error_handler,
+                It const& first, Se const& last, Context const& ctx, expectation_failure<It> const& failure
+            ) {
+                error_handler.on_expectation_failure(first, last, ctx, failure);
+            }
     static constexpr void on_expectation_failure(It const& first, Se const& last, Context const& ctx, expectation_failure<It> const& failure)
     {
         auto&& error_handler = x4::get<contexts::error_handler>(ctx);
-
-        static_assert(
-            !std::same_as<std::remove_cvref_t<decltype(error_handler)>, unused_type>,
-            "This rule has enabled annotation for `on_expectation_failure`, but no context was detected for "
-            "`x4::contexts::error_handler`. You must provide a viable error handler via `x4::with`."
-        );
-
         error_handler.on_expectation_failure(first, last, ctx, failure);
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (iris::contains_single_bit(anno, annotated_rule_kind::annotate_trace))
+        requires
+            (iris::contains_single_bit(anno, annotated_rule_kind::annotate_trace)) &&
+            requires (
+                get_context_plain_t<contexts::error_handler, Context>& error_handler,
+                It const& first, Se const& last, Context const& ctx, Attr& attr,
+                std::string_view rule_name,
+                tracer_state state
+            ) {
+                error_handler.on_trace(first, last, ctx, attr, rule_name, state);
+            }
     static constexpr void on_trace(
         It const& first, Se const& last, Context const& ctx, Attr& attr,
         std::string_view rule_name,
@@ -92,13 +101,6 @@ struct annotated_rule
     )
     {
         auto&& error_handler = x4::get<contexts::error_handler>(ctx);
-
-        static_assert(
-            !std::same_as<std::remove_cvref_t<decltype(error_handler)>, unused_type>,
-            "This rule has enabled annotation for `on_trace`, but no context was detected for "
-            "`x4::contexts::error_handler`. You must provide a viable error handler via `x4::with`."
-        );
-
         error_handler.on_trace(first, last, ctx, attr, rule_name, state);
     }
 };
