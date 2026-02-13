@@ -116,8 +116,7 @@ set_target_properties(iris_x4 PROPERTIES CXX_EXTENSIONS OFF)
 # -----------------------------------------------------------------
 # External libraries
 
-add_subdirectory(modules/boost_preprocessor)
-target_link_libraries(iris_alloy INTERFACE Boost::preprocessor)
+# None!
 
 
 # -----------------------------------------------------------------

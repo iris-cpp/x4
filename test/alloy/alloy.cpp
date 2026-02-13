@@ -26,11 +26,7 @@ struct AdaptedStruct
     double y;
 };
 
-template<>
-struct alloy::adaptor<AdaptedStruct>
-{
-    using getters_list = make_getters_list<&AdaptedStruct::x, &AdaptedStruct::y>;
-};
+IRIS_ALLOY_ADAPT_STRUCT(AdaptedStruct, x, y)
 
 struct OldStyle
 {
