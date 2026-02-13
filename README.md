@@ -2,7 +2,7 @@
 
 [**Iris.X4**](https://github.com/iris-cpp/x4) is a modern, header-only PEG parser combinator library for C++23. It lets you write EBNF-like grammars directly in C++ with deterministic, top-down parsing (ordered choice, lookahead, greedy repetition).
 
-X4 succeeds [Boost.Spirit.X3](https://github.com/boostorg/spirit) and is redesigned for clarity, maintainability, and performance using modern C++ features such as concepts and constexpr.
+X4 succeeds [Boost.Spirit.X3](https://github.com/boostorg/spirit) and is redesigned for clarity, maintainability, and performance using modern C++ features such as concepts and constexpr. In contrast to the original library, Iris.X4 has no dependencies on the Boost Libraries.
 
 X4 scales from quick prototypes to production parsers for DSLs, data formats, and interpreters.
 
