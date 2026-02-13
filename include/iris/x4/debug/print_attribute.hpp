@@ -11,6 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
 
+#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
@@ -22,10 +23,12 @@
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
+#include <iosfwd>
+
 namespace iris::x4::traits {
 
-template<class Out, class T>
-void print_attribute(Out& out, T const& val);
+template<X4Attribute Attr>
+void print_attribute(std::ostream& os, Attr const& attr_);
 
 namespace detail {
 
@@ -73,26 +76,30 @@ struct print_visitor
 
 } // detail
 
-template<class Out, class T>
+template<class T>
 struct print_attribute_debug
 {
-    static void call(Out& out, unused_type const&)
+    static void call(std::ostream& out, unused_type const&)
     {
         out << "unused";
     }
 
-    static void call(Out& out, unused_container_type const&)
+    static void call(std::ostream& out, unused_container_type const&)
     {
         out << "unused_container";
     }
 
-    static void call(Out& out, CategorizedAttr<plain_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<plain_attr> auto const& val)
     {
-        out << val;
+        if constexpr (std::formattable<T, char>) {
+            std::format_to(std::ostreambuf_iterator{out}, "{}", val);
+        } else {
+            out << val;
+        }
     }
 
 #ifdef IRIS_X4_UNICODE
-    static void call(Out& out, char_encoding::unicode::char_type const& val)
+    static void call(std::ostream& out, char_encoding::unicode::char_type const& val)
     {
         if (val >= 0 && val < 127) {
             if (iscntrl(val)) { // TODO
@@ -108,23 +115,23 @@ struct print_attribute_debug
         }
     }
 
-    static void call(Out& out, char const& val)
+    static void call(std::ostream& out, char const& val)
     {
         print_attribute_debug::call(out, static_cast<char_encoding::unicode::char_type>(val));
     }
 #endif
 
     // for tuple-likes
-    static void call(Out& out, CategorizedAttr<tuple_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<tuple_attr> auto const& val)
     {
         out << '[';
-        alloy::for_each(val, detail::print_tuple_like<Out>(out));
+        alloy::for_each(val, detail::print_tuple_like<std::ostream>(out));
         out << ']';
     }
 
     template<CategorizedAttr<container_attr> T_>
         requires (!std::is_same_v<T_, unused_container_type>)
-    static void call(Out& out, T_ const& val)
+    static void call(std::ostream& out, T_ const& val)
     {
         out << '[';
         bool is_first = true;
@@ -141,12 +148,12 @@ struct print_attribute_debug
     }
 
     // for variant types
-    static void call(Out& out, CategorizedAttr<variant_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<variant_attr> auto const& val)
     {
-        iris::visit(detail::print_visitor<Out>{out}, val);
+        iris::visit(detail::print_visitor<std::ostream>{out}, val);
     }
 
-    static void call(Out& out, CategorizedAttr<optional_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<optional_attr> auto const& val)
     {
         if (val) {
             traits::print_attribute(out, *val);
@@ -156,10 +163,10 @@ struct print_attribute_debug
     }
 };
 
-template<class Out, class T>
-void print_attribute(Out& out, T const& val)
+template<X4Attribute Attr>
+void print_attribute(std::ostream& os, Attr const& attr_)
 {
-    print_attribute_debug<Out, T>::call(out, val);
+    print_attribute_debug<Attr>::call(os, attr_);
 }
 
 } // iris::x4::traits

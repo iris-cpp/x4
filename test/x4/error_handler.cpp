@@ -77,15 +77,15 @@ TEST_CASE("error_handler")
 
         STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success>, char const*, char const*, Context, unused_type>::value);
         STATIC_CHECK(!x4::has_on_expectation_failure<x4::annotated_rule<annotate_success>, char const*, char const*, Context>::value);
-        STATIC_CHECK(!x4::has_trace<x4::annotated_rule<annotate_success>, char const*, char const*, Context, unused_type>::value);
+        STATIC_CHECK(!x4::has_on_trace<x4::annotated_rule<annotate_success>, char const*, char const*, Context, unused_type>::value);
 
         STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context, unused_type>::value);
         STATIC_CHECK(x4::has_on_expectation_failure<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context>::value);
-        STATIC_CHECK(!x4::has_trace<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context, unused_type>::value);
+        STATIC_CHECK(!x4::has_on_trace<x4::annotated_rule<annotate_success | annotate_expectation_failure>, char const*, char const*, Context, unused_type>::value);
 
         STATIC_CHECK(x4::has_on_success<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context, unused_type>::value);
         STATIC_CHECK(x4::has_on_expectation_failure<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context>::value);
-        STATIC_CHECK(x4::has_trace<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context, unused_type>::value);
+        STATIC_CHECK(x4::has_on_trace<x4::annotated_rule<annotate_success | annotate_expectation_failure | annotate_trace>, char const*, char const*, Context, unused_type>::value);
     }
 
     {

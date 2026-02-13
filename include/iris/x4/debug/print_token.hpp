@@ -23,31 +23,31 @@ namespace detail {
 // generate debug output for lookahead token (character) stream
 struct token_printer_debug_for_chars
 {
-    template<class Out, class Char>
-    static void print(Out& o, Char c)
+    template<class Char>
+    static void print(std::ostream& os, Char c)
     {
         using namespace std;    // allow for ADL to find the proper iscntrl
 
         switch (c) {
-        case '\a': o << "\\a"; break;
-        case '\b': o << "\\b"; break;
-        case '\f': o << "\\f"; break;
-        case '\n': o << "\\n"; break;
-        case '\r': o << "\\r"; break;
-        case '\t': o << "\\t"; break;
-        case '\v': o << "\\v"; break;
+        case '\a': os << "\\a"; break;
+        case '\b': os << "\\b"; break;
+        case '\f': os << "\\f"; break;
+        case '\n': os << "\\n"; break;
+        case '\r': os << "\\r"; break;
+        case '\t': os << "\\t"; break;
+        case '\v': os << "\\v"; break;
         default:
             if (c >= 0 && c < 127) {
                 if (iscntrl(c)) {
-                    o << "\\" << std::oct << int(c);
+                    os << "\\" << std::oct << int(c);
                 } else if (isprint(c)) {
-                    o << char(c);
+                    os << char(c);
                 } else {
-                    o << "\\x" << std::hex << int(c);
+                    os << "\\x" << std::hex << int(c);
                 }
 
             } else {
-                o << "\\x" << std::hex << int(c);
+                os << "\\x" << std::hex << int(c);
             }
             break;
         }
@@ -57,10 +57,10 @@ struct token_printer_debug_for_chars
 // for token types where the comparison with char constants wouldn't work
 struct token_printer_debug
 {
-    template<class Out, class T>
-    static void print(Out& o, T const& val)
+    template<class T>
+    static void print(std::ostream& os, T const& val)
     {
-        o << val;
+        os << val;
     }
 };
 
@@ -75,11 +75,10 @@ struct token_printer_debug
     >
 {};
 
-template<class Out, class T>
-void print_token(Out& out, T const& val)
+template<class T>
+void print_token(std::ostream& os, T const& val)
 {
-    // allow to customize the token printer routine
-    token_printer_debug<T>::print(out, val);
+    token_printer_debug<T>::print(os, val);
 }
 
 } // iris::x4::traits

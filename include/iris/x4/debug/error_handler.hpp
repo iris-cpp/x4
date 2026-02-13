@@ -101,7 +101,7 @@ struct has_on_success<T, It, Se, Context, Attr> : std::true_type
 
 // `T` is `RuleID` or some custom error handler type
 template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-struct has_trace : std::false_type {};
+struct has_on_trace : std::false_type {};
 
 // `T` is `RuleID` or some custom error handler type
 template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -115,7 +115,7 @@ template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Cont
             std::declval<tracer_state>()
         );
     }
-struct has_trace<T, It, Se, Context, Attr> : std::true_type
+struct has_on_trace<T, It, Se, Context, Attr> : std::true_type
 {};
 
 
@@ -130,24 +130,24 @@ struct [[nodiscard]] scoped_tracer
 };
 
 template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires has_trace<RuleID, It, Se, Context, Attr>::value
+    requires has_on_trace<RuleID, It, Se, Context, Attr>::value
 struct [[nodiscard]] scoped_tracer<RuleID, It, Se, Context, Attr>
 {
     constexpr scoped_tracer(
         It const& first, Se const& last,
         Context const& ctx,
-        Attr const& attr,
+        Attr const& attr_,
         std::string_view rule_name,
         bool const* parse_ok
     )
         : first_(first)
         , last_(last)
         , ctx_(ctx)
-        , attr_(attr)
+        , attr_(attr_)
         , rule_name_(rule_name)
         , parse_ok_(parse_ok)
     {
-        RuleID{}.on_trace(first, last, ctx, attr, rule_name, tracer_state::pre_parse);
+        RuleID{}.on_trace(first, last, ctx, attr_, rule_name, tracer_state::pre_parse);
     }
 
     constexpr ~scoped_tracer()
