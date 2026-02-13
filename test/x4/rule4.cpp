@@ -31,22 +31,22 @@ int got_it = 0;
 
 struct my_rule_class
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Failure>
-    static void on_error(It const&, Se const& last, Context const&, Failure const& x)
-    {
-        std::cout
-            << "Error! Expecting: "
-            << x.which()
-            << ", got: \""
-            << std::string(x.where(), last)
-            << "\""
-            << std::endl;
-    }
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
     static void on_success(It const&, Se const&, Context const&, Attr&)
     {
         ++got_it;
+    }
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    static void on_expectation_failure(It const&, Se const& last, Context const&, x4::expectation_failure<It> const& failure)
+    {
+        std::cout
+            << "Error! Expecting: "
+            << failure.which()
+            << ", got: \""
+            << std::string(failure.where(), last)
+            << "\""
+            << std::endl;
     }
 };
 

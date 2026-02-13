@@ -29,15 +29,15 @@ struct my_tag;
 template<x4::X4Attribute ExpectedAttr>
 struct match_counter_rule_id
 {
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Failure, class Context>
-    void on_error(It const&, Se const&, Context const& ctx, Failure const&)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
+    static void on_success(It const&, Se const&, Context const& ctx, Attr&)
     {
         STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_var, ExpectedAttr>);
         ++x4::get<my_tag>(ctx);
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
-    void on_success(It const&, Se const&, Context const& ctx, Attr&)
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    static void on_expectation_failure(It const&, Se const&, Context const& ctx, x4::expectation_failure<It> const&)
     {
         STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_var, ExpectedAttr>);
         ++x4::get<my_tag>(ctx);

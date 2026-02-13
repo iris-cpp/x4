@@ -23,11 +23,7 @@
 
 #include <iris/x4/traits/transform_attribute.hpp>
 
-#ifdef IRIS_X4_DEBUG
-# include <iris/x4/debug/simple_trace.hpp>
-#endif
-
-#include <iris/x4/debug/detail/parse_callback.hpp>
+#include <iris/x4/debug/error_handler.hpp>
 
 #include <string_view>
 #include <concepts>
@@ -107,15 +103,15 @@ private:
         has_on_success<RuleID, It, It, RContext, RHSAttr>::value;
 
     template<std::forward_iterator It, class RContext, X4Attribute RHSAttr>
-    static constexpr bool need_on_error =
+    static constexpr bool need_on_expectation_failure =
         has_context_v<RContext, contexts::expectation_failure> &&
-        has_on_error<RuleID, It, It, RContext>::value;
+        has_on_expectation_failure<RuleID, It, It, RContext>::value;
 
     template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
     static constexpr bool need_rcontext =
         RHS::need_rcontext ||
         need_on_success<It, rcontext_t<Context, RHSAttr>, RHSAttr> ||
-        need_on_error<It, rcontext_t<Context, RHSAttr>, RHSAttr>;
+        need_on_expectation_failure<It, rcontext_t<Context, RHSAttr>, RHSAttr>;
 
 
     template<class RHS, std::forward_iterator It, class Context, X4Attribute RHSAttr>
@@ -128,7 +124,7 @@ private:
         // involve any of the below features:
         //   - Semantic action
         //   - `RuleID::on_success(...)`
-        //   - `RuleID::on_error(...)`
+        //   - `RuleID::on_expectation_failure(...)`
         return ctx;
     }
 
@@ -158,7 +154,6 @@ private:
         return x4::replace_first_context<contexts::rule_var>(ctx, rhs_attr);
     }
 
-public:
     template<
         class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
         class RContext, X4Attribute RHSAttr
@@ -208,29 +203,25 @@ public:
                 return true;
             }
 
-            if constexpr (need_on_error<It, RContext, RHSAttr>) {
+            if constexpr (need_on_expectation_failure<It, RContext, RHSAttr>) {
                 if (x4::has_expectation_failure(rcontext)) {
-                    auto const& x = x4::get_expectation_failure(rcontext);
-                    static_assert(
-                        std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), rcontext, x))>,
-                        "error handler should not return a value"
+                    RuleID{}.on_expectation_failure(
+                        std::as_const(first), std::as_const(last), rcontext,
+                        x4::get_expectation_failure(rcontext)
                     );
-                    RuleID{}.on_error(std::as_const(first), std::as_const(last), rcontext, x);
                 }
             }
             return false;
 
         } else { // does not have `on_success`
-            if constexpr (need_on_error<It, RContext, RHSAttr>) {
+            if constexpr (need_on_expectation_failure<It, RContext, RHSAttr>) {
                 if (ok) return true;
 
                 if (x4::has_expectation_failure(rcontext)) {
-                    auto const& x = x4::get_expectation_failure(rcontext);
-                    static_assert(
-                        std::is_void_v<decltype(RuleID{}.on_error(std::as_const(first), std::as_const(last), rcontext, x))>,
-                        "error handler should not return a value"
+                    RuleID{}.on_expectation_failure(
+                        std::as_const(first), std::as_const(last), rcontext,
+                        x4::get_expectation_failure(rcontext)
                     );
-                    RuleID{}.on_error(std::as_const(first), std::as_const(last), rcontext, x);
                 }
                 return false;
 
@@ -240,6 +231,7 @@ public:
         }
     }
 
+public:
     template<
         bool ForceAttr,
         class RHS, std::forward_iterator It, std::sentinel_for<It> Se,
@@ -247,7 +239,7 @@ public:
     >
     [[nodiscard]] static constexpr bool
     call_rule_definition(
-        RHS const& rhs, std::string_view rule_name,
+        RHS const& rhs, [[maybe_unused]] std::string_view rule_name,
         It& first, Se const& last,
         Context const& ctx, Exposed& exposed_attr
     )
@@ -259,20 +251,14 @@ public:
 
         // Creates a place to hold the result of parse_rhs
         // called inside the following scope.
-        bool parse_ok;
+        bool parse_ok = false;
         {
-        #ifdef IRIS_X4_DEBUG
-            parse_ok = false;
-
             // Debug on destructor, i.e., before any modifications are made to the
             // attribute passed to `parse_rhs`. Note: the debug must be done before
             // `transform::post`, where some types do some modifications there;
             // for instance, if `Exposed` is a recursive variant.
-            scoped_rule_debug<It, Se, transform_attr>
-            dbg(rule_name, first, last, rhs_attr, &parse_ok);
-        #else
-            (void)rule_name;
-        #endif
+            [[maybe_unused]] scoped_tracer<RuleID, It, Se, Context, std::remove_reference_t<transform_attr>>
+            scoped_tracer{first, last, ctx, rhs_attr, rule_name, &parse_ok};
 
             // The existence of semantic action inhibits attribute materialization _unless_ it is
             // explicitly required by the user (primarily via `%=`).
