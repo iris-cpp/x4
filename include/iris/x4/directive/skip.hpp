@@ -22,51 +22,6 @@
 
 namespace iris::x4 {
 
-template<class Subject>
-struct reskip_directive : proxy_parser<Subject, reskip_directive<Subject>>
-{
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires has_skipper_v<Context>
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
-    {
-        return this->subject.parse(first, last, ctx, attr);
-    }
-
-private:
-    template<class Context>
-    using context_t = context<
-        contexts::skipper,
-        std::remove_cvref_t<decltype(detail::get_unused_skipper(
-            std::declval<get_context_plain_t<contexts::skipper, Context> const&>()
-        ))>,
-        Context
-    >;
-
-public:
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!has_skipper_v<Context>)
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
-    {
-        static_assert(
-            has_context_v<Context, contexts::skipper>,
-            "`reskip[...]` has no effect when the outer grammar has no skipper."
-        );
-        static_assert(
-            detail::is_unused_skipper<get_context_plain_t<contexts::skipper, Context>>::value,
-            "`reskip[...]` has no effect when the outer grammar has no inhibited skipper."
-        );
-
-        // This logic is heavily related to the instantiation chain;
-        // see `x4::skip_over` for details.
-        auto const& skipper = detail::get_unused_skipper(x4::get<contexts::skipper>(ctx));
-        return this->subject.parse(first, last, x4::make_context<contexts::skipper>(skipper, ctx), attr);
-    }
-};
-
 template<class Subject, class Skipper>
 struct skip_directive : proxy_parser<Subject, skip_directive<Subject, Skipper>>
 {
@@ -145,27 +100,6 @@ struct skip_gen
     {
         return {as_parser(std::forward<Skipper>(skipper))};
     }
-
-    template<class Subject>
-    [[nodiscard, deprecated("Use `x4::reskip[p]`.")]]
-    /* static */ constexpr reskip_directive<as_parser_plain_t<Subject>>
-    operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode
-        noexcept(is_parser_nothrow_constructible_v<reskip_directive<as_parser_plain_t<Subject>>, Subject>)
-    {
-        return {as_parser(std::forward<Subject>(subject))};
-    }
-};
-
-struct reskip_gen
-{
-    template<X4Subject Subject>
-    [[nodiscard]]
-    /* static */ constexpr reskip_directive<as_parser_plain_t<Subject>>
-    operator[](Subject&& subject) const // MSVC 2022 bug: cannot define `static operator[]` even in C++26 mode
-        noexcept(is_parser_nothrow_constructible_v<reskip_directive<as_parser_plain_t<Subject>>, Subject>)
-    {
-        return {as_parser(std::forward<Subject>(subject))};
-    }
 };
 
 } // detail
@@ -173,12 +107,10 @@ struct reskip_gen
 namespace parsers::directive {
 
 [[maybe_unused]] inline constexpr detail::skip_gen skip{};
-[[maybe_unused]] inline constexpr detail::reskip_gen reskip{};
 
 } // parsers::directive
 
 using parsers::directive::skip;
-using parsers::directive::reskip;
 
 } // iris::x4
 
