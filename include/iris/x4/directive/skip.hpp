@@ -42,7 +42,7 @@ struct skip_directive : proxy_parser<Subject, skip_directive<Subject, Skipper>>
     {
         // This logic is heavily related to the instantiation chain;
         // see `x4::skip_over` for details.
-        return this->subject.parse(first, last, x4::make_context<contexts::skipper>(skipper_, ctx), attr);
+        return this->subject.parse(first, last, x4::replace_first_context<contexts::skipper>(ctx, skipper_), attr);
     }
 
 private:
