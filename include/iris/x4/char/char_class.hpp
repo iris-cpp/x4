@@ -150,6 +150,35 @@ using x4::standard::upper;
 
 namespace detail {
 
+template<X4Subject Skipper>
+struct to_builtin_t {};
+
+struct to_builtin_fn
+{
+    template<X4Subject Skipper>
+    [[nodiscard]] static constexpr decltype(auto)
+    operator()(Skipper&& skipper) noexcept
+    {
+        return skipper;
+    }
+
+    template<class Encoding>
+    [[nodiscard]] static constexpr builtin_skipper_kind
+    operator()(char_class_parser<Encoding, char_classes::blank_tag> const&) noexcept
+    {
+        return builtin_skipper_kind::blank;
+    }
+
+    template<class Encoding>
+    [[nodiscard]] static constexpr builtin_skipper_kind
+    operator()(char_class_parser<Encoding, char_classes::space_tag> const&) noexcept
+    {
+        return builtin_skipper_kind::space;
+    }
+};
+
+// ------------------------------------------------
+
 template<class CharClassTag, std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void builtin_skip_over(It& first, Se const& last) noexcept
 {
@@ -166,8 +195,11 @@ constexpr void builtin_skip_over(It& first, Se const& last) noexcept
 
 } // detail
 
+[[maybe_unused]] inline constexpr detail::to_builtin_fn to_builtin{};
 
-// Forward declaration in `skip_over.hpp`
+
+// Forward declaration in "skip_over.hpp"
+// Need to sync this implementation with `skip_gen` ("skip.hpp")
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     requires std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>
 constexpr void skip_over(It& first, Se const& last, Context const& ctx) noexcept
