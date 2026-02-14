@@ -45,6 +45,22 @@ enum struct builtin_skipper_kind : char
 
 namespace detail {
 
+template<builtin_skipper_kind Kind>
+struct builtin_skipper_traits;
+
+template<>
+struct builtin_skipper_traits<builtin_skipper_kind::blank>
+{
+    static constexpr char const* name = "blank";
+};
+
+template<>
+struct builtin_skipper_traits<builtin_skipper_kind::space>
+{
+    static constexpr char const* name = "space";
+};
+
+
 template<class Context>
 struct skip_over_context
 {
