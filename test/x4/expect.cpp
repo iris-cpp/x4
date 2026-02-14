@@ -156,7 +156,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     using x4::repeat;
     using x4::seek;
     using x4::skip;
-    using x4::reskip;
     using x4::with;
 
     using It = std::string_view::const_iterator;
@@ -220,8 +219,7 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)raw[eps].parse(first, last, unused, unused);
     (void)repeat(1)[eps].parse(first, last, unused, unused);
     (void)seek[eps].parse(first, last, unused, unused);
-    (void)skip(space)[eps].parse(first, last, x4::make_context<x4::contexts::skipper>(space), unused);
-    (void)reskip[eps].parse(first, last, x4::make_context<x4::contexts::skipper>(space), unused);
+    (void)skip(space)[eps].parse(first, last, unused, unused);
     (void)with<struct with_id_>(input)[eps].parse(first, last, unused, unused);
 
     // `numeric/*` do not need to be tested, as they do not contain expectation failure related calls
@@ -296,7 +294,6 @@ TEST_CASE("expect")
     using x4::omit;
     using x4::raw;
     using x4::skip;
-    using x4::reskip;
     using x4::seek;
     using x4::repeat;
     using x4::matches;
@@ -461,6 +458,7 @@ TEST_CASE("expect")
         X4_TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
         X4_TEST_SUCCESS_FAIL("a..b", skip(lit('.') >> 'z')[lit('a') >> 'b']);
 
+        X4_TEST_SUCCESS_PASS("a  b", skip(x4::no_builtin(blank))[lit('a') >> 'b']);
         X4_TEST_SUCCESS_PASS("a  b", skip(blank)[lit('a') >> 'b']);
         X4_TEST_SUCCESS_PASS("a..b", skip(+lit('.'))[lit('a') >> 'b']);
         X4_TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
@@ -649,39 +647,6 @@ TEST_CASE("expect")
             X4_TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], blank, s, {
                 CHECK(which == "'z'"sv);
                 CHECK(where == "d"sv);
-            });
-        }
-
-        // reskip
-        {
-            std::string s;
-            X4_TEST_ATTR_SUCCESS_PASS("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d')]], blank, s);
-            CHECK(s == "abcd");
-        }
-        {
-            std::string s;
-            X4_TEST_ATTR_FAILURE("a b c d", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z')]], blank, s, {
-                CHECK(where == "d"sv);
-            });
-        }
-
-        // reskip with expectation failure context propagation
-        {
-            std::string s;
-            X4_TEST_ATTR_SUCCESS_PASS("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('e')]], blank, s);
-            CHECK(s == "abcde");
-        }
-        {
-            std::string s;
-            X4_TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('z') > char_('e')]], blank, s, {
-                CHECK(where == " d e"sv);
-            });
-        }
-        {
-            std::string s;
-            X4_TEST_ATTR_FAILURE("a b c d e", char_('a') > char_('b') > no_skip[lit(' ') > char_('c') > reskip[char_('d') > char_('z')]], blank, s, {
-                CHECK(which == "'z'"sv);
-                CHECK(where == "e"sv);
             });
         }
     }

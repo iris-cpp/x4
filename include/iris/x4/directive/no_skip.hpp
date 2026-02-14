@@ -26,46 +26,24 @@ namespace iris::x4 {
 template<class Subject>
 struct no_skip_directive : proxy_parser<Subject, no_skip_directive<Subject>>
 {
-private:
-    template<class Context>
-    using unused_skipper_context_t = x4::context<
-        contexts::skipper,
-        unused_skipper<
-            std::remove_reference_t<decltype(x4::get<contexts::skipper>(std::declval<Context const&>()))>
-        >,
-        Context
-    >;
-
-public:
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<
             Subject, It, Se,
-            unused_skipper_context_t<Context>,
+            std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>,
             Attr
         >)
     {
-        auto const& skipper = x4::get<contexts::skipper>(ctx);
-
-        unused_skipper<std::remove_reference_t<decltype(skipper)>>
-        unused_skipper(skipper);
+        //
+        // No pre-skip here, in contrast to `lexeme`
+        //
 
         return this->subject.parse(
             first, last,
-            x4::make_context<contexts::skipper>(unused_skipper, ctx),
+            x4::remove_first_context<contexts::skipper>(ctx),
             attr
         );
-    }
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!has_skipper_v<Context>)
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
-    {
-        return this->subject.parse(first, last, ctx, attr);
     }
 };
 

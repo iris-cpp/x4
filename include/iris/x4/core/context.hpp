@@ -389,7 +389,7 @@ remove_first_context(context<ID, T, Next> const& ctx) noexcept
 
         } else {
             // Existing context found; remove it and end the search.
-            return (ctx.next); // Parenthesis is important
+            return ctx.next;
         }
 
     } else { // No match
@@ -399,7 +399,12 @@ remove_first_context(context<ID, T, Next> const& ctx) noexcept
 
         } else {
             // No match. Continue the replacement recursively.
-            using NewNext = decltype(x4::remove_first_context<ID_To_Remove>(ctx.next));
+            using NewNext_ = decltype(x4::remove_first_context<ID_To_Remove>(ctx.next));
+            using NewNext = std::conditional_t<
+                std::is_reference_v<NewNext_>,
+                NewNext_,
+                std::remove_const_t<NewNext_>
+            >;
 
             if constexpr (std::same_as<std::remove_cvref_t<NewNext>, std::remove_cvref_t<Next>>) {
                 // Avoid creating copy on exact same type

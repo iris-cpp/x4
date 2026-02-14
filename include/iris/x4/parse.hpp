@@ -12,10 +12,12 @@
 
 #include <iris/config.hpp>
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/action.hpp> // intentionally eagerly included
+#include <iris/x4/core/action.hpp> // for user-defined semantic action QoL
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/expectation.hpp>
+
+#include <iris/x4/char/char_class.hpp> // for builtin skipper
 
 #include <iris/x4/traits/string_traits.hpp>
 
@@ -52,7 +54,8 @@ struct parse_context_for_impl<It>
 {
     using type = context<
         contexts::expectation_failure,
-        expectation_failure<It>
+        expectation_failure<It>,
+        context<contexts::skipper, builtin_skipper_kind>
     >;
 };
 
@@ -60,6 +63,24 @@ template<std::ranges::forward_range R>
 struct parse_context_for_impl<R>
     : parse_context_for_impl<std::ranges::iterator_t<R const>>
 {};
+
+template<class ItOrRange>
+struct skipper_parse_context_for_impl;
+
+template<std::forward_iterator It>
+struct skipper_parse_context_for_impl<It>
+{
+    using type = context<
+        contexts::expectation_failure,
+        expectation_failure<It>
+    >;
+};
+
+template<std::ranges::forward_range R>
+struct skipper_parse_context_for_impl<R>
+    : skipper_parse_context_for_impl<std::ranges::iterator_t<R const>>
+{};
+
 
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 struct phrase_parse_context_for_impl;
@@ -72,13 +93,32 @@ struct phrase_parse_context_for_impl<Skipper, It, Se>
     using type = context<
         contexts::expectation_failure,
         expectation_failure<It>,
-        context<contexts::skipper, Skipper const>
+        context<contexts::skipper, std::remove_reference_t<decltype(to_builtin(std::declval<Skipper const&>()))>>
     >;
 };
 
 template<class Skipper, std::ranges::forward_range R>
 struct phrase_parse_context_for_impl<Skipper, R>
     : phrase_parse_context_for_impl<Skipper, std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>
+{};
+
+template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
+struct skipper_phrase_parse_context_for_impl;
+
+template<class Skipper, std::forward_iterator It, std::sentinel_for<It> Se>
+struct skipper_phrase_parse_context_for_impl<Skipper, It, Se>
+{
+    static_assert(X4ExplicitParser<Skipper, It, Se>);
+
+    using type = context<
+        contexts::expectation_failure,
+        expectation_failure<It>
+    >;
+};
+
+template<class Skipper, std::ranges::forward_range R>
+struct skipper_phrase_parse_context_for_impl<Skipper, R>
+    : skipper_phrase_parse_context_for_impl<Skipper, std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>
 {};
 
 } // detail
@@ -89,9 +129,15 @@ struct phrase_parse_context_for_impl<Skipper, R>
 template<class ItOrRange, class = void>
 using parse_context_for = typename detail::parse_context_for_impl<ItOrRange>::type;
 
+template<class ItOrRange, class = void>
+using skipper_parse_context_for = typename detail::skipper_parse_context_for_impl<ItOrRange>::type;
+
 // Used for determining the context type required in `IRIS_X4_INSTANTIATE`.
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
+
+template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
+using skipper_phrase_parse_context_for = typename detail::skipper_phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 
 namespace detail {
@@ -148,10 +194,14 @@ public:
         Se last = std::ranges::end(range_);
 
         expectation_failure<It> expect_failure;
+        auto skipper_kind = builtin_skipper_kind::no_skip;
 
         bool const ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(expect_failure),
+            x4::make_context<contexts::expectation_failure>(
+                expect_failure,
+                x4::make_context<contexts::skipper>(skipper_kind)
+            ),
             attr
         );
         return parse_result_for<R>{
@@ -174,10 +224,15 @@ public:
         It first = std::ranges::begin(range_);
         Se last = std::ranges::end(range_);
 
+        auto skipper_kind = builtin_skipper_kind::no_skip;
+
         res.expect_failure.clear();
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(res.expect_failure),
+            x4::make_context<contexts::expectation_failure>(
+                res.expect_failure,
+                x4::make_context<contexts::skipper>(skipper_kind)
+            ),
             attr
         );
         res.remainder = {std::move(first), std::move(last)};
@@ -200,8 +255,10 @@ public:
         Se last = std::ranges::end(range_);
 
         expectation_failure<It> expect_failure;
+        auto&& maybe_builtin_skipper = to_builtin(s);
+
         auto const ctx = x4::make_context<contexts::expectation_failure>(
-            expect_failure, x4::make_context<contexts::skipper>(s)
+            expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
         bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
@@ -231,8 +288,10 @@ public:
         Se last = std::ranges::end(range_);
 
         res.expect_failure.clear();
+        auto&& maybe_builtin_skipper = to_builtin(s);
+
         auto const ctx = x4::make_context<contexts::expectation_failure>(
-            res.expect_failure, x4::make_context<contexts::skipper>(s)
+            res.expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
         res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
@@ -252,9 +311,14 @@ public:
     operator()(It first, Se last, Parser&& p, ParseAttr& attr)
     {
         expectation_failure<It> expect_failure;
+        auto skipper_kind = builtin_skipper_kind::no_skip;
+
         bool const ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(expect_failure),
+            x4::make_context<contexts::expectation_failure>(
+                expect_failure,
+                x4::make_context<contexts::skipper>(skipper_kind)
+            ),
             attr
         );
         return parse_result<It, Se>{
@@ -270,9 +334,14 @@ public:
     operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, ParseAttr& attr)
     {
         res.expect_failure.clear();
+        auto skipper_kind = builtin_skipper_kind::no_skip;
+
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(res.expect_failure),
+            x4::make_context<contexts::expectation_failure>(
+                res.expect_failure,
+                x4::make_context<contexts::skipper>(skipper_kind)
+            ),
             attr
         );
         res.remainder = {std::move(first), std::move(last)};
@@ -287,8 +356,10 @@ public:
     operator()(It first, Se last, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         expectation_failure<It> expect_failure;
+        auto&& maybe_builtin_skipper = to_builtin(s);
+
         auto const ctx = x4::make_context<contexts::expectation_failure>(
-            expect_failure, x4::make_context<contexts::skipper>(s)
+            expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
         bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
@@ -310,8 +381,10 @@ public:
     operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         res.expect_failure.clear();
+        auto&& maybe_builtin_skipper = to_builtin(s);
+
         auto const ctx = x4::make_context<contexts::expectation_failure>(
-            res.expect_failure, x4::make_context<contexts::skipper>(s)
+            res.expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
         res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
