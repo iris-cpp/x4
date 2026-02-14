@@ -35,6 +35,8 @@ jobs:
               - 'CMakeLists.txt'
               - 'modules/iris'
               - 'test/CMakeLists.txt'
+              - 'scripts/generate_tuple_members.sh'
+              - 'scripts/generate_tuple_members.bat'
             alloy:
               - 'include/iris/alloy/**/*'
               - 'test/alloy/**/*'
