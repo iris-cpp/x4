@@ -458,6 +458,7 @@ TEST_CASE("expect")
         X4_TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);
         X4_TEST_SUCCESS_FAIL("a..b", skip(lit('.') >> 'z')[lit('a') >> 'b']);
 
+        X4_TEST_SUCCESS_PASS("a  b", skip(x4::no_builtin(blank))[lit('a') >> 'b']);
         X4_TEST_SUCCESS_PASS("a  b", skip(blank)[lit('a') >> 'b']);
         X4_TEST_SUCCESS_PASS("a..b", skip(+lit('.'))[lit('a') >> 'b']);
         X4_TEST_SUCCESS_PASS("a..b", skip(lit('.') >> '.')[lit('a') >> 'b']);

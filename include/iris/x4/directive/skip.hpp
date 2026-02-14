@@ -15,12 +15,18 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 
+#include <iris/x4/char/char_class_tags.hpp>
+
 #include <concepts>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 
 namespace iris::x4 {
+
+template<class Encoding, class Tag>
+struct char_class_parser;
+
 
 template<class Subject, class Skipper>
 struct skip_directive : proxy_parser<Subject, skip_directive<Subject, Skipper>>
@@ -51,6 +57,49 @@ private:
 
     Skipper skipper_;
 };
+
+
+template<builtin_skipper_kind Kind, class Subject>
+struct builtin_skip_directive : proxy_parser<Subject, builtin_skip_directive<Kind, Subject>>
+{
+    using base_type = proxy_parser<Subject, builtin_skip_directive>;
+    using base_type::base_type;
+
+    // Has existing builtin skipper
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
+    {
+        builtin_skipper_kind& skipper_kind = x4::get<contexts::skipper>(ctx);
+        auto const old_skipper_kind = skipper_kind;
+        skipper_kind = Kind;
+
+        bool const ok = this->subject.parse(first, last, ctx, attr);
+
+        skipper_kind = old_skipper_kind;
+        return ok;
+    }
+
+    // No existing builtin skipper
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires
+            std::same_as<get_context_plain_t<contexts::skipper, Context>, unused_type> ||
+            (!std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>)
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+        noexcept(is_nothrow_parsable_v<
+            Subject, It, Se,
+            std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, std::declval<builtin_skipper_kind&>()))>,
+            Attr
+        >)
+    {
+        // This value could be reset by some nested parsers, so it can't be const
+        /* constexpr */ builtin_skipper_kind skipper_kind = Kind;
+        return this->subject.parse(first, last, x4::replace_first_context<contexts::skipper>(ctx, skipper_kind), attr);
+    }
+};
+
 
 namespace detail {
 
@@ -90,8 +139,69 @@ private:
     skipper_type skipper_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
+template<builtin_skipper_kind Kind>
+struct builtin_skip_gen_impl
+{
+    template<X4Subject Subject>
+    [[nodiscard]] constexpr builtin_skip_directive<Kind, as_parser_plain_t<Subject>>
+    operator[](Subject&& subject) const
+        noexcept(
+            is_parser_nothrow_castable_v<Subject> &&
+            std::is_nothrow_constructible_v<
+                builtin_skip_directive<Kind, as_parser_plain_t<Subject>>,
+                as_parser_t<Subject>
+            >
+        )
+    {
+        return {as_parser(std::forward<Subject>(subject))};
+    }
+};
+
+template<X4Subject Skipper>
+struct no_builtin_t {};
+
+struct no_builtin_fn
+{
+    template<X4Subject Skipper>
+    [[nodiscard]] static constexpr no_builtin_t<Skipper> operator()(Skipper const&) noexcept
+    {
+        return {};
+    }
+};
+
+} // detail
+
+[[maybe_unused]] inline constexpr detail::no_builtin_fn no_builtin{};
+
+
+namespace detail {
+
 struct skip_gen
 {
+    template<class Encoding>
+    [[nodiscard]]
+    static constexpr builtin_skip_gen_impl<builtin_skipper_kind::blank>
+    operator()(char_class_parser<Encoding, char_classes::blank_tag> const&) noexcept
+    {
+        return {};
+    }
+
+    template<class Encoding>
+    [[nodiscard]]
+    static constexpr builtin_skip_gen_impl<builtin_skipper_kind::space>
+    operator()(char_class_parser<Encoding, char_classes::space_tag> const&) noexcept
+    {
+        return {};
+    }
+
+    template<class Encoding, class Tag>
+    [[nodiscard]] static constexpr auto
+    operator()(no_builtin_t<char_class_parser<Encoding, Tag>> const&)
+        noexcept(noexcept(skip_gen::operator()(char_class_parser<Encoding, Tag>{})))
+    {
+        return skip_gen::operator()(char_class_parser<Encoding, Tag>{});
+    }
+
     template<X4Subject Skipper>
     [[nodiscard]]
     static constexpr skip_gen_impl<as_parser_t<Skipper>>

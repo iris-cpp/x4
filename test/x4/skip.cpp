@@ -26,11 +26,16 @@ TEST_CASE("skip")
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(skip('x')['y']);
 
     CHECK(parse("a b c d", skip(space)[*char_]));
+    CHECK(parse("a b c d", skip(x4::no_builtin(space))[*char_]));
 
     {
-        // test attribute
         std::string s;
         REQUIRE(parse("a b c d", skip(space)[*char_], s));
+        CHECK(s == "abcd");
+    }
+    {
+        std::string s;
+        REQUIRE(parse("a b c d", skip(x4::no_builtin(space))[*char_], s));
         CHECK(s == "abcd");
     }
 }

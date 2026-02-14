@@ -26,20 +26,12 @@ namespace iris::x4 {
 template<class Subject>
 struct no_skip_directive : proxy_parser<Subject, no_skip_directive<Subject>>
 {
-private:
-    template<class Context>
-    using no_skip_context_t = std::remove_cvref_t<decltype(
-        x4::remove_first_context<contexts::skipper>(std::declval<Context const&>())
-    )>;
-
-public:
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires has_skipper_v<Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<
             Subject, It, Se,
-            no_skip_context_t<Context>,
+            std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>,
             Attr
         >)
     {
@@ -52,15 +44,6 @@ public:
             x4::remove_first_context<contexts::skipper>(ctx),
             attr
         );
-    }
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!has_skipper_v<Context>)
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
-    {
-        return this->subject.parse(first, last, ctx, attr);
     }
 };
 

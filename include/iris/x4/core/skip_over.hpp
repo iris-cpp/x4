@@ -35,61 +35,15 @@ struct skipper
 
 using skipper_tag [[deprecated("Use `x4::contexts::skipper`")]] = contexts::skipper;
 
-// Move the /first/ iterator to the first non-matching position
-// given a skip-parser. The function is a no-op if unused_type or
-// unused_skipper is passed as the skip-parser.
-template<X4Subject Skipper>
-struct [[nodiscard]] unused_skipper
+
+enum struct builtin_skipper_kind : char
 {
-    constexpr explicit unused_skipper(Skipper const&&) = delete; // dangling
-
-    constexpr explicit unused_skipper(Skipper const& skipper) noexcept
-        : skipper(skipper)
-    {}
-
-    Skipper const& skipper;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+    no_skip,
+    blank,
+    space,
 };
-
-template<class Context>
-using unused_skipper_t = unused_skipper<std::remove_cvref_t<decltype(
-    x4::get<contexts::skipper>(std::declval<Context const&>())
-)>>;
 
 namespace detail {
-
-template<class Skipper>
-struct is_unused_skipper : std::false_type
-{
-    static_assert(X4Subject<Skipper>);
-};
-
-template<class Skipper>
-struct is_unused_skipper<unused_skipper<Skipper>> : std::true_type {};
-
-template<>
-struct is_unused_skipper<unused_type> : std::true_type {};
-
-template<class Skipper>
-[[nodiscard]] constexpr Skipper const&
-get_unused_skipper(Skipper const& skipper IRIS_LIFETIMEBOUND) noexcept
-{
-    static_assert(X4Subject<Skipper>);
-    return skipper;
-}
-
-template<class Skipper>
-void get_unused_skipper(Skipper const&&) = delete; // dangling
-
-template<class Skipper>
-[[nodiscard]] constexpr Skipper const&
-get_unused_skipper(unused_skipper<Skipper> const& unused_skipper) noexcept
-{
-    static_assert(X4Subject<Skipper>);
-    return unused_skipper.skipper;
-}
-
-template<class Skipper>
-void get_unused_skipper(unused_skipper<Skipper> const&&) = delete;
 
 template<class Context>
 struct skip_over_context
@@ -106,10 +60,19 @@ struct skip_over_context<Context>
     ))>;
 };
 
-template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Subject Skipper>
-constexpr void skip_over(It& first, Se const& last, Context const& ctx, Skipper const& skipper)
-    noexcept(is_nothrow_parsable_v<Skipper, It, Se, typename skip_over_context<Context>::type, unused_type>)
+} // detail
+
+template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    requires X4Subject<get_context_plain_t<contexts::skipper, Context>>
+constexpr void skip_over(It& first, Se const& last, Context const& ctx)
+    noexcept(is_nothrow_parsable_v<
+        get_context_plain_t<contexts::skipper, Context>,
+        It, Se,
+        typename detail::skip_over_context<Context>::type, unused_type
+    >)
 {
+    auto const& skipper = x4::get<contexts::skipper>(ctx);
+
     if constexpr (!has_context_v<Context, contexts::expectation_failure>) {
         // The context given by parent was truly `unused_type`.
         // There exists only one such case in core; that is
@@ -162,33 +125,16 @@ constexpr void skip_over(It& first, Se const& last, Context const& ctx, Skipper 
     }
 }
 
+// Implemented in `char_class.hpp`
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-constexpr void skip_over(It&, Se const&, Context const&, unused_type const&) noexcept
-{
-}
+    requires std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>
+constexpr void skip_over(It& first, Se const& last, Context const& ctx) noexcept;
 
-template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Skipper>
-constexpr void skip_over(It&, Se const&, Context const&, unused_skipper<Skipper> const&) noexcept
-{
-}
-
-} // detail
-
-template<class Context>
-struct has_skipper
-  : std::bool_constant<!detail::is_unused_skipper<
-        std::remove_cvref_t<decltype(x4::get<contexts::skipper>(std::declval<Context const&>()))>
-    >::value>
-{};
-
-template<class Context>
-constexpr bool has_skipper_v = has_skipper<Context>::value;
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-constexpr void skip_over(It& first, Se const& last, Context const& ctx)
-    noexcept(noexcept(detail::skip_over(first, last, ctx, x4::get<contexts::skipper>(ctx))))
+    requires (!has_context_v<Context, contexts::skipper>)
+constexpr void skip_over(It&, Se const&, Context const&) noexcept
 {
-    detail::skip_over(first, last, ctx, x4::get<contexts::skipper>(ctx));
 }
 
 } // iris::x4

@@ -10,6 +10,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/core/skip_over.hpp>
+
 #include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/char_class_tags.hpp>
 #include <iris/x4/char/detail/cast_char.hpp>
@@ -25,6 +27,9 @@
 #endif
 
 #include <concepts>
+#include <iterator>
+
+#include <cassert>
 
 namespace iris::x4 {
 
@@ -73,13 +78,22 @@ struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag
     static constexpr bool has_attribute = true;
 
     [[nodiscard]] static constexpr bool
-    test(typename Encoding::classify_type const classify_ch, auto const& ctx) noexcept
+    test(Encoding::classify_type const classify_ch) noexcept
     {
-        //static_assert(std::same_as<ClassifyCharT, typename Encoding::classify_type>);
+        return encoding_type::ischar(classify_ch)
+            && detail::char_class_base<Encoding>::is(
+                tag{},
+                static_cast<Encoding::classify_type>(classify_ch)
+            );
+    }
+
+    [[nodiscard]] static constexpr bool
+    test(Encoding::classify_type const classify_ch, auto const& ctx) noexcept
+    {
         return encoding_type::ischar(classify_ch)
             && detail::char_class_base<Encoding>::is(
                 x4::get_case_compare<Encoding>(ctx).get_char_class_tag(tag{}),
-                static_cast<typename Encoding::classify_type>(classify_ch)
+                static_cast<Encoding::classify_type>(classify_ch)
             );
     }
 
@@ -132,6 +146,39 @@ using x4::standard::punct;
 using x4::standard::space;
 using x4::standard::blank;
 using x4::standard::upper;
+
+
+namespace detail {
+
+template<class CharClassTag, std::forward_iterator It, std::sentinel_for<It> Se>
+constexpr void builtin_skip_over(It& first, Se const& last) noexcept
+{
+    using CharT = std::remove_cvref_t<std::iter_value_t<It>>;
+    static_assert(traits::CharLike<CharT>);
+
+    using Encoding = traits::char_encoding_for<CharT>;
+    using Parser = char_class_parser<Encoding, CharClassTag>;
+
+    while (first != last && Parser::test(static_cast<Encoding::classify_type>(*first))) {
+        ++first;
+    }
+}
+
+} // detail
+
+
+// Forward declaration in `skip_over.hpp`
+template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    requires std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>
+constexpr void skip_over(It& first, Se const& last, Context const& ctx) noexcept
+{
+    switch (x4::get<contexts::skipper>(ctx)) {
+    case builtin_skipper_kind::no_skip: return;
+    case builtin_skipper_kind::blank: return detail::builtin_skip_over<char_classes::blank_tag>(first, last);
+    case builtin_skipper_kind::space: return detail::builtin_skip_over<char_classes::space_tag>(first, last);
+    default: assert(false && "unsupported builtin skipper type"); break;
+    }
+}
 
 } // iris::x4
 
