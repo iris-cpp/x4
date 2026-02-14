@@ -64,6 +64,24 @@ struct parse_context_for_impl<R>
     : parse_context_for_impl<std::ranges::iterator_t<R const>>
 {};
 
+template<class ItOrRange>
+struct skipper_parse_context_for_impl;
+
+template<std::forward_iterator It>
+struct skipper_parse_context_for_impl<It>
+{
+    using type = context<
+        contexts::expectation_failure,
+        expectation_failure<It>
+    >;
+};
+
+template<std::ranges::forward_range R>
+struct skipper_parse_context_for_impl<R>
+    : skipper_parse_context_for_impl<std::ranges::iterator_t<R const>>
+{};
+
+
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 struct phrase_parse_context_for_impl;
 
@@ -84,6 +102,25 @@ struct phrase_parse_context_for_impl<Skipper, R>
     : phrase_parse_context_for_impl<Skipper, std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>
 {};
 
+template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
+struct skipper_phrase_parse_context_for_impl;
+
+template<class Skipper, std::forward_iterator It, std::sentinel_for<It> Se>
+struct skipper_phrase_parse_context_for_impl<Skipper, It, Se>
+{
+    static_assert(X4ExplicitParser<Skipper, It, Se>);
+
+    using type = context<
+        contexts::expectation_failure,
+        expectation_failure<It>
+    >;
+};
+
+template<class Skipper, std::ranges::forward_range R>
+struct skipper_phrase_parse_context_for_impl<Skipper, R>
+    : skipper_phrase_parse_context_for_impl<Skipper, std::ranges::iterator_t<R const>, std::ranges::sentinel_t<R const>>
+{};
+
 } // detail
 
 // Used for determining the context type required in `IRIS_X4_INSTANTIATE`.
@@ -92,9 +129,15 @@ struct phrase_parse_context_for_impl<Skipper, R>
 template<class ItOrRange, class = void>
 using parse_context_for = typename detail::parse_context_for_impl<ItOrRange>::type;
 
+template<class ItOrRange, class = void>
+using skipper_parse_context_for = typename detail::skipper_parse_context_for_impl<ItOrRange>::type;
+
 // Used for determining the context type required in `IRIS_X4_INSTANTIATE`.
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
 using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
+
+template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
+using skipper_phrase_parse_context_for = typename detail::skipper_phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 
 namespace detail {

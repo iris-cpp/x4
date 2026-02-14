@@ -21,10 +21,12 @@ using iterator_type = std::string_view::const_iterator;
 constexpr auto skipper_def = x4::standard::lit('*');
 IRIS_X4_DEFINE(skipper)
 IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::skipper_parse_context_for<iterator_type>)
 
 constexpr auto skipper2_def = x4::standard::lit('#');
 IRIS_X4_DEFINE(skipper2)
 IRIS_X4_INSTANTIATE(skipper2_type, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(skipper2_type, iterator_type, x4::skipper_parse_context_for<iterator_type>)
 
 constexpr auto grammar_def = *x4::standard::lit('=');
 IRIS_X4_DEFINE(grammar)
@@ -42,6 +44,7 @@ using iterator_type = std::string_view::const_iterator;
 constexpr auto skipper_def = x4::standard::space;
 IRIS_X4_DEFINE(skipper)
 IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::skipper_parse_context_for<iterator_type>)
 
 constexpr auto grammar_def = x4::int_;
 IRIS_X4_DEFINE(grammar)
