@@ -28,13 +28,9 @@ struct no_skip_directive : proxy_parser<Subject, no_skip_directive<Subject>>
 {
 private:
     template<class Context>
-    using unused_skipper_context_t = x4::context<
-        contexts::skipper,
-        unused_skipper<
-            std::remove_reference_t<decltype(x4::get<contexts::skipper>(std::declval<Context const&>()))>
-        >,
-        Context
-    >;
+    using no_skip_context_t = std::remove_cvref_t<decltype(
+        x4::remove_first_context<contexts::skipper>(std::declval<Context const&>())
+    )>;
 
 public:
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -43,18 +39,17 @@ public:
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<
             Subject, It, Se,
-            unused_skipper_context_t<Context>,
+            no_skip_context_t<Context>,
             Attr
         >)
     {
-        auto const& skipper = x4::get<contexts::skipper>(ctx);
-
-        unused_skipper<std::remove_reference_t<decltype(skipper)>>
-        unused_skipper(skipper);
+        //
+        // No pre-skip here, in contrast to `lexeme`
+        //
 
         return this->subject.parse(
             first, last,
-            x4::make_context<contexts::skipper>(unused_skipper, ctx),
+            x4::remove_first_context<contexts::skipper>(ctx),
             attr
         );
     }

@@ -38,14 +38,17 @@ struct skip_directive : proxy_parser<Subject, skip_directive<Subject, Skipper>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, context<contexts::skipper, Skipper, Context>, Attr>)
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
-        // This logic is heavily related to the instantiation chain;
-        // see `x4::skip_over` for details.
         return this->subject.parse(first, last, x4::replace_first_context<contexts::skipper>(ctx, skipper_), attr);
     }
 
 private:
+    template<class Context>
+    using context_t = std::remove_cvref_t<decltype(
+        x4::replace_first_context<contexts::skipper>(std::declval<Context const&>(), std::declval<Skipper&>())
+    )>;
+
     Skipper skipper_;
 };
 

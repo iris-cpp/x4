@@ -28,7 +28,7 @@ namespace contexts {
 // Tag used to find the skipper from the context
 struct skipper
 {
-    static constexpr bool is_unique = false;
+    static constexpr bool is_unique = true;
 };
 
 } // contexts

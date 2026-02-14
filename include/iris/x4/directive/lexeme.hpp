@@ -25,8 +25,8 @@ struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
 {
 private:
     template<class Context>
-    using pre_skip_context_t = std::remove_cvref_t<decltype(
-        x4::make_context<contexts::skipper>(std::declval<unused_skipper_t<Context>&>(), std::declval<Context const&>())
+    using no_skip_context_t = std::remove_cvref_t<decltype(
+        x4::remove_first_context<contexts::skipper>(std::declval<Context const&>())
     )>;
 
 public:
@@ -36,17 +36,14 @@ public:
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
             noexcept(x4::skip_over(first, last, ctx)) &&
-            is_nothrow_parsable_v<Subject, It, Se, pre_skip_context_t<Context>, Attr>
+            is_nothrow_parsable_v<Subject, It, Se, no_skip_context_t<Context>, Attr>
         )
     {
-        x4::skip_over(first, last, ctx);
-
-        auto const& skipper = x4::get<contexts::skipper>(ctx);
-        unused_skipper_t<Context> unused_skipper(skipper);
+        x4::skip_over(first, last, ctx); // pre-skip
 
         return this->subject.parse(
             first, last,
-            x4::make_context<contexts::skipper>(unused_skipper, ctx),
+            x4::remove_first_context<contexts::skipper>(ctx), // no skipper
             attr
         );
     }

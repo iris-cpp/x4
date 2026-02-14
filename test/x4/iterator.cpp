@@ -550,14 +550,14 @@ TEST_CASE("rollback on failed parse (directive)")
     {
         constexpr auto input = "foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(skip(space)[eps(false)].parse(first, input.end(), x4::make_context<x4::contexts::skipper>(space), unused));
+        REQUIRE_FALSE(skip(space)[eps(false)].parse(first, input.end(), unused, unused));
         CHECK(first == input.begin());
     }
     {
         constexpr auto input = "foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(skip(space)[int_].parse(first, input.end(), x4::make_context<x4::contexts::skipper>(space), dummy_int));
+        REQUIRE_FALSE(skip(space)[int_].parse(first, input.end(), unused, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
@@ -565,7 +565,7 @@ TEST_CASE("rollback on failed parse (directive)")
         constexpr auto input = "foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(skip(space)[int_ >> eps(false)].parse(first, input.end(), x4::make_context<x4::contexts::skipper>(space), dummy_int));
+        REQUIRE_FALSE(skip(space)[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
@@ -573,7 +573,7 @@ TEST_CASE("rollback on failed parse (directive)")
         constexpr auto input = "42 foo"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE(skip(space)[int_ >> int_].parse(first, input.end(), x4::make_context<x4::contexts::skipper>(space), dummy_ints));
+        REQUIRE_FALSE(skip(space)[int_ >> int_].parse(first, input.end(), unused, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{42}); // sequence parser has side effect
     }

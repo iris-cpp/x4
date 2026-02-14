@@ -219,7 +219,7 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)raw[eps].parse(first, last, unused, unused);
     (void)repeat(1)[eps].parse(first, last, unused, unused);
     (void)seek[eps].parse(first, last, unused, unused);
-    (void)skip(space)[eps].parse(first, last, x4::make_context<x4::contexts::skipper>(space), unused);
+    (void)skip(space)[eps].parse(first, last, unused, unused);
     (void)with<struct with_id_>(input)[eps].parse(first, last, unused, unused);
 
     // `numeric/*` do not need to be tested, as they do not contain expectation failure related calls
