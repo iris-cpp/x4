@@ -21,6 +21,7 @@
 
 #include <iris/rvariant/rvariant.hpp>
 
+#include <format>
 #include <concepts>
 #include <iterator>
 #include <type_traits>
@@ -152,6 +153,15 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
             return true;
         }
         return false; // `attr` is untouched
+    }
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        return std::format(
+            "{} | {}",
+            get_info<Left>{}(this->left),
+            get_info<Right>{}(this->right)
+        );
     }
 };
 

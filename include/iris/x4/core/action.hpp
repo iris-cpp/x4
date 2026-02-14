@@ -17,11 +17,12 @@
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
-#include <ranges>
+#include <ranges> // subrange
 #include <iterator>
 #include <concepts>
 #include <type_traits>
 #include <utility>
+#include <format>
 
 namespace iris::x4 {
 
@@ -108,6 +109,11 @@ struct action : proxy_parser<Subject, action<Subject, ActionF>>
     }
 
     constexpr void operator[](auto const&) const = delete; // You can't add semantic action for semantic action
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        return std::format("{}[f]", get_info<Subject>{}(this->subject));
+    }
 
 private:
     // Semantic action with no parameter: `p[([] { /* ... */ })]`
