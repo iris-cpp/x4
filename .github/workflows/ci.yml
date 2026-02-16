@@ -6,6 +6,9 @@
 
 name: CI
 
+permissions:
+  actions: write
+
 on:
   pull_request:
   push:
