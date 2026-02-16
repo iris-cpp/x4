@@ -96,13 +96,13 @@ jobs:
 #           version: 21
 #           executable: clang++-21
 #           cxxflags: -stdlib=libc++ -fcolor-diagnostics
-#         - name: MSVC
+#         - name: MSVC2022
 #           toolset: msvc
 #           version: 2022
 #           toolset_version: 14.44
 #           builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
 #           executable: cl
-          - name: MSVC
+          - name: MSVC2026
             toolset: msvc
             version: 2026
             toolset_version: 14.50
