@@ -58,8 +58,8 @@ jobs:
             console.log('result: ', result);
             return result;
 
-  deps:
-    name: "deps | [${{ matrix.cpp_version.name }}] ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
+  prepare-deps:
+    name: "[${{ matrix.cpp_version.name }}] deps for ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
 
     needs: changes
     if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
@@ -120,20 +120,24 @@ jobs:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
+
       - name: Setup Toolchain
         id: setup
         uses: ./.github/actions/setup
         with:
           os-name: ${{ matrix.os.name }}
+          os-version: ${{ matrix.os.version }}
           compiler-toolset: ${{ matrix.compiler.toolset }}
           compiler-version: ${{ matrix.compiler.version }}
           compiler-executable: ${{ matrix.compiler.executable }}
+          cpp-version-name: ${{ matrix.cpp_version.name }}
+          build-type-name: ${{ matrix.build_type.name }}
 
       - name: Cache CMake Dependencies (restore)
         id: cache-deps
         uses: actions/cache/restore@v4
         with:
-          key: deps2-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.setup.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
+          key: ${{ steps.setup.outputs.deps-cache-key }}
           path: |
             ${{ github.workspace }}/build/_deps
             ${{ github.workspace }}/build/.iris_deps_build_stamp
@@ -196,7 +200,7 @@ jobs:
   build:
     name: "[${{ matrix.cpp_version.name }}] ${{ matrix.components }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
 
-    needs: [changes, deps]
+    needs: [changes, prepare-deps]
     if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
 
     runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
@@ -216,20 +220,24 @@ jobs:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
+
       - name: Setup Toolchain
         id: setup
         uses: ./.github/actions/setup
         with:
           os-name: ${{ matrix.os.name }}
+          os-version: ${{ matrix.os.version }}
           compiler-toolset: ${{ matrix.compiler.toolset }}
           compiler-version: ${{ matrix.compiler.version }}
           compiler-executable: ${{ matrix.compiler.executable }}
+          cpp-version-name: ${{ matrix.cpp_version.name }}
+          build-type-name: ${{ matrix.build_type.name }}
 
       - name: Cache CMake Dependencies (restore)
         id: cache-deps
         uses: actions/cache/restore@v4
         with:
-          key: deps2-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.setup.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
+          key: ${{ steps.setup.outputs.deps-cache-key }}
           path: |
             ${{ github.workspace }}/build/_deps
             ${{ github.workspace }}/build/.iris_deps_build_stamp
