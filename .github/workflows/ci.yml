@@ -69,23 +69,23 @@ jobs:
     strategy:
       fail-fast: false
 
-      matrix: &base-matrix
-        os:
+      matrix:
+        os: &os-matrix
           - name: ubuntu
             version: 24.04
           - name: windows
             version: 2022
-        build_type:
+        build_type: &build-type-matrix
           - name: Debug
             lowercase: debug
           - name: Release
             lowercase: release
-        cpp_version:
+        cpp_version: &cpp-version-matrix
           - name: C++23
             number: 23
           - name: C++26
             number: 26
-        compiler:
+        compiler: &compiler-matrix
           - name: GCC
             toolset: gcc
             version: 14
@@ -102,7 +102,7 @@ jobs:
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-        exclude:
+        exclude: &exclude-matrix
           - os:
               name: windows
             compiler:
@@ -202,8 +202,12 @@ jobs:
       fail-fast: false
 
       matrix:
-        <<: *base-matrix
+        os: *os-matrix
+        build_type: *build-type-matrix
+        cpp_version: *cpp-version-matrix
+        compiler: *compiler-matrix
         components: ${{ fromJSON(needs.changes.outputs.components) }}
+        exclude: *exclude-matrix
 
     steps:
       - name: Setup Toolchain
