@@ -50,19 +50,6 @@ struct pass_sequence_attribute_unused
 };
 
 template<class Attr>
-struct pass_sequence_attribute_size_one_view
-{
-    using type = alloy::tuple_element_t<0, Attr>;
-
-    [[nodiscard]] static constexpr type
-    call(Attr& attribute)
-        noexcept(noexcept(alloy::get<0>(attribute)))
-    {
-        return alloy::get<0>(attribute);
-    }
-};
-
-template<class Attr>
 struct pass_through_sequence_attribute
 {
     using type = Attr&;
@@ -76,11 +63,8 @@ struct pass_through_sequence_attribute
 };
 
 template<class Parser, class Attr>
-struct pass_sequence_attribute : std::conditional_t<
-    traits::is_size_one_view_v<Attr>,
-    pass_sequence_attribute_size_one_view<Attr>,
-    pass_through_sequence_attribute<Attr>
->
+struct pass_sequence_attribute
+    : pass_through_sequence_attribute<Attr>
 {};
 
 template<class LParser, class RParser, class Attr>
@@ -95,6 +79,34 @@ template<class Parser, class Attr>
 struct pass_sequence_attribute<Parser, Attr>
     : pass_sequence_attribute<typename Parser::proxy_backend_type, Attr>
 {};
+
+template<class T>
+struct type_unwrap_size_one_tuple
+{
+    using type = T;
+};
+
+template<class T>
+struct type_unwrap_size_one_tuple<alloy::tuple<T>>
+{
+    using type = T;
+};
+
+template<class T>
+using type_unwrap_size_one_tuple_t = type_unwrap_size_one_tuple<T>::type;
+
+template<class T>
+constexpr T&& unwrap_size_one_tuple(T&& t) noexcept
+{
+    return std::forward<T>(t);
+}
+
+template<class T>
+    requires traits::is_size_one_sequence_v<T>
+constexpr auto&& unwrap_size_one_tuple(T&& t) noexcept
+{
+    return alloy::get<0>(std::forward<T>(t));
+}
 
 template<class LParser, class RParser, class Attr>
 struct partition_attribute
@@ -126,21 +138,21 @@ struct partition_attribute
 
     using view = alloy::tuple_ref_t<Attr>;
     using splitted = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = alloy::tuple_element_t<0, splitted>;
-    using r_part = alloy::tuple_element_t<1, splitted>;
+    using l_part = type_unwrap_size_one_tuple_t<alloy::tuple_element_t<0, splitted>>;
+    using r_part = type_unwrap_size_one_tuple_t<alloy::tuple_element_t<1, splitted>>;
     using l_pass = pass_sequence_attribute<LParser, l_part>;
     using r_pass = pass_sequence_attribute<RParser, r_part>;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        return alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
+        return unwrap_size_one_tuple(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
+        return unwrap_size_one_tuple(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 };
 

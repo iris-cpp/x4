@@ -106,26 +106,6 @@ struct pass_non_variant_attribute
     }
 };
 
-// Unwrap single element sequences
-template<class Parser, X4Attribute Attr>
-    requires traits::is_size_one_sequence_v<Attr>
-struct pass_non_variant_attribute<Parser, Attr>
-{
-    using attr_type = typename std::remove_reference_t<
-        alloy::tuple_element_t<0, Attr>
-    >;
-    using pass = pass_parser_attribute<Parser, attr_type>;
-    using type = typename pass::type;
-
-    template<X4Attribute Attr_>
-    [[nodiscard]] static constexpr type
-    call(Attr_& attr)
-        noexcept(noexcept(pass::call(alloy::get<0>(attr))))
-    {
-        return pass::call(alloy::get<0>(attr));
-    }
-};
-
 template<class Parser, X4Attribute Attr>
     requires (!traits::is_variant_v<Attr>)
 struct pass_parser_attribute<Parser, Attr>

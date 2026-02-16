@@ -230,12 +230,4 @@ TEST_CASE("int")
         int_parser<custom_int, 10, 1, 2> int2;
         CHECK(parse("-12", int2, i));
     }
-
-    // single-element tuple tests
-    {
-        alloy::tuple<int> i{};
-
-        REQUIRE(parse("-123456", int_, i));
-        CHECK(alloy::get<0>(i) == -123456);
-    }
 }
