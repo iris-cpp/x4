@@ -118,7 +118,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-
+        with:
+          submodules: recursive
       - name: Setup Toolchain
         id: setup
         uses: ./.github/actions/setup
