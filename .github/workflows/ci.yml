@@ -173,7 +173,7 @@ jobs:
         id: cache-deps
         uses: actions/cache/restore@v4
         with:
-          key: deps-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.env-info.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
+          key: deps2-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.compiler.toolset }}-${{ steps.env-info.outputs.compiler-full-version }}-${{ matrix.cpp_version.name }}-${{ matrix.build_type.name }}
           path: |
             ${{ github.workspace }}/build/_deps
             ${{ github.workspace }}/build/.iris_deps_build_stamp
@@ -199,9 +199,9 @@ jobs:
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
-            -DIRIS_CI=ON \
             -DIRIS_TEST_ALLOY=${{ case(matrix.components == 'alloy', 'ON', 'OFF') }} \
             -DIRIS_TEST_X4=${{ case(matrix.components == 'x4', 'ON', 'OFF') }} \
+            -DIRIS_CI=ON \
             -S .
 
       - name: Check Deps build time stamp (pre-build)
