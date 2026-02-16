@@ -137,7 +137,9 @@ jobs:
         uses: actions/cache/save@v4
         with:
           key: ${{ steps.cache-deps.outputs.cache-primary-key }}
-          path: ${{ github.workspace }}/build/_deps
+          path: |
+            ${{ github.workspace }}/build/_deps
+            ${{ github.workspace }}/build/.iris_deps_build_stamp
 
   build:
     needs: prepare-deps
@@ -172,7 +174,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           key: ${{ steps.setup.outputs.deps-cache-key }}
-          path: ${{ github.workspace }}/build/_deps
+          path: |
+            ${{ github.workspace }}/build/_deps
+            ${{ github.workspace }}/build/.iris_deps_build_stamp
 
       - name: Configure
         shell: bash
