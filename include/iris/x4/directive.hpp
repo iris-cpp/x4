@@ -24,5 +24,6 @@
 #include <iris/x4/directive/skip.hpp>
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/directive/with_local.hpp>
+#include <iris/x4/directive/without.hpp>
 
 #endif
