@@ -90,6 +90,7 @@ x4_define_tests(
     unused
     with
     with_local
+    without
     x3_rule_problem
     alloy_wrong_substitute_test_case
 )
