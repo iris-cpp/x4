@@ -102,7 +102,7 @@ if(MSVC)
             "${PROJECT_SOURCE_DIR}/iris_x4.natvis"
     )
 
-    target_link_libraries(iris_x4 PUBLIC Iris::Iris)
+    target_link_libraries(iris_x4 PUBLIC Iris::Iris Iris::Alloy)
 
 else()
     add_library(iris_x4 INTERFACE)

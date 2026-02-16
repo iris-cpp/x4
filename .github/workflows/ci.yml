@@ -35,6 +35,8 @@ jobs:
               - 'CMakeLists.txt'
               - 'modules/iris'
               - 'test/CMakeLists.txt'
+              - 'scripts/generate_tuple_members.sh'
+              - 'scripts/generate_tuple_members.bat'
             alloy:
               - 'include/iris/alloy/**/*'
               - 'test/alloy/**/*'
@@ -195,7 +197,7 @@ jobs:
             -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
-            -DIRIS_TEST_ALLOY=${{ case(matrix.components == 'alloy' || matrix.components == 'x4', 'ON', 'OFF') }} \
+            -DIRIS_TEST_ALLOY=${{ case(matrix.components == 'alloy', 'ON', 'OFF') }} \
             -DIRIS_TEST_X4=${{ case(matrix.components == 'x4', 'ON', 'OFF') }} \
             -S .
 
