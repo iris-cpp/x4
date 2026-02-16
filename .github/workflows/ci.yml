@@ -16,9 +16,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  IRIS_X4_BUILD_JOBS: 4
-
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -58,34 +55,32 @@ jobs:
             console.log('result: ', result);
             return result;
 
-  prepare-deps:
-    name: "[${{ matrix.cpp_version.name }}] deps for ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
+  build:
+    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
 
     needs: changes
     if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
-
-    runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
 
     strategy:
       fail-fast: false
 
       matrix:
-        os: &os-matrix
+        os:
           - name: ubuntu
             version: 24.04
           - name: windows
             version: 2022
-        build_type: &build-type-matrix
+        build_type:
           - name: Debug
             lowercase: debug
           - name: Release
             lowercase: release
-        cpp_version: &cpp-version-matrix
+        cpp_version:
           - name: C++23
             number: 23
           - name: C++26
             number: 26
-        compiler: &compiler-matrix
+        compiler:
           - name: GCC
             toolset: gcc
             version: 14
@@ -102,7 +97,7 @@ jobs:
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-        exclude: &exclude-matrix
+        exclude:
           - os:
               name: windows
             compiler:
@@ -116,152 +111,16 @@ jobs:
             compiler:
               name: MSVC
 
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Setup Toolchain
-        id: setup
-        uses: ./.github/actions/setup
-        with:
-          os-name: ${{ matrix.os.name }}
-          os-version: ${{ matrix.os.version }}
-          compiler-toolset: ${{ matrix.compiler.toolset }}
-          compiler-version: ${{ matrix.compiler.version }}
-          compiler-executable: ${{ matrix.compiler.executable }}
-          cpp-version-name: ${{ matrix.cpp_version.name }}
-          build-type-name: ${{ matrix.build_type.name }}
-
-      - name: Cache CMake Dependencies (restore)
-        id: cache-deps
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ steps.setup.outputs.deps-cache-key }}
-          path: |
-            ${{ github.workspace }}/build/_deps
-            ${{ github.workspace }}/build/.iris_deps_build_stamp
-
-      # Adapt CMP0168; enable caching in CI
-      # https://cmake.org/cmake/help/latest/module/FetchContent.html#variable:FETCHCONTENT_FULLY_DISCONNECTED
-      - name: Setup Cached CMake Dependencies
-        id: deps-info
-        shell: bash
-        run: |
-          if [ "${{ steps.cache-deps.outputs.cache-hit }}" = "true" ]; then
-            echo "IRIS_X4_CMAKE_ARGS=-DFETCHCONTENT_FULLY_DISCONNECTED=ON" >> "$GITHUB_OUTPUT"
-          else
-            echo "IRIS_X4_CMAKE_ARGS=" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Configure
-        shell: bash
-        run: |
-          set -xe
-          cmake ${{ steps.deps-info.outputs.IRIS_X4_CMAKE_ARGS }} -B build \
-            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
-            -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
-            -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
-            -DIRIS_TEST_ALLOY=OFF \
-            -DIRIS_TEST_X4=OFF \
-            -DIRIS_CI=ON \
-            -S .
-
-      - name: Check Deps build time stamp (pre-build)
-        id: pre-build-check
-        shell: bash
-        run: |
-          if [ -e build/.iris_deps_build_stamp ]; then
-            echo "deps-timestamp=$(stat -c %Y build/.iris_deps_build_stamp)" >> $GITHUB_OUTPUT
-          else
-            echo "deps-timestamp=0" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build Deps
-        run: |
-          cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.IRIS_X4_BUILD_JOBS }} --target iris_deps_build_check ${{ matrix.compiler.builder_additional_args }}
-
-      - name: Check Deps build time stamp (post-build)
-        id: post-build-check
-        shell: bash
-        run: |
-          echo "deps-timestamp=$(stat -c %Y build/.iris_deps_build_stamp)" >> $GITHUB_OUTPUT
-
-      - name: Cache CMake Dependencies (save)
-        if: steps.cache-deps.outputs.cache-hit != 'true' || steps.pre-build-check.outputs.deps-timestamp != steps.post-build-check.outputs.deps-timestamp
-        uses: actions/cache/save@v4
-        with:
-          key: ${{ steps.cache-deps.outputs.cache-primary-key }}
-          path: |
-            ${{ github.workspace }}/build/_deps
-            ${{ github.workspace }}/build/.iris_deps_build_stamp
-
-  build:
-    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.components }} | ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
-
-    needs: [changes, prepare-deps]
-    if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
-
-    runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        os: *os-matrix
-        build_type: *build-type-matrix
-        cpp_version: *cpp-version-matrix
-        compiler: *compiler-matrix
-        components: ${{ fromJSON(needs.changes.outputs.components) }}
-        exclude: *exclude-matrix
-
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Setup Toolchain
-        id: setup
-        uses: ./.github/actions/setup
-        with:
-          os-name: ${{ matrix.os.name }}
-          os-version: ${{ matrix.os.version }}
-          compiler-toolset: ${{ matrix.compiler.toolset }}
-          compiler-version: ${{ matrix.compiler.version }}
-          compiler-executable: ${{ matrix.compiler.executable }}
-          cpp-version-name: ${{ matrix.cpp_version.name }}
-          build-type-name: ${{ matrix.build_type.name }}
-
-      - name: Cache CMake Dependencies (restore)
-        id: cache-deps
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ steps.setup.outputs.deps-cache-key }}
-          path: |
-            ${{ github.workspace }}/build/_deps
-            ${{ github.workspace }}/build/.iris_deps_build_stamp
-
-      - name: Configure
-        shell: bash
-        run: |
-          set -xe
-          cmake -DFETCHCONTENT_FULLY_DISCONNECTED=ON -B build \
-            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.executable }} \
-            -DCMAKE_CXX_FLAGS="${{ matrix.compiler.cxxflags }}" \
-            -DCMAKE_CXX_STANDARD=${{ matrix.cpp_version.number }} \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type.name }} \
-            -DIRIS_TEST_ALLOY=${{ case(matrix.components == 'alloy', 'ON', 'OFF') }} \
-            -DIRIS_TEST_X4=${{ case(matrix.components == 'x4', 'ON', 'OFF') }} \
-            -DIRIS_CI=ON \
-            -S .
-
-      - name: Build Tests
-        run: |
-          cmake --build build --config ${{ matrix.build_type.name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ matrix.compiler.builder_additional_args }}
-
-      - name: Test
-        env:
-          CLICOLOR_FORCE: 1
-        working-directory: ${{ github.workspace }}/build/test
-        run: ctest --output-on-failure -C ${{ matrix.build_type.name }}
+    uses: ./.github/workflows/build.yml
+    with:
+      os-name: ${{ matrix.os.name }}
+      os-version: ${{ matrix.os.version }}
+      build-type-name: ${{ matrix.build_type.name }}
+      cpp-version-name: ${{ matrix.cpp_version.name }}
+      cpp-version-number: ${{ matrix.cpp_version.number }}
+      compiler-toolset: ${{ matrix.compiler.toolset }}
+      compiler-version: ${{ matrix.compiler.version }}
+      compiler-executable: ${{ matrix.compiler.executable }}
+      compiler-cxxflags: ${{ matrix.compiler.cxxflags }}
+      compiler-builder-additional-args: ${{ matrix.compiler.builder_additional_args }}
+      components: ${{ needs.changes.outputs.components }}
