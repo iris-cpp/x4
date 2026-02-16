@@ -104,18 +104,7 @@ void gen_tests(Values const&... values)
 template<class... Attributes>
 void make_test(Attributes const&... attrs)
 {
-    // I would like to place all of this in a single call
-    // but it requires tremendous amount of heap to compile
-    gen_tests<Attributes...>(attrs...);
-    gen_tests<
-        std::optional<Attributes>...,
-        alloy::tuple<Attributes>...
-    >(attrs..., attrs...);
-
-    gen_tests<
-        std::optional<alloy::tuple<Attributes>>...,
-        alloy::tuple<std::optional<Attributes>>...
-    >(alloy::tuple<Attributes>(attrs)..., attrs...);
+    gen_tests<Attributes..., std::optional<Attributes>...>(attrs..., attrs...);
 }
 
 } // anonymous
