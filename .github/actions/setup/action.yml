@@ -17,6 +17,10 @@ inputs:
     required: true
   compiler-executable:
     required: true
+  compiler-toolset-version:
+    required: false
+    type: string
+    default: ''
   cpp-version-name:
     required: true
   build-type-name:
@@ -60,6 +64,7 @@ runs:
       if: inputs.os-name == 'windows'
       with:
         arch: x64
+        toolset: ${{ inputs.compiler-toolset-version }}
 
     - name: Fetch Environment Info
       id: env-info

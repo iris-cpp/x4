@@ -68,20 +68,20 @@ jobs:
         os:
 #         - name: ubuntu
 #           version: 24.04
-          - name: windows
-            version: 2022
+#         - name: windows
+#           version: 2022
           - name: windows
             version: 2025-vs2026
         build_type:
           - name: Debug
             lowercase: debug
-          - name: Release
-            lowercase: release
+#         - name: Release
+#           lowercase: release
         cpp_version:
           - name: C++23
             number: 23
-          - name: C++26
-            number: 26
+#         - name: C++26
+#           number: 26
         compiler:
 #         - name: GCC
 #           toolset: gcc
@@ -93,25 +93,32 @@ jobs:
 #           version: 21
 #           executable: clang++-21
 #           cxxflags: -stdlib=libc++ -fcolor-diagnostics
+#         - name: MSVC
+#           toolset: msvc
+#           version: 2022
+#           toolset_version: 14.44
+#           builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
+#           executable: cl
           - name: MSVC
             toolset: msvc
-            version: 2022
+            version: 2026
+            toolset_version: 14.50
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-        exclude:
-          - os:
-              name: windows
-            compiler:
-              name: GCC
-          - os:
-              name: windows
-            compiler:
-              name: Clang
-          - os:
-              name: ubuntu
-            compiler:
-              name: MSVC
+#       exclude:
+#        - os:
+#            name: windows
+#          compiler:
+#            name: GCC
+#        - os:
+#            name: windows
+#          compiler:
+#            name: Clang
+#         - os:
+#             name: ubuntu
+#           compiler:
+#             name: MSVC
 
     uses: ./.github/workflows/build.yml
     with:
@@ -124,5 +131,6 @@ jobs:
       compiler-version: ${{ matrix.compiler.version }}
       compiler-executable: ${{ matrix.compiler.executable }}
       compiler-cxxflags: ${{ matrix.compiler.cxxflags }}
+      compiler-toolset-version: ${{ matrix.compiler.toolset_version }}
       compiler-builder-additional-args: ${{ matrix.compiler.builder_additional_args }}
       components: ${{ needs.changes.outputs.components }}
