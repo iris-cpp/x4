@@ -119,7 +119,7 @@ jobs:
     steps:
       - name: Setup Toolchain
         id: setup
-        uses: ${{ github.workspace }}/.github/actions/setup
+        uses: ./.github/actions/setup
         with:
           os-name: ${{ matrix.os.name }}
           compiler-toolset: ${{ matrix.compiler.toolset }}
@@ -208,7 +208,7 @@ jobs:
     steps:
       - name: Setup Toolchain
         id: setup
-        uses: ${{ github.workspace }}/.github/actions/setup
+        uses: ./.github/actions/setup
         with:
           os-name: ${{ matrix.os.name }}
           compiler-toolset: ${{ matrix.compiler.toolset }}
