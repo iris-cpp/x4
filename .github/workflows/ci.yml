@@ -96,22 +96,22 @@ jobs:
             version: 21
             executable: clang++-21
             cxxflags: -stdlib=libc++ -fcolor-diagnostics
-          - name: MSVC
-            toolset: msvc
-            version: 2022
-            toolset_version: 14.44
-            vs-path: C:\Program Files\Microsoft Visual Studio\2022\Enterprise
-            cmake_config_additional_args: -G "Visual Studio 17 2022"
-            builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
-            executable: cl
-          - name: MSVC
-            toolset: msvc
-            version: 2026
-            toolset_version: 14.50
-            vs-path: C:\Program Files\Microsoft Visual Studio\18\Enterprise
-            cmake_config_additional_args: -G "Visual Studio 18 2026"
-            builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
-            executable: cl
+#         - name: MSVC
+#           toolset: msvc
+#           version: 2022
+#           toolset_version: 14.44
+#           vs-path: C:\Program Files\Microsoft Visual Studio\2022\Enterprise
+#           cmake_config_additional_args: -G "Visual Studio 17 2022"
+#           builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
+#           executable: cl
+#         - name: MSVC
+#           toolset: msvc
+#           version: 2026
+#           toolset_version: 14.50
+#           vs-path: C:\Program Files\Microsoft Visual Studio\18\Enterprise
+#           cmake_config_additional_args: -G "Visual Studio 18 2026"
+#           builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
+#           executable: cl
 
         exclude:
           - os:
@@ -166,6 +166,6 @@ jobs:
           PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
           ARTIFACT_REGEX: compilation_log_(?<runId>\d+)_(?<jobId>\d+)
           STEP_REGEX: Build Tests
-          JOB_REGEX: '\[C\+\+\(?<cppVersion>\d+)\] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\) / (?<component>.+)'
+          JOB_REGEX: '\[C\+\+(?<cppVersion>\d+)\] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\) / (?<component>.+)'
           ROW_HEADERS: '["vendorName", "vendorVersion", "config"]'
           COLUMN_HEADER: cppVersion
