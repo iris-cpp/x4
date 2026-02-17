@@ -160,7 +160,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v6
-      - uses: iris-cpp/cpp-warning-notifier@v0.5.0
+      - uses: iris-cpp/cpp-warning-notifier@v0.5.1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
