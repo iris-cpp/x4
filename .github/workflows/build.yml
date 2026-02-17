@@ -107,6 +107,10 @@ jobs:
             -DIRIS_CI=ON \
             -S .
 
+      - name: Build Deps
+        run: |
+          cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} --target Catch2WithMain ${{ inputs.compiler-builder-additional-args }}
+
       - name: Cache CMake Dependencies (save)
         if: steps.cache-deps.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
