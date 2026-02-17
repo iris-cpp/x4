@@ -62,6 +62,7 @@ env:
 
 jobs:
   prepare-deps:
+    name: "Prepare Dependencies"
     runs-on: ${{ inputs.os-name }}-${{ inputs.os-version }}
 
     steps:
@@ -131,8 +132,8 @@ jobs:
           path: ${{ github.workspace }}/build/_deps
 
   build:
+    name: ${{ matrix.component }}
     needs: prepare-deps
-
     runs-on: ${{ inputs.os-name }}-${{ inputs.os-version }}
 
     strategy:

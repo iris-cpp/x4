@@ -56,7 +56,7 @@ jobs:
             return result;
 
   build:
-    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.compiler.toolset }}-${{ matrix.compiler.version }} (${{ matrix.build_type.name }}) @ ${{ matrix.os.name }}-${{ matrix.os.version }}"
+    name: "[${{ matrix.cpp_version.name }}] ${{ matrix.compiler.name }} ${{ matrix.compiler.version }} (${{ matrix.build_type.name }})"
 
     needs: changes
     if: ${{ needs.changes.outputs.components != '[]' && needs.changes.outputs.components != '' }}
@@ -68,8 +68,8 @@ jobs:
         os:
           # - name: ubuntu
           #   version: 24.04
-          - name: windows
-            version: 2022
+          # - name: windows
+          #   version: 2022
           - name: windows
             version: 2025-vs2026
         build_type:
