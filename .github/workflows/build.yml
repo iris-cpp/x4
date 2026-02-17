@@ -83,9 +83,7 @@ jobs:
         with:
           enableCrossOsArchive: true
           key: ${{ steps.setup.outputs.deps-cache-key }}
-          path: |
-            ${{ github.workspace }}/build/_deps
-            ${{ github.workspace }}/build/.iris_deps_build_stamp
+          path: ${{ github.workspace }}/build/_deps
 
       # Adapt CMP0168; enable caching in CI
       # https://cmake.org/cmake/help/latest/module/FetchContent.html#variable:FETCHCONTENT_FULLY_DISCONNECTED
@@ -117,8 +115,8 @@ jobs:
         id: pre-build-check
         shell: bash
         run: |
-          if [ -e build/.iris_deps_build_stamp ]; then
-            echo "deps-timestamp=$(stat -c %Y build/.iris_deps_build_stamp)" >> $GITHUB_OUTPUT
+          if [ -e build/_deps/.iris_deps_build_stamp ]; then
+            echo "deps-timestamp=$(stat -c %Y build/_deps/.iris_deps_build_stamp)" >> $GITHUB_OUTPUT
           else
             echo "deps-timestamp=0" >> $GITHUB_OUTPUT
           fi
@@ -131,7 +129,7 @@ jobs:
         id: post-build-check
         shell: bash
         run: |
-          echo "deps-timestamp=$(stat -c %Y build/.iris_deps_build_stamp)" >> $GITHUB_OUTPUT
+          echo "deps-timestamp=$(stat -c %Y build/_deps/.iris_deps_build_stamp)" >> $GITHUB_OUTPUT
 
       - name: Cache CMake Dependencies (save)
         if: steps.cache-deps.outputs.cache-hit != 'true' || steps.pre-build-check.outputs.deps-timestamp != steps.post-build-check.outputs.deps-timestamp
@@ -139,9 +137,7 @@ jobs:
         with:
           enableCrossOsArchive: true
           key: ${{ steps.cache-deps.outputs.cache-primary-key }}
-          path: |
-            ${{ github.workspace }}/build/_deps
-            ${{ github.workspace }}/build/.iris_deps_build_stamp
+          path: ${{ github.workspace }}/build/_deps
 
   build:
     needs: prepare-deps
