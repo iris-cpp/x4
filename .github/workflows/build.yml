@@ -181,6 +181,7 @@ jobs:
             -S .
 
       - name: Build Tests
+        shell: bash
         run: |
           cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ inputs.compiler-builder-additional-args }} 2> >(tee stderr.log >&2)
 
@@ -195,19 +196,3 @@ jobs:
           CLICOLOR_FORCE: 1
         working-directory: ${{ github.workspace }}/build/test
         run: ctest --output-on-failure -C ${{ inputs.build-type-name }}
-
-  run-notifier:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v6
-      - uses: iris-cpp/cpp-warning-notifier@v0.5.0
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
-          ARTIFACT_REGEX: compilation_log_(?<runId>\d+)_(?<jobId>\d+)
-          STEP_REGEX: Build Tests
-          JOB_REGEX: '\[C\+\+\(?<cppVersion>\d+)] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\)'
-          ROW_HEADERS: '["vendorName", "vendorVersion", "config"]'
-          COLUMN_HEADER: cppVersion
