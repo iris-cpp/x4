@@ -35,23 +35,23 @@ on:
       compiler-cxxflags:
         required: false
         type: string
-        default: ''
+        default: ""
       compiler-toolset-version:
         required: false
         type: string
-        default: ''
+        default: ""
       vs-path:
         required: false
         type: string
-        default: ''
+        default: ""
       cmake-config-additional-args:
         required: false
         type: string
-        default: ''
+        default: ""
       compiler-builder-additional-args:
         required: false
         type: string
-        default: ''
+        default: ""
       components:
         required: true
         type: string
@@ -182,10 +182,32 @@ jobs:
 
       - name: Build Tests
         run: |
-          cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ inputs.compiler-builder-additional-args }}
+          cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ inputs.compiler-builder-additional-args }} 2> >(tee stderr.log >&2)
+
+      - name: Save compilation log
+        uses: actions/upload-artifact@v6
+        with:
+          name: compilation_log_${{ github.run_id }}_${{ job.check_run_id }}
+          path: stderr.log
 
       - name: Test
         env:
           CLICOLOR_FORCE: 1
         working-directory: ${{ github.workspace }}/build/test
         run: ctest --output-on-failure -C ${{ inputs.build-type-name }}
+
+  run-notifier:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v6
+      - uses: iris-cpp/cpp-warning-notifier@v0.5.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
+          ARTIFACT_REGEX: compilation_log_(?<runId>\d+)_(?<jobId>\d+)
+          STEP_REGEX: Build Tests
+          JOB_REGEX: '\[C\+\+\(?<cppVersion>\d+)] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\)'
+          ROW_HEADERS: '["vendorName", "vendorVersion", "config"]'
+          COLUMN_HEADER: cppVersion
