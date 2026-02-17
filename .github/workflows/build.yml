@@ -62,7 +62,7 @@ env:
 
 jobs:
   prepare-deps:
-    name: "Prepare Dependencies"
+    name: "Dependencies"
     runs-on: ${{ inputs.os-name }}-${{ inputs.os-version }}
 
     steps:

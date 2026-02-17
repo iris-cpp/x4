@@ -18,7 +18,9 @@ concurrency:
 
 jobs:
   changes:
+    name: "Check Changes"
     runs-on: ubuntu-latest
+
     outputs:
       components: ${{ steps.processed.outputs.result }}
     steps:
@@ -28,9 +30,10 @@ jobs:
         with:
           filters: |
             general:
-              - '.github/workflows/*.yml'
-              - 'CMakeLists.txt'
+              - '.github/workflows/**/*.yml'
+              - '.github/actions/**/*.yml'
               - 'modules/iris'
+              - 'CMakeLists.txt'
               - 'test/CMakeLists.txt'
               - 'scripts/generate_tuple_members.sh'
               - 'scripts/generate_tuple_members.bat'
@@ -66,33 +69,33 @@ jobs:
 
       matrix:
         os:
-          # - name: ubuntu
-          #   version: 24.04
-          # - name: windows
-          #   version: 2022
+          - name: ubuntu
+            version: 24.04
+          - name: windows
+            version: 2022
           - name: windows
             version: 2025-vs2026
         build_type:
           - name: Debug
             lowercase: debug
-          # - name: Release
-          #   lowercase: release
+          - name: Release
+            lowercase: release
         cpp_version:
-          # - name: C++23
-          #   number: 23
+          - name: C++23
+            number: 23
           - name: C++26
             number: 26
         compiler:
-          # - name: GCC
-          #   toolset: gcc
-          #   version: 14
-          #   executable: g++-14
-          #   cxxflags: -fdiagnostics-color=always
-          # - name: Clang
-          #   toolset: clang
-          #   version: 21
-          #   executable: clang++-21
-          #   cxxflags: -stdlib=libc++ -fcolor-diagnostics
+          - name: GCC
+            toolset: gcc
+            version: 14
+            executable: g++-14
+            cxxflags: -fdiagnostics-color=always
+          - name: Clang
+            toolset: clang
+            version: 21
+            executable: clang++-21
+            cxxflags: -stdlib=libc++ -fcolor-diagnostics
           - name: MSVC
             toolset: msvc
             version: 2022
