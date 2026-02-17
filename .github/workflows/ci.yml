@@ -153,3 +153,19 @@ jobs:
       cmake-config-additional-args: ${{ matrix.compiler.cmake_config_additional_args }}
       compiler-builder-additional-args: ${{ matrix.compiler.builder_additional_args }}
       components: ${{ needs.changes.outputs.components }}
+
+  run-notifier:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v6
+      - uses: iris-cpp/cpp-warning-notifier@v0.5.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
+          ARTIFACT_REGEX: compilation_log_(?<runId>\d+)_(?<jobId>\d+)
+          STEP_REGEX: Build Tests
+          JOB_REGEX: '\[C\+\+(?<cppVersion>\d+)\] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\) / (?<component>.+)'
+          ROW_HEADERS: '["component", "vendorName", "vendorVersion", "config"]'
+          COLUMN_HEADER: cppVersion
