@@ -12,6 +12,8 @@
 
 #include <iris/config.hpp>
 
+#include <iris/x4/core/attribute.hpp>
+#include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
