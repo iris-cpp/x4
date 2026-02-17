@@ -66,59 +66,59 @@ jobs:
 
       matrix:
         os:
-#         - name: ubuntu
-#           version: 24.04
-#         - name: windows
-#           version: 2022
+          - name: ubuntu
+            version: 24.04
+          - name: windows
+            version: 2022
           - name: windows
             version: 2025-vs2026
         build_type:
           - name: Debug
             lowercase: debug
-#         - name: Release
-#           lowercase: release
+          - name: Release
+            lowercase: release
         cpp_version:
           - name: C++23
             number: 23
-#         - name: C++26
-#           number: 26
+          - name: C++26
+            number: 26
         compiler:
-#         - name: GCC
-#           toolset: gcc
-#           version: 14
-#           executable: g++-14
-#           cxxflags: -fdiagnostics-color=always
-#         - name: Clang
-#           toolset: clang
-#           version: 21
-#           executable: clang++-21
-#           cxxflags: -stdlib=libc++ -fcolor-diagnostics
-#         - name: MSVC2022
-#           toolset: msvc
-#           version: 2022
-#           toolset_version: 14.44
-#           builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
-#           executable: cl
-          - name: MSVC2026
+          - name: GCC
+            toolset: gcc
+            version: 14
+            executable: g++-14
+            cxxflags: -fdiagnostics-color=always
+          - name: Clang
+            toolset: clang
+            version: 21
+            executable: clang++-21
+            cxxflags: -stdlib=libc++ -fcolor-diagnostics
+          - name: MSVC
+            toolset: msvc
+            version: 2022
+            toolset_version: 14.44
+            builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
+            executable: cl
+          - name: MSVC
             toolset: msvc
             version: 2026
             toolset_version: 14.50
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
-#       exclude:
-#        - os:
-#            name: windows
-#          compiler:
-#            name: GCC
-#        - os:
-#            name: windows
-#          compiler:
-#            name: Clang
-#         - os:
-#             name: ubuntu
-#           compiler:
-#             name: MSVC
+        exclude:
+          - os:
+              name: windows
+            compiler:
+              name: GCC
+          - os:
+              name: windows
+            compiler:
+              name: Clang
+          - os:
+              name: ubuntu
+            compiler:
+              name: MSVC
 
     uses: ./.github/workflows/build.yml
     with:
