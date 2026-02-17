@@ -66,45 +66,61 @@ jobs:
 
       matrix:
         os:
-          - name: ubuntu
-            version: 24.04
+          # - name: ubuntu
+          #   version: 24.04
+          - name: windows
+            version: 2022
           - name: windows
             version: 2025-vs2026
         build_type:
           - name: Debug
             lowercase: debug
-          - name: Release
-            lowercase: release
+          # - name: Release
+          #   lowercase: release
         cpp_version:
-          - name: C++23
-            number: 23
+          # - name: C++23
+          #   number: 23
           - name: C++26
             number: 26
         compiler:
-          - name: GCC
-            toolset: gcc
-            version: 14
-            executable: g++-14
-            cxxflags: -fdiagnostics-color=always
-          - name: Clang
-            toolset: clang
-            version: 21
-            executable: clang++-21
-            cxxflags: -stdlib=libc++ -fcolor-diagnostics
+          # - name: GCC
+          #   toolset: gcc
+          #   version: 14
+          #   executable: g++-14
+          #   cxxflags: -fdiagnostics-color=always
+          # - name: Clang
+          #   toolset: clang
+          #   version: 21
+          #   executable: clang++-21
+          #   cxxflags: -stdlib=libc++ -fcolor-diagnostics
           - name: MSVC
             toolset: msvc
             version: 2022
             toolset_version: 14.44
+            vs-path: C:\Program Files\Microsoft Visual Studio\2022\Enterprise
+            cmake_config_additional_args: -G "Visual Studio 17 2022"
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
           - name: MSVC
             toolset: msvc
             version: 2026
             toolset_version: 14.50
+            vs-path: C:\Program Files\Microsoft Visual Studio\18\Enterprise
+            cmake_config_additional_args: -G "Visual Studio 18 2026"
             builder_additional_args: -- "-consoleLoggerParameters:ForceConsoleColor"
             executable: cl
 
         exclude:
+          - os:
+              name: windows
+              version: 2022
+            compiler:
+              version: 2026
+          - os:
+              name: windows
+              version: 2025-vs2026
+            compiler:
+              version: 2022
           - os:
               name: windows
             compiler:
@@ -130,5 +146,7 @@ jobs:
       compiler-executable: ${{ matrix.compiler.executable }}
       compiler-cxxflags: ${{ matrix.compiler.cxxflags }}
       compiler-toolset-version: ${{ matrix.compiler.toolset_version }}
+      vs-path: ${{ matrix.compiler.vs-path }}
+      cmake-config-additional-args: ${{ matrix.compiler.cmake_config_additional_args }}
       compiler-builder-additional-args: ${{ matrix.compiler.builder_additional_args }}
       components: ${{ needs.changes.outputs.components }}

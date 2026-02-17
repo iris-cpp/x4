@@ -21,6 +21,10 @@ inputs:
     required: false
     type: string
     default: ''
+  vs-path:
+    required: false
+    type: string
+    default: ''
   cpp-version-name:
     required: true
   build-type-name:
@@ -64,6 +68,7 @@ runs:
       if: inputs.os-name == 'windows'
       with:
         arch: x64
+        vs-path: ${{ inputs.vs-path }}
         toolset: ${{ inputs.compiler-toolset-version }}
 
     - name: Fetch Environment Info
@@ -84,4 +89,4 @@ runs:
         esac
         echo "COMPILER_FULL_VERSION=$COMPILER_FULL_VERSION"
         echo "compiler-full-version=$COMPILER_FULL_VERSION" >> "$GITHUB_OUTPUT"
-        echo "deps-cache-key=deps3-${{ inputs.os-name }}-${{ inputs.os-version }}-${{ inputs.compiler-toolset }}-${COMPILER_FULL_VERSION}-${{ inputs.cpp-version-name }}-${{ inputs.build-type-name }}" >> "$GITHUB_OUTPUT"
+        echo "deps-cache-key=deps-${{ inputs.os-name }}-${{ inputs.os-version }}-${{ inputs.compiler-toolset }}-${COMPILER_FULL_VERSION}-${{ inputs.cpp-version-name }}-${{ inputs.build-type-name }}" >> "$GITHUB_OUTPUT"

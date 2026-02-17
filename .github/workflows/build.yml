@@ -40,6 +40,14 @@ on:
         required: false
         type: string
         default: ''
+      vs-path:
+        required: false
+        type: string
+        default: ''
+      cmake-config-additional-args:
+        required: false
+        type: string
+        default: ''
       compiler-builder-additional-args:
         required: false
         type: string
@@ -71,6 +79,7 @@ jobs:
           compiler-version: ${{ inputs.compiler-version }}
           compiler-executable: ${{ inputs.compiler-executable }}
           compiler-toolset-version: ${{ inputs.compiler-toolset-version }}
+          vs-path: ${{ inputs.vs-path }}
           cpp-version-name: ${{ inputs.cpp-version-name }}
           build-type-name: ${{ inputs.build-type-name }}
 
@@ -98,6 +107,7 @@ jobs:
         run: |
           set -xe
           cmake ${{ steps.deps-info.outputs.IRIS_X4_CMAKE_ARGS }} -B build \
+            ${{ inputs.cmake-config-additional-args }} \
             -DCMAKE_CXX_COMPILER=${{ inputs.compiler-executable }} \
             -DCMAKE_CXX_FLAGS="${{ inputs.compiler-cxxflags }}" \
             -DCMAKE_CXX_STANDARD=${{ inputs.cpp-version-number }} \
@@ -112,7 +122,9 @@ jobs:
           cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} --target Catch2WithMain ${{ inputs.compiler-builder-additional-args }}
 
       - name: Cache CMake Dependencies (save)
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        # Due to some bogus "Unable to reserve cache with key" error, we *always* save the cache for now.
+        # See this page for the rate limit: https://docs.github.com/en/actions/reference/limits#existing-system-limits
+        # if: steps.cache-deps.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           key: ${{ steps.cache-deps.outputs.cache-primary-key }}
