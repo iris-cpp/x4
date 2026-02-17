@@ -166,6 +166,6 @@ jobs:
           PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
           ARTIFACT_REGEX: compilation_log_(?<runId>\d+)_(?<jobId>\d+)
           STEP_REGEX: Build Tests
-          JOB_REGEX: '\[C\+\+\(?<cppVersion>\d+)] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\)'
+          JOB_REGEX: '\[C\+\+\(?<cppVersion>\d+)\] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\) / (?<component>.+)'
           ROW_HEADERS: '["vendorName", "vendorVersion", "config"]'
           COLUMN_HEADER: cppVersion
