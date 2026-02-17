@@ -81,6 +81,7 @@ jobs:
         id: cache-deps
         uses: actions/cache/restore@v4
         with:
+          enableCrossOsArchive: true
           key: ${{ steps.setup.outputs.deps-cache-key }}
           path: |
             ${{ github.workspace }}/build/_deps
@@ -136,8 +137,11 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true' || steps.pre-build-check.outputs.deps-timestamp != steps.post-build-check.outputs.deps-timestamp
         uses: actions/cache/save@v4
         with:
+          enableCrossOsArchive: true
           key: ${{ steps.cache-deps.outputs.cache-primary-key }}
-          path: ${{ github.workspace }}/build/.iris_deps_build_stamp
+          path: |
+            ${{ github.workspace }}/build/_deps
+            ${{ github.workspace }}/build/.iris_deps_build_stamp
 
   build:
     needs: prepare-deps
@@ -172,7 +176,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           key: ${{ steps.setup.outputs.deps-cache-key }}
-          path: ${{ github.workspace }}/build/.iris_deps_build_stamp
+          path: |
+            ${{ github.workspace }}/build/_deps
+            ${{ github.workspace }}/build/.iris_deps_build_stamp
 
       - name: Configure
         shell: bash
