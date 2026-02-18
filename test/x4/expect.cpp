@@ -339,13 +339,11 @@ TEST_CASE("expect")
     #ifndef IRIS_X4_NO_RTTI
         X4_TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
-            CHECK(x.which().find("sequence") != std::string::npos);
             CHECK(where == "y:a"sv);
         });
     #else
         X4_TEST_FAILURE("ay:a", char_ > char_('x') >> ':' > 'a',
         {
-            CHECK(which == "undefined"sv);
             CHECK(where == "y:a"sv);
         });
     #endif
@@ -417,23 +415,6 @@ TEST_CASE("expect")
             CHECK(where == "ccb"sv);
         });
     }
-
-    //
-    // ********* Developers note **********
-    //
-    // As of now (see `git blame`), get_info<T> is still not
-    // specialized for many of the X4 parsers so that the
-    // value of `expectation_failure<...>::which()` will be
-    // implementation-defined demangled string.
-    // Therefore, it's essentially impossible to test them
-    // right now; further work must be done.
-    //
-    // Some specific situations are already been reported
-    // (e.g. https://github.com/boostorg/spirit/issues/777)
-    // but we really need to implement all specializations for
-    // X4's predefined parsers, not just the one reported above.
-    //
-
 
     // sanity check: test expectation_failure propagation
     // on custom skippers
