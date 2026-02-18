@@ -57,12 +57,6 @@ struct my_attribute
     {
         alive = false;
     }
-
-    friend std::ostream& operator<<(std::ostream & os, my_attribute const & attr)
-    {
-        attr.access();
-        return os << "my_attribute";
-    }
 };
 
 } // anonymous

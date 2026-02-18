@@ -375,7 +375,7 @@ TEST_CASE("expect")
 
     {
         alloy::tuple<char, char, char> attr;
-        X4_TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' > char_ >> ',' > char_, space, attr);
+        X4_TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' >> expect[char_] >> ',' >> expect[char_], space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));
         CHECK((alloy::get<2>(attr) == 'c'));
