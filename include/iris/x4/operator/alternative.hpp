@@ -31,7 +31,7 @@ namespace iris::x4 {
 template<class Left, class Right>
 struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
 {
-    using attribute_type = traits::attribute_of_binary<iris::rvariant, alternative, Left, Right>::type;
+    using attribute_type = traits::attribute_of_binary<iris::rvariant, Left, Right>::type;
 
     using binary_parser<Left, Right, alternative>::binary_parser;
 
