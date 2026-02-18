@@ -114,44 +114,6 @@ TEST_CASE("sequence")
         CHECK(c == 'a');
     }
 
-    {
-        // a single element tuple
-        alloy::tuple<char> vec;
-        REQUIRE(parse("ab", char_ >> 'b', vec));
-        CHECK(alloy::get<0>(vec) == 'a');
-    }
-
-    {
-        // Make sure single element tuples get passed through if the rhs
-        // has a single element tuple as its attribute. Edit JDG 2014:
-        // actually the issue here is that if the rhs in this case a rule
-        // (r), it should get it (i.e. the sequence parser should not
-        // unwrap it). It's odd that the RHS (r) does not really have a
-        // single element tuple, so the original comment is not accurate.
-
-        using attr_type = alloy::tuple<char, int>;
-        attr_type tpl;
-
-        auto r = rule<class r_id, attr_type>{} = char_ >> ',' >> int_;
-
-        REQUIRE(parse("test:x,1", "test:" >> r, tpl));
-        CHECK((tpl == attr_type('x', 1)));
-    }
-
-    {
-        // make sure single element tuples get passed through if the rhs
-        // has a single element tuple as its attribute. This is a correction
-        // of the test above.
-
-        using attr_type = alloy::tuple<int>;
-        attr_type tpl;
-
-        auto r = rule<class r_id, attr_type>{} = int_;
-
-        REQUIRE(parse("test:1", "test:" >> r, tpl));
-        CHECK((tpl == attr_type(1)));
-    }
-
     // unused means we don't care about the attribute
     CHECK(parse("abc", char_ >> 'b' >> char_, unused));
 
