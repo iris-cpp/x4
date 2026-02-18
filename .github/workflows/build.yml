@@ -183,13 +183,8 @@ jobs:
       - name: Build Tests
         shell: bash
         run: |
-          cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ inputs.compiler-builder-additional-args }} 2> >(tee stderr.log >&2)
-
-      - name: Save compilation log
-        uses: actions/upload-artifact@v6
-        with:
-          name: compilation_log_${{ github.run_id }}_${{ job.check_run_id }}
-          path: stderr.log
+          echo "CPPWARNINGNOTIFIER_LOG_MARKER"
+          cmake --build build --config ${{ inputs.build-type-name }} -j${{ env.IRIS_X4_BUILD_JOBS }} ${{ inputs.compiler-builder-additional-args }}
 
       - name: Test
         env:

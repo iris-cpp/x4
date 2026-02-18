@@ -159,13 +159,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v6
-      - uses: iris-cpp/cpp-warning-notifier@v0.5.1
+      - uses: iris-cpp/cpp-warning-notifier@v0.6.2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORE_NO_MARKER: true
+          RUN_ID: ${{ github.run_id }}
+          JOB_ID: ${{ job.check_run_id }}
           PRIVATE_KEY: ${{ secrets.CPPWARNINGNOTIFIER_PRIVATE_KEY }}
-          ARTIFACT_REGEX: compilation_log_(?<runId>\d+)_(?<jobId>\d+)
-          STEP_REGEX: Build Tests
+          STEP_REGEX: Build .+
           JOB_REGEX: '\[C\+\+(?<cppVersion>\d+)\] (?<vendorName>.+) (?<vendorVersion>.+) \((?<config>.+)\) / (?<component>.+)'
           ROW_HEADERS: '["component", "vendorName", "vendorVersion", "config"]'
           COLUMN_HEADER: cppVersion
