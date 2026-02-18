@@ -378,11 +378,6 @@ concept RuleAttrTransformable =
         RuleAttr
     >;
 
-template<class Exposed, class RuleAttr>
-concept RuleAttrCompatible =
-    std::same_as<std::remove_const_t<Exposed>, RuleAttr> ||
-    RuleAttrTransformable<Exposed, RuleAttr>;
-
 } // detail
 
 template<class RuleID, X4Attribute RuleAttr, bool ForceAttr>
@@ -415,7 +410,8 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            detail::RuleAttrCompatible<Exposed, RuleAttr>
+            (!std::same_as<std::remove_const_t<Exposed>, RuleAttr>) &&
+            detail::RuleAttrTransformable<Exposed, RuleAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
         // never noexcept; requires very complex implementation details
@@ -435,39 +431,52 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
         using detail::parse_rule; // ADL
 
-        if constexpr (std::same_as<std::remove_const_t<Exposed>, RuleAttr>) {
-            return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
+        static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>);
 
-        } else {
-            static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
+        // TODO: specialize `container_appender` case, do not create temporary
 
-            // TODO: specialize `container_appender` case, do not create temporary
-
-            RuleAttr rule_attr;
-            if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
-                return false;
-            }
-
-            if constexpr (is_ttp_specialization_of_v<std::remove_const_t<Exposed>, container_appender>) {
-                traits::append(
-                    exposed_attr.container,
-                    std::make_move_iterator(traits::begin(rule_attr)),
-                    std::make_move_iterator(traits::end(rule_attr))
-                );
-            } else {
-                static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
-                exposed_attr = std::move(rule_attr);
-            }
-            return true;
+        RuleAttr rule_attr;
+        if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
+            return false;
         }
+
+        if constexpr (is_ttp_specialization_of_v<std::remove_const_t<Exposed>, container_appender>) {
+            traits::append(
+                exposed_attr.container,
+                std::make_move_iterator(traits::begin(rule_attr)),
+                std::make_move_iterator(traits::end(rule_attr))
+            );
+        } else {
+            static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
+            exposed_attr = std::move(rule_attr);
+        }
+        return true;
+    }
+    
+    // TODO: 良いコメントを書く
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
+        requires
+            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
+            std::same_as<std::remove_const_t<Exposed>, RuleAttr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
+        // never noexcept; requires very complex implementation details
+    {
+        static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
+
+        // See the comment above
+        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
+
+        using detail::parse_rule; // ADL
+        return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
-            detail::RuleAttrConvertible<Exposed, RuleAttr> &&
-            (!detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>)
+            (!std::same_as<std::remove_const_t<Exposed>, RuleAttr>) &&
+            (!detail::RuleAttrTransformable<Exposed, RuleAttr>) &&
+            detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
 
