@@ -159,7 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: iris-cpp/cpp-warning-notifier@v0.6.0
+      - uses: iris-cpp/cpp-warning-notifier@v0.6.1
         with:
           RUN_ID: ${{ github.run_id }}
           JOB_ID: ${{ job.check_run_id }}
