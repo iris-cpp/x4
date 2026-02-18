@@ -349,10 +349,16 @@ struct narrowing_checker
         requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
 };
 
+
 template<class Exposed, class RuleAttr>
-concept RuleAttrNeedsNarrowingConversion =
+concept RuleAttrConvertible =
     X4Attribute<RuleAttr> &&
-    !requires {
+    std::is_assignable_v<unwrap_container_appender_t<std::remove_const_t<Exposed>>&, RuleAttr>;
+
+template<class Exposed, class RuleAttr>
+concept RuleAttrConvertibleWithoutNarrowing =
+    RuleAttrConvertible<Exposed, RuleAttr> &&
+    requires {
         narrowing_checker<
             unwrap_container_appender_t<std::remove_const_t<Exposed>>
         >::operator()(std::declval<RuleAttr>());
@@ -366,8 +372,8 @@ concept RuleAttrTransformable =
     X4Attribute<std::remove_const_t<Exposed>> &&
     X4Attribute<RuleAttr> &&
     std::default_initializable<RuleAttr> &&
-    std::is_assignable_v<unwrap_container_appender_t<std::remove_const_t<Exposed>>&, RuleAttr> &&
-    !RuleAttrNeedsNarrowingConversion<
+    RuleAttrConvertible<Exposed, RuleAttr> &&
+    RuleAttrConvertibleWithoutNarrowing<
         unwrap_container_appender_t<std::remove_const_t<Exposed>>,
         RuleAttr
     >;
@@ -434,7 +440,6 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
         } else {
             static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
-            static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>);
 
             // TODO: specialize `container_appender` case, do not create temporary
 
@@ -461,9 +466,11 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
             (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
-            detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>
+            detail::RuleAttrConvertible<Exposed, RuleAttr> &&
+            (!detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>)
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
+
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
