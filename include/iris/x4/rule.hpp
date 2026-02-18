@@ -476,7 +476,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
             (!std::same_as<std::remove_const_t<Exposed>, RuleAttr>) &&
             (!detail::RuleAttrTransformable<Exposed, RuleAttr>) &&
-            detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>
+            (detail::RuleAttrConvertible<Exposed, RuleAttr> && !detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>)
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
 
