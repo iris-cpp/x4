@@ -431,7 +431,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
         using detail::parse_rule; // ADL
 
-        static_assert(!detail::RuleAttrNeedsNarrowingConversion<Exposed, RuleAttr>);
+        static_assert(detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>);
 
         // TODO: specialize `container_appender` case, do not create temporary
 
