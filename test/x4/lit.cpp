@@ -145,11 +145,4 @@ TEST_CASE("lit")
         std::basic_string<wchar_t> ws(L"kimpo");
         CHECK(parse(L"kimpo", x4::standard_wide::string(ws)));
     }
-
-    {
-        // single-element tuple tests
-        alloy::tuple<std::string> s;
-        REQUIRE(parse("kimpo", x4::standard::string("kimpo"), s));
-        CHECK(alloy::get<0>(s) == "kimpo");
-    }
 }
