@@ -168,6 +168,15 @@ TEST_CASE("rule4")
         CHECK(*ov == 1);
     }
 
+    // test handling of single element tuple
+    {
+        auto r = rule<class r_id, alloy::tuple<int>>{} = int_;
+
+        alloy::tuple<int> v(0);
+        REQUIRE(parse("1", r, v));
+        CHECK(alloy::get<0>(v) == 1);
+    }
+
     // attribute compatibility test
     {
         constexpr auto expr = int_;
