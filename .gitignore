@@ -1,5 +1,5 @@
 .DS_Store
+.vs*/
 /build*/
-
 # ignore preprocessed file
 include/iris/alloy/detail/preprocessed/tuple_impl.hpp
