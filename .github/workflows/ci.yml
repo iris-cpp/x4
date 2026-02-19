@@ -140,7 +140,7 @@ jobs:
             compiler:
               name: MSVC
 
-    uses: ./.github/workflows/build.yml
+    uses: iris-cpp/iris/.github/workflows/build.yml@main
     with:
       os-name: ${{ matrix.os.name }}
       os-version: ${{ matrix.os.version }}
