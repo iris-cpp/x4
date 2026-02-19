@@ -16,6 +16,7 @@
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/directive/omit.hpp>
+#include <iris/x4/numeric/bool.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/plus.hpp>
@@ -63,6 +64,7 @@ TEST_CASE("alternative")
     using x4::unused;
     using x4::omit;
     using x4::eps;
+    using x4::true_;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
@@ -220,7 +222,37 @@ TEST_CASE("alternative")
         (void)line;
     }
 
-    // single-element tuple tests
+    // attribute is a variant containing container
+    {
+        constexpr auto parser = +true_;
+        using Parser = std::remove_const_t<decltype(parser)>;
+        using Attr = iris::rvariant<int, std::vector<bool>>;
+        
+        using attribute_type = x4::parser_traits<Parser>::attribute_type;
+        STATIC_CHECK(std::same_as<attribute_type, std::vector<bool>>);
+
+        using substitute_type = x4::traits::variant_find_substitute_t<Attr, attribute_type>;
+        STATIC_CHECK(std::same_as<substitute_type, std::vector<bool>>);
+
+        Attr var;
+        REQUIRE(parse("truetrue", parser, var));
+    }
+    {
+        constexpr auto parser = +char_;
+        using Parser = std::remove_const_t<decltype(parser)>;
+        using Attr = iris::rvariant<int, std::string>;
+        
+        using attribute_type = x4::parser_traits<Parser>::attribute_type;
+        STATIC_CHECK(std::same_as<attribute_type, std::string>);
+
+        using substitute_type = x4::traits::variant_find_substitute_t<Attr, attribute_type>;
+        STATIC_CHECK(std::same_as<substitute_type, std::string>);
+
+        Attr var;
+        REQUIRE(parse("123", parser, var));
+    }
+
+    // single element tuple-like case
     {
         alloy::tuple<iris::rvariant<int, std::string>> fv;
         REQUIRE(parse("12345", int_ | +char_, fv));
