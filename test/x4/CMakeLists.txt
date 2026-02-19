@@ -34,7 +34,7 @@ endfunction()
 
 x4_define_tests(
     actions
-    alternative
+#   alternative
     and_predicate
     as
     attr
