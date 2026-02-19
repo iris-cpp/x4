@@ -102,7 +102,7 @@ constexpr T&& unwrap_size_one_tuple(T&& t) noexcept
 }
 
 template<class T>
-    requires traits::is_size_one_sequence_v<T>
+    requires traits::is_single_element_tuple_like_v<T>
 constexpr auto&& unwrap_size_one_tuple(T&& t) noexcept
 {
     return alloy::get<0>(std::forward<T>(t));

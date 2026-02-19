@@ -113,7 +113,7 @@ struct parse_into_container_base_impl
         Context const& ctx, Attr& attr
     ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, alloy::get<0>(attr))))
     {
-        static_assert(traits::has_size_v<Attr, 1>, "Expecting a single element tuple-like");
+        static_assert(traits::is_single_element_tuple_like_v<Attr>, "Expecting a single element tuple-like");
         // TODO: reduce call stack while keeping maintainability
         return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, alloy::get<0>(attr));
     }

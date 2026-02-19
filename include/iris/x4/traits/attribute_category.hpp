@@ -10,10 +10,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/traits/subrange_traits.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/optional_traits.hpp>
+#include <iris/x4/traits/subrange_traits.hpp>
+#include <iris/x4/traits/tuple_traits.hpp>
+#include <iris/x4/traits/variant_traits.hpp>
 
 #include <iris/alloy/traits.hpp>
 
@@ -88,11 +89,18 @@ concept NonUnusedAttr =
     !std::is_same_v<typename attribute_category<std::remove_cvref_t<T>>::type, unused_attr>;
 
 template<class T>
-    requires alloy::is_tuple_like_v<T>
+    requires alloy::is_tuple_like_v<T> && (!traits::is_single_element_tuple_like_v<T>)
 struct attribute_category<T>
 {
     using type = tuple_attr;
 };
+
+// attribute-category of single element tuple-like "fallthrough" into unwrapped attribute's one
+template<class T>
+    requires alloy::is_tuple_like_v<T> && traits::is_single_element_tuple_like_v<T>
+struct attribute_category<T>
+    : attribute_category<traits::unwrap_single_element_tuple_like_t<T>>
+{};
 
 template<class T>
     requires is_variant_v<std::remove_cvref_t<T>>

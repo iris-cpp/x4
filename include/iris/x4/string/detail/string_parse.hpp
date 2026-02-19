@@ -31,7 +31,7 @@ string_parse(
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
     static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
-    using value_type = traits::container_value_t<Attr>;
+    using value_type = traits::container_value_t<traits::unwrap_single_element_tuple_like_t<Attr>>;
     static_assert(!traits::CharLike<value_type> || std::same_as<value_type, CharT>, "Mixing incompatible char types is not allowed");
 
     It it = first;
@@ -77,7 +77,7 @@ string_parse(
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
     static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
-    using value_type = traits::container_value_t<Attr>;
+    using value_type = traits::container_value_t<traits::unwrap_single_element_tuple_like_t<Attr>>;
     static_assert(!traits::CharLike<value_type> || std::same_as<value_type, CharT>, "Mixing incompatible char types is not allowed");
 
     auto uc_it = ucstr.begin();
