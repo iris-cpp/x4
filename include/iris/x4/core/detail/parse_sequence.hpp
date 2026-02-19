@@ -81,31 +81,16 @@ struct pass_sequence_attribute<Parser, Attr>
 {};
 
 template<class T>
-struct type_unwrap_size_one_tuple
-{
-    using type = T;
-};
-
-template<class T>
-struct type_unwrap_size_one_tuple<alloy::tuple<T>>
-{
-    using type = T;
-};
-
-template<class T>
-using type_unwrap_size_one_tuple_t = type_unwrap_size_one_tuple<T>::type;
-
-template<class T>
-constexpr T&& unwrap_size_one_tuple(T&& t) noexcept
+constexpr T&& do_unwrap_size_one_tuple(T&& t) noexcept
 {
     return std::forward<T>(t);
 }
 
 template<class T>
     requires traits::is_single_element_tuple_like_v<T>
-constexpr auto&& unwrap_size_one_tuple(T&& t) noexcept
+constexpr auto&& do_unwrap_size_one_tuple(T&& t) noexcept
 {
-    return alloy::get<0>(std::forward<T>(t));
+    return do_unwrap_size_one_tuple(alloy::get<0>(std::forward<T>(t)));
 }
 
 template<class LParser, class RParser, class Attr>
@@ -138,21 +123,21 @@ struct partition_attribute
 
     using view = alloy::tuple_ref_t<Attr>;
     using splitted = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = type_unwrap_size_one_tuple_t<alloy::tuple_element_t<0, splitted>>;
-    using r_part = type_unwrap_size_one_tuple_t<alloy::tuple_element_t<1, splitted>>;
+    using l_part = traits::unwrap_single_element_tuple_like_t<alloy::tuple_element_t<0, splitted>>;
+    using r_part = traits::unwrap_single_element_tuple_like_t<alloy::tuple_element_t<1, splitted>>;
     using l_pass = pass_sequence_attribute<LParser, l_part>;
     using r_pass = pass_sequence_attribute<RParser, r_part>;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        return unwrap_size_one_tuple(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
+        return do_unwrap_size_one_tuple(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return unwrap_size_one_tuple(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
+        return do_unwrap_size_one_tuple(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 };
 
