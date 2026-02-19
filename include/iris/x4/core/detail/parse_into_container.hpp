@@ -196,15 +196,18 @@ parse_into_container(
         "`unused_type` should not be passed to `parse_into_container`. Use `x4::assume_container(attr)`"
     );
 
-    if constexpr (traits::is_variant_v<Attr>) {
+    if constexpr (traits::is_variant_v<traits::unwrap_single_element_tuple_like_t<Attr>>) {
         // e.g. `char` when the caller is `+char_`
         using attribute_type = parser_traits<Parser>::attribute_type;
      
         // e.g. `std::string` when the attribute_type is `char`
-        using substitute_type = traits::variant_find_substitute_t<Attr, traits::build_container_t<attribute_type>>;
+        using substitute_type = traits::variant_find_substitute_t<
+            traits::unwrap_single_element_tuple_like_t<Attr>,
+            traits::build_container_t<attribute_type>
+        >;
 
         // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
-        auto& variant_alt = attr.template emplace<substitute_type>();
+        auto& variant_alt = x4::unwrap_single_element_tuple_like(attr).template emplace<substitute_type>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
     } else {
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
