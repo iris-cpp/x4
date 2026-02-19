@@ -14,9 +14,6 @@
 #include <iris/config.hpp>
 #include <iris/x4/core/unused.hpp>
 
-#include <iris/alloy/traits.hpp>
-#include <iris/alloy/tuple.hpp>
-
 #include <ranges>
 #include <iterator>
 #include <vector>
