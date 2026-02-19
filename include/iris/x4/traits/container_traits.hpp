@@ -471,9 +471,6 @@ struct build_container
 template<class T>
 using build_container_t = typename build_container<T>::type;
 
-template<class T>
-struct build_container<alloy::tuple<T>> : build_container<T> {};
-
 template<>
 struct build_container<unused_type>
 {
