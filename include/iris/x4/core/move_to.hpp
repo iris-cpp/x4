@@ -116,6 +116,7 @@ constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // t
 // Category specific --------------------------------------
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attr> Dest>
+    requires (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -127,7 +128,8 @@ move_to(Source&& src, Dest& dest)
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attr> Dest>
     requires
-        traits::is_same_size_tuple_like_v<Dest, Source>
+        traits::is_same_size_tuple_like_v<Dest, Source> &&
+        (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(alloy::tuple_assign(std::forward<Source>(src), dest)))
@@ -140,7 +142,9 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
-    // requires traits::variant_has_substitute_v<Dest, Source>
+    requires
+//      traits::variant_has_substitute_v<Dest, Source> &&  // TODO: investigate compilation error due to existance of this constraint
+        (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -151,6 +155,7 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::optional_attr> Dest>
+    requires (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -166,7 +171,7 @@ template<class ContainerAttr>
 struct container_appender;
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::container_attr> Dest>
-  requires (!traits::is_single_element_tuple_like_v<Dest>)
+    requires (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(It first, Se last, Dest& dest)
     // never noexcept, requires container insertion
@@ -201,7 +206,8 @@ move_to(It first, Se last, std::ranges::subrange<It, Se, Kind>& rng)
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::container_attr> Dest>
     requires
         (!traits::X4Container<Source>) &&
-        (!std::same_as<std::remove_const_t<Dest>, unused_container_type>)
+        (!std::same_as<std::remove_const_t<Dest>, unused_container_type>) &&
+        (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -216,6 +222,7 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<traits::X4Container Source, traits::CategorizedAttr<traits::container_attr> Dest>
+    requires (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     // TODO: noexcept
