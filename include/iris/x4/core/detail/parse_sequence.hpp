@@ -80,19 +80,6 @@ struct pass_sequence_attribute<Parser, Attr>
     : pass_sequence_attribute<typename Parser::proxy_backend_type, Attr>
 {};
 
-template<class T>
-constexpr T&& do_unwrap_size_one_tuple(T&& t) noexcept
-{
-    return std::forward<T>(t);
-}
-
-template<class T>
-    requires traits::is_single_element_tuple_like_v<T>
-constexpr auto&& do_unwrap_size_one_tuple(T&& t) noexcept
-{
-    return do_unwrap_size_one_tuple(alloy::get<0>(std::forward<T>(t)));
-}
-
 template<class LParser, class RParser, class Attr>
 struct partition_attribute
 {
@@ -131,13 +118,13 @@ struct partition_attribute
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        return do_unwrap_size_one_tuple(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
+        return x4::unwrap_single_element_tuple_like(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return do_unwrap_size_one_tuple(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
+        return x4::unwrap_single_element_tuple_like(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 };
 

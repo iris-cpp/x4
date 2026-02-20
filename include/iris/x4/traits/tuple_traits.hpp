@@ -72,8 +72,9 @@ struct unwrap_single_element_tuple_like
 template<class T>
   requires is_single_element_tuple_like_v<T>
 struct unwrap_single_element_tuple_like<T>
-    : unwrap_single_element_tuple_like<alloy::tuple_element_t<0, T>>
-{};
+{
+    using type = alloy::tuple_element_t<0, T>;
+};
 
 } // iris::x4::traits
 

@@ -40,7 +40,7 @@ struct parse_into_container_base_impl
 {
     // Parser has attribute (synthesize; Attribute is a container)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!parser_accepts_container_v<Parser, traits::unwrap_single_element_tuple_like_t<unwrap_recursive_type<Attr>>>)
+        requires (!parser_accepts_container_v<Parser, unwrap_recursive_type<Attr>>)
     [[nodiscard]] static constexpr bool
     call_synthesize(
         Parser const& parser, It& first, Se const& last,
@@ -49,14 +49,14 @@ struct parse_into_container_base_impl
     {
         static_assert(!std::same_as<std::remove_const_t<Attr>, unused_container_type>);
 
-        using value_type = traits::container_value_t<traits::unwrap_single_element_tuple_like_t<unwrap_recursive_type<Attr>>>;
+        using value_type = traits::container_value_t<unwrap_recursive_type<Attr>>;
         value_type val; // default-initialize
 
         //static_assert(Parsable<Parser, It, Se, Context, value_type>);
         if (!parser.parse(first, last, ctx, val)) return false;
 
         // push the parsed value into our attribute
-        traits::push_back(x4::unwrap_single_element_tuple_like(unwrap_recursive(attr)), std::move(val));
+        traits::push_back(unwrap_recursive(attr), std::move(val));
         return true;
     }
 
@@ -99,7 +99,7 @@ struct parse_into_container_base_impl
     )
     {
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, attr);
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, x4::unwrap_single_element_tuple_like(attr));
     }
 
     // Parser has no attribute (pass unused)
