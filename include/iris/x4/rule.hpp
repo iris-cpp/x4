@@ -625,8 +625,8 @@ using x4::rule;
 // can't drop (legit) use cases of `IRIS_INSTANTIATE`, so
 // this is a pure technical limitation. If you need `constexpr`
 // support in your rule, use `IRIS_X4_DEFINE_CONSTEXPR`.
-#define IRIS_X4_DEFINE(rule_type) IRIS_X4_DEFINE_(,, rule_type)
-#define IRIS_X4_DEFINE_CONSTEXPR(rule_type) IRIS_X4_DEFINE_(, constexpr, rule_type)
+#define IRIS_X4_DEFINE(rule_name) IRIS_X4_DEFINE_(,, rule_name)
+#define IRIS_X4_DEFINE_CONSTEXPR(rule_name) IRIS_X4_DEFINE_(, constexpr, rule_name)
 
 // -------------------------------------------------------------
 
