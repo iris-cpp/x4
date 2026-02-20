@@ -6,37 +6,46 @@
 #include <iris/alloy/tuple.hpp>
 
 struct Ident {
-  std::string value;
+    std::string value;
 };
 
 struct Var {
-  Ident ident;
+    Ident ident;
+};
+
+struct Decl {
+    Var var;
 };
 
 IRIS_ALLOY_ADAPT_STRUCT(Ident, value)
 IRIS_ALLOY_ADAPT_STRUCT(Var, ident)
+IRIS_ALLOY_ADAPT_STRUCT(Decl, var);
 
 using IdentRule = x4::rule<struct ident_tag, Ident>;
 using VarRule = x4::rule<struct var_tag, Var>;
+using DeclRule = x4::rule<struct decl_tag, Decl>;
 
 constexpr IdentRule ident;
 constexpr VarRule var;
+constexpr DeclRule decl;
 
 IRIS_X4_DECLARE(IdentRule);
 IRIS_X4_DECLARE(VarRule);
+IRIS_X4_DECLARE(DeclRule)
 
 constexpr auto ident_def = +x4::char_;
 constexpr auto var_def = x4::lit('$') >> ident;
+constexpr auto decl_def = x4::lit("let") >> var;
 
 IRIS_X4_DEFINE(ident);
 IRIS_X4_DEFINE(var);
+IRIS_X4_DEFINE(decl);
 
 TEST_CASE("single element tuple like")
 {
-  {
-    constexpr auto parser = x4::lit('$') >> ident;
-    Var attr;
-    CHECK(parse("$foo", parser, attr));
-    CHECK(attr.ident.value == "foo");
-  }
+    {
+        Decl attr;
+        CHECK(parse("let$foo", decl, attr));
+        CHECK(attr.var.ident.value == "foo");
+    }
 }
