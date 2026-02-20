@@ -34,8 +34,8 @@ IRIS_X4_DECLARE(VarRule);
 IRIS_X4_DECLARE(DeclRule)
 
 constexpr auto ident_def = +x4::char_;
-constexpr auto var_def = x4::lit('$') >> ident;
-constexpr auto decl_def = x4::lit("let") >> var;
+constexpr auto var_def = x4::lexeme[x4::lit('$') >> ident];
+constexpr auto decl_def = x4::skip(x4::space)[x4::lit("let") >> var];
 
 IRIS_X4_DEFINE(ident);
 IRIS_X4_DEFINE(var);
@@ -45,7 +45,7 @@ TEST_CASE("single element tuple like")
 {
     {
         Decl attr;
-        CHECK(parse("let$foo", decl, attr));
+        CHECK(parse("let $foo", decl, attr));
         CHECK(attr.var.ident.value == "foo");
     }
 }
