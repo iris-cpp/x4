@@ -33,7 +33,7 @@ IRIS_X4_DECLARE(IdentRule);
 IRIS_X4_DECLARE(VarRule);
 IRIS_X4_DECLARE(DeclRule)
 
-constexpr auto ident_def = +x4::char_;
+constexpr auto ident_def = (+x4::char_ >> x4::eps);
 constexpr auto var_def = x4::lexeme[x4::lit('$') >> ident];
 constexpr auto decl_def = x4::skip(x4::space)[x4::lit("let") >> var];
 
