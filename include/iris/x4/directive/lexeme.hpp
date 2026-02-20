@@ -14,6 +14,7 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 
+#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -42,6 +43,11 @@ struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
             x4::remove_first_context<contexts::skipper>(ctx), // no skipper
             attr
         );
+    }
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        return std::format("lexeme[{}]", get_info<Subject>{}(this->subject));
     }
 };
 
