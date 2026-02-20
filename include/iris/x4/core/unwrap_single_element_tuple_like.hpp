@@ -3,7 +3,7 @@
 
 #include <iris/x4/traits/tuple_traits.hpp>
 
-#include <iris/alloy/traits.hpp>
+#include <utility>
 
 namespace iris::x4 {
 
@@ -15,11 +15,11 @@ constexpr T&& unwrap_single_element_tuple_like(T&& t) noexcept
 
 template<class T>
     requires traits::is_single_element_tuple_like_v<std::remove_cvref_t<T>>
-constexpr auto&& unwrap_single_element_tuple_like(T&& t) noexcept(noexcept(alloy::get<0>(std::forward<T>(t))))
+constexpr auto&& unwrap_single_element_tuple_like(T&& t)  // TODO: add noexcept
 {
-    return x4::unwrap_single_element_tuple_like(alloy::get<0>(std::forward<T>(t)));
+    return alloy::get<0>(std::forward<T>(t));
 }
 
-}  // iris::x4
+}
 
 #endif
