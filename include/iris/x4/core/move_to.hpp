@@ -251,8 +251,7 @@ template<traits::NonUnusedAttr Source, traits::NonUnusedAttr Dest>
     requires traits::is_single_element_tuple_like_v<Dest>
 constexpr void
 move_to(Source&& src, Dest& dest)
-    // TODO: investigate wierd compilation error due to noexcept specification
-    // noexcept(noexcept(x4::move_to(std::forward<Source>(src), alloy::get<0>(dest))))
+    noexcept(noexcept(x4::move_to(std::forward<Source>(src), alloy::get<0>(dest))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
