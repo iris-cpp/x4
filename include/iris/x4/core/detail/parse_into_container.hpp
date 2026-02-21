@@ -14,6 +14,7 @@
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/container_appender.hpp>
+#include <iris/x4/core/unwrap_single_element_tuple_like.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/substitution.hpp>
@@ -87,11 +88,10 @@ struct parse_into_container_base_impl
 
     // ------------------------------------------------------
 
-    // Parser has attribute && it is NOT tuple-like
+    // Parser has attribute
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
-            has_attribute_v<Parser> &&
-            (!alloy::is_tuple_like_v<Attr>)
+            has_attribute_v<Parser>
     [[nodiscard]] static constexpr bool
     call(
         Parser const& parser, It& first, Se const& last,
@@ -99,23 +99,7 @@ struct parse_into_container_base_impl
     )
     {
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, attr);
-    }
-
-    // Parser has attribute && it is tuple-like
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires
-            has_attribute_v<Parser> &&
-            alloy::is_tuple_like_v<Attr>
-    [[nodiscard]] static constexpr bool
-    call(
-        Parser const& parser, It& first, Se const& last,
-        Context const& ctx, Attr& attr
-    ) noexcept(noexcept(parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, alloy::get<0>(attr))))
-    {
-        static_assert(traits::has_size_v<Attr, 1>, "Expecting a single element tuple-like");
-        // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, alloy::get<0>(attr));
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, x4::unwrap_single_element_tuple_like(attr));
     }
 
     // Parser has no attribute (pass unused)
@@ -212,15 +196,18 @@ parse_into_container(
         "`unused_type` should not be passed to `parse_into_container`. Use `x4::assume_container(attr)`"
     );
 
-    if constexpr (traits::is_variant_v<Attr>) {
+    if constexpr (traits::is_variant_v<traits::unwrap_single_element_tuple_like_t<Attr>>) {
         // e.g. `char` when the caller is `+char_`
         using attribute_type = parser_traits<Parser>::attribute_type;
      
         // e.g. `std::string` when the attribute_type is `char`
-        using substitute_type = traits::variant_find_substitute_t<Attr, traits::build_container_t<attribute_type>>;
+        using substitute_type = traits::variant_find_substitute_t<
+            traits::unwrap_single_element_tuple_like_t<Attr>,
+            traits::build_container_t<attribute_type>
+        >;
 
         // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
-        auto& variant_alt = attr.template emplace<substitute_type>();
+        auto& variant_alt = x4::unwrap_single_element_tuple_like(attr).template emplace<substitute_type>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
     } else {
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
