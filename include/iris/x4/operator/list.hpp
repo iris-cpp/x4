@@ -19,6 +19,7 @@
 
 #include <iris/x4/traits/container_traits.hpp>
 
+#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -62,6 +63,15 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
         } else {
             return true;
         }
+    }
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        return std::format(
+            "({} % {})",
+            get_info<Left>{}(this->left),
+            get_info<Right>{}(this->right)
+        );
     }
 };
 

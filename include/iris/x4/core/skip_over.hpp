@@ -42,6 +42,25 @@ enum struct builtin_skipper_kind : char
     space,
 };
 
+namespace detail {
+
+template<builtin_skipper_kind Kind>
+struct builtin_skipper_traits;
+
+template<>
+struct builtin_skipper_traits<builtin_skipper_kind::blank>
+{
+    static constexpr char const* name = "blank";
+};
+
+template<>
+struct builtin_skipper_traits<builtin_skipper_kind::space>
+{
+    static constexpr char const* name = "space";
+};
+
+} // detail
+
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     requires X4Subject<get_context_plain_t<contexts::skipper, Context>>
 constexpr void skip_over(It& first, Se const& last, Context const& ctx)
