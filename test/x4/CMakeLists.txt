@@ -80,6 +80,7 @@ x4_define_tests(
     seek
     sequence
     skip
+    substitution
     symbols1
     symbols2
     symbols3
