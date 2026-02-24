@@ -31,7 +31,7 @@ namespace iris::x4 {
 template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 {
-    using attribute_type = traits::attribute_of_binary<alloy::tuple, x4::sequence, Left, Right>::type;
+    using attribute_type = traits::attribute_of_binary<alloy::tuple, Left, Right>::type;
 
     static constexpr std::size_t sequence_size =
         parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
