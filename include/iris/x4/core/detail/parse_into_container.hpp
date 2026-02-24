@@ -99,7 +99,7 @@ struct parse_into_container_base_impl
     )
     {
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, attr);
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, x4::unwrap_single_element_tuple_like(attr));
     }
 
     // Parser has no attribute (pass unused)
@@ -133,7 +133,7 @@ struct parse_into_container_impl<Parser>
                 It, Se, Context,
                 typename parser_traits<Parser>::attribute_type
             >::actual_type,
-            traits::container_value_t<Attr>
+            traits::container_value_t<traits::unwrap_single_element_tuple_like_t<Attr>>
         >>
     >;
 
@@ -210,7 +210,7 @@ parse_into_container(
         auto& variant_alt = x4::unwrap_single_element_tuple_like(attr).template emplace<substitute_type>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
     } else {
-        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, x4::unwrap_single_element_tuple_like(attr));
+        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
     }
 }
 
