@@ -28,6 +28,9 @@ struct is_substitute;
 template<class T, X4Attribute Attr>
 constexpr bool is_substitute_v = is_substitute<T, Attr>::value;
 
+template<class T>
+struct is_variant;
+
 template<class Variant, X4Attribute Attr>
 struct variant_has_substitute;
 
@@ -70,6 +73,12 @@ template<class T, X4Attribute Attr>
         is_container_v<std::remove_const_t<Attr>>
 struct is_substitute_impl<T, Attr>
     : value_type_is_substitute<T, Attr>
+{};
+
+template<class T, X4Attribute Attr>
+    requires is_variant<T>::value
+struct is_substitute_impl<T, Attr>
+    : variant_has_substitute<T, Attr>
 {};
 
 } // detail

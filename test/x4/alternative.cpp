@@ -337,4 +337,9 @@ TEST_CASE("alternative")
         Bar x;
         CHECK(parse("abaabb", +('a' >> attr(Foo{}) | 'b' >> attr(int{})), x));
     }
+
+    {
+        STATIC_CHECK( x4::traits::is_substitute_v<iris::rvariant<int, double>, int>);
+        STATIC_CHECK(!x4::traits::is_substitute_v<int, iris::rvariant<int, double>>);
+    }
 }
