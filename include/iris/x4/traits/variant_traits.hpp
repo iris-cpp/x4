@@ -47,7 +47,7 @@ template<class Attr, class First, class... Rest>
 struct variant_find_substitute_impl<Attr, First, Rest...>
 {
     using type = std::conditional_t<
-        is_substitute_v<Attr, iris::unwrap_recursive_type<First>>,
+        is_substitute_v<iris::unwrap_recursive_type<First>, Attr>,
 
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter
