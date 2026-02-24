@@ -99,7 +99,7 @@ struct parse_into_container_base_impl
     )
     {
         // TODO: reduce call stack while keeping maintainability
-        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, x4::unwrap_single_element_tuple_like(attr));
+        return parse_into_container_base_impl::call_synthesize(parser, first, last, ctx, attr);
     }
 
     // Parser has no attribute (pass unused)
@@ -189,7 +189,7 @@ template<
 parse_into_container(
     Parser const& parser, It& first, Se const& last,
     Context const& ctx, Attr& attr
-) noexcept(noexcept(parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr)))
+)  // TODO: add noexcept
 {
     static_assert(
         !std::same_as<Attr, unused_type>,
@@ -210,7 +210,7 @@ parse_into_container(
         auto& variant_alt = x4::unwrap_single_element_tuple_like(attr).template emplace<substitute_type>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
     } else {
-        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
+        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, x4::unwrap_single_element_tuple_like(attr));
     }
 }
 

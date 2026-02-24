@@ -453,7 +453,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         return true;
     }
     
-    // TODO: 良いコメントを書く
+    // rule's attribute type is the same as the exposed one
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&

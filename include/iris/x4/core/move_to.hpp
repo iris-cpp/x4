@@ -128,7 +128,7 @@ move_to(Source&& src, Dest& dest)
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attr> Dest>
     requires
-        traits::is_same_size_tuple_like_v<Dest, Source> &&
+        traits::is_same_size_tuple_like_v<Dest, std::remove_cvref_t<Source>> &&
         (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
@@ -143,7 +143,7 @@ move_to(Source&& src, Dest& dest)
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
     requires
-//      traits::variant_has_substitute_v<Dest, Source> &&  // TODO: investigate compilation error due to existance of this constraint
+        traits::variant_has_substitute_v<Dest, std::remove_cvref_t<Source>> &&
         (!traits::is_single_element_tuple_like_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)

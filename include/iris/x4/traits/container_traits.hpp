@@ -86,12 +86,6 @@ struct container_value
 template<class Container>
 using container_value_t = typename container_value<Container>::type;
 
-template<class T>
-    requires traits::is_single_element_tuple_like_v<T>
-struct container_value<T>
-    : container_value<traits::unwrap_single_element_tuple_like_t<T>>
-{};
-
 template<class Container>
 struct container_value<Container const> : container_value<Container> {};
 
