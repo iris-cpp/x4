@@ -141,10 +141,40 @@ move_to(Source&& src, Dest& dest)
     alloy::tuple_assign(std::forward<Source>(src), dest);
 }
 
+// Source is single element tuple-like and Dest is variant which *can* holds Source directly
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
     requires
-        traits::variant_has_substitute_v<Dest, std::remove_cvref_t<Source>> &&
-        (!traits::is_single_element_tuple_like_v<Dest>)
+        (!traits::is_single_element_tuple_like_v<Dest>) &&
+        traits::is_single_element_tuple_like_v<std::remove_cvref_t<Source>> &&
+        traits::variant_has_substitute_v<Dest, std::remove_cvref_t<Source>>
+constexpr void
+move_to(Source&& src, Dest& dest)
+    noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
+{
+    static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
+    static_assert(std::is_assignable_v<Dest&, Source>);
+    dest = std::forward<Source>(src);
+}
+
+// Source is single element tuple-like and Dest is variant which *can not* holds Source directly
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
+    requires
+        (!traits::is_single_element_tuple_like_v<Dest>) &&
+        traits::is_single_element_tuple_like_v<std::remove_cvref_t<Source>> &&
+        (!traits::variant_has_substitute_v<Dest, std::remove_cvref_t<Source>>)
+constexpr void
+move_to(Source&& src, Dest& dest)  // TODO: add noexcept
+{
+    static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
+
+    dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
+}
+
+// Source is *NOT* single element tuple-like and Dest is variant
+template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
+    requires
+        (!traits::is_single_element_tuple_like_v<Dest>) &&
+        (!traits::is_single_element_tuple_like_v<std::remove_cvref_t<Source>>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -250,8 +280,7 @@ move_to(It first, Se last, Dest& dest)
 template<traits::NonUnusedAttr Source, traits::NonUnusedAttr Dest>
     requires traits::is_single_element_tuple_like_v<Dest>
 constexpr void
-move_to(Source&& src, Dest& dest)
-    noexcept(noexcept(x4::move_to(std::forward<Source>(src), alloy::get<0>(dest))))
+move_to(Source&& src, Dest& dest)  // TODO: add noexcept
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
