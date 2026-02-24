@@ -14,7 +14,9 @@
 
 #include <type_traits>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
+
+namespace traits {
 
 template<class A, class B>
 struct is_same_size_tuple_like_impl {};
@@ -76,6 +78,21 @@ struct unwrap_single_element_tuple_like<T>
     using type = alloy::tuple_element_t<0, T>;
 };
 
-} // iris::x4::traits
+} // triats
+
+template<class T>
+constexpr T&& unwrap_single_element_tuple_like(T&& t) noexcept
+{
+    return std::forward<T>(t);
+}
+
+template<class T>
+    requires traits::is_single_element_tuple_like_v<std::remove_cvref_t<T>>
+constexpr auto&& unwrap_single_element_tuple_like(T&& t)  // TODO: add noexcept
+{
+    return alloy::get<0>(std::forward<T>(t));
+}
+
+} // iris::x4
 
 #endif
