@@ -115,7 +115,7 @@ struct variant_has_substitute<unused_type const, Attr>
 template<X4Attribute Attr, class... Ts>
     requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
 struct variant_has_substitute<iris::rvariant<Ts...>, Attr>
-    : std::disjunction<is_substitute<Attr, Ts>...>
+    : std::disjunction<is_substitute<Ts, Attr>...>
 {};
 
 } // iris::x4::traits
