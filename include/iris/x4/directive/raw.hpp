@@ -37,7 +37,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 
     static constexpr bool handles_container = true;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         // never noexcept; construction of `std::ranges::subrange` is never noexcept
@@ -53,9 +53,9 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
         return true;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, unused_type) const
+    parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
     {
         return this->subject.parse(first, last, ctx, unused);
