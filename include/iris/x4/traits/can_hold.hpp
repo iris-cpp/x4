@@ -52,45 +52,45 @@ struct value_type_can_hold
     : can_hold<container_value_t<T>, container_value_t<U>>
 {};
 
-template<class T, class U>
-struct can_hold_impl : std::false_type {};
-
-template<class T, class U>
-    requires std::conjunction_v<
-        alloy::is_tuple_like<T>,
-        alloy::is_tuple_like<U>
-    >
-struct can_hold_impl<T, U>
-    : is_all_substitute_for_tuple<T, U>
-{};
-
-template<class T, class U>
-    requires
-        is_container_v<T> &&
-        is_container_v<U>
-struct can_hold_impl<T, U>
-    : value_type_can_hold<T, U>
-{};
-
-template<class T, class U>
-    requires is_variant<T>::value
-struct can_hold_impl<T, U>
-    : std::is_assignable<T&, U>
-{};
-
 } // detail
 
 template<class T, class U>
 struct can_hold
-    : std::disjunction<
-        std::is_same<T, U>,
-        detail::can_hold_impl<T, U>
-    >
+    : std::is_same<T, U>
 {};
 
-template<class T, X4UnusedAttribute U>
+template<class T, class U>
+    requires
+        alloy::is_tuple_like_v<T> &&
+        alloy::is_tuple_like_v<U>
+struct can_hold<T, U>
+    : detail::is_all_substitute_for_tuple<T, U>
+{};
+
+template<class T, class U>
+    requires
+        is_container_v<std::remove_const<T>> &&
+        is_container_v<std::remove_const<U>>
+struct can_hold<T, U>
+    : detail::value_type_can_hold<T, U>
+{};
+
+template<class T, class U>
+    requires is_variant<T>::value && X4UnusedAttribute<U>
 struct can_hold<T, U>
     : std::false_type
+{};
+
+template<class T, class U>
+    requires (!is_variant<T>::value) && X4UnusedAttribute<U>
+struct can_hold<T, U>
+    : std::false_type
+{};
+
+template<class T, class U>
+    requires is_variant<T>::value && (!X4UnusedAttribute<U>)
+struct can_hold<T, U>
+    : std::is_assignable<T&, U>
 {};
 
 template<class T, class U>
