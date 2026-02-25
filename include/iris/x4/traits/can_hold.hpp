@@ -10,9 +10,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
+
+#include <iris/x4/core/attribute.hpp>
 
 #include <iris/alloy/traits.hpp>
 
@@ -21,18 +22,11 @@
 
 namespace iris::x4::traits {
 
-// Find out if T can be a (strong) substitute for Attribute
-template<class T, class Attr>
+template<class T, class U>
 struct can_hold;
 
-template<class T, class Attr>
-constexpr bool can_hold_v = can_hold<T, Attr>::value;
-
-template<class T>
-struct is_variant;
-
-template<class Variant, class Attr>
-struct variant_has_substitute;
+template<class T, class U>
+constexpr bool can_hold_v = can_hold<T, U>::value;
 
 namespace detail {
 
@@ -50,55 +44,50 @@ template<class TTuple, class UTuple>
     requires is_same_size_sequence_v<TTuple, UTuple>
 struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
 
-template<class T, class Attr>
+template<class T, class U>
 struct value_type_can_hold
-    : can_hold<container_value_t<T>, container_value_t<Attr>>
+    : can_hold<container_value_t<T>, container_value_t<U>>
 {};
 
-template<class T, class Attr>
+template<class T, class U>
 struct can_hold_impl : std::false_type {};
 
-template<class T, class Attr>
+template<class T, class U>
     requires std::conjunction_v<
         alloy::is_tuple_like<T>,
-        alloy::is_tuple_like<Attr>
+        alloy::is_tuple_like<U>
     >
-struct can_hold_impl<T, Attr>
-    : is_all_substitute_for_tuple<T, Attr>
+struct can_hold_impl<T, U>
+    : is_all_substitute_for_tuple<T, U>
 {};
 
-template<class T, class Attr>
+template<class T, class U>
     requires
         is_container_v<T> &&
-        is_container_v<Attr>
-struct can_hold_impl<T, Attr>
-    : value_type_can_hold<T, Attr>
-{};
-
-template<class T, class Attr>
-    requires is_variant<T>::value
-struct can_hold_impl<T, Attr>
-    : variant_has_substitute<T, Attr>
+        is_container_v<U>
+struct can_hold_impl<T, U>
+    : value_type_can_hold<T, U>
 {};
 
 } // detail
 
-template<class T, class Attr>
+template<class T, class U>
 struct can_hold
     : std::disjunction<
-          std::is_same<T, Attr>,
-          detail::can_hold_impl<T, Attr>
+        std::is_same<T, U>,
+        std::is_assignable<T&, U>,
+        detail::can_hold_impl<T, U>
     >
 {};
 
-template<class T, X4UnusedAttribute Attr>
-struct can_hold<T, Attr>
+template<class T, X4UnusedAttribute U>
+struct can_hold<T, U>
     : std::false_type
 {};
 
-template<class T, X4Attribute Attr>
-struct can_hold<std::optional<T>, std::optional<Attr>>
-    : can_hold<T, Attr>
+template<class T, class U>
+struct can_hold<std::optional<T>, std::optional<U>>
+    : can_hold<T, U>
 {};
 
 } // iris::x4::traits

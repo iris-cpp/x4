@@ -231,7 +231,7 @@ TEST_CASE("alternative")
         using attribute_type = x4::parser_traits<Parser>::attribute_type;
         STATIC_CHECK(std::same_as<attribute_type, std::vector<bool>>);
 
-        using substitute_type = x4::traits::variant_find_substitute_t<Attr, attribute_type>;
+        using substitute_type = x4::traits::variant_find_holdable_type_t<Attr, attribute_type>;
         STATIC_CHECK(std::same_as<substitute_type, std::vector<bool>>);
 
         Attr var;
@@ -245,7 +245,7 @@ TEST_CASE("alternative")
         using attribute_type = x4::parser_traits<Parser>::attribute_type;
         STATIC_CHECK(std::same_as<attribute_type, std::string>);
 
-        using substitute_type = x4::traits::variant_find_substitute_t<Attr, attribute_type>;
+        using substitute_type = x4::traits::variant_find_holdable_type_t<Attr, attribute_type>;
         STATIC_CHECK(std::same_as<substitute_type, std::string>);
 
         Attr var;

@@ -140,11 +140,12 @@ template<class Parser>
     requires Parser::handles_container
 struct parse_into_container_impl<Parser>
 {
+    // TODO: decompose pass_attribute_as_is to make more logic clear
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     static constexpr bool pass_attibute_as_is = std::disjunction_v<
         parser_accepts_container<Parser, Attr>,
 
-        std::negation<traits::can_hold<
+        std::negation<std::is_same<
             typename traits::pseudo_attribute<
                 It, Se, Context,
                 typename parser_traits<Parser>::attribute_type
@@ -217,7 +218,7 @@ parse_into_container(
         using attribute_type = parser_traits<Parser>::attribute_type;
      
         // e.g. `std::string` when the attribute_type is `char`
-        using substitute_type = traits::variant_find_substitute_t<Attr, traits::build_container_t<attribute_type>>;
+        using substitute_type = traits::variant_find_holdable_type_t<Attr, traits::build_container_t<attribute_type>>;
 
         // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
         auto& variant_alt = attr.template emplace<substitute_type>();

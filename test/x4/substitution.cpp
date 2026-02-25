@@ -13,9 +13,3 @@ TEST_CASE("can_hold")
     STATIC_CHECK( x4::traits::can_hold_v<iris::rvariant<int, double>, int>);
     STATIC_CHECK(!x4::traits::can_hold_v<int, iris::rvariant<int, double>>);
 }
-
-TEST_CASE("variant_has_substitute")
-{
-    STATIC_CHECK( x4::traits::variant_has_substitute_v<iris::rvariant<int, double>, int>);
-    STATIC_CHECK(!x4::traits::variant_has_substitute_v<iris::rvariant<int, double>, char>);
-}
