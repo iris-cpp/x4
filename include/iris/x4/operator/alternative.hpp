@@ -13,6 +13,7 @@
 
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/detail/parse_alternative.hpp>
 
@@ -31,8 +32,49 @@ namespace iris::x4 {
 template<class Left, class Right>
 struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
 {
-    using attribute_type = traits::attribute_of_binary<iris::rvariant, Left, Right>::type;
+private:
+    static constexpr bool is_both_same_attribute = std::is_same_v<
+        typename parser_traits<Left>::attribute_type,
+        typename parser_traits<Right>::attribute_type
+    >;
 
+public:
+    // Canonicalize `rvariant<X, X>` to `X`
+    using attribute_type = std::conditional_t<
+        is_both_same_attribute,
+        std::type_identity<typename parser_traits<Left>::attribute_type>,
+        traits::attribute_of_binary<iris::rvariant, Left, Right>
+    >::type;
+
+    // If canonicalized, proxy the underlying `sequence_size`. In other words:
+    //
+    // Let `X` be some tuple `tuple<int, int, int>`, and let `Y` be some tuple `tuple<int, int>`.
+    // Let `XP` be the parser that yields the attribute type `X`. Define `YP` likewise.
+    //
+    // `alternative<XP, YP>` yields attribute type `rvariant<X, Y>`, and has `sequence_size` of 1.
+    // `alternative<XP, XP>` yields attribute type `X`, and has `sequence_size` of 3.
+    //
+    // Without canonicalization, the latter case would have attribute type `rvariant<X, X>`
+    // and `sequence_size` of 1. This will break automatic decomposition of tuple-like attribute.
+    // See `attribute.cpp` for example.
+    //
+    static constexpr std::size_t sequence_size =
+        is_both_same_attribute && parser_traits<Left>::sequence_size == parser_traits<Right>::sequence_size ?
+        parser_traits<Left>::sequence_size : // proxy value
+        static_cast<std::size_t>(!X4UnusedAttribute<attribute_type>); // unused = 0, otherwise 1
+
+private:
+    template<class Attr>
+    using temp_attr_t = std::conditional_t<
+        is_both_same_attribute,
+        // Always the plain (non-lvalue) type
+        attribute_type,
+        // in case of tuple-like attribute, this might be a decomposed tuple that contains
+        // lvalue reference(s), which cannot be default-constructed
+        Attr
+    >;
+
+public:
     using binary_parser<Left, Right, alternative>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
@@ -65,25 +107,25 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
         noexcept(
             noexcept(detail::parse_alternative(this->left, first, last, ctx, attr)) &&
             noexcept(detail::parse_alternative(this->right, first, last, ctx, attr)) &&
-            std::is_nothrow_default_constructible_v<Attr> &&
-            noexcept(x4::move_to(std::declval<Attr>(), attr))
+            std::is_nothrow_default_constructible_v<temp_attr_t<Attr>> &&
+            noexcept(x4::move_to(std::declval<temp_attr_t<Attr>>(), attr))
         )
     {
         static_assert(
-            std::default_initializable<Attr>,
+            std::default_initializable<temp_attr_t<Attr>>,
             "Attribute needs to be default-initializable to support rollback on failed parse attempt."
         );
 
-        if (Attr attr_temp; detail::parse_alternative(this->left, first, last, ctx, attr_temp)) {
-            x4::move_to(std::move(attr_temp), attr);
+        if (temp_attr_t<Attr> temp_attr; detail::parse_alternative(this->left, first, last, ctx, temp_attr)) {
+            x4::move_to(std::move(temp_attr), attr);
             return true;
         }
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) return false;
         }
 
-        if (Attr attr_temp; detail::parse_alternative(this->right, first, last, ctx, attr_temp)) {
-            x4::move_to(std::move(attr_temp), attr);
+        if (temp_attr_t<Attr> temp_attr; detail::parse_alternative(this->right, first, last, ctx, temp_attr)) {
+            x4::move_to(std::move(temp_attr), attr);
             return true;
         }
         return false; // `attr` is untouched
@@ -132,20 +174,20 @@ struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
         // Non-empty container
         // Since the attribute is a container, we can reuse the buffer when the `left` fails
         //
-        unwrap_container_appender_t<ContainerAttr> attr_temp;
+        unwrap_container_appender_t<ContainerAttr> temp_attr;
 
-        if (detail::parse_alternative(this->left, first, last, ctx, attr_temp)) {
-            x4::move_to(std::move(attr_temp), attr);
+        if (detail::parse_alternative(this->left, first, last, ctx, temp_attr)) {
+            x4::move_to(std::move(temp_attr), attr);
             return true;
         }
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) return false;
         }
-        traits::clear(attr_temp); // Reuse the buffer
+        traits::clear(temp_attr); // Reuse the buffer
 
-        if (detail::parse_alternative(this->right, first, last, ctx, attr_temp)) {
-            x4::move_to(std::move(attr_temp), attr);
+        if (detail::parse_alternative(this->right, first, last, ctx, temp_attr)) {
+            x4::move_to(std::move(temp_attr), attr);
             return true;
         }
         return false; // `attr` is untouched
