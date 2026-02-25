@@ -2,16 +2,16 @@
 
 #include <iris/x4/core/move_to.hpp>
 
-#include <iris/x4/traits/substitution.hpp>
+#include <iris/x4/traits/can_hold.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
 #include <iris/rvariant.hpp>
 
-TEST_CASE("is_substitute")
+TEST_CASE("can_hold")
 {
     // iris::rvariant<int, double> is "broader" than int
-    STATIC_CHECK( x4::traits::is_substitute_v<iris::rvariant<int, double>, int>);
-    STATIC_CHECK(!x4::traits::is_substitute_v<int, iris::rvariant<int, double>>);
+    STATIC_CHECK( x4::traits::can_hold_v<iris::rvariant<int, double>, int>);
+    STATIC_CHECK(!x4::traits::can_hold_v<int, iris::rvariant<int, double>>);
 }
 
 TEST_CASE("variant_has_substitute")

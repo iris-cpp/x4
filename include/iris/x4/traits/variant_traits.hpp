@@ -12,7 +12,7 @@
 
 #include <iris/x4/core/unused.hpp>
 
-#include <iris/x4/traits/substitution.hpp>
+#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/rvariant/variant_helper.hpp>
 
@@ -47,7 +47,7 @@ template<class Attr, class First, class... Rest>
 struct variant_find_substitute_impl<Attr, First, Rest...>
 {
     using type = std::conditional_t<
-        is_substitute_v<iris::unwrap_recursive_type<First>, Attr>,
+        can_hold_v<iris::unwrap_recursive_type<First>, Attr>,
 
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter
@@ -113,7 +113,7 @@ struct variant_has_substitute<unused_type const, T>
 template<class... Ts, class U>
     requires (!std::same_as<iris::rvariant<Ts...>, U>)
 struct variant_has_substitute<iris::rvariant<Ts...>, U>
-    : std::disjunction<is_substitute<Ts, U>...>
+    : std::disjunction<can_hold<Ts, U>...>
 {};
 
 } // iris::x4::traits

@@ -18,7 +18,7 @@
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/substitution.hpp>
+#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/utility.hpp>
@@ -282,7 +282,7 @@ template<class Left, class Right>
 struct parse_into_container_impl<sequence<Left, Right>>
 {
     template<X4Attribute Attr>
-    static constexpr bool is_container_substitute = traits::is_substitute_v<
+    static constexpr bool is_container_substitute = traits::can_hold_v<
         typename sequence<Left, Right>::attribute_type,
         traits::container_value_t<Attr>
     >;

@@ -16,7 +16,7 @@
 #include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/substitution.hpp>
+#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
@@ -28,7 +28,7 @@ namespace iris::x4::detail {
 
 template<class Parser, class Container>
 struct parser_accepts_container
-    : traits::is_substitute<typename parser_traits<Parser>::attribute_type, Container>
+    : traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>
 {};
 
 template<class Parser, class Container>
@@ -144,7 +144,7 @@ struct parse_into_container_impl<Parser>
     static constexpr bool pass_attibute_as_is = std::disjunction_v<
         parser_accepts_container<Parser, Attr>,
 
-        std::negation<traits::is_substitute< // parser attribute is substitute for container value?
+        std::negation<traits::can_hold<
             typename traits::pseudo_attribute<
                 It, Se, Context,
                 typename parser_traits<Parser>::attribute_type

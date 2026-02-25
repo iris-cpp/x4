@@ -48,25 +48,25 @@ namespace iris::x4::traits {
 using namespace check_substitute;
 
 template<class T, X4Attribute U>
-struct is_substitute<foo<T>, foo<U>>
-    : is_substitute<T, U>
+struct can_hold<foo<T>, foo<U>>
+    : can_hold<T, U>
 {};
 
 template<class T, X4Attribute U>
     requires is_bar<T>::value && is_bar<U>::value
-struct is_substitute<T, U>
-    : is_substitute<typename T::type, typename U::type>
+struct can_hold<T, U>
+    : can_hold<typename T::type, typename U::type>
 {};
 
 } // iris::x4::traits
 
 namespace check_substitute {
 
-using x4::traits::is_substitute_v;
-static_assert( is_substitute_v<foo<int>, foo<int>>);
-static_assert(!is_substitute_v<foo<int>, foo<long>>);
-static_assert( is_substitute_v<bar<int>, bar<int>>);
-static_assert(!is_substitute_v<bar<int>, bar<long>>);
+using x4::traits::can_hold_v;
+static_assert( can_hold_v<foo<int>, foo<int>>);
+static_assert(!can_hold_v<foo<int>, foo<long>>);
+static_assert( can_hold_v<bar<int>, bar<int>>);
+static_assert(!can_hold_v<bar<int>, bar<long>>);
 
 } // check_substitute
 

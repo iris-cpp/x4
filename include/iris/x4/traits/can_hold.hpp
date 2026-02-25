@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TRAITS_SUBSTITUTION_HPP
-#define IRIS_X4_TRAITS_SUBSTITUTION_HPP
+#ifndef IRIS_X4_TRAITS_CAN_HOLD_HPP
+#define IRIS_X4_TRAITS_CAN_HOLD_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -23,10 +23,10 @@ namespace iris::x4::traits {
 
 // Find out if T can be a (strong) substitute for Attribute
 template<class T, class Attr>
-struct is_substitute;
+struct can_hold;
 
 template<class T, class Attr>
-constexpr bool is_substitute_v = is_substitute<T, Attr>::value;
+constexpr bool can_hold_v = can_hold<T, Attr>::value;
 
 template<class T>
 struct is_variant;
@@ -41,7 +41,7 @@ struct is_all_substitute_for_tuple_impl {};
 
 template<class TTuple, class UTuple, std::size_t... Is>
 struct is_all_substitute_for_tuple_impl<TTuple, UTuple, std::index_sequence<Is...>>
-    : std::conjunction<is_substitute<alloy::tuple_element_t<Is, TTuple>, alloy::tuple_element_t<Is, UTuple>>...> {};
+    : std::conjunction<can_hold<alloy::tuple_element_t<Is, TTuple>, alloy::tuple_element_t<Is, UTuple>>...> {};
 
 template<class TTuple, class UTuple>
 struct is_all_substitute_for_tuple : std::false_type {};
@@ -51,19 +51,19 @@ template<class TTuple, class UTuple>
 struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
 
 template<class T, class Attr>
-struct value_type_is_substitute
-    : is_substitute<container_value_t<T>, container_value_t<Attr>>
+struct value_type_can_hold
+    : can_hold<container_value_t<T>, container_value_t<Attr>>
 {};
 
 template<class T, class Attr>
-struct is_substitute_impl : std::false_type {};
+struct can_hold_impl : std::false_type {};
 
 template<class T, class Attr>
     requires std::conjunction_v<
         alloy::is_tuple_like<T>,
         alloy::is_tuple_like<Attr>
     >
-struct is_substitute_impl<T, Attr>
+struct can_hold_impl<T, Attr>
     : is_all_substitute_for_tuple<T, Attr>
 {};
 
@@ -71,34 +71,34 @@ template<class T, class Attr>
     requires
         is_container_v<T> &&
         is_container_v<Attr>
-struct is_substitute_impl<T, Attr>
-    : value_type_is_substitute<T, Attr>
+struct can_hold_impl<T, Attr>
+    : value_type_can_hold<T, Attr>
 {};
 
 template<class T, class Attr>
     requires is_variant<T>::value
-struct is_substitute_impl<T, Attr>
+struct can_hold_impl<T, Attr>
     : variant_has_substitute<T, Attr>
 {};
 
 } // detail
 
 template<class T, class Attr>
-struct is_substitute
+struct can_hold
     : std::disjunction<
           std::is_same<T, Attr>,
-          detail::is_substitute_impl<T, Attr>
+          detail::can_hold_impl<T, Attr>
     >
 {};
 
 template<class T, X4UnusedAttribute Attr>
-struct is_substitute<T, Attr>
+struct can_hold<T, Attr>
     : std::false_type
 {};
 
 template<class T, X4Attribute Attr>
-struct is_substitute<std::optional<T>, std::optional<Attr>>
-    : is_substitute<T, Attr>
+struct can_hold<std::optional<T>, std::optional<Attr>>
+    : can_hold<T, Attr>
 {};
 
 } // iris::x4::traits
