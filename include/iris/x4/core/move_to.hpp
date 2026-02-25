@@ -160,6 +160,8 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
+    // e.g. Dest is `iris::rvariant<int>` and Source is `int`
+    // e.g. Dest is `iris::rvariant<alloy::tuple<int>>` and Source is `alloy::tuple<int>`
     dest = std::forward<Source>(src);
 }
 
@@ -176,6 +178,9 @@ move_to(Source&& src, Dest& dest)
         "Error! The destination variant (Dest) cannot hold the source type (Source)"
     );
 
+    // forward_like is *required*, since when Source is `alloy::tuple<int&>` `alloy::get<0>(std::forward<Source>(src))` returns `int&` whereas we want `int&&` instead
+
+    // e.g. Dest is `iris::rvariant<int>` and Source is `alloy::tuple<int>`
     dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
 }
 
