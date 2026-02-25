@@ -32,6 +32,8 @@
 
 #include <string>
 #include <vector>
+#include <type_traits>
+#include <concepts>
 
 struct di_ignore
 {
@@ -227,7 +229,7 @@ TEST_CASE("alternative")
         constexpr auto parser = +true_;
         using Parser = std::remove_const_t<decltype(parser)>;
         using Attr = iris::rvariant<int, std::vector<bool>>;
-        
+
         using attribute_type = x4::parser_traits<Parser>::attribute_type;
         STATIC_CHECK(std::same_as<attribute_type, std::vector<bool>>);
 
@@ -241,7 +243,7 @@ TEST_CASE("alternative")
         constexpr auto parser = +char_;
         using Parser = std::remove_const_t<decltype(parser)>;
         using Attr = iris::rvariant<int, std::string>;
-        
+
         using attribute_type = x4::parser_traits<Parser>::attribute_type;
         STATIC_CHECK(std::same_as<attribute_type, std::string>);
 
@@ -336,5 +338,77 @@ TEST_CASE("alternative")
         using Bar = std::vector<iris::rvariant<Foo, int>>;
         Bar x;
         CHECK(parse("abaabb", +('a' >> attr(Foo{}) | 'b' >> attr(int{})), x));
+    }
+}
+
+TEST_CASE("alternative of same attributes (a | a)")
+{
+    using x4::int_;
+    using x4::bool_;
+
+    // The subject is `int_ >> bool_` (non-container alternative)
+    {
+        constexpr auto int_bool = int_ >> bool_ | int_ >> bool_;
+
+        using Parser = std::remove_const_t<decltype(int_bool)>;
+        STATIC_CHECK(std::same_as<
+            x4::parser_traits<Parser>::attribute_type,
+            alloy::tuple<int, bool>
+        >);
+        STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 2);
+
+        alloy::tuple<int, bool> var;
+        auto const res = parse("42true", int_bool, var);
+        REQUIRE(res.completed());
+        CHECK(var == decltype(var){42, true});
+    }
+    {
+        constexpr auto int_bool = int_ >> bool_ | int_ >> bool_;
+        constexpr auto foo_int_bool = x4::string("foo") >> int_bool;
+
+        using Parser = std::remove_const_t<decltype(foo_int_bool)>;
+        STATIC_CHECK(std::same_as<
+            x4::parser_traits<Parser>::attribute_type,
+            alloy::tuple<std::string, int, bool>
+        >);
+        STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 3);
+
+        alloy::tuple<std::string, int, bool> var;
+        auto const res = parse("foo42true", foo_int_bool, var);
+        REQUIRE(res.completed());
+        CHECK(var == decltype(var){"foo", 42, true});
+    }
+
+    // The subject is `+bool_` (container alternative)
+    {
+        constexpr auto bools = +bool_ | +bool_;
+
+        using Parser = std::remove_const_t<decltype(bools)>;
+        STATIC_CHECK(std::same_as<
+            x4::parser_traits<Parser>::attribute_type,
+            std::vector<bool>
+        >);
+        STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 1);
+
+        std::vector<bool> var;
+        auto const res = parse("truefalse", bools, var);
+        REQUIRE(res.completed());
+        CHECK(var == decltype(var){true, false});
+    }
+    {
+        constexpr auto bools = +bool_ | +bool_;
+        constexpr auto foo_bools = x4::string("foo") >> bools;
+
+        using Parser = std::remove_const_t<decltype(foo_bools)>;
+        STATIC_CHECK(std::same_as<
+            x4::parser_traits<Parser>::attribute_type,
+            alloy::tuple<std::string, std::vector<bool>>
+        >);
+        STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 2);
+
+        alloy::tuple<std::string, std::vector<bool>> var;
+        auto const res = parse("footruefalse", foo_bools, var);
+        REQUIRE(res.completed());
+        CHECK(var == decltype(var){"foo", {true, false}});
     }
 }

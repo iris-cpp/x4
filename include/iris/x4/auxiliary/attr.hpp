@@ -56,16 +56,54 @@ struct attr_parser : parser<attr_parser<T, HeldValueT>>
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, Attr& attr) const
-        noexcept(noexcept(x4::move_to(std::as_const(held_value_), attr)))
+    parse(It&, Se const&, Context const&, Attr& attr_) const
+        noexcept(noexcept(x4::move_to(std::as_const(held_value_), attr_)))
     {
         // Always copy (need reuse in repetitive invocations)
-        x4::move_to(std::as_const(held_value_), attr);
+        x4::move_to(std::as_const(held_value_), attr_);
         return true;
     }
 
 private:
     HeldValueT held_value_;
+};
+
+// `init_attr<T>`
+template<class T>
+struct attr_parser<T, void> : parser<attr_parser<T, void>>
+{
+    static_assert(X4Attribute<T>);
+    static_assert(!X4UnusedAttribute<T>, "attr_parser with `unused_type` is meaningless");
+
+    using attribute_type = T;
+
+    static constexpr bool handles_container = traits::is_container_v<T>;
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
+    [[nodiscard]] static constexpr bool
+    parse(It&, Se const&, Context const&, UnusedAttr const&) noexcept
+    {
+        return true;
+    }
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ContainerAttr>
+        requires traits::CategorizedAttr<ContainerAttr, traits::container_attr>
+    [[nodiscard]] static constexpr bool
+    parse(It&, Se const&, Context const&, ContainerAttr& container_attr) noexcept
+    {
+        traits::clear(container_attr);
+        return true;
+    }
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
+        requires (!traits::CategorizedAttr<Attr, traits::container_attr>)
+    [[nodiscard]] static constexpr bool
+    parse(It&, Se const&, Context const&, Attr& attr_)
+        noexcept(noexcept(attr_ = Attr{}))
+    {
+        attr_ = Attr{};
+        return true;
+    }
 };
 
 namespace detail {
@@ -120,11 +158,23 @@ struct attr_gen
 
 namespace parsers {
 
+// An always-succeeding parser that has the `attribute_type` equivalent
+// to the given parameter. Copies the held instance on each invocation.
 [[maybe_unused]] inline constexpr detail::attr_gen attr{};
+
+// A special `attr` parser that resets the variable and always succeeds.
+//
+// This can be used for constructing `constexpr` instance of a parser
+// even when `T` has dynamically allocated storage.
+// For example, normal `attr(std::vector<int>{})` cannot be assigned
+// to a `constexpr` instance, but `init_attr<std::vector<int>>` can.
+template<class T>
+[[maybe_unused]] inline constexpr attr_parser<T, void> init_attr{};
 
 } // parsers
 
 using parsers::attr;
+using parsers::init_attr;
 
 } // iris::x4
 

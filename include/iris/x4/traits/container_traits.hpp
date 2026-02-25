@@ -133,6 +133,10 @@ namespace detail {
 
 struct push_back_fn
 {
+    template<class Container, class T>
+    static constexpr void
+    operator()(Container const&, T const&) = delete;
+
     template<class Container>
     static constexpr void operator()(Container&, unused_type const&) noexcept
     {
@@ -251,6 +255,10 @@ namespace detail {
 
 struct clear_fn
 {
+    template<class Container>
+    static constexpr void
+    operator()(Container const&) = delete;
+
     template<class Container>
         requires requires(Container& c) {
             c.clear();
