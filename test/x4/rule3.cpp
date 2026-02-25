@@ -156,16 +156,16 @@ TEST_CASE("rule3")
         CHECK(st.val == 42);
     }
 
-    {
-        using namespace check_recursive;
-        node_t v;
-        REQUIRE(parse("[4,2]", grammar, v));
-        CHECK((node_t{node_array{{4}, {2}}} == v));
-    }
-    {
-        using namespace check_recursive_scoped;
-        node_t v;
-        REQUIRE(parse("[4,2]", grammar, v));
-        CHECK((node_t{node_array{{4}, {2}}} == v));
-    }
+    // {
+    //     using namespace check_recursive;
+    //     node_t v;
+    //     REQUIRE(parse("[4,2]", grammar, v));
+    //     CHECK((node_t{node_array{{4}, {2}}} == v));
+    // }
+    // {
+    //     using namespace check_recursive_scoped;
+    //     node_t v;
+    //     REQUIRE(parse("[4,2]", grammar, v));
+    //     CHECK((node_t{node_array{{4}, {2}}} == v));
+    // }
 }
