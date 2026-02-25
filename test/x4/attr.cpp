@@ -169,3 +169,26 @@ TEST_CASE("attr")
         CHECK(ints == std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2});
     }
 }
+
+TEST_CASE("init_attr")
+{
+    using x4::init_attr;
+
+    {
+        int val = 42;
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(init_attr<int>)>::attribute_type, int>);
+        REQUIRE(parse("", init_attr<int>, val));
+        CHECK(val == 0);
+    }
+    {
+        std::vector<int> val;
+        val.reserve(100);
+        val.emplace_back(42);
+        auto const prev_capacity = val.capacity();
+
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(init_attr<std::vector<int>>)>::attribute_type, std::vector<int>>);
+        REQUIRE(parse("", init_attr<std::vector<int>>, val));
+        CHECK(val.empty());
+        CHECK(val.capacity() == prev_capacity); // should preserve capacity as per `.clear()`
+    }
+}
