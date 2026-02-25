@@ -145,7 +145,7 @@ struct parse_into_container_impl<Parser>
     static constexpr bool pass_attibute_as_is = std::disjunction_v<
         parser_accepts_container<Parser, Attr>,
 
-        std::negation<std::is_same<
+        std::negation<traits::can_hold<
             typename traits::pseudo_attribute<
                 It, Se, Context,
                 typename parser_traits<Parser>::attribute_type

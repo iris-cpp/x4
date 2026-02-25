@@ -28,6 +28,9 @@ struct can_hold;
 template<class T, class U>
 constexpr bool can_hold_v = can_hold<T, U>::value;
 
+template<class T>
+struct is_variant;
+
 namespace detail {
 
 template<class TTuple, class UTuple, class IndexSeq = std::make_index_sequence<alloy::tuple_size_v<TTuple>>>
@@ -69,13 +72,18 @@ struct can_hold_impl<T, U>
     : value_type_can_hold<T, U>
 {};
 
+template<class T, class U>
+    requires is_variant<T>::value
+struct can_hold_impl<T, U>
+    : std::is_assignable<T&, U>
+{};
+
 } // detail
 
 template<class T, class U>
 struct can_hold
     : std::disjunction<
         std::is_same<T, U>,
-        std::is_assignable<T&, U>,
         detail::can_hold_impl<T, U>
     >
 {};
