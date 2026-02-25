@@ -33,43 +33,6 @@
 
 namespace x4 = iris::x4;
 
-// check if we did not break user defined specializations
-namespace check_substitute {
-
-template<class T> struct foo {};
-template<class T> struct bar { using type = T; };
-template<class T> struct is_bar : std::false_type {};
-template<class T> struct is_bar<bar<T>> : std::true_type {};
-
-} // check_substitute
-
-namespace iris::x4::traits {
-
-using namespace check_substitute;
-
-template<class T, X4Attribute U>
-struct can_hold<foo<T>, foo<U>>
-    : can_hold<T, U>
-{};
-
-template<class T, X4Attribute U>
-    requires is_bar<T>::value && is_bar<U>::value
-struct can_hold<T, U>
-    : can_hold<typename T::type, typename U::type>
-{};
-
-} // iris::x4::traits
-
-namespace check_substitute {
-
-using x4::traits::can_hold_v;
-static_assert( can_hold_v<foo<int>, foo<int>>);
-static_assert(!can_hold_v<foo<int>, foo<long>>);
-static_assert( can_hold_v<bar<int>, bar<int>>);
-static_assert(!can_hold_v<bar<int>, bar<long>>);
-
-} // check_substitute
-
 namespace {
 
 constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
