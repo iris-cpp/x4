@@ -22,16 +22,16 @@
 namespace iris::x4::traits {
 
 // Find out if T can be a (strong) substitute for Attribute
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
 struct is_substitute;
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
 constexpr bool is_substitute_v = is_substitute<T, Attr>::value;
 
 template<class T>
 struct is_variant;
 
-template<class Variant, X4Attribute Attr>
+template<class Variant, class Attr>
 struct variant_has_substitute;
 
 namespace detail {
@@ -50,15 +50,15 @@ template<class TTuple, class UTuple>
     requires is_same_size_sequence_v<TTuple, UTuple>
 struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
 struct value_type_is_substitute
     : is_substitute<container_value_t<T>, container_value_t<Attr>>
 {};
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
 struct is_substitute_impl : std::false_type {};
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
     requires std::conjunction_v<
         alloy::is_tuple_like<T>,
         alloy::is_tuple_like<Attr>
@@ -67,15 +67,15 @@ struct is_substitute_impl<T, Attr>
     : is_all_substitute_for_tuple<T, Attr>
 {};
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
     requires
-        is_container_v<std::remove_const_t<T>> &&
-        is_container_v<std::remove_const_t<Attr>>
+        is_container_v<T> &&
+        is_container_v<Attr>
 struct is_substitute_impl<T, Attr>
     : value_type_is_substitute<T, Attr>
 {};
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
     requires is_variant<T>::value
 struct is_substitute_impl<T, Attr>
     : variant_has_substitute<T, Attr>
@@ -83,7 +83,7 @@ struct is_substitute_impl<T, Attr>
 
 } // detail
 
-template<class T, X4Attribute Attr>
+template<class T, class Attr>
 struct is_substitute
     : std::disjunction<
           std::is_same<T, Attr>,
@@ -94,18 +94,6 @@ struct is_substitute
 template<class T, X4UnusedAttribute Attr>
 struct is_substitute<T, Attr>
     : std::false_type
-{};
-
-// for reference T
-template<class T, X4Attribute Attr>
-struct is_substitute<T&, Attr>
-    : is_substitute<T, Attr>
-{};
-
-// for reference Attribute
-template<class T, X4Attribute Attr>
-struct is_substitute<T, Attr&>
-    : is_substitute<T, Attr>
 {};
 
 template<class T, X4Attribute Attr>

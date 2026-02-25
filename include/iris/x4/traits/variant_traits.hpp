@@ -67,55 +67,53 @@ struct variant_find_substitute_impl<Attr, First, Rest...>
 } // detail
 
 
-template<class Variant, X4Attribute Attr>
+template<class Variant, class T>
 struct variant_find_substitute;
 
-template<class Variant, X4Attribute Attr>
-using variant_find_substitute_t = typename variant_find_substitute<Variant, Attr>::type;
+template<class Variant, class T>
+using variant_find_substitute_t = typename variant_find_substitute<Variant, T>::type;
 
-template<X4Attribute Attr>
-struct variant_find_substitute<Attr, Attr>
+template<class Variant>
+struct variant_find_substitute<Variant, Variant>
 {
-    using type = Attr;
+    using type = Variant;
 };
 
-// Recursively find the first type from the variant that can be a substitute for `Attr`.
-// If none is found, returns `Attr`.
-template<X4Attribute Attr, class... Ts>
-    requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
-struct variant_find_substitute<iris::rvariant<Ts...>, Attr>
+template<class... Ts, class U>
+    requires (!std::same_as<iris::rvariant<Ts...>, U>)
+struct variant_find_substitute<iris::rvariant<Ts...>, U>
 {
-    using type = typename detail::variant_find_substitute_impl<Attr, Ts...>::type;
+    using type = typename detail::variant_find_substitute_impl<U, Ts...>::type;
 };
 
 
-template<class Variant, X4Attribute Attr>
+template<class Variant, class U>
 struct variant_has_substitute;
 
-template<class Variant, X4Attribute Attr>
-constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, Attr>::value;
+template<class Variant, class U>
+constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, U>::value;
 
-template<X4Attribute Attr>
-struct variant_has_substitute<Attr, Attr>
+template<class Variant>
+struct variant_has_substitute<Variant, Variant>
     : std::true_type
 {};
 
-template<X4Attribute Attr>
-struct variant_has_substitute<unused_type, Attr>
+template<class T>
+struct variant_has_substitute<unused_type, T>
     : std::true_type
 {};
 
-template<X4Attribute Attr>
-struct variant_has_substitute<unused_type const, Attr>
+template<class T>
+struct variant_has_substitute<unused_type const, T>
     : std::true_type
 {};
 
 // Recursively find the first type from the variant that can be a substitute for `T`.
 // Returns boolean value whether it was found.
-template<X4Attribute Attr, class... Ts>
-    requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
-struct variant_has_substitute<iris::rvariant<Ts...>, Attr>
-    : std::disjunction<is_substitute<Ts, Attr>...>
+template<class... Ts, class U>
+    requires (!std::same_as<iris::rvariant<Ts...>, U>)
+struct variant_has_substitute<iris::rvariant<Ts...>, U>
+    : std::disjunction<is_substitute<Ts, U>...>
 {};
 
 } // iris::x4::traits
