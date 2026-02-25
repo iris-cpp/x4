@@ -156,6 +156,7 @@ TEST_CASE("rule3")
         CHECK(st.val == 42);
     }
 
+    // TODO: restore these tests
     // {
     //     using namespace check_recursive;
     //     node_t v;
