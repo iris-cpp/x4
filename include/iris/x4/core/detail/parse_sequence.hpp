@@ -281,11 +281,9 @@ parse_sequence(Parser const& parser, It& first, Se const& last, Context const& c
 template<class Left, class Right>
 struct parse_into_container_impl<sequence<Left, Right>>
 {
-    // e.g. 
-    //   `sequence<Left, Right>::attribute_type` = `optional<int>`
-    //   `traits::container_value_t<Attr>`       = `int`
+    // TODO: investigate what is_container_substitute means
     template<X4Attribute Attr>
-    static constexpr bool is_container_substitute = std::is_same_v<
+    static constexpr bool is_container_substitute = traits::can_hold_v<
         typename sequence<Left, Right>::attribute_type,
         traits::container_value_t<Attr>
     >;

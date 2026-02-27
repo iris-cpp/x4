@@ -56,10 +56,7 @@ struct value_type_can_hold
 
 template<class T, class U>
 struct can_hold
-    : std::disjunction<
-        std::is_same<T, U>,
-        std::is_assignable<T&, U>
-    >
+    : std::is_same<T, U>
 {};
 
 template<class T, class U>
@@ -78,9 +75,22 @@ struct can_hold<T, U>
     : detail::value_type_can_hold<T, U>
 {};
 
-template<class T, X4UnusedAttribute U>
+template<class T, class U>
+    requires is_variant<T>::value && X4UnusedAttribute<U>
 struct can_hold<T, U>
     : std::false_type
+{};
+
+template<class T, class U>
+    requires (!is_variant<T>::value) && X4UnusedAttribute<U>
+struct can_hold<T, U>
+    : std::false_type
+{};
+
+template<class T, class U>
+    requires is_variant<T>::value && (!X4UnusedAttribute<U>)
+struct can_hold<T, U>
+    : std::is_assignable<T&, U>
 {};
 
 template<class T, class U>
