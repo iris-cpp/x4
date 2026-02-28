@@ -177,36 +177,17 @@ constexpr synth_parser<move_only> synth_move_only{};
 template<class T>
 struct custom_container
 {
+    using value_type = T;
     T* begin() { return nullptr; }
     T* end() { return nullptr; }
     bool empty() const { return true; }
     void clear() {}
+    void push_back(T const&) {}
     template<class It, class Se>
     void insert(T*, It, Se) {}
 };
 
 } // x4_test
-
-namespace iris::x4::traits {
-
-template<class T>
-struct container_value<::x4_test::custom_container<T>>
-{
-    using type = T; // value type of container
-};
-
-template<class T>
-struct push_back_container<::x4_test::custom_container<T>>
-{
-    static constexpr void call(::x4_test::custom_container<T>& /*c*/, T const& /*val*/) noexcept
-    {
-        // push back value type into container
-    }
-};
-
-} // x4::traits
-
-static_assert(x4::traits::X4Container<x4_test::custom_container<int>>);
 
 using x4_test::parse;
 
