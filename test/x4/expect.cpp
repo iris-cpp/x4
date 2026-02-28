@@ -252,7 +252,7 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)(-(int_ >> int_)).parse(first, last, unused, dummy_optional_ints);
 
     (void)(+eps(false)).parse(first, last, unused, unused);
-    (void)(+int_).parse(first, last, unused, dummy_int);
+    (void)(+int_).parse(first, last, unused, dummy_ints);
 
     (void)(eps >> eps).parse(first, last, unused, unused);
     (void)(int_ >> int_).parse(first, last, unused, dummy_ints);
