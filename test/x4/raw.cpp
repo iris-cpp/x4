@@ -14,6 +14,7 @@
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/directive/raw.hpp>
+#include <iris/x4/numeric/bool.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
@@ -51,6 +52,7 @@ TEST_CASE("raw")
     using x4::_attr;
     using x4::int_;
     using x4::char_;
+    using x4::true_;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(raw['x']);
 
@@ -133,5 +135,10 @@ TEST_CASE("raw")
         std::ranges::subrange<std::string_view::const_iterator> range;
         REQUIRE(parse("123", raw[indirect_rule], range));
         CHECK(std::string(range.begin(), range.end()) == "123");
+    }
+
+    {
+        std::vector<std::ranges::subrange<std::string_view::const_iterator>> ranges;
+        RQUIRE(parse("truetrue", +raw[true_], ranges));
     }
 }

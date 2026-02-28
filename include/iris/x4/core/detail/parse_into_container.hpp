@@ -245,12 +245,29 @@ struct parse_into_container_impl<Parser>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr) // TODO: add noexcept
     {
-        (void)parser;
-        (void)first;
-        (void)last;
-        (void)ctx;
-        (void)attr;
-        return false;
+        // TODO: make below English
+        // - attribute_type が container のとき
+        // - Parser::handles_container が true のとき
+        //   現在の例は
+        //   - raw
+        //   - optional
+
+        using unwrapped_attribute_type = iris::unwrap_recursive_type<Attr>;
+        auto& unwrapped_attr = iris::unwrap_recursive(attr);
+
+        if constexpr (traits::is_container_v<unwrapped_attribute_type>) {
+            if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) {
+                auto&& appender = x4::make_container_appender(unwrapped_attr);
+                return parser.parse(first, last, ctx, appender);
+            } else {
+                return false;  // ?
+            }
+        } else {
+            // TODO: make is_pseudo_attribute
+            // static_assert(is_pseudo_attribute<unwrapped_attibute_type>);
+            static_assert(false);
+            return false;
+        }
     }
 };
 
