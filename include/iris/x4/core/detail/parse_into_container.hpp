@@ -197,7 +197,10 @@ struct parser_accepts_container {};
 template<class Parser, class Container>
     requires traits::is_container_v<std::remove_const_t<Container>>
 struct parser_accepts_container<Parser, Container>
-    : traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>
+    : std::disjunction<
+        traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>,
+        std::bool_constant<parser_traits<Parser>::handles_container>
+    >
 {};
 
 template<class Parser, class Container>
@@ -213,7 +216,8 @@ struct parse_into_container_impl_default {
 
         if constexpr (traits::is_container_v<unwrapped_attribute_type>) { // Attr is a container
             if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) { // parser accepts the container; make parser append directly
-                return parser.parse(first, last, ctx, unwrapped_attr);
+                auto&& appender = x4::make_container_appender(unwrapped_attr);
+                return parser.parse(first, last, ctx, appender);
             } else { // parser DOES NOT accept the container; parse into value type and append it
                 using value_type = traits::container_value_t<unwrapped_attribute_type>;
                 value_type value;
@@ -238,38 +242,38 @@ struct parse_into_container_impl
     : parse_into_container_impl_default<Parser>
 {};
 
-template<class Parser>
-    requires parser_traits<Parser>::handles_container
-struct parse_into_container_impl<Parser>
-{
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-    static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr) // TODO: add noexcept
-    {
-        // TODO: make below English
-        // - attribute_type が container のとき
-        // - Parser::handles_container が true のとき
-        //   現在の例は
-        //   - raw
-        //   - optional
-
-        using unwrapped_attribute_type = iris::unwrap_recursive_type<Attr>;
-        auto& unwrapped_attr = iris::unwrap_recursive(attr);
-
-        if constexpr (traits::is_container_v<unwrapped_attribute_type>) {
-            if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) {
-                auto&& appender = x4::make_container_appender(unwrapped_attr);
-                return parser.parse(first, last, ctx, appender);
-            } else {
-                return false;  // ?
-            }
-        } else {
-            // TODO: make is_pseudo_attribute
-            // static_assert(is_pseudo_attribute<unwrapped_attibute_type>);
-            static_assert(false);
-            return false;
-        }
-    }
-};
+//template<class Parser>
+//    requires parser_traits<Parser>::handles_container
+//struct parse_into_container_impl<Parser>
+//{
+//    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
+//    static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr) // TODO: add noexcept
+//    {
+//        // TODO: make below English
+//        // - attribute_type が container のとき
+//        // - Parser::handles_container が true のとき
+//        //   現在の例は
+//        //   - raw
+//        //   - optional
+//
+//        using unwrapped_attribute_type = iris::unwrap_recursive_type<Attr>;
+//        auto& unwrapped_attr = iris::unwrap_recursive(attr);
+//
+//        if constexpr (traits::is_container_v<unwrapped_attribute_type>) {
+//            if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) {
+//                auto&& appender = x4::make_container_appender(unwrapped_attr);
+//                return parser.parse(first, last, ctx, appender);
+//            } else {
+//                return false;  // ?
+//            }
+//        } else {
+//            // TODO: make is_pseudo_attribute
+//            // static_assert(is_pseudo_attribute<unwrapped_attibute_type>);
+//            static_assert(false);
+//            return false;
+//        }
+//    }
+//};
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 [[nodiscard]] constexpr bool

@@ -139,6 +139,6 @@ TEST_CASE("raw")
 
     {
         std::vector<std::ranges::subrange<std::string_view::const_iterator>> ranges;
-        RQUIRE(parse("truetrue", +raw[true_], ranges));
+        REQUIRE(parse("truetrue", +raw[true_], ranges));
     }
 }
