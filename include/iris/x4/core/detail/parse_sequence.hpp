@@ -294,11 +294,11 @@ struct parse_into_container_impl<sequence<Left, Right>>
     call(
         sequence<Left, Right> const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
-    ) noexcept(noexcept(parse_into_container_base_impl<sequence<Left, Right>>::call(
+    ) noexcept(noexcept(parse_into_container_impl_default<sequence<Left, Right>>::call(
         parser, first, last, ctx, attr
     )))
     {
-        return parse_into_container_base_impl<sequence<Left, Right>>::call(
+        return parse_into_container_impl_default<sequence<Left, Right>>::call(
             parser, first, last, ctx, attr
         );
     }
