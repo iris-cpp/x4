@@ -80,7 +80,11 @@ struct remove_value_const<std::pair<F, S>>
 
 // Customization point
 template<class Container>
-struct container_value
+struct container_value {};
+
+template<class Container>
+    requires requires { typename Container::value_type; }
+struct container_value<Container>
     : detail::remove_value_const<typename Container::value_type>
 {};
 
@@ -441,13 +445,13 @@ template<class T>
         std::default_initializable<T> &&
 
         requires(T& c) {
-            typename T::value_type; // required
+            typename container_value_t<T>; // required
             traits::begin(c);
             requires std::forward_iterator<decltype(traits::begin(c))>;
             traits::end(c);
             requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
             traits::is_empty(c);
-            traits::push_back(c, std::declval<typename T::value_type>());
+            traits::push_back(c, std::declval<container_value_t<T>>());
             traits::append(
                 c,
                 std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
