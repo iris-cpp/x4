@@ -17,6 +17,7 @@
 #include <iris/alloy/traits.hpp>
 #include <iris/alloy/tuple.hpp>
 
+#include <concepts>
 #include <ranges>
 #include <iterator>
 #include <vector>
@@ -215,6 +216,9 @@ struct append_fn
     static constexpr void operator()(Container& c, It first, Se last)
         noexcept(noexcept(c.insert(first, last)))
     {
+        // appending incompatible type into a container can result in unexpected behavior
+        // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
+        static_assert(std::constructible_from<traits::container_value_t<Container>, std::iter_value_t<It>>);
         c.insert(first, last);
     }
 
@@ -228,6 +232,9 @@ struct append_fn
     static constexpr void operator()(Container& c, It first, Se last)
         noexcept(noexcept(c.insert(std::ranges::end(c), first, last)))
     {
+        // appending incompatible type into a container can result in unexpected behavior
+        // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
+        static_assert(std::constructible_from<traits::container_value_t<Container>, std::iter_value_t<It>>);
         c.insert(std::ranges::end(c), first, last);
     }
 
@@ -238,6 +245,10 @@ struct append_fn
     {
         static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
         static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+
+        // appending incompatible type into a container can result in unexpected behavior
+        // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
+        static_assert(std::constructible_from<traits::container_value_t<Container>, std::iter_value_t<It>>);
         append_container<Container>::call(c, first, last);
     }
 };

@@ -143,6 +143,11 @@ TEST_CASE("attr")
         CHECK(s == "123");
     }
     {
+        std::vector<std::vector<int>> vecs;
+        REQUIRE(parse("", attr(std::vector<int>{1, 2, 3}) >> attr(std::vector<int>{4, 5, 6}), vecs));
+        CHECK(vecs == std::vector{ std::vector{1,2,3}, std::vector{4,5,6} });
+    }
+    {
         std::vector<std::string> strs;
         REQUIRE(parse("", attr(std::string("123")) >> attr(std::string("456")), strs));
         CHECK(strs == std::vector<std::string>{"123", "456"});

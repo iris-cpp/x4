@@ -215,8 +215,10 @@ move_to(It first, Se last, Dest& dest)
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
 
-    if (!traits::is_empty(dest)) {
-        traits::clear(dest);
+    if constexpr (!is_ttp_specialization_of_v<Dest, container_appender>) {
+        if (!traits::is_empty(dest)) {
+            traits::clear(dest);
+        }
     }
 
     if constexpr (traits::is_subrange_v<traits::container_value_t<Dest>>) {
@@ -265,10 +267,14 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::is_rvalue_reference_v<Source&&>) {
-        x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
+    if constexpr (std::same_as<std::remove_cvref_t<Source>, traits::container_value_t<Dest>>) {
+        traits::push_back(dest, std::forward<Source>(src));
     } else {
-        x4::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
+        if constexpr (std::is_rvalue_reference_v<Source&&>) {
+            x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
+        } else {
+            x4::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
+        }
     }
 }
 
