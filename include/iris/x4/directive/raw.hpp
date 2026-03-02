@@ -35,7 +35,7 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 {
     using attribute_type = detail::raw_attribute_t;
 
-    static constexpr bool handles_container = true;
+    static constexpr bool maybe_handles_container = true;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool

@@ -25,7 +25,7 @@ struct difference : binary_parser<Left, Right, difference<Left, Right>>
 {
     using attribute_type = parser_traits<Left>::attribute_type;
 
-    static constexpr bool handles_container = Left::handles_container;
+    static constexpr bool maybe_handles_container = Left::maybe_handles_container;
 
     using binary_parser<Left, Right, difference>::binary_parser;
 

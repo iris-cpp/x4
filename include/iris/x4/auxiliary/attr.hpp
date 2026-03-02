@@ -43,7 +43,7 @@ struct attr_parser : parser<attr_parser<T, HeldValueT>>
     using attribute_type = T;
     using held_value_type = HeldValueT;
 
-    static constexpr bool handles_container = traits::is_container_v<T>;
+    static constexpr bool maybe_handles_container = traits::is_container_v<T>;
 
     template<class U>
         requires
@@ -77,7 +77,7 @@ struct attr_parser<T, void> : parser<attr_parser<T, void>>
 
     using attribute_type = T;
 
-    static constexpr bool handles_container = traits::is_container_v<T>;
+    static constexpr bool maybe_handles_container = traits::is_container_v<T>;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] static constexpr bool

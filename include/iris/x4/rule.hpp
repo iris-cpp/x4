@@ -312,7 +312,7 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     using attribute_type = RuleDefAttr;
 
     static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleDefAttr>, unused_type>;
-    static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<RuleDefAttr>>;
+    static constexpr bool maybe_handles_container = traits::is_container_v<std::remove_const_t<RuleDefAttr>>;
     static constexpr bool force_attribute = ForceAttr;
 
     template<class RHS_T>
@@ -396,7 +396,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     using attribute_type = RuleAttr;
 
     static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleAttr>, unused_type>;
-    static constexpr bool handles_container = traits::is_container_v<std::remove_const_t<RuleAttr>>;
+    static constexpr bool maybe_handles_container = traits::is_container_v<std::remove_const_t<RuleAttr>>;
     static constexpr bool force_attribute = ForceAttr;
 
     std::string_view name = "unnamed";

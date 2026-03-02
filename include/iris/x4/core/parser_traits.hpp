@@ -112,7 +112,7 @@ struct parser_traits
 
     static constexpr std::size_t sequence_size = detail::get_sequence_size<Parser>::value;
 
-    static constexpr bool handles_container = Parser::handles_container;
+    static constexpr bool maybe_handles_container = Parser::maybe_handles_container;
     static constexpr bool has_action = Parser::has_action;
     static constexpr bool need_rcontext = Parser::need_rcontext;
 };

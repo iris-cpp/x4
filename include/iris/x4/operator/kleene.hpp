@@ -30,7 +30,7 @@ struct kleene : unary_parser<Subject, kleene<Subject>>
 {
     using attribute_type = traits::build_container_t<typename parser_traits<Subject>::attribute_type>;
 
-    static constexpr bool handles_container = true;
+    static constexpr bool maybe_handles_container = true;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool

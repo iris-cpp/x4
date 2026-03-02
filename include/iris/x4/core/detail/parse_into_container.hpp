@@ -41,7 +41,7 @@ template<class Parser, traits::X4Container Container>
 struct parser_accepts_container<Parser, Container>
     : std::disjunction<
         traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>,
-        std::bool_constant<parser_traits<Parser>::handles_container>
+        std::bool_constant<parser_traits<Parser>::maybe_handles_container>
     >
 {};
 
