@@ -25,6 +25,13 @@
 #include <type_traits>
 #include <utility>
 
+namespace iris::x4 {
+
+template<class Subject>
+struct optional;
+
+} // iris::x4
+
 namespace iris::x4::detail {
 
 template<class Parser, class Container>
@@ -32,10 +39,12 @@ struct parser_accepts_container {};
 
 template<class Parser, traits::X4Container Container>
 struct parser_accepts_container<Parser, Container>
-    : std::disjunction<
-        traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>,
-        std::bool_constant<parser_traits<Parser>::handles_container> // TODO: make `handles_container` stricter
-    >
+    : traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>
+{};
+
+template<class Subject, traits::X4Container Container>
+struct parser_accepts_container<optional<Subject>, Container>
+    : std::true_type
 {};
 
 template<class Parser, class Container>
@@ -54,7 +63,6 @@ struct parse_into_container_impl_default
             if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) { // parser accepts the container; make parser append directly
                 auto&& appender = x4::make_container_appender(unwrapped_attr);
                 return parser.parse(first, last, ctx, appender);
-
             } else { // parser DOES NOT accept the container; parse into value type and append it
                 using value_type = traits::container_value_t<unwrapped_attribute_type>;
                 value_type value{}; // value-initialize
@@ -62,7 +70,6 @@ struct parse_into_container_impl_default
                 traits::push_back(unwrapped_attr, std::move(value));
                 return true;
             }
-
         } else {
             if constexpr (traits::is_size_one_sequence_v<unwrapped_attribute_type>) { // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
