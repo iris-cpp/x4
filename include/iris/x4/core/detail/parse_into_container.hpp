@@ -194,8 +194,7 @@ namespace iris::x4::detail {
 template<class Parser, class Container>
 struct parser_accepts_container {};
 
-template<class Parser, class Container>
-    requires traits::is_container_v<std::remove_const_t<Container>>
+template<class Parser, traits::X4Container Container>
 struct parser_accepts_container<Parser, Container>
     : std::disjunction<
         traits::can_hold<typename parser_traits<Parser>::attribute_type, Container>,
@@ -220,7 +219,7 @@ struct parse_into_container_impl_default {
                 return parser.parse(first, last, ctx, appender);
             } else { // parser DOES NOT accept the container; parse into value type and append it
                 using value_type = traits::container_value_t<unwrapped_attribute_type>;
-                value_type value;
+                value_type value{}; // value-initialize
                 if (!parser.parse(first, last, ctx, value)) return false;
                 traits::push_back(unwrapped_attr, std::move(value));
                 return true;

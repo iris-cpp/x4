@@ -13,6 +13,7 @@
 #include <iris/x4/rule.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/as.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/list.hpp>
@@ -36,13 +37,11 @@ namespace x4 = iris::x4;
 namespace {
 
 constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
-constexpr x4::rule<class string_rule, std::string> string_rule("string");
+constexpr auto string_parser = x4::as<std::string>(x4::lexeme[*x4::standard::alnum]);
 
-constexpr auto pair_rule_def = string_rule >> x4::lit('=') >> string_rule;
-constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
+constexpr auto pair_rule_def = string_parser >> x4::lit('=') >> string_parser;
 
 IRIS_X4_DEFINE(pair_rule)
-IRIS_X4_DEFINE(string_rule)
 
 template<class Container>
 void test_map_support()
@@ -96,7 +95,7 @@ template<class Container>
 void test_sequence_support()
 {
     {
-        constexpr auto rule = string_rule % x4::lit(',');
+        constexpr auto rule = string_parser % x4::lit(',');
         Container actual;
         REQUIRE(parse("e1,e2,e2", rule, actual));
         CHECK(actual.size() == 3);
@@ -104,13 +103,13 @@ void test_sequence_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
+        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
@@ -120,7 +119,7 @@ template<class Container>
 void test_set_support()
 {
     {
-        constexpr auto rule = string_rule % x4::lit(',');
+        constexpr auto rule = string_parser % x4::lit(',');
         Container actual;
         REQUIRE(parse("e1,e2,e2", rule, actual));
         CHECK(actual.size() == 2);
@@ -128,13 +127,13 @@ void test_set_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
+        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
@@ -144,7 +143,7 @@ template<class Container>
 void test_multiset_support()
 {
     {
-        constexpr auto rule = string_rule % x4::lit(',');
+        constexpr auto rule = string_parser % x4::lit(',');
         Container actual;
         REQUIRE(parse("e1,e2,e2", rule, actual));
         CHECK(actual.size() == 3);
@@ -152,13 +151,13 @@ void test_multiset_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
+        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
@@ -168,7 +167,7 @@ template<class Container>
 void test_string_support()
 {
     {
-        constexpr auto rule = string_rule % x4::lit(',');
+        constexpr auto rule = string_parser % x4::lit(',');
         Container container;
         REQUIRE(parse("e1,e2,e2", rule, container));
         CHECK(container.size() == 6);
@@ -176,13 +175,13 @@ void test_string_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
+        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }

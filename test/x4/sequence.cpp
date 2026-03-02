@@ -15,6 +15,7 @@
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/char/char_class.hpp>
+#include <iris/x4/directive/as.hpp>
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
@@ -52,6 +53,7 @@ TEST_CASE("sequence")
     using x4::rule;
     using x4::_attr;
     using x4::eps;
+    using x4::as;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ >> char_);
 
@@ -132,7 +134,7 @@ TEST_CASE("sequence")
         using attr_type = alloy::tuple<char, int>;
         attr_type tpl;
 
-        auto r = rule<class r_id, attr_type>{} = char_ >> ',' >> int_;
+        auto r = as<attr_type>(char_ >> ',' >> int_);
 
         REQUIRE(parse("test:x,1", "test:" >> r, tpl));
         CHECK((tpl == attr_type('x', 1)));
@@ -146,7 +148,7 @@ TEST_CASE("sequence")
         using attr_type = alloy::tuple<int>;
         attr_type tpl;
 
-        auto r = rule<class r_id, attr_type>{} = int_;
+        auto r = as<attr_type>(int_);
 
         REQUIRE(parse("test:1", "test:" >> r, tpl));
         CHECK((tpl == attr_type(1)));
@@ -264,8 +266,8 @@ TEST_CASE("sequence")
     {
         std::vector<std::string> v;
 
-        auto e = rule<class e_id, std::string>{} = *~char_(',');
-        auto l = rule<class l_id, std::vector<std::string>>{} = e >> *(',' >> e);
+        auto e = as<std::string>(*~char_(','));
+        auto l = as<std::vector<std::string>>(e >> *(',' >> e));
 
         REQUIRE(parse("abc1,abc2,abc3", l, v));
         REQUIRE(v.size() == 3);
@@ -283,8 +285,8 @@ TEST_CASE("sequence")
 
     {
         std::string s;
-        auto e = rule<class e_id, std::string>{} = *~char_(',');
-        auto l = rule<class l_id, std::string>{} = e >> *(',' >> e);
+        auto e = as<std::string>(*~char_(','));
+        auto l = as<std::string>(e >> *(',' >> e));
 
         REQUIRE(parse("abc1,abc2,abc3", l, s));
         CHECK(s == "abc1abc2abc3");

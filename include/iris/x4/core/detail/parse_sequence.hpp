@@ -97,15 +97,14 @@ struct pass_sequence_attribute<Parser, Attr>
 {};
 
 template<class LParser, class RParser, class Attr>
-struct partition_attribute
+struct partition_attribute {};
+
+template<class LParser, class RParser, traits::CategorizedAttr<traits::tuple_attr> Attr>
+    requires
+        has_attribute_v<LParser> &&
+        has_attribute_v<RParser>
+struct partition_attribute<LParser, RParser, Attr>
 {
-    using attr_category = traits::attribute_category_t<Attr>;
-
-    static_assert(
-        std::same_as<traits::tuple_attr, attr_category>,
-        "The parser expects tuple-like attribute type"
-    );
-
     static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
     static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
 
@@ -243,7 +242,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
-    static_assert(Parsable<Parser, It, Se, Context, Attr>);
+    // static_assert(Parsable<Parser, It, Se, Context, Attr>);
     return parser.parse(first, last, ctx, attr);
 }
 

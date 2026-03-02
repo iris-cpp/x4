@@ -11,7 +11,9 @@
 
 #include <iris/x4/rule.hpp>
 #include <iris/x4/char/char.hpp>
+#include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/not_predicate.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/sequence.hpp>
@@ -193,5 +195,18 @@ TEST_CASE("rule4")
         long long j = 0;
         REQUIRE(parse("1", start, j));
         CHECK(j == 1);
+    }
+
+    {
+        std::vector<std::string> v;
+
+        auto e = rule<class e_id, std::string>{} = *~char_(',');
+        auto l = rule<class l_id, std::vector<std::string>>{} = e >> *(',' >> e);
+
+        REQUIRE(parse("abc1,abc2,abc3", l, v));
+        REQUIRE(v.size() == 3);
+        CHECK(v[0] == "abc1");
+        CHECK(v[1] == "abc2");
+        CHECK(v[2] == "abc3");
     }
 }
