@@ -42,7 +42,8 @@ template<class Parser, class Container>
 inline constexpr bool parser_accepts_container_v = parser_accepts_container<Parser, Container>::value;
 
 template<class Parser>
-struct parse_into_container_impl_default {
+struct parse_into_container_impl_default
+{
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr) // TODO: add noexcept
     {
@@ -53,6 +54,7 @@ struct parse_into_container_impl_default {
             if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) { // parser accepts the container; make parser append directly
                 auto&& appender = x4::make_container_appender(unwrapped_attr);
                 return parser.parse(first, last, ctx, appender);
+
             } else { // parser DOES NOT accept the container; parse into value type and append it
                 using value_type = traits::container_value_t<unwrapped_attribute_type>;
                 value_type value{}; // value-initialize
@@ -60,6 +62,7 @@ struct parse_into_container_impl_default {
                 traits::push_back(unwrapped_attr, std::move(value));
                 return true;
             }
+
         } else {
             if constexpr (traits::is_size_one_sequence_v<unwrapped_attribute_type>) { // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));

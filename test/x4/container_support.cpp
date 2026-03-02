@@ -34,8 +34,6 @@
 
 namespace x4 = iris::x4;
 
-namespace {
-
 constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
 constexpr x4::rule<class string_rule, std::string> string_rule("string");
 
@@ -324,8 +322,6 @@ void test_string_support()
     }
 }
 
-} // anonymous
-
 TEST_CASE("container_support")
 {
     using x4::traits::is_container_v;
@@ -375,25 +371,25 @@ TEST_CASE("container_support")
     STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_multiset<int>>>);
     STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_multiset<int>>>);
 
-    STATIC_CHECK(is_container_v<std::map<int,int>>);
-    STATIC_CHECK(is_associative_v<std::map<int,int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::map<int,int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::map<int,int>>>);
+    STATIC_CHECK(is_container_v<std::map<int, int>>);
+    STATIC_CHECK(is_associative_v<std::map<int, int>>);
+    STATIC_CHECK(is_container_v<x4::container_appender<std::map<int, int>>>);
+    STATIC_CHECK(is_associative_v<x4::container_appender<std::map<int, int>>>);
 
-    STATIC_CHECK(is_container_v<std::unordered_map<int,int>>);
-    STATIC_CHECK(is_associative_v<std::unordered_map<int,int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_map<int,int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_map<int,int>>>);
+    STATIC_CHECK(is_container_v<std::unordered_map<int, int>>);
+    STATIC_CHECK(is_associative_v<std::unordered_map<int, int>>);
+    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_map<int, int>>>);
+    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_map<int, int>>>);
 
-    STATIC_CHECK(is_container_v<std::multimap<int,int>>);
-    STATIC_CHECK(is_associative_v<std::multimap<int,int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::multimap<int,int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::multimap<int,int>>>);
+    STATIC_CHECK(is_container_v<std::multimap<int, int>>);
+    STATIC_CHECK(is_associative_v<std::multimap<int, int>>);
+    STATIC_CHECK(is_container_v<x4::container_appender<std::multimap<int, int>>>);
+    STATIC_CHECK(is_associative_v<x4::container_appender<std::multimap<int, int>>>);
 
-    STATIC_CHECK(is_container_v<std::unordered_multimap<int,int>>);
-    STATIC_CHECK(is_associative_v<std::unordered_multimap<int,int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_multimap<int,int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_multimap<int,int>>>);
+    STATIC_CHECK(is_container_v<std::unordered_multimap<int, int>>);
+    STATIC_CHECK(is_associative_v<std::unordered_multimap<int, int>>);
+    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_multimap<int, int>>>);
+    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_multimap<int, int>>>);
 
     // ------------------------------------------------------------------
 
@@ -409,9 +405,9 @@ TEST_CASE("container_support")
     test_multiset_support<std::multiset<std::string>>();
     test_multiset_support<std::unordered_multiset<std::string>>();
 
-    test_map_support<std::map<std::string,std::string>>();
-    test_map_support<std::unordered_map<std::string,std::string>>();
+    test_map_support<std::map<std::string, std::string>>();
+    test_map_support<std::unordered_map<std::string, std::string>>();
 
-    test_multimap_support<std::multimap<std::string,std::string>>();
-    test_multimap_support<std::unordered_multimap<std::string,std::string>>();
+    test_multimap_support<std::multimap<std::string, std::string>>();
+    test_multimap_support<std::unordered_multimap<std::string, std::string>>();
 }
