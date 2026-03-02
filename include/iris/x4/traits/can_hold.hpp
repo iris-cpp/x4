@@ -23,7 +23,9 @@
 namespace iris::x4::traits {
 
 template<class T, class U>
-struct can_hold;
+struct can_hold
+    : std::is_same<T, U>
+{};
 
 template<class T, class U>
 constexpr bool can_hold_v = can_hold<T, U>::value;
@@ -53,11 +55,6 @@ struct value_type_can_hold
 {};
 
 } // detail
-
-template<class T, class U>
-struct can_hold
-    : std::is_same<T, U>
-{};
 
 template<class T, class U>
     requires
