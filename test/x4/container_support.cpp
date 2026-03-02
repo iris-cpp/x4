@@ -37,15 +37,21 @@ namespace x4 = iris::x4;
 namespace {
 
 constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
-constexpr auto string_parser = x4::as<std::string>(x4::lexeme[*x4::standard::alnum]);
+constexpr x4::rule<class string_rule, std::string> string_rule("string");
 
-constexpr auto pair_rule_def = string_parser >> x4::lit('=') >> string_parser;
+constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
+constexpr auto pair_rule_def = string_rule >> x4::lit('=') >> string_rule;
 
+IRIS_X4_DEFINE(string_rule)
 IRIS_X4_DEFINE(pair_rule)
+
+constexpr auto as_string_parser = x4::as<std::string>(x4::lexeme[*x4::standard::alnum]);
+constexpr auto as_pair_parser = as_string_parser >> x4::lit('=') >> as_string_parser;
 
 template<class Container>
 void test_map_support()
 {
+    // rule version
     {
         constexpr auto rule = pair_rule % x4::lit(',');
         Container actual;
@@ -65,11 +71,33 @@ void test_map_support()
         Container container;
         CHECK(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
     }
+
+    // as version
+    {
+        constexpr auto rule = as_pair_parser % x4::lit(',');
+        Container actual;
+        REQUIRE(parse("k1=v1,k2=v2,k2=v3", rule, actual));
+        CHECK(actual.size() == 2);
+        CHECK(actual == Container{{"k1", "v1"}, {"k2", "v2"}});
+    }
+    {
+        // test sequences parsing into containers
+        constexpr auto seq_rule = as_pair_parser >> ',' >> as_pair_parser >> ',' >> as_pair_parser;
+        Container container;
+        CHECK(parse("k1=v1,k2=v2,k2=v3", seq_rule, container));
+    }
+    {
+        // test parsing container into container
+        constexpr auto cic_rule = as_pair_parser >> +(',' >> as_pair_parser);
+        Container container;
+        CHECK(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
+    }
 }
 
 template<class Container>
 void test_multimap_support()
 {
+    // rule version
     {
         constexpr auto rule = pair_rule % x4::lit(',');
         Container actual;
@@ -89,13 +117,35 @@ void test_multimap_support()
         Container container;
         CHECK(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
     }
+
+    // as version
+    {
+        constexpr auto rule = as_pair_parser % x4::lit(',');
+        Container actual;
+        REQUIRE(parse("k1=v1,k2=v2,k2=v3", rule, actual));
+        CHECK(actual.size() == 3);
+        CHECK(actual == Container{ {"k1", "v1"}, {"k2", "v2"}, {"k2", "v3"} });
+    }
+    {
+        // test sequences parsing into containers
+        constexpr auto seq_rule = as_pair_parser >> ',' >> as_pair_parser >> ',' >> as_pair_parser;
+        Container container;
+        CHECK(parse("k1=v1,k2=v2,k2=v3", seq_rule, container));
+    }
+    {
+        // test parsing container into container
+        constexpr auto cic_rule = as_pair_parser >> +(',' >> as_pair_parser);
+        Container container;
+        CHECK(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
+    }
 }
 
 template<class Container>
 void test_sequence_support()
 {
+    // rule version
     {
-        constexpr auto rule = string_parser % x4::lit(',');
+        constexpr auto rule = string_rule % x4::lit(',');
         Container actual;
         REQUIRE(parse("e1,e2,e2", rule, actual));
         CHECK(actual.size() == 3);
@@ -103,13 +153,34 @@ void test_sequence_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
+        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
+        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        Container container;
+        CHECK(parse("e1,e2,e2", cic_rule, container));
+    }
+
+    // as version
+    {
+        constexpr auto rule = as_string_parser % x4::lit(',');
+        Container actual;
+        REQUIRE(parse("e1,e2,e2", rule, actual));
+        CHECK(actual.size() == 3);
+        CHECK(actual == Container{ "e1", "e2", "e2" });
+    }
+    {
+        // test sequences parsing into containers
+        constexpr auto seq_rule = as_string_parser >> ',' >> as_string_parser >> ',' >> as_string_parser;
+        Container container;
+        CHECK(parse("e1,e2,e2", seq_rule, container));
+    }
+    {
+        // test parsing container into container
+        constexpr auto cic_rule = as_string_parser >> +(',' >> as_string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
@@ -118,8 +189,9 @@ void test_sequence_support()
 template<class Container>
 void test_set_support()
 {
+    // rule version
     {
-        constexpr auto rule = string_parser % x4::lit(',');
+        constexpr auto rule = string_rule % x4::lit(',');
         Container actual;
         REQUIRE(parse("e1,e2,e2", rule, actual));
         CHECK(actual.size() == 2);
@@ -127,13 +199,34 @@ void test_set_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
+        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
+        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        Container container;
+        CHECK(parse("e1,e2,e2", cic_rule, container));
+    }
+
+    // as version
+    {
+        constexpr auto rule = as_string_parser % x4::lit(',');
+        Container actual;
+        REQUIRE(parse("e1,e2,e2", rule, actual));
+        CHECK(actual.size() == 2);
+        CHECK(actual == Container{ "e1", "e2" });
+    }
+    {
+        // test sequences parsing into containers
+        constexpr auto seq_rule = as_string_parser >> ',' >> as_string_parser >> ',' >> as_string_parser;
+        Container container;
+        CHECK(parse("e1,e2,e2", seq_rule, container));
+    }
+    {
+        // test parsing container into container
+        constexpr auto cic_rule = as_string_parser >> +(',' >> as_string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
@@ -142,8 +235,9 @@ void test_set_support()
 template<class Container>
 void test_multiset_support()
 {
+    // rule version
     {
-        constexpr auto rule = string_parser % x4::lit(',');
+        constexpr auto rule = string_rule % x4::lit(',');
         Container actual;
         REQUIRE(parse("e1,e2,e2", rule, actual));
         CHECK(actual.size() == 3);
@@ -151,13 +245,34 @@ void test_multiset_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
+        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
+        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        Container container;
+        CHECK(parse("e1,e2,e2", cic_rule, container));
+    }
+
+    // as version
+    {
+        constexpr auto rule = as_string_parser % x4::lit(',');
+        Container actual;
+        REQUIRE(parse("e1,e2,e2", rule, actual));
+        CHECK(actual.size() == 3);
+        CHECK(actual == Container{"e1", "e2", "e2"});
+    }
+    {
+        // test sequences parsing into containers
+        constexpr auto seq_rule = as_string_parser >> ',' >> as_string_parser >> ',' >> as_string_parser;
+        Container container;
+        CHECK(parse("e1,e2,e2", seq_rule, container));
+    }
+    {
+        // test parsing container into container
+        constexpr auto cic_rule = as_string_parser >> +(',' >> as_string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
@@ -166,8 +281,9 @@ void test_multiset_support()
 template<class Container>
 void test_string_support()
 {
+    // rule version
     {
-        constexpr auto rule = string_parser % x4::lit(',');
+        constexpr auto rule = string_rule % x4::lit(',');
         Container container;
         REQUIRE(parse("e1,e2,e2", rule, container));
         CHECK(container.size() == 6);
@@ -175,13 +291,34 @@ void test_string_support()
     }
     {
         // test sequences parsing into containers
-        constexpr auto seq_rule = string_parser >> ',' >> string_parser >> ',' >> string_parser;
+        constexpr auto seq_rule = string_rule >> ',' >> string_rule >> ',' >> string_rule;
         Container container;
         CHECK(parse("e1,e2,e2", seq_rule, container));
     }
     {
         // test parsing container into container
-        constexpr auto cic_rule = string_parser >> +(',' >> string_parser);
+        constexpr auto cic_rule = string_rule >> +(',' >> string_rule);
+        Container container;
+        CHECK(parse("e1,e2,e2", cic_rule, container));
+    }
+
+    // as version
+    {
+        constexpr auto rule = as_string_parser % x4::lit(',');
+        Container container;
+        REQUIRE(parse("e1,e2,e2", rule, container));
+        CHECK(container.size() == 6);
+        CHECK(container == Container{"e1e2e2"});
+    }
+    {
+        // test sequences parsing into containers
+        constexpr auto seq_rule = as_string_parser >> ',' >> as_string_parser >> ',' >> as_string_parser;
+        Container container;
+        CHECK(parse("e1,e2,e2", seq_rule, container));
+    }
+    {
+        // test parsing container into container
+        constexpr auto cic_rule = as_string_parser >> +(',' >> as_string_parser);
         Container container;
         CHECK(parse("e1,e2,e2", cic_rule, container));
     }
