@@ -69,8 +69,8 @@ struct can_hold<T, U>
 
 template<class T, class U>
     requires
-        is_container_v<std::remove_const<T>> &&
-        is_container_v<std::remove_const<U>>
+        is_container_v<T> &&
+        is_container_v<U>
 struct can_hold<T, U>
     : detail::value_type_can_hold<T, U>
 {};
