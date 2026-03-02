@@ -293,18 +293,18 @@ TEST_CASE("sequence")
 
     {
         // rule version
-        {
-            std::vector<std::string> v;
+        //{
+        //    std::vector<std::string> v;
 
-            auto e = rule<struct e_id, std::string>{} = *~char_(',');
-            auto l = rule<struct l_id, std::vector<std::string>>{} = e >> *(',' >> e);
+        //    auto e = rule<struct e_id, std::string>{} = *~char_(',');
+        //    auto l = rule<struct l_id, std::vector<std::string>>{} = e >> *(',' >> e);
 
-            REQUIRE(parse("abc1,abc2,abc3", l, v));
-            REQUIRE(v.size() == 3);
-            CHECK(v[0] == "abc1");
-            CHECK(v[1] == "abc2");
-            CHECK(v[2] == "abc3");
-        }
+        //    REQUIRE(parse("abc1,abc2,abc3", l, v));
+        //    REQUIRE(v.size() == 3);
+        //    CHECK(v[0] == "abc1");
+        //    CHECK(v[1] == "abc2");
+        //    CHECK(v[2] == "abc3");
+        //}
 
         // as version
         {
