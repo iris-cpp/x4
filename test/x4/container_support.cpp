@@ -44,7 +44,7 @@ IRIS_X4_DEFINE(string_rule)
 IRIS_X4_DEFINE(pair_rule)
 
 constexpr auto as_string_parser = x4::as<std::string>(x4::lexeme[*x4::standard::alnum]);
-constexpr auto as_pair_parser = as_string_parser >> x4::lit('=') >> as_string_parser;
+constexpr auto as_pair_parser = x4::as<std::pair<std::string, std::string>>(as_string_parser >> x4::lit('=') >> as_string_parser);
 
 template<class Container>
 void test_map_support()
