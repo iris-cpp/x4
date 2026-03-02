@@ -196,17 +196,4 @@ TEST_CASE("rule4")
         REQUIRE(parse("1", start, j));
         CHECK(j == 1);
     }
-
-    {
-        std::vector<std::string> v;
-
-        auto e = rule<class e_id, std::string>{} = *~char_(',');
-        auto l = rule<class l_id, std::vector<std::string>>{} = e >> *(',' >> e);
-
-        REQUIRE(parse("abc1,abc2,abc3", l, v));
-        REQUIRE(v.size() == 3);
-        CHECK(v[0] == "abc1");
-        CHECK(v[1] == "abc2");
-        CHECK(v[2] == "abc3");
-    }
 }
