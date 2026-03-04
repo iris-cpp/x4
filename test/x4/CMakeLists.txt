@@ -39,7 +39,6 @@ function(x4_define_tests)
 endfunction()
 
 x4_define_tests(
-    SIMPLE
     actions
     alternative
     and_predicate
