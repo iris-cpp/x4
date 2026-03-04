@@ -35,67 +35,61 @@ struct concat_type_list<type_list<Ts...>, type_list<Us...>>
 template<class TTypeList, class UTypeList>
 using concat_type_list_t = concat_type_list<TTypeList, UTypeList>::type;
 
-template<template<class...> class TT, class T>
-struct to_type_list
-{
-    using type = type_list<T>;
-};
-
-template<template<class...> class TT>
-struct to_type_list<TT, unused_type>
-{
-    using type = type_list<>;
-};
-
-template<template<class...> class TT, class... Ts>
-struct to_type_list<TT, TT<Ts...>>
-{
-    using type = type_list<Ts...>;
-};
-
-template<template<class...> class TT, class T>
-using to_type_list_t = to_type_list<TT, T>::type;
-
-template<template<class...> class TT, class TypeList>
-struct from_type_list {};
-
-template<template<class...> class TT>
-struct from_type_list<TT, type_list<>>
-{
-    using type = unused_type;
-};
-
-template<template<class...> class TT, class T>
-struct from_type_list<TT, type_list<T>>
-{
-    using type = T;
-};
-
-template<template<class...> class TT, class T0, class T1, class... Ts>
-struct from_type_list<TT, type_list<T0, T1, Ts...>>
-{
-    using type = TT<T0, T1, Ts...>;
-};
-
-template<template<class...> class TT, class TypeList>
-using from_type_list_t = from_type_list<TT, TypeList>::type;
-
 } // detail
 
-template<
-    template<class...> class TT,
-    class LeftParser, class RightParser
->
-struct attribute_of_binary
-{
-    using type = detail::from_type_list_t<
-        TT,
-        detail::concat_type_list_t<
-            detail::to_type_list_t<TT, typename parser_traits<LeftParser>::attribute_type>,
-            detail::to_type_list_t<TT, typename parser_traits<RightParser>::attribute_type>
-        >
-    >;
-};
+#define IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(postfix, tmpl) \
+    namespace detail { \
+    template<class T> \
+    struct to_type_list_##postfix \
+    { \
+        using type = type_list<T>; \
+    }; \
+    template<> \
+    struct to_type_list_##postfix<unused_type> \
+    { \
+        using type = type_list<>; \
+    }; \
+    template<class... Ts> \
+    struct to_type_list_##postfix<tmpl<Ts...>> \
+    { \
+        using type = type_list<Ts...>; \
+    }; \
+    template<class T> \
+    using to_type_list_##postfix##_t = to_type_list_##postfix<T>::type; \
+    template<class TypeList> \
+    struct from_type_list_##postfix {}; \
+    template<> \
+    struct from_type_list_##postfix<type_list<>> \
+    { \
+        using type = unused_type; \
+    }; \
+    template<class T> \
+    struct from_type_list_##postfix<type_list<T>> \
+    { \
+        using type = T; \
+    }; \
+    template<class T0, class T1, class... Ts> \
+    struct from_type_list_##postfix<type_list<T0, T1, Ts...>> \
+    { \
+        using type = tmpl<T0, T1, Ts...>; \
+    }; \
+    template<class TypeList> \
+    using from_type_list_##postfix##_t = from_type_list_##postfix<TypeList>::type; \
+    } \
+    template<class LeftParser, class RightParser> \
+    struct attribute_of_##postfix { \
+        using type = detail::from_type_list_##postfix##_t< \
+            detail::concat_type_list_t< \
+                detail::to_type_list_##postfix##_t<typename parser_traits<LeftParser>::attribute_type>, \
+                detail::to_type_list_##postfix##_t<typename parser_traits<RightParser>::attribute_type> \
+            > \
+        >; \
+    };
+
+IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(sequence, alloy::tuple)
+IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(alternative, rvariant)
+
+#undef IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV
 
 } // iris::x4::traits
 

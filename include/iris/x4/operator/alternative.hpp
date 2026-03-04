@@ -43,7 +43,7 @@ public:
     using attribute_type = std::conditional_t<
         is_both_same_attribute,
         std::type_identity<typename parser_traits<Left>::attribute_type>,
-        traits::attribute_of_binary<iris::rvariant, Left, Right>
+        traits::attribute_of_alternative<Left, Right>
     >::type;
 
     // If canonicalized, proxy the underlying `sequence_size`. In other words:
