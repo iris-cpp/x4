@@ -486,55 +486,55 @@ concept X4Container = is_container_v<std::remove_cvref_t<T>>;
 
 // Customization point
 template<class T>
-struct build_container
+struct default_container
 {
     using type = std::vector<T>;
 };
 
 template<class T>
-using build_container_t = typename build_container<T>::type;
+using default_container_t = typename default_container<T>::type;
 
 template<class T>
-struct build_container<alloy::tuple<T>> : build_container<T> {};
+struct default_container<alloy::tuple<T>> : default_container<T> {};
 
 template<>
-struct build_container<unused_type>
+struct default_container<unused_type>
 {
     using type = unused_container_type;
 };
 
 template<>
-struct build_container<unused_container_type>
+struct default_container<unused_container_type>
 {
     using type = unused_container_type;
 };
 
 template<>
-struct build_container<char>
+struct default_container<char>
 {
     using type = std::basic_string<char>;
 };
 
 template<>
-struct build_container<wchar_t>
+struct default_container<wchar_t>
 {
     using type = std::basic_string<wchar_t>;
 };
 
 template<>
-struct build_container<char8_t>
+struct default_container<char8_t>
 {
     using type = std::basic_string<char8_t>;
 };
 
 template<>
-struct build_container<char16_t>
+struct default_container<char16_t>
 {
     using type = std::basic_string<char16_t>;
 };
 
 template<>
-struct build_container<char32_t>
+struct default_container<char32_t>
 {
     using type = std::basic_string<char32_t>;
 };

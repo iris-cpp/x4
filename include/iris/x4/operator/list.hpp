@@ -28,7 +28,7 @@ namespace iris::x4 {
 template<class Left, class Right>
 struct list : binary_parser<Left, Right, list<Left, Right>>
 {
-    using attribute_type = traits::build_container_t<typename parser_traits<Left>::attribute_type>;
+    using attribute_type = traits::default_container_t<typename parser_traits<Left>::attribute_type>;
 
     static constexpr bool maybe_handles_container = true;
 

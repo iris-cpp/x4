@@ -87,7 +87,7 @@ template<class Subject, detail::RepeatBounds Bounds>
 struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds>>
 {
     using base_type = proxy_parser<Subject, repeat_directive>;
-    using attribute_type = traits::build_container_t<typename parser_traits<Subject>::attribute_type>;
+    using attribute_type = traits::default_container_t<typename parser_traits<Subject>::attribute_type>;
 
     static constexpr bool maybe_handles_container = true;
 
