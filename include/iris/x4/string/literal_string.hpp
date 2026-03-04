@@ -19,6 +19,7 @@
 #include <iris/x4/string/case_compare.hpp>
 #include <iris/x4/string/utf8.hpp>
 
+#include <format>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -74,7 +75,7 @@ struct get_info<literal_string<String, Encoding, Attr>>
     using result_type = std::string;
     [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attr> const& p) const
     {
-        return '"' + x4::to_utf8(p.str) + '"';
+        return std::format("\"{}\"", p.str);
     }
 };
 
