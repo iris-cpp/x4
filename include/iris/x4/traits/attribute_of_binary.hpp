@@ -45,7 +45,6 @@ struct tuple_to_type_list<TupleTT, TupleTT<Ts...>>
 template<template<class...> class TupleTT, class T>
 using tuple_to_type_list_t = tuple_to_type_list<TupleTT, T>::type;
 
-// Concatenate two type_lists (non-recursive, single pack expansion)
 template<class L1, class L2>
 struct concat_type_list;
 
