@@ -45,7 +45,7 @@ struct tuple_to_type_list<TupleTT, TupleTT<Ts...>>
 template<template<class...> class TupleTT, class T>
 using tuple_to_type_list_t = tuple_to_type_list<TupleTT, T>::type;
 
-template<class L1, class L2>
+template<class TTypeList, class UTypeList>
 struct concat_type_list;
 
 template<class... Ts, class... Us>
@@ -54,8 +54,8 @@ struct concat_type_list<type_list<Ts...>, type_list<Us...>>
     using type = type_list<Ts..., Us...>;
 };
 
-template<class L1, class L2>
-using concat_type_list_t = concat_type_list<L1, L2>::type;
+template<class TTypeList, class UTypeList>
+using concat_type_list_t = concat_type_list<TTypeList, UTypeList>::type;
 
 template<template<class...> class TupleTT, class TypeList>
 struct type_list_to_tuple {};
