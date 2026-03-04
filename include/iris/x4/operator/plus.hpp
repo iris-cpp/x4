@@ -32,6 +32,12 @@ struct plus : unary_parser<Subject, plus<Subject>>
 
     static constexpr bool maybe_handles_container = true;
 
+    template<class Container>
+    static constexpr bool handles_container = std::disjunction_v<
+        std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, traits::container_value_t<Container>>
+    >;
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const

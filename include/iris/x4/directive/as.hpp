@@ -52,9 +52,11 @@ struct as_directive : unary_parser<Subject, as_directive<T, Subject>>
     using attribute_type = T;
 
     static constexpr bool maybe_handles_container = parser_traits<Subject>::maybe_handles_container;
-
     static constexpr bool has_attribute = !std::same_as<T, unused_type>;
     static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
+
+    template<class Container>
+    static constexpr bool handles_container = parser_traits<Subject>::template handles_container<Container>;
 
 private:
     static constexpr bool need_as_var = Subject::has_action;

@@ -91,6 +91,12 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
 
     static constexpr bool maybe_handles_container = true;
 
+    template<class Container>
+    static constexpr bool handles_container = std::disjunction_v<
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, Container>,
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, traits::container_value_t<Container>>
+    >;
+
     template<class SubjectT, detail::RepeatBounds BoundsT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Bounds, BoundsT>
     constexpr repeat_directive(SubjectT&& subject, BoundsT&& bounds)

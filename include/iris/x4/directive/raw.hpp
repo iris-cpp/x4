@@ -37,6 +37,9 @@ struct raw_directive : unary_parser<Subject, raw_directive<Subject>>
 
     static constexpr bool maybe_handles_container = true;
 
+    template<class Container>
+    static constexpr bool handles_container = true; // FIXME
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const

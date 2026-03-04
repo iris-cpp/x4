@@ -119,6 +119,8 @@ struct proxy_parser : unary_parser<Subject, Derived>
     static constexpr bool has_attribute = x4::has_attribute_v<Subject>;
     static constexpr bool maybe_handles_container = Subject::maybe_handles_container;
     static constexpr std::size_t sequence_size = parser_traits<Subject>::sequence_size;
+    template<class Container>
+    static constexpr bool handles_container = parser_traits<Subject>::template handles_container<Container>;
 
     using unary_parser<Subject, Derived>::unary_parser;
 };

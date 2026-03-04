@@ -28,6 +28,65 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+template<class LeftAttr, class RightAttr, class Container>
+struct is_sequence_suitable_for_container_impl // e.g. `char_ >> char_` into `std::string`
+    : std::conjunction<
+        std::is_same<LeftAttr, RightAttr>,
+        traits::can_hold<LeftAttr, traits::container_value_t<Container>>
+    >
+{};
+
+template<traits::X4Container LeftAttr, class RightAttr, class Container>
+struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `*char_ >> char_` into `std::string`
+    : std::conjunction<
+        std::is_same<traits::container_value_t<LeftAttr>, RightAttr>,
+        traits::can_hold<LeftAttr, Container>
+    >
+{};
+
+template<class LeftAttr, traits::X4Container RightAttr, class Container>
+struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `char_ >> *char_` into `std::string`
+    : std::conjunction<
+        std::is_same<LeftAttr, traits::container_value_t<RightAttr>>,
+        traits::can_hold<RightAttr, Container>
+    >
+{};
+
+template<traits::X4Container LeftAttr, traits::X4Container RightAttr, class Container>
+struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `*char_ >> *char_` into `std::string`
+    : std::conjunction <
+        std::is_same<LeftAttr, RightAttr>,
+        traits::can_hold<LeftAttr, Container>
+    >
+{};
+
+template<class LeftAttr, class RightAttr, class Container>
+struct is_sequence_suitable_for_container
+    : is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>
+{};
+
+template<X4UnusedAttribute LeftAttr, class RightAttr, class Container>
+struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
+    : traits::can_hold<RightAttr, Container>
+{};
+
+template<class LeftAttr, X4UnusedAttribute RightAttr, class Container>
+struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
+    : traits::can_hold<LeftAttr, Container>
+{};
+
+template<X4UnusedAttribute LeftAttr, X4UnusedAttribute RightAttr, class Container>
+struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
+    : std::false_type
+{};
+
+template<class LeftAttr, class RightAttr, class Container>
+inline constexpr bool is_sequence_suitable_for_container_v = is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>::value;
+
+} // detail
+
 template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 {
@@ -35,6 +94,11 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 
     static constexpr std::size_t sequence_size =
         parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
+
+    template<class Container>
+    static constexpr bool handles_container =
+        (parser_traits<Left>::template handles_container<Container> && parser_traits<Right>::template handles_container<Container>) ||
+        detail::is_sequence_suitable_for_container_v<typename parser_traits<Left>::attribute_type, typename parser_traits<Right>::attribute_type, Container>;
 
     using binary_parser<Left, Right, sequence>::binary_parser;
 

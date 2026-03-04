@@ -32,6 +32,12 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
 
     static constexpr bool maybe_handles_container = true;
 
+    template<class Container>
+    static constexpr bool handles_container = std::disjunction_v<
+        std::bool_constant<parser_traits<Left>::template handles_container<Container>>,
+        traits::can_hold<typename parser_traits<Left>::attribute_type, traits::container_value_t<Container>>
+    >;
+
     using binary_parser<Left, Right, list>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
