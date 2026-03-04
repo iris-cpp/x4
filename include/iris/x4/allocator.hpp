@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_ALLOCATOR_HPP
-#define IRIS_X4_ALLOCATOR_HPP
+#ifndef IRIS_ZZ_X4_ALLOCATOR_HPP
+#define IRIS_ZZ_X4_ALLOCATOR_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka

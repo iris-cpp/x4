@@ -15,14 +15,18 @@
 #include <iris/x4/operator/difference.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/directive/skip.hpp>
 
 #include <string>
 
 TEST_CASE("difference")
 {
     using x4::standard::char_;
+    using x4::standard::blank;
     using x4::standard::space;
     using x4::lit;
+    using x4::skip;
     using x4::_attr;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ - 'a');
@@ -65,5 +69,21 @@ TEST_CASE("difference")
             space
         ));
         CHECK(s == "abcdefghijk");
+    }
+
+    {
+        // Rollback on failed parse
+        std::string s;
+        REQUIRE(parse(
+            "foo die ,",
+            +(
+                // RHS fails, so the difference parser should rollback iterator
+                // Note that RHS has a skipper, so the buffer skipped by `skip_over`
+                // should also be rolled back
+                char_ - skip(blank)[',']
+            ) >> skip(blank)[','],
+            s
+        ));
+        CHECK(s == "foo die"); // wrong implementation yields "foodie"
     }
 }

@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DIRECTIVE_WITH_HPP
-#define IRIS_X4_DIRECTIVE_WITH_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_WITH_HPP
+#define IRIS_ZZ_X4_DIRECTIVE_WITH_HPP
 
 /*=============================================================================
     Copyright (c) 2014 Joel de Guzman

@@ -1,5 +1,5 @@
-#ifndef IRIS_ALLOY_IO_HPP
-#define IRIS_ALLOY_IO_HPP
+#ifndef IRIS_ZZ_ALLOY_IO_HPP
+#define IRIS_ZZ_ALLOY_IO_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Yaito Kakeyama
@@ -8,6 +8,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
+
+#include <iris/io_fwd.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
@@ -40,6 +42,7 @@ struct tuple_ostream_impl<std::index_sequence<Is...>>
 } // detail
 
 template<class... Ts>
+    requires std::conjunction_v<req::ADL_ostreamable<Ts>...>
 std::ostream& operator<<(std::ostream& os, tuple<Ts...> const& t)
 {
     return detail::tuple_ostream_impl<std::make_index_sequence<sizeof...(Ts)>>::apply(os, t);

@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
-#define IRIS_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
+#ifndef IRIS_ZZ_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
+#define IRIS_ZZ_X4_DEBUG_ANNOTATE_ON_SUCCESS_HPP
 
 /*=============================================================================
     Copyright (c) 2026 The Iris Project Contributors

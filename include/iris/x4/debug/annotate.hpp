@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DEBUG_ANNOTATE_HPP
-#define IRIS_X4_DEBUG_ANNOTATE_HPP
+#ifndef IRIS_ZZ_X4_DEBUG_ANNOTATE_HPP
+#define IRIS_ZZ_X4_DEBUG_ANNOTATE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2015 Joel de Guzman

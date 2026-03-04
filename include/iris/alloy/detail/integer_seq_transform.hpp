@@ -1,5 +1,5 @@
-#ifndef IRIS_ALLOY_DETAIL_INTEGER_SEQ_TRANSFORM_HPP
-#define IRIS_ALLOY_DETAIL_INTEGER_SEQ_TRANSFORM_HPP
+#ifndef IRIS_ZZ_ALLOY_DETAIL_INTEGER_SEQ_TRANSFORM_HPP
+#define IRIS_ZZ_ALLOY_DETAIL_INTEGER_SEQ_TRANSFORM_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Yaito Kakeyama

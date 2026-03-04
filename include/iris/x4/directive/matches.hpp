@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DIRECTIVE_MATCHES_HPP
-#define IRIS_X4_DIRECTIVE_MATCHES_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_MATCHES_HPP
+#define IRIS_ZZ_X4_DIRECTIVE_MATCHES_HPP
 
 /*=============================================================================
     Copyright (c) 2015 Mario Lang

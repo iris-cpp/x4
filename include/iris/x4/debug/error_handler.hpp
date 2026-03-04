@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DEBUG_ERROR_HANDLER_HPP
-#define IRIS_X4_DEBUG_ERROR_HANDLER_HPP
+#ifndef IRIS_ZZ_X4_DEBUG_ERROR_HANDLER_HPP
+#define IRIS_ZZ_X4_DEBUG_ERROR_HANDLER_HPP
 
 /*=============================================================================
     Copyright (c) 2026 The Iris Project Contributors

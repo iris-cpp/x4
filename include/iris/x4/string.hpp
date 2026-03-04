@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_STRING_HPP
-#define IRIS_X4_STRING_HPP
+#ifndef IRIS_ZZ_X4_STRING_HPP
+#define IRIS_ZZ_X4_STRING_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

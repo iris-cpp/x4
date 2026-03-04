@@ -1,5 +1,5 @@
-#ifndef IRIS_ALLOY_DETAIL_TUPLE_COMPARISON_HPP
-#define IRIS_ALLOY_DETAIL_TUPLE_COMPARISON_HPP
+#ifndef IRIS_ZZ_ALLOY_DETAIL_TUPLE_COMPARISON_HPP
+#define IRIS_ZZ_ALLOY_DETAIL_TUPLE_COMPARISON_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Yaito Kakeyama
