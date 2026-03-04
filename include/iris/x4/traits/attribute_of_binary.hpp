@@ -17,8 +17,6 @@
 
 #include <iris/type_traits.hpp>  // TODO: move iris::type_list to separate header
 
-#include <type_traits>
-
 namespace iris::x4::traits {
 
 namespace detail {
