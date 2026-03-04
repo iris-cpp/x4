@@ -33,27 +33,28 @@ struct difference : binary_parser<Left, Right, difference<Left, Right>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        // Try Right first
-        It start = first;
+        // Try `Right`
+        It const orig_first = first;
         if (this->right.parse(first, last, ctx, unused)) {
-            // Right succeeds, we fail.
-            first = start;
+            // `Right` succeeds, we fail.
+            first = orig_first;
             return false;
         }
-
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             // In case of `Left - expect[r]`,
             // if Right yielded expectation error,
             // the whole difference expression (*this) should also yield error.
-            // In other words, when the THROW macro was 1 (i.e. traditional behavior),
-            // Right should already have thrown an exception.
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 return false;
             }
         }
+        // `Right` failed, now try `Left` ------------------
 
-        // Right fails, now try Left
+        // Rollback iterator
+        // This rolls back the iterator position, including the amount skipped by
+        // `Right`'s skipper (`x4::skip_over(...)`).
+        first = orig_first;
         return this->left.parse(first, last, ctx, attr);
     }
 };
