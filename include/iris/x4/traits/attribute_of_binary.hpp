@@ -12,7 +12,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 
@@ -23,27 +22,6 @@
 namespace iris::x4::traits {
 
 namespace detail {
-
-template<template<class...> class TupleTT, class T>
-struct tuple_to_type_list
-{
-    using type = type_list<T>;
-};
-
-template<template<class...> class TupleTT>
-struct tuple_to_type_list<TupleTT, unused_type>
-{
-    using type = type_list<>;
-};
-
-template<template<class...> class TupleTT, class... Ts>
-struct tuple_to_type_list<TupleTT, TupleTT<Ts...>>
-{
-    using type = type_list<Ts...>;
-};
-
-template<template<class...> class TupleTT, class T>
-using tuple_to_type_list_t = tuple_to_type_list<TupleTT, T>::type;
 
 template<class TTypeList, class UTypeList>
 struct concat_type_list;
@@ -57,43 +35,64 @@ struct concat_type_list<type_list<Ts...>, type_list<Us...>>
 template<class TTypeList, class UTypeList>
 using concat_type_list_t = concat_type_list<TTypeList, UTypeList>::type;
 
-template<template<class...> class TupleTT, class TypeList>
-struct type_list_to_tuple {};
+template<template<class...> class TT, class T>
+struct to_type_list
+{
+    using type = type_list<T>;
+};
 
-template<template<class...> class TupleTT>
-struct type_list_to_tuple<TupleTT, type_list<>>
+template<template<class...> class TT>
+struct to_type_list<TT, unused_type>
+{
+    using type = type_list<>;
+};
+
+template<template<class...> class TT, class... Ts>
+struct to_type_list<TT, TT<Ts...>>
+{
+    using type = type_list<Ts...>;
+};
+
+template<template<class...> class TT, class T>
+using to_type_list_t = to_type_list<TT, T>::type;
+
+template<template<class...> class TT, class TypeList>
+struct from_type_list {};
+
+template<template<class...> class TT>
+struct from_type_list<TT, type_list<>>
 {
     using type = unused_type;
 };
 
-template<template<class...> class TupleTT, class T>
-struct type_list_to_tuple<TupleTT, type_list<T>>
+template<template<class...> class TT, class T>
+struct from_type_list<TT, type_list<T>>
 {
     using type = T;
 };
 
-template<template<class...> class TupleTT, class T0, class T1, class... Ts>
-struct type_list_to_tuple<TupleTT, type_list<T0, T1, Ts...>>
+template<template<class...> class TT, class T0, class T1, class... Ts>
+struct from_type_list<TT, type_list<T0, T1, Ts...>>
 {
-    using type = TupleTT<T0, T1, Ts...>;
+    using type = TT<T0, T1, Ts...>;
 };
 
-template<template<class...> class TupleTT, class TypeList>
-using type_list_to_tuple_t = type_list_to_tuple<TupleTT, TypeList>::type;
+template<template<class...> class TT, class TypeList>
+using from_type_list_t = from_type_list<TT, TypeList>::type;
 
 } // detail
 
 template<
-    template<class...> class TupleTT,
+    template<class...> class TT,
     class LeftParser, class RightParser
 >
 struct attribute_of_binary
 {
-    using type = detail::type_list_to_tuple_t<
-        TupleTT,
+    using type = detail::from_type_list_t<
+        TT,
         detail::concat_type_list_t<
-            detail::tuple_to_type_list_t<TupleTT, typename parser_traits<LeftParser>::attribute_type>,
-            detail::tuple_to_type_list_t<TupleTT, typename parser_traits<RightParser>::attribute_type>
+            detail::to_type_list_t<TT, typename parser_traits<LeftParser>::attribute_type>,
+            detail::to_type_list_t<TT, typename parser_traits<RightParser>::attribute_type>
         >
     >;
 };
