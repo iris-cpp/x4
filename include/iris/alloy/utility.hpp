@@ -1,5 +1,5 @@
-#ifndef IRIS_ALLOY_UTILITY_HPP
-#define IRIS_ALLOY_UTILITY_HPP
+#ifndef IRIS_ZZ_ALLOY_UTILITY_HPP
+#define IRIS_ZZ_ALLOY_UTILITY_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Yaito Kakeyama

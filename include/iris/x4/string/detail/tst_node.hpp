@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_STRING_DETAIL_TST_NODE_HPP
-#define IRIS_X4_STRING_DETAIL_TST_NODE_HPP
+#ifndef IRIS_ZZ_X4_STRING_DETAIL_TST_NODE_HPP
+#define IRIS_ZZ_X4_STRING_DETAIL_TST_NODE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

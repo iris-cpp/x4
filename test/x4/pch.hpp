@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TEST_PCH_HPP
-#define IRIS_X4_TEST_PCH_HPP
+#ifndef IRIS_ZZ_X4_TEST_PCH_HPP
+#define IRIS_ZZ_X4_TEST_PCH_HPP
 
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/adapt.hpp>

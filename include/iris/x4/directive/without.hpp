@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DIRECTIVE_WITHOUT_HPP
-#define IRIS_X4_DIRECTIVE_WITHOUT_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_WITHOUT_HPP
+#define IRIS_ZZ_X4_DIRECTIVE_WITHOUT_HPP
 
 /*=============================================================================
     Copyright (c) 2026 The Iris Project Contributors
