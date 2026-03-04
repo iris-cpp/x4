@@ -18,7 +18,6 @@
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
-#include <iris/x4/directive/raw.hpp>
 #include <iris/x4/directive/repeat.hpp>
 #include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>

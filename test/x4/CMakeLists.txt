@@ -73,7 +73,6 @@ x4_define_tests(
     optional
     parser
     plus
-    raw
     real1
     real2
     real3
