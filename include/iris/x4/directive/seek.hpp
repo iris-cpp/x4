@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DIRECTIVE_SEEK_HPP
-#define IRIS_X4_DIRECTIVE_SEEK_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_SEEK_HPP
+#define IRIS_ZZ_X4_DIRECTIVE_SEEK_HPP
 
 /*=============================================================================
     Copyright (c) 2011 Jamboree

@@ -1,5 +1,5 @@
-﻿#ifndef IRIS_X4_DIRECTIVE_WITH_LOCAL_HPP
-#define IRIS_X4_DIRECTIVE_WITH_LOCAL_HPP
+﻿#ifndef IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
+#define IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka

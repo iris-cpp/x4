@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DEBUG_ERROR_REPORTING_HPP
-#define IRIS_X4_DEBUG_ERROR_REPORTING_HPP
+#ifndef IRIS_ZZ_X4_DEBUG_ERROR_REPORTING_HPP
+#define IRIS_ZZ_X4_DEBUG_ERROR_REPORTING_HPP
 
 /*=============================================================================
     Copyright (c) 2014 Joel de Guzman

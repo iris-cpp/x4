@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_HPP
-#define IRIS_X4_HPP
+#ifndef IRIS_ZZ_X4_HPP
+#define IRIS_ZZ_X4_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2013 Joel de Guzman

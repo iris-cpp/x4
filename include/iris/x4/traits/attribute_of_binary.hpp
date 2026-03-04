@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TRAITS_ATTRIBUTE_OF_BINARY_HPP
-#define IRIS_X4_TRAITS_ATTRIBUTE_OF_BINARY_HPP
+#ifndef IRIS_ZZ_X4_TRAITS_ATTRIBUTE_OF_BINARY_HPP
+#define IRIS_ZZ_X4_TRAITS_ATTRIBUTE_OF_BINARY_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -28,7 +28,7 @@ template<class TypeList, class... Us>
 struct append_to_type_list {};
 
 template<class TypeList, class... Us>
-using append_to_type_list_t = append_to_type_list<TypeList, Us...>::type; 
+using append_to_type_list_t = append_to_type_list<TypeList, Us...>::type;
 
 template<class... Ts>
 struct append_to_type_list<type_list<Ts...>>

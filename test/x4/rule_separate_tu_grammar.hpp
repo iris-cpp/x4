@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TEST_X4_RULE_SEPARATE_TU_GRAMMAR_HPP
-#define IRIS_X4_TEST_X4_RULE_SEPARATE_TU_GRAMMAR_HPP
+#ifndef IRIS_ZZ_X4_TEST_X4_RULE_SEPARATE_TU_GRAMMAR_HPP
+#define IRIS_ZZ_X4_TEST_X4_RULE_SEPARATE_TU_GRAMMAR_HPP
 
 /*=============================================================================
     Copyright (c) 2019 Nikita Kniazev
