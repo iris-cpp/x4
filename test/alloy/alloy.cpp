@@ -7,6 +7,8 @@
 
 #include <iris_test.hpp>
 
+#include <iris/io_fwd.hpp>
+
 #include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/adapted/std_pair.hpp>
 
@@ -499,6 +501,13 @@ TEST_CASE("utility")
 
 TEST_CASE("io")
 {
+    {
+        STATIC_CHECK(iris::req::ADL_ostreamable_v<alloy::tuple<int>>);
+
+        struct NotStreamable {};
+        STATIC_CHECK(!iris::req::ADL_ostreamable_v<NotStreamable>);
+        STATIC_CHECK(!iris::req::ADL_ostreamable_v<alloy::tuple<NotStreamable>>);
+    }
     {
         {
             std::stringstream ss;
