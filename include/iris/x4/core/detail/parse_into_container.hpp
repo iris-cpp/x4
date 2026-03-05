@@ -92,7 +92,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 parse_into_container(
     Parser const& parser, It& first, Se const& last,
     Context const& ctx, Attr& attr
-) noexcept(X4UnusedAttribute<Attr> || !has_attribute_v<Parser>)
+) noexcept((X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) && is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
     if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) { // handle unused types first
         return parser.parse(first, last, ctx, unused);
