@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_CORE_MOVE_TO_HPP
-#define IRIS_X4_CORE_MOVE_TO_HPP
+#ifndef IRIS_ZZ_X4_CORE_MOVE_TO_HPP
+#define IRIS_ZZ_X4_CORE_MOVE_TO_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -221,8 +221,8 @@ move_to(It first, Se last, Dest& dest)
         }
     }
 
-    if constexpr (traits::is_subrange_v<traits::container_value_t<Dest>>) {
-        traits::push_back(dest.container, traits::container_value_t<Dest>{std::move(first), std::move(last)});
+    if constexpr (traits::is_subrange_v<typename traits::container_value<Dest>::type>) {
+        traits::push_back(dest.container, typename traits::container_value<Dest>::type{std::move(first), std::move(last)});
     } else {
         // Be careful, this may result in converting surprisingly incompatible types,
         // for example, `std::vector<int>` and `std::set<int>`. Such types must be
@@ -267,7 +267,7 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::same_as<std::remove_cvref_t<Source>, traits::container_value_t<Dest>>) {
+    if constexpr (std::same_as<std::remove_cvref_t<Source>, typename traits::container_value<Dest>::type>) {
         traits::push_back(dest, std::forward<Source>(src));
     } else {
         if constexpr (std::is_rvalue_reference_v<Source&&>) {

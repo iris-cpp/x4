@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_OPERATOR_KLEENE_HPP
-#define IRIS_X4_OPERATOR_KLEENE_HPP
+#ifndef IRIS_ZZ_X4_OPERATOR_KLEENE_HPP
+#define IRIS_ZZ_X4_OPERATOR_KLEENE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -28,14 +28,14 @@ namespace iris::x4 {
 template<class Subject>
 struct kleene : unary_parser<Subject, kleene<Subject>>
 {
-    using attribute_type = traits::default_container_t<typename parser_traits<Subject>::attribute_type>;
+    using attribute_type = typename traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     static constexpr bool maybe_handles_container = true;
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, traits::container_value_t<Container>>
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>

@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_OPERATOR_OPTIONAL_HPP
-#define IRIS_X4_OPERATOR_OPTIONAL_HPP
+#ifndef IRIS_ZZ_X4_OPERATOR_OPTIONAL_HPP
+#define IRIS_ZZ_X4_OPERATOR_OPTIONAL_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -30,14 +30,14 @@ namespace iris::x4 {
 template<class Subject>
 struct optional : unary_parser<Subject, optional<Subject>>
 {
-    using attribute_type = traits::build_optional_t<typename parser_traits<Subject>::attribute_type>;
+    using attribute_type = traits::build_optional<typename parser_traits<Subject>::attribute_type>::type;
 
     static constexpr bool maybe_handles_container = true;
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, traits::container_value_t<Container>>
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     // catch-all overload
@@ -88,15 +88,13 @@ struct optional : unary_parser<Subject, optional<Subject>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
-            std::is_nothrow_default_constructible_v<x4::traits::optional_value_t<Attr>> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, x4::traits::optional_value_t<Attr>> &&
-            noexcept(x4::move_to(std::declval<x4::traits::optional_value_t<Attr>&&>(), attr))
+            std::is_nothrow_default_constructible_v<typename traits::optional_value<Attr>::type> &&
+            is_nothrow_parsable_v<Subject, It, Se, Context, typename traits::optional_value<Attr>::type> &&
+            noexcept(x4::move_to(std::declval<typename traits::optional_value<Attr>::type&&>(), attr))
         )
     {
-        using value_type = x4::traits::optional_value_t<Attr>;
-        value_type val; // default-initialize
+        typename traits::optional_value<Attr>::type val{}; // value-initialize
 
-        static_assert(Parsable<Subject, It, Se, Context, value_type>);
         if (this->subject.parse(first, last, ctx, val)) {
             // assign the parsed value into our attribute
             x4::move_to(std::move(val), attr);

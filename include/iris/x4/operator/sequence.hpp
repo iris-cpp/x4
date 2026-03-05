@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_OPERATOR_SEQUENCE_HPP
-#define IRIS_X4_OPERATOR_SEQUENCE_HPP
+#ifndef IRIS_ZZ_X4_OPERATOR_SEQUENCE_HPP
+#define IRIS_ZZ_X4_OPERATOR_SEQUENCE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -34,14 +34,14 @@ template<class LeftAttr, class RightAttr, class Container>
 struct is_sequence_suitable_for_container_impl // e.g. `char_ >> char_` into `std::string`
     : std::conjunction<
         std::is_same<LeftAttr, RightAttr>,
-        traits::can_hold<LeftAttr, traits::container_value_t<Container>>
+        traits::can_hold<LeftAttr, typename traits::container_value<Container>::type>
     >
 {};
 
 template<traits::X4Container LeftAttr, class RightAttr, class Container>
 struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `*char_ >> char_` into `std::string`
     : std::conjunction<
-        std::is_same<traits::container_value_t<LeftAttr>, RightAttr>,
+        std::is_same<typename traits::container_value<LeftAttr>::type, RightAttr>,
         traits::can_hold<LeftAttr, Container>
     >
 {};
@@ -49,7 +49,7 @@ struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  
 template<class LeftAttr, traits::X4Container RightAttr, class Container>
 struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `char_ >> *char_` into `std::string`
     : std::conjunction<
-        std::is_same<LeftAttr, traits::container_value_t<RightAttr>>,
+        std::is_same<LeftAttr, typename traits::container_value<RightAttr>::type>,
         traits::can_hold<RightAttr, Container>
     >
 {};
@@ -90,7 +90,7 @@ inline constexpr bool is_sequence_suitable_for_container_v = is_sequence_suitabl
 template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 {
-    using attribute_type = traits::attribute_of_binary<alloy::tuple, Left, Right>::type;
+    using attribute_type = traits::detail::attribute_of_sequence<Left, Right>::type;
 
     static constexpr std::size_t sequence_size =
         parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;

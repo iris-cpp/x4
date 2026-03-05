@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_OPERATOR_LIST_HPP
-#define IRIS_X4_OPERATOR_LIST_HPP
+#ifndef IRIS_ZZ_X4_OPERATOR_LIST_HPP
+#define IRIS_ZZ_X4_OPERATOR_LIST_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -28,14 +28,14 @@ namespace iris::x4 {
 template<class Left, class Right>
 struct list : binary_parser<Left, Right, list<Left, Right>>
 {
-    using attribute_type = traits::default_container_t<typename parser_traits<Left>::attribute_type>;
+    using attribute_type = typename traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
     static constexpr bool maybe_handles_container = true;
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Left>::template handles_container<Container>>,
-        traits::can_hold<typename parser_traits<Left>::attribute_type, traits::container_value_t<Container>>
+        traits::can_hold<typename parser_traits<Left>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     using binary_parser<Left, Right, list>::binary_parser;

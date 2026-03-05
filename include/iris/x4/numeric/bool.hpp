@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_NUMERIC_BOOL_HPP
-#define IRIS_X4_NUMERIC_BOOL_HPP
+#ifndef IRIS_ZZ_X4_NUMERIC_BOOL_HPP
+#define IRIS_ZZ_X4_NUMERIC_BOOL_HPP
 
 /*=============================================================================
     Copyright (c) 2009 Hartmut Kaiser

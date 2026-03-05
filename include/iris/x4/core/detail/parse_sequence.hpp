@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_CORE_DETAIL_PARSE_SEQUENCE_HPP
-#define IRIS_X4_CORE_DETAIL_PARSE_SEQUENCE_HPP
+#ifndef IRIS_ZZ_X4_CORE_DETAIL_PARSE_SEQUENCE_HPP
+#define IRIS_ZZ_X4_CORE_DETAIL_PARSE_SEQUENCE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -290,7 +290,7 @@ struct parse_into_container_impl<sequence<Left, Right>>
         if constexpr (traits::is_container_v<Attr>) {
             constexpr bool can_parser_attribute_hold_value_type = traits::can_hold_v<
                 typename sequence<Left, Right>::attribute_type,
-                traits::container_value_t<Attr>
+                typename traits::container_value<Attr>::type
             >;
 
             if constexpr (can_parser_attribute_hold_value_type) {

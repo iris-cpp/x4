@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_AUXILIARY_ATTR_HPP
-#define IRIS_X4_AUXILIARY_ATTR_HPP
+#ifndef IRIS_ZZ_X4_AUXILIARY_ATTR_HPP
+#define IRIS_ZZ_X4_AUXILIARY_ATTR_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Hartmut Kaiser

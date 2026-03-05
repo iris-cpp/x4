@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_DIRECTIVE_REPEAT_HPP
-#define IRIS_X4_DIRECTIVE_REPEAT_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_REPEAT_HPP
+#define IRIS_ZZ_X4_DIRECTIVE_REPEAT_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
@@ -87,14 +87,14 @@ template<class Subject, detail::RepeatBounds Bounds>
 struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds>>
 {
     using base_type = proxy_parser<Subject, repeat_directive>;
-    using attribute_type = traits::default_container_t<typename parser_traits<Subject>::attribute_type>;
+    using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     static constexpr bool maybe_handles_container = true;
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         traits::can_hold<typename parser_traits<Subject>::attribute_type, Container>,
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, traits::container_value_t<Container>>
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     template<class SubjectT, detail::RepeatBounds BoundsT>

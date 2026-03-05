@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TRAITS_CONTAINER_TRAITS_HPP
-#define IRIS_X4_TRAITS_CONTAINER_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_TRAITS_CONTAINER_TRAITS_HPP
+#define IRIS_ZZ_X4_TRAITS_CONTAINER_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -88,9 +88,6 @@ template<class Container>
 struct container_value<Container>
     : detail::remove_value_const<typename Container::value_type>
 {};
-
-template<class Container>
-using container_value_t = typename container_value<Container>::type;
 
 template<class Container>
 struct container_value<Container const> : container_value<Container> {};
@@ -218,7 +215,7 @@ struct append_fn
     {
         // appending incompatible type into a container can result in unexpected behavior
         // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
-        static_assert(std::constructible_from<traits::container_value_t<Container>, std::iter_value_t<It>>);
+        static_assert(std::constructible_from<typename traits::container_value<Container>::type, std::iter_value_t<It>>);
         c.insert(first, last);
     }
 
@@ -234,7 +231,7 @@ struct append_fn
     {
         // appending incompatible type into a container can result in unexpected behavior
         // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
-        static_assert(std::constructible_from<traits::container_value_t<Container>, std::iter_value_t<It>>);
+        static_assert(std::constructible_from<typename traits::container_value<Container>::type, std::iter_value_t<It>>);
         c.insert(std::ranges::end(c), first, last);
     }
 
@@ -248,7 +245,7 @@ struct append_fn
 
         // appending incompatible type into a container can result in unexpected behavior
         // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
-        static_assert(std::constructible_from<traits::container_value_t<Container>, std::iter_value_t<It>>);
+        static_assert(std::constructible_from<typename traits::container_value<Container>::type, std::iter_value_t<It>>);
         append_container<Container>::call(c, first, last);
     }
 };
@@ -456,13 +453,13 @@ template<class T>
         std::default_initializable<T> &&
 
         requires(T& c) {
-            typename container_value_t<T>; // required
+            typename container_value<T>::type; // required
             traits::begin(c);
             requires std::forward_iterator<decltype(traits::begin(c))>;
             traits::end(c);
             requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
             traits::is_empty(c);
-            traits::push_back(c, std::declval<container_value_t<T>>());
+            traits::push_back(c, std::declval<typename container_value<T>::type>());
             traits::append(
                 c,
                 std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
@@ -490,9 +487,6 @@ struct default_container
 {
     using type = std::vector<T>;
 };
-
-template<class T>
-using default_container_t = typename default_container<T>::type;
 
 template<class T>
 struct default_container<alloy::tuple<T>> : default_container<T> {};

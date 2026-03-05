@@ -51,7 +51,7 @@ struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple
 
 template<class T, class U>
 struct value_type_can_hold
-    : can_hold<container_value_t<T>, container_value_t<U>>
+    : can_hold<typename container_value<T>::type, typename container_value<U>::type>
 {};
 
 } // detail

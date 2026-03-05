@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_STRING_DETAIL_STRING_PARSE_HPP
-#define IRIS_X4_STRING_DETAIL_STRING_PARSE_HPP
+#ifndef IRIS_ZZ_X4_STRING_DETAIL_STRING_PARSE_HPP
+#define IRIS_ZZ_X4_STRING_DETAIL_STRING_PARSE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -32,7 +32,7 @@ string_parse(
 {
     using synthesized_value_type = traits::synthesized_value_t<Attr>;
     static_assert(std::same_as<traits::attribute_category_t<synthesized_value_type>, traits::container_attr>);
-    using value_type = traits::container_value_t<synthesized_value_type>;
+    using value_type = traits::container_value<synthesized_value_type>::type;
     static_assert(!traits::CharLike<value_type> || std::same_as<value_type, CharT>, "Mixing incompatible char types is not allowed");
 
     It it = first;
@@ -79,7 +79,7 @@ string_parse(
 {
     using synthesized_value_type = traits::synthesized_value_t<Attr>;
     static_assert(std::same_as<traits::attribute_category_t<synthesized_value_type>, traits::container_attr>);
-    using value_type = traits::container_value_t<synthesized_value_type>;
+    using value_type = traits::container_value<synthesized_value_type>::type;
     static_assert(!traits::CharLike<value_type> || std::same_as<value_type, CharT>, "Mixing incompatible char types is not allowed");
 
     auto uc_it = ucstr.begin();

@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_CORE_DETAIL_PARSE_ALTERNATIVE_HPP
-#define IRIS_X4_CORE_DETAIL_PARSE_ALTERNATIVE_HPP
+#ifndef IRIS_ZZ_X4_CORE_DETAIL_PARSE_ALTERNATIVE_HPP
+#define IRIS_ZZ_X4_CORE_DETAIL_PARSE_ALTERNATIVE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -230,7 +230,7 @@ struct parse_into_container_impl<alternative<Left, Right>>
     using parser_type = alternative<Left, Right>;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires traits::is_variant_v<traits::container_value_t<Attr>>
+        requires traits::is_variant_v<typename traits::container_value<Attr>::type>
     [[nodiscard]] static constexpr bool
     call(
         parser_type const& parser,
@@ -242,7 +242,7 @@ struct parse_into_container_impl<alternative<Left, Right>>
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires (!traits::is_variant_v<traits::container_value_t<Attr>>)
+        requires (!traits::is_variant_v<typename traits::container_value<Attr>::type>)
     [[nodiscard]] static constexpr bool
     call(
         parser_type const& parser,

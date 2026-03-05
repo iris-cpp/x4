@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
-#define IRIS_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
+#ifndef IRIS_ZZ_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
+#define IRIS_ZZ_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman

@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_CORE_EXPECTATION_HPP
-#define IRIS_X4_CORE_EXPECTATION_HPP
+#ifndef IRIS_ZZ_X4_CORE_EXPECTATION_HPP
+#define IRIS_ZZ_X4_CORE_EXPECTATION_HPP
 
 /*=============================================================================
     Copyright (c) 2017 wanghan02

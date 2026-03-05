@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_CORE_DETAIL_PARSE_INTO_CONTAINER_HPP
-#define IRIS_X4_CORE_DETAIL_PARSE_INTO_CONTAINER_HPP
+#ifndef IRIS_ZZ_X4_CORE_DETAIL_PARSE_INTO_CONTAINER_HPP
+#define IRIS_ZZ_X4_CORE_DETAIL_PARSE_INTO_CONTAINER_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -60,7 +60,7 @@ struct parse_into_container_impl_default
                 auto&& appender = x4::make_container_appender(unwrapped_attr);
                 return parser.parse(first, last, ctx, appender);
             } else { // parser DOES NOT accept the container; parse into value type and append it
-                using value_type = traits::container_value_t<unwrapped_attribute_type>;
+                using value_type = traits::container_value<unwrapped_attribute_type>::type;
                 value_type value{}; // value-initialize
                 if (!parser.parse(first, last, ctx, value)) return false;
                 traits::push_back(unwrapped_attr, std::move(value));
@@ -98,7 +98,7 @@ parse_into_container(
             using attribute_type = parser_traits<Parser>::attribute_type;
 
             // e.g. `std::string` when the attribute_type is `char`
-            using substitute_type = traits::variant_find_holdable_type_t<Attr, traits::default_container_t<attribute_type>>;
+            using substitute_type = traits::variant_find_holdable_type_t<Attr, typename traits::default_container<attribute_type>::type>;
 
             // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
             auto& variant_alt = attr.template emplace<substitute_type>();

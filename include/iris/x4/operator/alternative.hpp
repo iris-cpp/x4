@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_OPERATOR_ALTERNATIVE_HPP
-#define IRIS_X4_OPERATOR_ALTERNATIVE_HPP
+#ifndef IRIS_ZZ_X4_OPERATOR_ALTERNATIVE_HPP
+#define IRIS_ZZ_X4_OPERATOR_ALTERNATIVE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -29,6 +29,27 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+template<bool IsBothSameAttribute, class Left, class Right>
+struct alternative_attribute_impl;
+
+// Both same attribute
+template<class Left, class Right>
+struct alternative_attribute_impl<true, Left, Right>
+{
+    using type = parser_traits<Left>::attribute_type;
+};
+
+// Not same attribute
+template<class Left, class Right>
+struct alternative_attribute_impl<false, Left, Right>
+{
+    using type = traits::detail::attribute_of_alternative<Left, Right>::type;
+};
+
+} // detail
+
 template<class Left, class Right>
 struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
 {
@@ -40,10 +61,8 @@ private:
 
 public:
     // Canonicalize `rvariant<X, X>` to `X`
-    using attribute_type = std::conditional_t<
-        is_both_same_attribute,
-        std::type_identity<typename parser_traits<Left>::attribute_type>,
-        traits::attribute_of_binary<iris::rvariant, Left, Right>
+    using attribute_type = detail::alternative_attribute_impl<
+        is_both_same_attribute, Left, Right
     >::type;
 
     // If canonicalized, proxy the underlying `sequence_size`. In other words:

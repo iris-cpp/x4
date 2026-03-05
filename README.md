@@ -19,12 +19,12 @@ Add Iris.X4 to your application:
 
 ```console
 cd my_app
-git submodule add https://github.com/iris-cpp/x4.git modules/iris_x4
+git submodule add https://github.com/iris-cpp/x4.git modules/x4
 ```
 
 Edit your `CMakeLists.txt`:
 
 ```cmake
-add_subdirectory(modules/iris_x4)
-target_link_libraries(my_app PRIVATE Iris::X4)
+add_subdirectory(modules/x4)
+target_link_libraries(my_app PUBLIC Iris::X4)
 ```

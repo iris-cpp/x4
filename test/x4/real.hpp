@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TEST_X4_REAL_HPP
-#define IRIS_X4_TEST_X4_REAL_HPP
+#ifndef IRIS_ZZ_X4_TEST_X4_REAL_HPP
+#define IRIS_ZZ_X4_TEST_X4_REAL_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2010 Joel de Guzman

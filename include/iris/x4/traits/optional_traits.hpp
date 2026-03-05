@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TRAITS_OPTIONAL_TRAITS_HPP
-#define IRIS_X4_TRAITS_OPTIONAL_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_TRAITS_OPTIONAL_TRAITS_HPP
+#define IRIS_ZZ_X4_TRAITS_OPTIONAL_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -42,9 +42,6 @@ struct build_optional
 };
 
 template<class T>
-using build_optional_t = typename build_optional<T>::type;
-
-template<class T>
 struct build_optional<std::optional<T>>
 {
     using type = std::optional<T>;
@@ -68,9 +65,6 @@ struct optional_value
     static_assert(is_optional_v<T>);
     using type = typename T::value_type;
 };
-
-template<class T>
-using optional_value_t = typename optional_value<T>::type;
 
 template<>
 struct optional_value<unused_type>
