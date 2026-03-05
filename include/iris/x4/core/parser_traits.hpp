@@ -128,8 +128,6 @@ struct parser_traits
 
     static constexpr std::size_t sequence_size = detail::get_sequence_size<Parser>::value;
 
-    static constexpr bool maybe_handles_container = Parser::maybe_handles_container;
-
     template<class Container>
     static constexpr bool handles_container = detail::get_handles_container<Parser, Container>::value;
 

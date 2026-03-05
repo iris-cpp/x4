@@ -89,8 +89,6 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
     using base_type = proxy_parser<Subject, repeat_directive>;
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
-    static constexpr bool maybe_handles_container = true;
-
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         traits::can_hold<typename parser_traits<Subject>::attribute_type, Container>,

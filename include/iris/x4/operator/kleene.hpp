@@ -30,8 +30,6 @@ struct kleene : unary_parser<Subject, kleene<Subject>>
 {
     using attribute_type = typename traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
-    static constexpr bool maybe_handles_container = true;
-
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,

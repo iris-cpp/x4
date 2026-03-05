@@ -30,8 +30,6 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
 {
     using attribute_type = typename traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
-    static constexpr bool maybe_handles_container = true;
-
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Left>::template handles_container<Container>>,

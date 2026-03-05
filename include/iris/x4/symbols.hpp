@@ -62,7 +62,6 @@ struct symbols_parser_impl : parser<Derived>
     using attribute_type = value_type;
 
     static constexpr bool has_attribute = !std::is_same_v<attribute_type, unused_type>;
-    static constexpr bool maybe_handles_container = traits::is_container_v<attribute_type>;
 
     constexpr symbols_parser_impl(std::string_view name = "symbols")
         requires(IsShared)
