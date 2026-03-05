@@ -82,9 +82,6 @@ struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
     : std::false_type
 {};
 
-template<class LeftAttr, class RightAttr, class Container>
-inline constexpr bool is_sequence_suitable_for_container_v = is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>::value;
-
 } // detail
 
 template<class Left, class Right>
@@ -98,7 +95,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
     template<class Container>
     static constexpr bool handles_container =
         (parser_traits<Left>::template handles_container<Container> && parser_traits<Right>::template handles_container<Container>) ||
-        detail::is_sequence_suitable_for_container_v<typename parser_traits<Left>::attribute_type, typename parser_traits<Right>::attribute_type, Container>;
+        detail::is_sequence_suitable_for_container<typename parser_traits<Left>::attribute_type, typename parser_traits<Right>::attribute_type, Container>::value;
 
     using binary_parser<Left, Right, sequence>::binary_parser;
 
