@@ -38,9 +38,6 @@ namespace detail {
 template<class T, class... Ts>
 struct variant_has_exact_type;
 
-template<class T, class... Ts>
-inline constexpr bool variant_has_exact_type_v = variant_has_exact_type<T, Ts...>::value;
-
 template<class T>
 struct variant_has_exact_type<T>
     : std::false_type
@@ -101,14 +98,14 @@ struct variant_find_holdable_type<Variant, Variant>
 };
 
 template<class... Ts, class T>
-    requires (!std::same_as<iris::rvariant<Ts...>, T>) && detail::variant_has_exact_type_v<T, Ts...>
+    requires (!std::same_as<iris::rvariant<Ts...>, T>) && detail::variant_has_exact_type<T, Ts...>::value
 struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
 {
     using type = T;
 };
 
 template<class... Ts, class T>
-    requires (!std::same_as<iris::rvariant<Ts...>, T>) && (!detail::variant_has_exact_type_v<T, Ts...>)
+    requires (!std::same_as<iris::rvariant<Ts...>, T>) && (!detail::variant_has_exact_type<T, Ts...>::value)
 struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
 {
     using type = typename detail::variant_find_holdable_type_impl<T, Ts...>::type;
