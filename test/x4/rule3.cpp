@@ -79,29 +79,29 @@ IRIS_X4_DEFINE(b)
 
 // } // check_recursive_scoped
 
-// struct recursive_tuple
-// {
-//     int value;
-//     std::vector<recursive_tuple> children;
-// };
-// 
-// template<>
-// struct alloy::adaptor<recursive_tuple> {
-//     using getters_list = make_getters_list<&recursive_tuple::value, &recursive_tuple::children>;
-// };
-// 
-// // regression test for #461
-// namespace check_recursive_tuple {
-// 
-// using iterator_type = std::string_view::const_iterator;
-// 
-// x4::rule<class recursive_tuple_grammar_r, recursive_tuple> const grammar;
-// auto const grammar_def = x4::int_ >> ('{' >> grammar % ',' >> '}' | x4::eps);
-// IRIS_X4_DEFINE(grammar)
-// 
-// IRIS_X4_INSTANTIATE(decltype(grammar), iterator_type, x4::parse_context_for<iterator_type>)
-// 
-// } // check_recursive_tuple
+struct recursive_tuple
+{
+    int value;
+    std::vector<recursive_tuple> children;
+};
+
+template<>
+struct alloy::adaptor<recursive_tuple> {
+    using getters_list = make_getters_list<&recursive_tuple::value, &recursive_tuple::children>;
+};
+
+// regression test for #461
+namespace check_recursive_tuple {
+
+using iterator_type = std::string_view::const_iterator;
+
+x4::rule<class recursive_tuple_grammar_r, recursive_tuple> const grammar;
+auto const grammar_def = x4::int_ >> ('{' >> grammar % ',' >> '}' | x4::eps);
+IRIS_X4_DEFINE(grammar)
+
+IRIS_X4_INSTANTIATE(decltype(grammar), iterator_type, x4::parse_context_for<iterator_type>)
+
+} // check_recursive_tuple
 
 TEST_CASE("rule3")
 {

@@ -23,9 +23,7 @@
 namespace iris::x4::traits {
 
 template<class T, class U>
-struct can_hold
-    : std::is_same<T, U>
-{};
+struct can_hold;
 
 template<class T, class U>
 constexpr bool can_hold_v = can_hold<T, U>::value;
@@ -54,13 +52,15 @@ struct value_type_can_hold
     : can_hold<typename container_value<T>::type, typename container_value<U>::type>
 {};
 
-} // detail
+// This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations
+template<class T, class U>
+struct can_hold_impl : std::false_type {};
 
 template<class T, class U>
     requires
         alloy::is_tuple_like_v<T> &&
         alloy::is_tuple_like_v<U>
-struct can_hold<T, U>
+struct can_hold_impl<T, U>
     : detail::is_all_substitute_for_tuple<T, U>
 {};
 
@@ -68,32 +68,40 @@ template<class T, class U>
     requires
         is_container_v<T> &&
         is_container_v<U>
-struct can_hold<T, U>
+struct can_hold_impl<T, U>
     : detail::value_type_can_hold<T, U>
 {};
 
 template<class T, class U>
     requires is_variant<T>::value && X4UnusedAttribute<U>
-struct can_hold<T, U>
+struct can_hold_impl<T, U>
     : std::false_type
 {};
 
 template<class T, class U>
     requires (!is_variant<T>::value) && X4UnusedAttribute<U>
-struct can_hold<T, U>
+struct can_hold_impl<T, U>
     : std::false_type
 {};
 
 template<class T, class U>
     requires is_variant<T>::value && (!X4UnusedAttribute<U>)
-struct can_hold<T, U>
+struct can_hold_impl<T, U>
     : std::is_assignable<T&, U>
 {};
 
 template<class T, class U>
-struct can_hold<std::optional<T>, std::optional<U>>
+struct can_hold_impl<std::optional<T>, std::optional<U>>
     : can_hold<T, U>
 {};
+
+} // detail
+
+template<class T, class U>
+struct can_hold : detail::can_hold_impl<T, U> {};
+
+template<class T>
+struct can_hold<T, T> : std::true_type {};
 
 } // iris::x4::traits
 
