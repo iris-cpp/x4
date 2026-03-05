@@ -15,4 +15,11 @@ TEST_CASE("move_to")
         x4::move_to(42, ref_tuple);
         CHECK(n == 42);
     }
+    {
+        int n = 42;
+        alloy::tuple<int&> ref_tuple{ n };
+        alloy::tuple<int> dest{ 0 };
+        x4::move_to(std::move(ref_tuple), dest);
+        CHECK(alloy::get<0>(dest) == 42);
+    }
 }
