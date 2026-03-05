@@ -71,7 +71,7 @@ template<class T, class First, class... Rest>
 struct variant_find_holdable_type_impl<T, First, Rest...>
 {
     using type = std::conditional_t<
-        can_hold_v<iris::unwrap_recursive_type<First>, T>,
+        can_hold<iris::unwrap_recursive_type<First>, T>::value,
 
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter

@@ -25,9 +25,6 @@ namespace iris::x4::traits {
 template<class T, class U>
 struct can_hold;
 
-template<class T, class U>
-constexpr bool can_hold_v = can_hold<T, U>::value;
-
 template<class T>
 struct is_variant;
 

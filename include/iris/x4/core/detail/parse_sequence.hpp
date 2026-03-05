@@ -288,10 +288,10 @@ struct parse_into_container_impl<sequence<Left, Right>>
     ) // never noexcept (requires container insertion)
     {
         if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool can_parser_attribute_hold_value_type = traits::can_hold_v<
+            constexpr bool can_parser_attribute_hold_value_type = traits::can_hold<
                 typename sequence<Left, Right>::attribute_type,
                 typename traits::container_value<Attr>::type
-            >;
+            >::value;
 
             if constexpr (can_parser_attribute_hold_value_type) {
                 return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);

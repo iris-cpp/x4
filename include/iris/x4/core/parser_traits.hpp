@@ -46,7 +46,7 @@ struct get_attribute_type<Parser>
 template<class Parser, class Container>
 struct get_handles_container
 {
-    static constexpr bool value = traits::can_hold_v<typename get_attribute_type<Parser>::type, Container>;
+    static constexpr bool value = traits::can_hold<typename get_attribute_type<Parser>::type, Container>::value;
 };
 
 template<class Parser, class Container>
