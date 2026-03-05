@@ -18,6 +18,7 @@
 #include <iris/rvariant/rvariant_io.hpp>
 
 #include <iris/alloy/utility.hpp>
+#include <iris/string.hpp>
 
 #ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
@@ -133,18 +134,23 @@ struct print_attribute_debug
         requires (!std::is_same_v<T_, unused_container_type>)
     static void call(std::ostream& out, T_ const& val)
     {
-        out << '[';
-        bool is_first = true;
-        auto last = traits::end(val);
-        for (auto it = traits::begin(val); it != last; ++it) {
-            if (is_first) {
-                is_first = false;
-            } else {
-                out << ", ";
+        if constexpr (iris::StringLike<T_>) {
+            out << std::basic_string_view{val};
+
+        } else {
+            out << '[';
+            bool is_first = true;
+            auto last = traits::end(val);
+            for (auto it = traits::begin(val); it != last; ++it) {
+                if (is_first) {
+                    is_first = false;
+                } else {
+                    out << ", ";
+                }
+                traits::print_attribute(out, *it);
             }
-            traits::print_attribute(out, *it);
+            out << ']';
         }
-        out << ']';
     }
 
     // for variant types
