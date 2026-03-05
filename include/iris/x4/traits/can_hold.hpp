@@ -98,7 +98,8 @@ template<class T, class U>
 struct can_hold
     : detail::can_hold_impl<T, U>
 {
-    static_assert(X4Attribute<T> && X4Attribute<U>);
+    static_assert(X4Attribute<T>);
+    static_assert(X4Attribute<U>);
 };
 
 template<class T>
