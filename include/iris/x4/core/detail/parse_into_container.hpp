@@ -34,13 +34,17 @@ struct optional;
 
 namespace iris::x4::detail {
 
+// Determines whether `Parser` accepts "outer" Container as exposed attribute.
+// Returns `false` if parser's attribute type is same as "inner" type.
 template<class Parser, class Container>
 struct parser_accepts_container {};
 
 template<class Parser, traits::X4Container Container>
 struct parser_accepts_container<Parser, Container>
 {
-    static constexpr bool value = parser_traits<Parser>::template handles_container<Container>;
+    static constexpr bool value =
+        parser_traits<Parser>::template handles_container<Container> &&
+        (!std::same_as<typename parser_traits<Parser>::attribute_type, typename traits::container_value<Container>::type>);
 };
 
 template<class Parser, class Container>

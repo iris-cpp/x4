@@ -47,37 +47,37 @@ IRIS_X4_DEFINE(b)
 
 } // check_stationary
 
-// namespace check_recursive {
+namespace check_recursive {
 
-// struct node_array;
+struct node_array;
 
-// using node_t = iris::rvariant<
-//    int,
-//    iris::recursive_wrapper<node_array>
-// >;
+using node_t = iris::rvariant<
+    int,
+    iris::recursive_wrapper<node_array>
+>;
 
-// struct node_array : std::vector<node_t>
-// {
-//     using std::vector<node_t>::vector;
-// };
+struct node_array : std::vector<node_t>
+{
+    using std::vector<node_t>::vector;
+};
 
-// x4::rule<class recursive_grammar_r, node_t> const grammar;
+x4::rule<class recursive_grammar_r, node_t> const grammar;
 
-// auto const grammar_def = '[' >> grammar % ',' >> ']' | x4::int_;
+auto const grammar_def = '[' >> grammar % ',' >> ']' | x4::int_;
 
-// IRIS_X4_DEFINE(grammar)
+IRIS_X4_DEFINE(grammar)
 
-// } // check_recursive
+} // check_recursive
 
-// namespace check_recursive_scoped {
+namespace check_recursive_scoped {
 
-// using check_recursive::node_t;
-// using check_recursive::node_array;
+using check_recursive::node_t;
+using check_recursive::node_array;
 
-// x4::rule<class intvec_r, node_t> const intvec;
-// auto const grammar = intvec = '[' >> intvec % ',' >> ']' | x4::int_;
+x4::rule<class intvec_r, node_t> const intvec;
+auto const grammar = intvec = '[' >> intvec % ',' >> ']' | x4::int_;
 
-// } // check_recursive_scoped
+} // check_recursive_scoped
 
 struct recursive_tuple
 {
@@ -156,17 +156,17 @@ TEST_CASE("rule3")
         CHECK(st.val == 42);
     }
 
-    // TODO: restore these tests
-    // {
-    //     using namespace check_recursive;
-    //     node_t v;
-    //     REQUIRE(parse("[4,2]", grammar, v));
-    //     CHECK((node_t{node_array{{4}, {2}}} == v));
-    // }
-    // {
-    //     using namespace check_recursive_scoped;
-    //     node_t v;
-    //     REQUIRE(parse("[4,2]", grammar, v));
-    //     CHECK((node_t{node_array{{4}, {2}}} == v));
-    // }
+    {
+        using namespace check_recursive;
+
+        node_t v;
+        REQUIRE(parse("[4,2]", grammar, v));
+        CHECK((node_t{node_array{{4}, {2}}} == v));
+    }
+    {
+        using namespace check_recursive_scoped;
+        node_t v;
+        REQUIRE(parse("[4,2]", grammar, v));
+        CHECK((node_t{node_array{{4}, {2}}} == v));
+    }
 }
