@@ -66,6 +66,7 @@ x4_define_tests(
     list
     lit
     matches
+	move_to
     not_predicate
     no_case
     no_skip
