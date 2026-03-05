@@ -87,12 +87,19 @@ struct parse_into_container_impl
     : parse_into_container_impl_default<Parser>
 {};
 
+template<class Parser, class It, class Se, class Context, class Attr>
+struct parse_into_container_noexcept : std::false_type {};
+
+template<class Parser, class It, class Se, class Context, class Attr>
+    requires X4UnusedAttribute<Attr> || (!has_attribute_v<Parser>)
+struct parse_into_container_noexcept<Parser, It, Se, Context, Attr> : is_nothrow_parsable<Parser, It, Se, Context, unused_type> {};
+
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 [[nodiscard]] constexpr bool
 parse_into_container(
     Parser const& parser, It& first, Se const& last,
     Context const& ctx, Attr& attr
-) noexcept((X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) && is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
+) noexcept(parse_into_container_noexcept<Parser, It, Se, Context, Attr>::value)
 {
     if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) { // handle unused types first
         return parser.parse(first, last, ctx, unused);
