@@ -67,7 +67,7 @@ template<class Parser, X4Attribute Attr>
 struct pass_parser_attribute
 {
     using attribute_type = parser_traits<Parser>::attribute_type;
-    using substitute_type = traits::variant_find_holdable_type_t<Attr, attribute_type>;
+    using substitute_type = traits::variant_find_holdable_type<Attr, attribute_type>::type;
 
     using type = std::conditional_t<
         std::same_as<Attr, substitute_type>,

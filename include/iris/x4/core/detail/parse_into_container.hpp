@@ -102,7 +102,7 @@ parse_into_container(
             using attribute_type = parser_traits<Parser>::attribute_type;
 
             // e.g. `std::string` when the attribute_type is `char`
-            using substitute_type = traits::variant_find_holdable_type_t<Attr, typename traits::default_container<attribute_type>::type>;
+            using substitute_type = traits::variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
 
             // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
             auto& variant_alt = attr.template emplace<substitute_type>();

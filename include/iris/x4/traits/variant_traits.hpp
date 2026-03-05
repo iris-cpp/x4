@@ -94,9 +94,6 @@ struct variant_find_holdable_type_impl<T, First, Rest...>
 template<class Variant, class T>
 struct variant_find_holdable_type;
 
-template<class Variant, class T>
-using variant_find_holdable_type_t = typename variant_find_holdable_type<Variant, T>::type;
-
 template<class Variant>
 struct variant_find_holdable_type<Variant, Variant>
 {
