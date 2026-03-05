@@ -48,8 +48,7 @@ struct parse_into_container_base_impl
     {
         static_assert(!std::same_as<std::remove_const_t<Attr>, unused_container_type>);
 
-        using value_type = traits::container_value_t<unwrap_recursive_type<Attr>>;
-        value_type val; // default-initialize
+        typename traits::container_value<unwrap_recursive_type<Attr>>::type val{}; // value-initialize
 
         //static_assert(Parsable<Parser, It, Se, Context, value_type>);
         if (!parser.parse(first, last, ctx, val)) return false;
@@ -149,7 +148,7 @@ struct parse_into_container_impl<Parser>
                 It, Se, Context,
                 typename parser_traits<Parser>::attribute_type
             >::actual_type,
-            traits::container_value_t<Attr>
+            typename traits::container_value<Attr>::type
         >>
     >;
 
@@ -217,7 +216,7 @@ parse_into_container(
         using attribute_type = parser_traits<Parser>::attribute_type;
 
         // e.g. `std::string` when the attribute_type is `char`
-        using substitute_type = traits::variant_find_substitute_t<Attr, traits::build_container_t<attribute_type>>;
+        using substitute_type = traits::variant_find_substitute_t<Attr, typename traits::build_container<attribute_type>::type>;
 
         // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
         auto& variant_alt = attr.template emplace<substitute_type>();

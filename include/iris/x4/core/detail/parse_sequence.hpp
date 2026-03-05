@@ -284,7 +284,7 @@ struct parse_into_container_impl<sequence<Left, Right>>
     template<X4Attribute Attr>
     static constexpr bool is_container_substitute = traits::is_substitute_v<
         typename sequence<Left, Right>::attribute_type,
-        traits::container_value_t<Attr>
+        typename traits::container_value<Attr>::type
     >;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
