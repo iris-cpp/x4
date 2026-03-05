@@ -28,7 +28,7 @@ namespace iris::x4 {
 template<class Subject>
 struct plus : unary_parser<Subject, plus<Subject>>
 {
-    using attribute_type = traits::build_container_t<typename parser_traits<Subject>::attribute_type>;
+    using attribute_type = traits::build_container<typename parser_traits<Subject>::attribute_type>::type;
 
     static constexpr bool handles_container = true;
 

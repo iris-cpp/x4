@@ -85,9 +85,6 @@ struct container_value
 {};
 
 template<class Container>
-using container_value_t = typename container_value<Container>::type;
-
-template<class Container>
 struct container_value<Container const> : container_value<Container> {};
 
 template<>
@@ -475,9 +472,6 @@ struct build_container
 {
     using type = std::vector<T>;
 };
-
-template<class T>
-using build_container_t = typename build_container<T>::type;
 
 template<class T>
 struct build_container<alloy::tuple<T>> : build_container<T> {};

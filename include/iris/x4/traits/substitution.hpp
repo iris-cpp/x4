@@ -52,7 +52,7 @@ struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple
 
 template<class T, X4Attribute Attr>
 struct value_type_is_substitute
-    : is_substitute<container_value_t<T>, container_value_t<Attr>>
+    : is_substitute<typename container_value<T>::type, typename container_value<Attr>::type>
 {};
 
 template<class T, X4Attribute Attr>
