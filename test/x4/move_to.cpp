@@ -22,4 +22,10 @@ TEST_CASE("move_to")
         x4::move_to(std::move(ref_tuple), dest);
         CHECK(alloy::get<0>(dest) == 42);
     }
+    {
+        x4_test::move_only mo;
+        alloy::tuple<x4_test::move_only&> ref_tuple{ mo };
+        alloy::tuple<x4_test::move_only> dest;
+        x4::move_to(std::move(ref_tuple), dest); // move "far" ownership
+    }
 }
