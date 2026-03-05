@@ -15,7 +15,6 @@
 #include <iris/type_traits.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/subrange_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
@@ -200,13 +199,6 @@ move_to(Source&& src, Dest& dest)
 template<class ContainerAttr>
 struct container_appender;
 
-template<std::forward_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
-constexpr void
-move_to(It first, Se last, std::ranges::subrange<It, Se, Kind>& rng)
-{
-    rng = std::ranges::subrange<It, Se, Kind>(std::move(first), std::move(last));
-}
-
 template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::container_attr> Dest>
 constexpr void
 move_to(It first, Se last, Dest& dest)
@@ -221,15 +213,11 @@ move_to(It first, Se last, Dest& dest)
         }
     }
 
-    if constexpr (traits::is_subrange_v<typename traits::container_value<Dest>::type>) {
-        traits::push_back(dest.container, typename traits::container_value<Dest>::type{std::move(first), std::move(last)});
-    } else {
-        // Be careful, this may result in converting surprisingly incompatible types,
-        // for example, `std::vector<int>` and `std::set<int>`. Such types must be
-        // handled *before* invoking `move_to`.
+    // Be careful, this may result in converting surprisingly incompatible types,
+    // for example, `std::vector<int>` and `std::set<int>`. Such types must be
+    // handled *before* invoking `move_to`.
 
-        traits::append(dest, first, last); // try to reuse underlying memory buffer
-    }
+    traits::append(dest, first, last); // try to reuse underlying memory buffer
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::tuple_attr> Dest>
