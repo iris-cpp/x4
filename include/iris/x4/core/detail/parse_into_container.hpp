@@ -54,7 +54,7 @@ template<class Parser>
 struct parse_into_container_impl_default
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-    static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr) // TODO: add noexcept
+    static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr)
     {
         using unwrapped_attribute_type = iris::unwrap_recursive_type<Attr>;
         auto& unwrapped_attr = iris::unwrap_recursive(attr);
@@ -92,7 +92,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 parse_into_container(
     Parser const& parser, It& first, Se const& last,
     Context const& ctx, Attr& attr
-) // TODO: add noexcept
+) noexcept(X4UnusedAttribute<Attr> || !has_attribute_v<Parser>)
 {
     if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) { // handle unused types first
         return parser.parse(first, last, ctx, unused);

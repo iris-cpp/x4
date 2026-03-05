@@ -95,13 +95,15 @@ struct can_hold_impl<std::optional<T>, std::optional<U>>
 } // detail
 
 template<class T, class U>
-struct can_hold : detail::can_hold_impl<T, U>
+struct can_hold
+    : detail::can_hold_impl<T, U>
 {
     static_assert(X4Attribute<T> && X4Attribute<U>);
 };
 
 template<class T>
-struct can_hold<T, T> : std::true_type
+struct can_hold<T, T>
+    : std::true_type
 {
     static_assert(X4Attribute<T>);
 };
