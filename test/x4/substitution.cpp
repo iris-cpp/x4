@@ -9,7 +9,19 @@
 
 TEST_CASE("can_hold")
 {
-    // iris::rvariant<int, double> is "broader" than int
+    // identical types
+    STATIC_CHECK(x4::traits::can_hold_v<int, int>);
+    STATIC_CHECK(x4::traits::can_hold_v<std::vector<int>, std::vector<int>>);
+    STATIC_CHECK(x4::traits::can_hold_v<alloy::tuple<int>, alloy::tuple<int>>);
+    STATIC_CHECK(x4::traits::can_hold_v<iris::rvariant<int>, iris::rvariant<int>>);
+
+    // `iris::rvariant<int, double>` is "broader" than `int`
     STATIC_CHECK( x4::traits::can_hold_v<iris::rvariant<int, double>, int>);
     STATIC_CHECK(!x4::traits::can_hold_v<int, iris::rvariant<int, double>>);
+
+    // container types
+    STATIC_CHECK(x4::traits::can_hold_v<std::vector<iris::rvariant<int, double>>, std::vector<int>>);
+
+    // tuple-like types
+    STATIC_CHECK(x4::traits::can_hold_v<alloy::tuple<iris::rvariant<int, double>>, alloy::tuple<int>>);
 }
