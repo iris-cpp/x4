@@ -243,13 +243,17 @@ TEST_CASE("partial success (list-like)")
     using x4::char_encoding::standard;
 
     using x4::standard::char_;
+    using x4::standard::string;
     using x4::standard::lit;
     using x4::omit;
 
     constexpr auto a = char_('a');
     constexpr auto b = char_('b');
     constexpr auto c = char_('c');
-    [[maybe_unused]] constexpr auto abc = a >> b >> c;
+    constexpr auto foo = string("_foo_");
+
+    constexpr auto abc = a >> b >> c;
+    constexpr auto afooc = a >> foo >> c;
 
     {
         using Subject = x4::sequence<
@@ -276,11 +280,11 @@ TEST_CASE("partial success (list-like)")
         //REQUIRE(parse("abcabx", *abc >> lit("abx"), abcs));
         //CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
     }
-    //{
-    //    std::string abcs;
-    //    REQUIRE(parse("abcabx", +abc >> "abx", abcs));
-    //    CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
-    //}
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabx", +abc >> "abx", abcs));
+        CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    }
 }
 
 // NOLINTEND(readability-container-size-empty)
