@@ -11,11 +11,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/x4/core/detail/parse_sequence.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/detail/parse_sequence.hpp>
+#include <iris/x4/core/move_to.hpp>
 
 #include <iris/x4/traits/attribute_of_binary.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/directive/expect.hpp>
 
@@ -30,56 +32,44 @@ namespace iris::x4 {
 
 namespace detail {
 
-template<class LeftAttr, class RightAttr, class Container>
-struct is_sequence_suitable_for_container_impl // e.g. `char_ >> char_` into `std::string`
-    : std::conjunction<
-        std::is_same<LeftAttr, RightAttr>,
-        traits::can_hold<LeftAttr, typename traits::container_value<Container>::type>
-    >
+template<traits::X4Container Container, class Elem>
+struct container_can_hold_element : std::is_same<Container, Elem>
 {};
 
-template<traits::X4Container LeftAttr, class RightAttr, class Container>
-struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `*char_ >> char_` into `std::string`
-    : std::conjunction<
-        std::is_same<typename traits::container_value<LeftAttr>::type, RightAttr>,
-        traits::can_hold<LeftAttr, Container>
-    >
+template<traits::X4Container Container, class Elem>
+    requires
+        (!std::same_as<Container, Elem>) &&
+        (!traits::X4Container<Elem>) &&
+        requires (Container& c, Elem&& elem) {
+            traits::push_back(c, std::move(elem));
+        }
+struct container_can_hold_element<Container, Elem>
+    : std::true_type
 {};
 
-template<class LeftAttr, traits::X4Container RightAttr, class Container>
-struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `char_ >> *char_` into `std::string`
-    : std::conjunction<
-        std::is_same<LeftAttr, typename traits::container_value<RightAttr>::type>,
-        traits::can_hold<RightAttr, Container>
-    >
+template<traits::X4Container Container, class ContainerElem>
+    requires
+        (!std::same_as<Container, ContainerElem>) &&
+        traits::X4Container<ContainerElem> &&
+        requires (Container& c, ContainerElem&& container_elem) {
+            x4::move_to(
+                std::make_move_iterator(traits::begin(container_elem)),
+                std::make_move_iterator(traits::end(container_elem)),
+                c
+            );
+        }
+struct container_can_hold_element<Container, ContainerElem>
+    : std::true_type
 {};
 
-template<traits::X4Container LeftAttr, traits::X4Container RightAttr, class Container>
-struct is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>  // e.g. `*char_ >> *char_` into `std::string`
-    : std::conjunction <
-        std::is_same<LeftAttr, RightAttr>,
-        traits::can_hold<LeftAttr, Container>
-    >
+template<traits::X4Container Container, class SequenceAttr_Maybe_Unwrapped>
+struct container_can_hold_sequence : container_can_hold_element<Container, SequenceAttr_Maybe_Unwrapped>
 {};
 
-template<class LeftAttr, class RightAttr, class Container>
-struct is_sequence_suitable_for_container
-    : is_sequence_suitable_for_container_impl<LeftAttr, RightAttr, Container>
-{};
-
-template<X4UnusedAttribute LeftAttr, class RightAttr, class Container>
-struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
-    : traits::can_hold<RightAttr, Container>
-{};
-
-template<class LeftAttr, X4UnusedAttribute RightAttr, class Container>
-struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
-    : traits::can_hold<LeftAttr, Container>
-{};
-
-template<X4UnusedAttribute LeftAttr, X4UnusedAttribute RightAttr, class Container>
-struct is_sequence_suitable_for_container<LeftAttr, RightAttr, Container>
-    : std::false_type
+template<traits::X4Container Container, class... Ts>
+struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
+    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion here.
+    : std::conjunction<container_can_hold_element<Container, Ts>...>
 {};
 
 } // detail
@@ -92,10 +82,13 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
     static constexpr std::size_t sequence_size =
         parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
 
-    template<class Container>
+    template<traits::X4Container Container>
     static constexpr bool handles_container =
-        (parser_traits<Left>::template handles_container<Container> && parser_traits<Right>::template handles_container<Container>) ||
-        detail::is_sequence_suitable_for_container<typename parser_traits<Left>::attribute_type, typename parser_traits<Right>::attribute_type, Container>::value;
+        (
+            parser_traits<Left>::template handles_container<Container> &&
+            parser_traits<Right>::template handles_container<Container>
+        ) ||
+        detail::container_can_hold_sequence<Container, attribute_type>::value;
 
     using binary_parser<Left, Right, sequence>::binary_parser;
 

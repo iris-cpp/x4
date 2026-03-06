@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_CORE_PARSER_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_PARSER_TRAITS_HPP
 #define IRIS_ZZ_X4_CORE_PARSER_TRAITS_HPP
 
 /*=============================================================================
@@ -46,7 +46,10 @@ struct get_attribute_type<Parser>
 template<class Parser, class Container>
 struct get_handles_container
 {
-    static constexpr bool value = traits::can_hold<typename get_attribute_type<Parser>::type, Container>::value;
+    static constexpr bool value = traits::can_hold<
+        typename get_attribute_type<Parser>::type,
+        Container
+    >::value;
 };
 
 template<class Parser, class Container>

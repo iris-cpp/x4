@@ -3,10 +3,37 @@
 #include <iris/x4/core/move_to.hpp>
 
 #include <iris/alloy/tuple.hpp>
+#include <iris/alloy/adapt.hpp>
+#include <iris/rvariant/rvariant.hpp>
+#include <iris/rvariant/rvariant_io.hpp>
+
+#include <vector>
+
+struct X {};
+struct Y {};
+struct Z {};
+
+struct Xs
+{
+    std::vector<X> xs;
+};
+IRIS_ALLOY_ADAPT_STRUCT(Xs, xs);
+
+using XYZ = iris::rvariant<X, Y, Z, Xs>;
+
 
 TEST_CASE("move_to")
 {
     // TODO: add more test
+
+    // Currently not permitted by design, but may be changed in the future
+    // if legitimate rationale is discovered
+    {
+        //XYZ xyz;
+        //xyz = std::vector<X>{};
+        static_assert(!std::is_assignable_v<XYZ&, std::vector<X>>);
+        STATIC_CHECK(!x4::X4Movable<std::vector<X>, XYZ>);
+    }
 
     // tuple contains reference
     {

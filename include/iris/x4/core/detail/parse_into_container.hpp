@@ -17,7 +17,6 @@
 
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
@@ -34,47 +33,63 @@ struct optional;
 
 namespace iris::x4::detail {
 
-// Determines whether `Parser` accepts "outer" Container as exposed attribute.
-// Returns `false` if parser's attribute type is same as "inner" type.
-template<class Parser, class Container>
-struct parser_accepts_container {};
-
 template<class Parser, traits::X4Container Container>
-struct parser_accepts_container<Parser, Container>
+struct parser_accepts_container
 {
     static constexpr bool value =
         parser_traits<Parser>::template handles_container<Container> &&
-        (!std::same_as<typename parser_traits<Parser>::attribute_type, typename traits::container_value<Container>::type>);
+        !requires (Container& c, typename parser_traits<Parser>::attribute_type&& v) {
+            traits::push_back(c, std::move(v));
+        };
 };
 
-template<class Parser, class Container>
-inline constexpr bool parser_accepts_container_v = parser_accepts_container<Parser, Container>::value;
+template<class Parser, traits::X4Container Container>
+    requires traits::is_variant_v<typename parser_traits<Parser>::attribute_type>
+struct parser_accepts_container<Parser, Container>
+{
+    using alternative_type = traits::variant_find_holdable_type<
+        typename parser_traits<Parser>::attribute_type,
+        Container
+    >::type;
+
+    static constexpr bool value =
+        parser_traits<Parser>::template handles_container<Container> &&
+        !requires (Container& c, alternative_type&& v) {
+            traits::push_back(c, std::move(v));
+        };
+};
 
 template<class Parser>
 struct parse_into_container_impl_default
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr)
+        // never noexcept (requires container insertion)
     {
         using unwrapped_attribute_type = iris::unwrap_recursive_type<Attr>;
         auto& unwrapped_attr = iris::unwrap_recursive(attr);
 
         if constexpr (traits::is_container_v<unwrapped_attribute_type>) { // Attr is a container
-            if constexpr (parser_accepts_container_v<Parser, unwrapped_attribute_type>) { // parser accepts the container; make parser append directly
+            if constexpr (parser_accepts_container<Parser, unwrapped_attribute_type>::value) {
+                // `Parser` accepts the exact `Container`; let parser append directly
                 auto&& appender = x4::make_container_appender(unwrapped_attr);
                 return parser.parse(first, last, ctx, appender);
-            } else { // parser DOES NOT accept the container; parse into value type and append it
-                using value_type = traits::container_value<unwrapped_attribute_type>::type;
-                value_type value{}; // value-initialize
+
+            } else {
+                // `Parser` DOES NOT accept the exact `Container`; parse into `value_type` and append it.
+                typename traits::container_value<unwrapped_attribute_type>::type value{}; // value-initialize
                 if (!parser.parse(first, last, ctx, value)) return false;
                 traits::push_back(unwrapped_attr, std::move(value));
                 return true;
             }
+
         } else {
-            if constexpr (traits::is_size_one_sequence_v<unwrapped_attribute_type>) { // attribute is single element tuple-like; unwrap and try again
+            if constexpr (traits::is_size_one_sequence_v<unwrapped_attribute_type>) {
+                // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {
-                static_assert(false, "parse_into_container accepts a container, a variant of container or a single element tuple-like of container");
+                //attr = nullptr;
+                static_assert(false, "[BUG] parse_into_container accepts a container, a variant of container or a single element tuple-like of container");
                 return false;
             }
         }

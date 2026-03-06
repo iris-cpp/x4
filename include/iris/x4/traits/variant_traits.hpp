@@ -36,23 +36,23 @@ struct is_variant<iris::rvariant<Ts...>> : std::true_type {};
 namespace detail {
 
 template<class T, class... Ts>
-struct variant_has_exact_type;
+struct any_of_unwrapped_exactly_same;
 
 template<class T>
-struct variant_has_exact_type<T>
+struct any_of_unwrapped_exactly_same<T>
     : std::false_type
 {};
 
 template<class T, class First, class... Rest>
     requires std::same_as<T, iris::unwrap_recursive_type<First>>
-struct variant_has_exact_type<T, First, Rest...>
+struct any_of_unwrapped_exactly_same<T, First, Rest...>
     : std::true_type
 {};
 
 template<class T, class First, class... Rest>
     requires (!std::same_as<T, iris::unwrap_recursive_type<First>>)
-struct variant_has_exact_type<T, First, Rest...>
-    : variant_has_exact_type<T, Rest...>
+struct any_of_unwrapped_exactly_same<T, First, Rest...>
+    : any_of_unwrapped_exactly_same<T, Rest...>
 {};
 
 template<class T, class... Ts>
@@ -94,18 +94,19 @@ struct variant_find_holdable_type;
 template<class Variant>
 struct variant_find_holdable_type<Variant, Variant>
 {
+    static_assert(is_variant_v<Variant>);
     using type = Variant;
 };
 
 template<class... Ts, class T>
-    requires (!std::same_as<iris::rvariant<Ts...>, T>) && detail::variant_has_exact_type<T, Ts...>::value
+    requires (!std::same_as<iris::rvariant<Ts...>, T>) && detail::any_of_unwrapped_exactly_same<T, Ts...>::value
 struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
 {
     using type = T;
 };
 
 template<class... Ts, class T>
-    requires (!std::same_as<iris::rvariant<Ts...>, T>) && (!detail::variant_has_exact_type<T, Ts...>::value)
+    requires (!std::same_as<iris::rvariant<Ts...>, T>) && (!detail::any_of_unwrapped_exactly_same<T, Ts...>::value)
 struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
 {
     using type = typename detail::variant_find_holdable_type_impl<T, Ts...>::type;

@@ -142,8 +142,8 @@ struct push_back_fn
     template<class Container>
     static constexpr void operator()(Container&, unused_type const&) noexcept
     {
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_container_type>);
     }
 
     template<class Container, class T>
@@ -175,8 +175,8 @@ struct push_back_fn
     static constexpr void operator()(Container& c, T&& val)
         noexcept(noexcept(push_back_container<Container>::call(c, std::forward<T>(val))))
     {
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_container_type>);
         push_back_container<Container>::call(c, std::forward<T>(val));
     }
 };
@@ -240,8 +240,8 @@ struct append_fn
     static constexpr void operator()(Container& c, It first, Se last)
         noexcept(noexcept(append_container<Container>::call(c, first, last)))
     {
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_container_type>);
 
         // appending incompatible type into a container can result in unexpected behavior
         // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
@@ -323,8 +323,8 @@ struct is_empty_fn
     [[nodiscard]] static constexpr bool
     operator()(Container const& c) noexcept
     {
-        static_assert(!std::is_same_v<Container, unused_type>);
-        static_assert(!std::is_same_v<Container, unused_container_type>);
+        static_assert(!std::same_as<Container, unused_type>);
+        static_assert(!std::same_as<Container, unused_container_type>);
         return std::ranges::empty(c);
     }
 
@@ -336,8 +336,8 @@ struct is_empty_fn
     operator()(Container const& c)
         noexcept(noexcept(is_empty_container<Container>::call(c)))
     {
-        static_assert(!std::is_same_v<Container, unused_type>);
-        static_assert(!std::is_same_v<Container, unused_container_type>);
+        static_assert(!std::same_as<Container, unused_type>);
+        static_assert(!std::same_as<Container, unused_container_type>);
         return is_empty_container<Container>::call(c);
     }
 };
@@ -453,7 +453,7 @@ template<class T>
         std::default_initializable<T> &&
 
         requires(T& c) {
-            typename container_value<T>::type; // required
+            typename container_value<T>::type;
             traits::begin(c);
             requires std::forward_iterator<decltype(traits::begin(c))>;
             traits::end(c);

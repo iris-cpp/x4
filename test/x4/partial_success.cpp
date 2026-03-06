@@ -20,14 +20,21 @@
 
 #include <iris/alloy/adapted/std_pair.hpp>
 
-#include <iostream>
+// list-like
+#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/list.hpp>
+#include <iris/x4/directive/repeat.hpp>
+
+#include <concepts>
+#include <ostream>
 #include <vector>
 #include <string>
 #include <utility>
 
 // NOLINTBEGIN(readability-container-size-empty)
 
-namespace {
+using namespace std::string_view_literals;
 
 struct strong_int
 {
@@ -72,9 +79,7 @@ struct strong_int
     }
 };
 
-} // anonymous
-
-TEST_CASE("attribute_alternative_hold")
+TEST_CASE("partial success (alternative)")
 {
     using x4::attr;
     using x4::eps;
@@ -231,6 +236,51 @@ TEST_CASE("attribute_alternative_hold")
             CHECK(pi == pair_int{98, 99});
         }
     }
+}
+
+TEST_CASE("partial success (list-like)")
+{
+    using x4::char_encoding::standard;
+
+    using x4::standard::char_;
+    using x4::standard::lit;
+    using x4::omit;
+
+    constexpr auto a = char_('a');
+    constexpr auto b = char_('b');
+    constexpr auto c = char_('c');
+    [[maybe_unused]] constexpr auto abc = a >> b >> c;
+
+    {
+        using Subject = x4::sequence<
+            x4::sequence<
+                x4::literal_char<standard>,
+                x4::literal_char<standard>
+            >,
+            x4::literal_char<standard>
+        >;
+        STATIC_CHECK(std::same_as<Subject::attribute_type, alloy::tuple<char, char, char>>);
+        STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, char, char>>::value);
+
+        using Parser = x4::kleene<Subject>;
+        using Container = std::string;
+
+        static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
+        static_assert(std::same_as<decltype(*abc), Parser>);
+
+        STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<Parser>::template handles_container<Container>);
+
+        // TODO
+        //std::string abcs;
+        //REQUIRE(parse("abcabx", *abc >> lit("abx"), abcs));
+        //CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    }
+    //{
+    //    std::string abcs;
+    //    REQUIRE(parse("abcabx", +abc >> "abx", abcs));
+    //    CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    //}
 }
 
 // NOLINTEND(readability-container-size-empty)
