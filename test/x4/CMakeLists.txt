@@ -44,7 +44,6 @@ x4_define_tests(
     and_predicate
     as
     attr
-    attribute
     attribute_type_check
     bool
     char
@@ -66,13 +65,14 @@ x4_define_tests(
     list
     lit
     matches
-	move_to
+    move_to
     not_predicate
     no_case
     no_skip
     omit
     optional
     parser
+    partial_success
     plus
     real1
     real2
