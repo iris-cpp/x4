@@ -6,6 +6,7 @@
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
+#include <iris/x4/core/detail/parse_into_container.hpp> // export
 #include <iris/x4/core/parser.hpp> // export
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/container_appender.hpp>

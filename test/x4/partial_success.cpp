@@ -250,11 +250,12 @@ TEST_CASE("partial success (list-like)")
     constexpr auto a = char_('a');
     constexpr auto b = char_('b');
     constexpr auto c = char_('c');
-    constexpr auto foo = string("_foo_");
+    //constexpr auto foo = string("_foo_");
 
     constexpr auto abc = a >> b >> c;
-    constexpr auto afooc = a >> foo >> c;
+    //constexpr auto afooc = a >> foo >> c;
 
+    // abc ----------------------------------------------
     {
         using Subject = x4::sequence<
             x4::sequence<
@@ -266,19 +267,15 @@ TEST_CASE("partial success (list-like)")
         STATIC_CHECK(std::same_as<Subject::attribute_type, alloy::tuple<char, char, char>>);
         STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, char, char>>::value);
 
-        using Parser = x4::kleene<Subject>;
         using Container = std::string;
 
-        static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
-        static_assert(std::same_as<decltype(*abc), Parser>);
-
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<Parser>::template handles_container<Container>);
-
-        // TODO
-        //std::string abcs;
-        //REQUIRE(parse("abcabx", *abc >> lit("abx"), abcs));
-        //CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+        STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
+    }
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabx", *abc >> "abx", abcs));
+        CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
     }
     {
         std::string abcs;
