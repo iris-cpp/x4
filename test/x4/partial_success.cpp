@@ -250,10 +250,10 @@ TEST_CASE("partial success (list-like)")
     constexpr auto a = char_('a');
     constexpr auto b = char_('b');
     constexpr auto c = char_('c');
-    //constexpr auto foo = string("_foo_");
+    constexpr auto OO = string("OO");
 
-    constexpr auto abc = a >> b >> c;
-    //constexpr auto afooc = a >> foo >> c;
+    constexpr auto abc = a >> b >> c;   // tuple<char, char, char>
+    constexpr auto aOOc = a >> OO >> c; // tuple<char, string, char>
 
     // abc ----------------------------------------------
     {
@@ -264,6 +264,7 @@ TEST_CASE("partial success (list-like)")
             >,
             x4::literal_char<standard>
         >;
+        static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
         STATIC_CHECK(std::same_as<Subject::attribute_type, alloy::tuple<char, char, char>>);
         STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, char, char>>::value);
 
@@ -271,6 +272,8 @@ TEST_CASE("partial success (list-like)")
 
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
     }
 
     // kleene
@@ -343,6 +346,100 @@ TEST_CASE("partial success (list-like)")
         std::string abcs;
         REQUIRE(parse("abcabcabx", repeat(0, x4::repeat_inf)[abc] >> "abx", abcs));
         CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
+    }
+
+
+    // aXXc ----------------------------------------------
+    {
+        using Subject = x4::sequence<
+            x4::sequence<
+                x4::literal_char<standard>,
+                x4::literal_string<std::string_view, standard>
+            >,
+            x4::literal_char<standard>
+        >;
+        static_assert(std::same_as<std::remove_const_t<decltype(aOOc)>, Subject>);
+        STATIC_CHECK(std::same_as<Subject::attribute_type, alloy::tuple<char, std::string, char>>);
+        STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, std::string, char>>::value);
+
+        using Container = std::string;
+
+        STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+    }
+
+    // kleene
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOx", *aOOc >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOc"sv); // wrong implementation yields "aOOcab"
+    }
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOcaOOx", *aOOc >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
+    }
+
+    // plus
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOx", +aOOc >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOc"sv); // wrong implementation yields "aOOcab"
+    }
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOcaOOx", +aOOc >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
+    }
+
+    // list
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOc,aOOx", aOOc % ',' >> ",aOOx", aOOcs));
+        CHECK(aOOcs == "aOOc"sv); // wrong implementation yields "aOOcab"
+    }
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOc,aOOc,aOOx", aOOc % ',' >> ",aOOx", aOOcs));
+        CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
+    }
+
+    // repeat [exact]
+    {
+        std::string aOOcs;
+        REQUIRE(!parse("aOOcaOOx", repeat(2)[aOOc], aOOcs));
+        CHECK(aOOcs == ""sv); // wrong implementation yields "aOOc"
+    }
+    {
+        std::string aOOcs;
+        REQUIRE(!parse("aOOcaOOcaOOx", repeat(3)[aOOc], aOOcs));
+        CHECK(aOOcs == ""sv); // wrong implementation yields "aOOcaOOc"
+    }
+
+    // repeat [min, max]
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOx", repeat(0, 2)[aOOc] >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOc"sv); // wrong implementation yields "aOOcab"
+    }
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOcaOOx", repeat(0, 3)[aOOc] >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
+    }
+
+    // repeat [min, inf]
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOx", repeat(0, x4::repeat_inf)[aOOc] >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOc"sv); // wrong implementation yields "aOOcab"
+    }
+    {
+        std::string aOOcs;
+        REQUIRE(parse("aOOcaOOcaOOx", repeat(0, x4::repeat_inf)[aOOc] >> "aOOx", aOOcs));
+        CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
     }
 }
 
