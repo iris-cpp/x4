@@ -33,7 +33,6 @@ struct container_attr {};
 struct tuple_attr {};
 struct variant_attr {};
 struct optional_attr {};
-struct subrange_attr {};
 
 template<class T>
 struct attribute_category
