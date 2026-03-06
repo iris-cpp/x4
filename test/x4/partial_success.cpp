@@ -245,7 +245,7 @@ TEST_CASE("partial success (list-like)")
     using x4::standard::char_;
     using x4::standard::string;
     using x4::standard::lit;
-    using x4::omit;
+    using x4::repeat;
 
     constexpr auto a = char_('a');
     constexpr auto b = char_('b');
@@ -306,6 +306,42 @@ TEST_CASE("partial success (list-like)")
     {
         std::string abcs;
         REQUIRE(parse("abc,abc,abx", abc % ',' >> ",abx", abcs));
+        CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
+    }
+
+    // repeat [exact]
+    {
+        std::string abcs;
+        REQUIRE(!parse("abcabx", repeat(2)[abc], abcs));
+        CHECK(abcs == ""sv); // wrong implementation yields "abc"
+    }
+    {
+        std::string abcs;
+        REQUIRE(!parse("abcabcabx", repeat(3)[abc], abcs));
+        CHECK(abcs == ""sv); // wrong implementation yields "abcabc"
+    }
+
+    // repeat [min, max]
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabx", repeat(0, 2)[abc] >> "abx", abcs));
+        CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    }
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabcabx", repeat(0, 3)[abc] >> "abx", abcs));
+        CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
+    }
+
+    // repeat [min, inf]
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabx", repeat(0, x4::repeat_inf)[abc] >> "abx", abcs));
+        CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    }
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabcabx", repeat(0, x4::repeat_inf)[abc] >> "abx", abcs));
         CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
     }
 }

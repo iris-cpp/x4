@@ -483,7 +483,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(repeat(1)[true_ >> true_].parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // sequence parser has side effect
+        CHECK(dummy_bools == std::vector<bool>{});
     }
     {
         constexpr auto input = "true123"sv;
@@ -491,7 +491,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // sequence parser has side effect
+        CHECK(dummy_bools == std::vector<bool>{});
     }
 
     {
