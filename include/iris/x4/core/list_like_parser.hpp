@@ -109,20 +109,7 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     }
 }
 
-
 template<traits::X4Container ChunkBuf, traits::X4Container ExposedAttr>
-constexpr void successful_merge_into(ChunkBuf& chunk_buf, ExposedAttr& container_attr)
-{
-    traits::append(
-        container_attr,
-        std::make_move_iterator(traits::begin(chunk_buf)),
-        std::make_move_iterator(traits::end(chunk_buf))
-    );
-    traits::clear(chunk_buf);
-}
-
-template<traits::X4Container ChunkBuf, traits::X4Container ExposedAttr>
-    requires traits::is_variant_v<typename detail::unwrap_single_element_plain<ExposedAttr>::type>
 constexpr void successful_merge_into(ChunkBuf& chunk_buf, ExposedAttr& container_attr)
 {
     traits::append(
