@@ -272,6 +272,8 @@ TEST_CASE("partial success (list-like)")
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
     }
+
+    // kleene
     {
         std::string abcs;
         REQUIRE(parse("abcabx", *abc >> "abx", abcs));
@@ -279,8 +281,32 @@ TEST_CASE("partial success (list-like)")
     }
     {
         std::string abcs;
+        REQUIRE(parse("abcabcabx", *abc >> "abx", abcs));
+        CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
+    }
+
+    // plus
+    {
+        std::string abcs;
         REQUIRE(parse("abcabx", +abc >> "abx", abcs));
         CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    }
+    {
+        std::string abcs;
+        REQUIRE(parse("abcabcabx", +abc >> "abx", abcs));
+        CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
+    }
+
+    // list
+    {
+        std::string abcs;
+        REQUIRE(parse("abc,abx", abc % ',' >> ",abx", abcs));
+        CHECK(abcs == "abc"sv); // wrong implementation yields "abcab"
+    }
+    {
+        std::string abcs;
+        REQUIRE(parse("abc,abc,abx", abc % ',' >> ",abx", abcs));
+        CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
     }
 }
 

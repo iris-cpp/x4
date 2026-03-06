@@ -25,7 +25,7 @@ namespace iris::x4 {
 template<class Subject>
 struct kleene : unary_parser<Subject, kleene<Subject>>
 {
-    using attribute_type = typename traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
+    using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<

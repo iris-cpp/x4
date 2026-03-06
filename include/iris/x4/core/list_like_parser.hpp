@@ -12,6 +12,7 @@
 #include <iris/x4/core/container_appender.hpp>
 
 #include <iris/rvariant/rvariant.hpp>
+#include <iris/rvariant/variant_helper.hpp>
 
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/traits.hpp>
@@ -29,16 +30,18 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 struct unwrap_container_candidate
 {
     using type = traits::synthesized_value<
-        typename unwrap_container_appender<ExposedAttr>::type
+        unwrap_recursive_type<
+            typename unwrap_container_appender<ExposedAttr>::type
+        >
     >::type;
 };
 
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedVariant>
-    requires traits::is_variant_v<ExposedVariant>
+    requires traits::is_variant_v<unwrap_recursive_type<ExposedVariant>>
 struct unwrap_container_candidate<ParserAttr, ExposedVariant>
 {
     using type = traits::variant_find_holdable_type<
-        ExposedVariant, ParserAttr
+        unwrap_recursive_type<ExposedVariant>, ParserAttr
     >::type;
 };
 
@@ -85,8 +88,10 @@ using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 [[nodiscard]] constexpr auto& get_container(ExposedAttr& attr)
 {
-    using unwrapped_attr_type = detail::unwrap_single_element_plain<ExposedAttr>::type;
-    auto& unwrapped_attr = detail::unwrap_single_element(attr);
+    using unwrapped_attr_type = detail::unwrap_single_element_plain<
+        unwrap_recursive_type<ExposedAttr>
+    >::type;
+    auto& unwrapped_attr = detail::unwrap_single_element(iris::unwrap_recursive(attr));
 
     if constexpr (traits::is_variant_v<unwrapped_attr_type>) {
         using container_alternative = traits::variant_find_holdable_type<
