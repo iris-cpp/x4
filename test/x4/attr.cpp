@@ -142,11 +142,35 @@ TEST_CASE("attr")
         REQUIRE(parse("s", "s" >> attr(std::string("123")), s));
         CHECK(s == "123");
     }
+
+    // container of container
+
+    // vector<vector<int>>
+    {
+        std::vector<std::vector<int>> vecs;
+        std::vector<int> vec{1, 2, 3};
+        x4::move_to(std::move(vec), vecs);
+        CHECK(vecs == std::vector<std::vector<int>>{std::vector{1, 2, 3}});
+    }
+    {
+        std::vector<std::vector<int>> vecs;
+        REQUIRE(parse("", attr(std::vector<int>{1, 2, 3}) >> attr(std::vector<int>{4, 5, 6}), vecs));
+        CHECK(vecs == std::vector{std::vector{1, 2, 3}, std::vector{4, 5, 6}});
+    }
+
+    // vector<string>
+    {
+        std::vector<std::string> strs;
+        std::string str = "abc";
+        x4::move_to(std::move(str), strs);
+        CHECK(strs == std::vector{std::string("abc")});
+    }
     {
         std::vector<std::string> strs;
         REQUIRE(parse("", attr(std::string("123")) >> attr(std::string("456")), strs));
         CHECK(strs == std::vector<std::string>{"123", "456"});
     }
+
     {
         std::string s;
         REQUIRE(parse("", attr(std::string("123")) >> attr(std::string("456")), s));

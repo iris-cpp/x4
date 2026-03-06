@@ -42,7 +42,6 @@ struct literal_string : parser<literal_string<String, Encoding, Attr>>
     static_assert(!std::is_same_v<Attr, unused_container_type>, "`literal_string` with `unused_container_type` is not supported");
 
     static constexpr bool has_attribute = !std::is_same_v<Attr, unused_type>;
-    static constexpr bool handles_container = has_attribute;
 
     template<class T, class... Rest>
         requires

@@ -153,49 +153,35 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
-    requires traits::is_size_one_sequence_v<Source> && traits::variant_has_substitute_v<Dest, Source>
+    requires std::is_assignable_v<Dest&, Source&&>
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    // dest is a variant, src is a single element tuple-like that the variant
-    // *can* directly hold.
-    static_assert(std::is_assignable_v<Dest&, Source>);
+    // e.g. Dest is `iris::rvariant<int>` and Source is `int`
+    // e.g. Dest is `iris::rvariant<alloy::tuple<int>>` and Source is `alloy::tuple<int>`
     dest = std::forward<Source>(src);
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
-    requires traits::is_size_one_sequence_v<Source> && (!traits::variant_has_substitute_v<Dest, Source>)
+    requires (!std::is_assignable_v<Dest&, Source&&>) && traits::is_size_one_sequence_v<Source>
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    // dest is a variant, src is a single element tuple-like that the variant
-    // cannot directly hold. We'll try to unwrap the single element tuple-like.
-
-    // Make sure that the Dest variant can really hold Source
     static_assert(
-        traits::variant_has_substitute_v<Dest, alloy::tuple_element_t<0, Source>>,
+        std::is_assignable_v<Dest&, decltype(std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src))))>,
         "Error! The destination variant (Dest) cannot hold the source type (Source)"
     );
 
-    // TODO: preliminarily invoke static_assert to check if the assignment is valid
-    dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
-}
+    // forward_like is *required*, since when Source is `alloy::tuple<int&>` `alloy::get<0>(std::forward<Source>(src))` returns `int&` whereas we want `int&&` instead
 
-template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
-    requires (!traits::is_size_one_sequence_v<Source>)
-constexpr void
-move_to(Source&& src, Dest& dest)
-    noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
-{
-    static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
-    static_assert(std::is_assignable_v<Dest&, Source>);
-    dest = std::forward<Source>(src);
+    // e.g. Dest is `iris::rvariant<int>` and Source is `alloy::tuple<int>`
+    dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::optional_attr> Dest>
@@ -221,26 +207,17 @@ move_to(It first, Se last, Dest& dest)
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
 
+    if constexpr (!is_ttp_specialization_of_v<Dest, container_appender>) {
+        if (!traits::is_empty(dest)) {
+            traits::clear(dest);
+        }
+    }
+
     // Be careful, this may result in converting surprisingly incompatible types,
     // for example, `std::vector<int>` and `std::set<int>`. Such types must be
     // handled *before* invoking `move_to`.
 
-    if constexpr (is_ttp_specialization_of_v<std::remove_const_t<Dest>, container_appender>) {
-        traits::append(dest, first, last);
-
-    } else {
-        if (!traits::is_empty(dest)) {
-            traits::clear(dest);
-        }
-        traits::append(dest, first, last); // try to reuse underlying memory buffer
-    }
-}
-
-template<std::forward_iterator It, std::sentinel_for<It> Se, std::ranges::subrange_kind Kind>
-constexpr void
-move_to(It first, Se last, std::ranges::subrange<It, Se, Kind>& rng)
-{
-    rng = std::ranges::subrange<It, Se, Kind>(std::move(first), std::move(last));
+    traits::append(dest, first, last); // try to reuse underlying memory buffer
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::tuple_attr> Dest>
@@ -278,10 +255,14 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::is_rvalue_reference_v<Source&&>) {
-        x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
+    if constexpr (std::same_as<std::remove_cvref_t<Source>, typename traits::container_value<Dest>::type>) {
+        traits::push_back(dest, std::forward<Source>(src));
     } else {
-        x4::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
+        if constexpr (std::is_rvalue_reference_v<Source&&>) {
+            x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);
+        } else {
+            x4::move_to(std::ranges::begin(src), std::ranges::end(src), dest);
+        }
     }
 }
 

@@ -32,7 +32,11 @@ struct optional : unary_parser<Subject, optional<Subject>>
 {
     using attribute_type = traits::build_optional<typename parser_traits<Subject>::attribute_type>::type;
 
-    static constexpr bool handles_container = true;
+    template<class Container>
+    static constexpr bool handles_container = std::disjunction_v<
+        std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
+    >;
 
     // catch-all overload
     template<

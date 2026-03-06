@@ -174,6 +174,19 @@ constexpr synth_parser<T> synth{};
 
 constexpr synth_parser<move_only> synth_move_only{};
 
+template<class T>
+struct custom_container
+{
+    using value_type = T;
+    T* begin() { return nullptr; }
+    T* end() { return nullptr; }
+    bool empty() const { return true; }
+    void clear() {}
+    void push_back(T const&) {}
+    template<class It, class Se>
+    void insert(T*, It, Se) {}
+};
+
 } // x4_test
 
 using x4_test::parse;

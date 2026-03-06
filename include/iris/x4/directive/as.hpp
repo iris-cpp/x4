@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_DIRECTIVE_AS_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_AS_HPP
 #define IRIS_ZZ_X4_DIRECTIVE_AS_HPP
 
 /*=============================================================================
@@ -53,6 +53,11 @@ struct as_directive : unary_parser<Subject, as_directive<T, Subject>>
 
     static constexpr bool has_attribute = !std::same_as<T, unused_type>;
     static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
+
+    // `as_directive` should NOT inherit underlying parser's `handles_container`
+    // because `as_directive` is an atomic parser. The default implementation of
+    // `parser_traits<as_directive<...>>::handles_container` must transparently
+    // handle this case.
 
 private:
     static constexpr bool need_as_var = Subject::has_action;
@@ -119,12 +124,12 @@ public:
         return true;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
-        requires
-            (!std::same_as<std::remove_const_t<OuterAttr>, T>) &&
-            (!X4Movable<T, OuterAttr>)
-    constexpr void
-    parse(It&, Se const&, Context const&, OuterAttr&) const = delete; // `T` is not movable to the exposed attribute
+    //template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
+    //    requires
+    //        (!std::same_as<std::remove_const_t<OuterAttr>, T>) &&
+    //        (!X4Movable<T, OuterAttr>)
+    //constexpr void
+    //parse(It&, Se const&, Context const&, OuterAttr&) const = delete; // `T` is not movable to the exposed attribute
 };
 
 namespace detail {

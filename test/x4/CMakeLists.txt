@@ -44,7 +44,6 @@ x4_define_tests(
     and_predicate
     as
     attr
-    attribute
     attribute_type_check
     bool
     char
@@ -66,14 +65,15 @@ x4_define_tests(
     list
     lit
     matches
+    move_to
     not_predicate
     no_case
     no_skip
     omit
     optional
     parser
+    partial_success
     plus
-    raw
     real1
     real2
     real3
@@ -86,6 +86,7 @@ x4_define_tests(
     seek
     sequence
     skip
+    substitution
     symbols1
     symbols2
     symbols3

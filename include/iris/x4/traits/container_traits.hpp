@@ -17,6 +17,7 @@
 #include <iris/alloy/traits.hpp>
 #include <iris/alloy/tuple.hpp>
 
+#include <concepts>
 #include <ranges>
 #include <iterator>
 #include <vector>
@@ -80,7 +81,11 @@ struct remove_value_const<std::pair<F, S>>
 
 // Customization point
 template<class Container>
-struct container_value
+struct container_value {};
+
+template<class Container>
+    requires requires { typename Container::value_type; }
+struct container_value<Container>
     : detail::remove_value_const<typename Container::value_type>
 {};
 
@@ -137,8 +142,8 @@ struct push_back_fn
     template<class Container>
     static constexpr void operator()(Container&, unused_type const&) noexcept
     {
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_container_type>);
     }
 
     template<class Container, class T>
@@ -170,8 +175,8 @@ struct push_back_fn
     static constexpr void operator()(Container& c, T&& val)
         noexcept(noexcept(push_back_container<Container>::call(c, std::forward<T>(val))))
     {
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_container_type>);
         push_back_container<Container>::call(c, std::forward<T>(val));
     }
 };
@@ -208,6 +213,9 @@ struct append_fn
     static constexpr void operator()(Container& c, It first, Se last)
         noexcept(noexcept(c.insert(first, last)))
     {
+        // appending incompatible type into a container can result in unexpected behavior
+        // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
+        static_assert(std::constructible_from<typename traits::container_value<Container>::type, std::iter_value_t<It>>);
         c.insert(first, last);
     }
 
@@ -221,6 +229,9 @@ struct append_fn
     static constexpr void operator()(Container& c, It first, Se last)
         noexcept(noexcept(c.insert(std::ranges::end(c), first, last)))
     {
+        // appending incompatible type into a container can result in unexpected behavior
+        // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
+        static_assert(std::constructible_from<typename traits::container_value<Container>::type, std::iter_value_t<It>>);
         c.insert(std::ranges::end(c), first, last);
     }
 
@@ -229,8 +240,12 @@ struct append_fn
     static constexpr void operator()(Container& c, It first, Se last)
         noexcept(noexcept(append_container<Container>::call(c, first, last)))
     {
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_type>);
-        static_assert(!std::is_same_v<std::remove_const_t<Container>, unused_container_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_type>);
+        static_assert(!std::same_as<std::remove_const_t<Container>, unused_container_type>);
+
+        // appending incompatible type into a container can result in unexpected behavior
+        // e.g. appending `int` into `vector<vector<int>>` compiles, but gets resolved into `vector<int>::vector(size_t)`
+        static_assert(std::constructible_from<typename traits::container_value<Container>::type, std::iter_value_t<It>>);
         append_container<Container>::call(c, first, last);
     }
 };
@@ -308,8 +323,8 @@ struct is_empty_fn
     [[nodiscard]] static constexpr bool
     operator()(Container const& c) noexcept
     {
-        static_assert(!std::is_same_v<Container, unused_type>);
-        static_assert(!std::is_same_v<Container, unused_container_type>);
+        static_assert(!std::same_as<Container, unused_type>);
+        static_assert(!std::same_as<Container, unused_container_type>);
         return std::ranges::empty(c);
     }
 
@@ -321,8 +336,8 @@ struct is_empty_fn
     operator()(Container const& c)
         noexcept(noexcept(is_empty_container<Container>::call(c)))
     {
-        static_assert(!std::is_same_v<Container, unused_type>);
-        static_assert(!std::is_same_v<Container, unused_container_type>);
+        static_assert(!std::same_as<Container, unused_type>);
+        static_assert(!std::same_as<Container, unused_container_type>);
         return is_empty_container<Container>::call(c);
     }
 };
@@ -438,13 +453,13 @@ template<class T>
         std::default_initializable<T> &&
 
         requires(T& c) {
-            typename T::value_type; // required
+            typename container_value<T>::type;
             traits::begin(c);
             requires std::forward_iterator<decltype(traits::begin(c))>;
             traits::end(c);
             requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
             traits::is_empty(c);
-            traits::push_back(c, std::declval<typename T::value_type>());
+            traits::push_back(c, std::declval<typename container_value<T>::type>());
             traits::append(
                 c,
                 std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
@@ -468,52 +483,52 @@ concept X4Container = is_container_v<std::remove_cvref_t<T>>;
 
 // Customization point
 template<class T>
-struct build_container
+struct default_container
 {
     using type = std::vector<T>;
 };
 
 template<class T>
-struct build_container<alloy::tuple<T>> : build_container<T> {};
+struct default_container<alloy::tuple<T>> : default_container<T> {};
 
 template<>
-struct build_container<unused_type>
+struct default_container<unused_type>
 {
     using type = unused_container_type;
 };
 
 template<>
-struct build_container<unused_container_type>
+struct default_container<unused_container_type>
 {
     using type = unused_container_type;
 };
 
 template<>
-struct build_container<char>
+struct default_container<char>
 {
     using type = std::basic_string<char>;
 };
 
 template<>
-struct build_container<wchar_t>
+struct default_container<wchar_t>
 {
     using type = std::basic_string<wchar_t>;
 };
 
 template<>
-struct build_container<char8_t>
+struct default_container<char8_t>
 {
     using type = std::basic_string<char8_t>;
 };
 
 template<>
-struct build_container<char16_t>
+struct default_container<char16_t>
 {
     using type = std::basic_string<char16_t>;
 };
 
 template<>
-struct build_container<char32_t>
+struct default_container<char32_t>
 {
     using type = std::basic_string<char32_t>;
 };

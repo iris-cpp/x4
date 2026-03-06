@@ -46,7 +46,6 @@ struct parser : private detail::parser_base
     static_assert(!std::is_reference_v<Derived>);
     using derived_type = Derived;
 
-    static constexpr bool handles_container = false;
     static constexpr bool has_action = false;
     static constexpr bool need_rcontext = false;
 
@@ -117,8 +116,10 @@ struct proxy_parser : unary_parser<Subject, Derived>
     using attribute_type = parser_traits<Subject>::attribute_type;
 
     static constexpr bool has_attribute = x4::has_attribute_v<Subject>;
-    static constexpr bool handles_container = Subject::handles_container;
     static constexpr std::size_t sequence_size = parser_traits<Subject>::sequence_size;
+
+    template<class Container>
+    static constexpr bool handles_container = parser_traits<Subject>::template handles_container<Container>;
 
     using unary_parser<Subject, Derived>::unary_parser;
 };

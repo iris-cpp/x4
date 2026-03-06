@@ -12,10 +12,11 @@
 
 #include <iris/x4/core/unused.hpp>
 
-#include <iris/x4/traits/substitution.hpp>
+#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/rvariant/variant_helper.hpp>
 
+#include <concepts>
 #include <type_traits>
 
 namespace iris::x4::traits {
@@ -34,20 +35,40 @@ struct is_variant<iris::rvariant<Ts...>> : std::true_type {};
 
 namespace detail {
 
-template<class Attr, class... Ts>
-struct variant_find_substitute_impl;
+template<class T, class... Ts>
+struct any_of_unwrapped_exactly_same;
 
-template<class Attr>
-struct variant_find_substitute_impl<Attr>
+template<class T>
+struct any_of_unwrapped_exactly_same<T>
+    : std::false_type
+{};
+
+template<class T, class First, class... Rest>
+    requires std::same_as<T, iris::unwrap_recursive_type<First>>
+struct any_of_unwrapped_exactly_same<T, First, Rest...>
+    : std::true_type
+{};
+
+template<class T, class First, class... Rest>
+    requires (!std::same_as<T, iris::unwrap_recursive_type<First>>)
+struct any_of_unwrapped_exactly_same<T, First, Rest...>
+    : any_of_unwrapped_exactly_same<T, Rest...>
+{};
+
+template<class T, class... Ts>
+struct variant_find_holdable_type_impl;
+
+template<class T>
+struct variant_find_holdable_type_impl<T>
 {
-    using type = Attr;
+    using type = T;
 };
 
-template<class Attr, class First, class... Rest>
-struct variant_find_substitute_impl<Attr, First, Rest...>
+template<class T, class First, class... Rest>
+struct variant_find_holdable_type_impl<T, First, Rest...>
 {
     using type = std::conditional_t<
-        is_substitute_v<Attr, iris::unwrap_recursive_type<First>>,
+        can_hold<iris::unwrap_recursive_type<First>, T>::value,
 
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter
@@ -60,63 +81,36 @@ struct variant_find_substitute_impl<Attr, First, Rest...>
         //
         First, // no need to unwrap due to the reason described above
 
-        typename variant_find_substitute_impl<Attr, Rest...>::type
+        typename variant_find_holdable_type_impl<T, Rest...>::type
     >;
 };
 
 } // detail
 
 
-template<class Variant, X4Attribute Attr>
-struct variant_find_substitute;
+template<class Variant, class T>
+struct variant_find_holdable_type;
 
-template<class Variant, X4Attribute Attr>
-using variant_find_substitute_t = typename variant_find_substitute<Variant, Attr>::type;
-
-template<X4Attribute Attr>
-struct variant_find_substitute<Attr, Attr>
+template<class Variant>
+struct variant_find_holdable_type<Variant, Variant>
 {
-    using type = Attr;
+    static_assert(is_variant_v<Variant>);
+    using type = Variant;
 };
 
-// Recursively find the first type from the variant that can be a substitute for `Attr`.
-// If none is found, returns `Attr`.
-template<X4Attribute Attr, class... Ts>
-    requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
-struct variant_find_substitute<iris::rvariant<Ts...>, Attr>
+template<class... Ts, class T>
+    requires (!std::same_as<iris::rvariant<Ts...>, T>) && detail::any_of_unwrapped_exactly_same<T, Ts...>::value
+struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
 {
-    using type = typename detail::variant_find_substitute_impl<Attr, Ts...>::type;
+    using type = T;
 };
 
-
-template<class Variant, X4Attribute Attr>
-struct variant_has_substitute;
-
-template<class Variant, X4Attribute Attr>
-constexpr bool variant_has_substitute_v = variant_has_substitute<Variant, Attr>::value;
-
-template<X4Attribute Attr>
-struct variant_has_substitute<Attr, Attr>
-    : std::true_type
-{};
-
-template<X4Attribute Attr>
-struct variant_has_substitute<unused_type, Attr>
-    : std::true_type
-{};
-
-template<X4Attribute Attr>
-struct variant_has_substitute<unused_type const, Attr>
-    : std::true_type
-{};
-
-// Recursively find the first type from the variant that can be a substitute for `T`.
-// Returns boolean value whether it was found.
-template<X4Attribute Attr, class... Ts>
-    requires (!std::same_as<iris::rvariant<Ts...>, Attr>)
-struct variant_has_substitute<iris::rvariant<Ts...>, Attr>
-    : std::disjunction<is_substitute<Attr, Ts>...>
-{};
+template<class... Ts, class T>
+    requires (!std::same_as<iris::rvariant<Ts...>, T>) && (!detail::any_of_unwrapped_exactly_same<T, Ts...>::value)
+struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
+{
+    using type = typename detail::variant_find_holdable_type_impl<T, Ts...>::type;
+};
 
 } // iris::x4::traits
 

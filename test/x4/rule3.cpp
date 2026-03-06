@@ -52,8 +52,8 @@ namespace check_recursive {
 struct node_array;
 
 using node_t = iris::rvariant<
-   int,
-   iris::recursive_wrapper<node_array>
+    int,
+    iris::recursive_wrapper<node_array>
 >;
 
 struct node_array : std::vector<node_t>
@@ -158,6 +158,7 @@ TEST_CASE("rule3")
 
     {
         using namespace check_recursive;
+
         node_t v;
         REQUIRE(parse("[4,2]", grammar, v));
         CHECK((node_t{node_array{{4}, {2}}} == v));

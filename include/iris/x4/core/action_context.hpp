@@ -80,13 +80,6 @@ struct _as_var_fn
     static void operator()(Context const&&) = delete; // dangling
 };
 
-struct _where_fn
-{
-    template<class Context>
-    static constexpr void
-    operator()(Context const&) = delete; // `_where` is obsolete. Use `raw[...]` directive.
-};
-
 struct _attr_fn
 {
     template<class Context>
@@ -112,7 +105,6 @@ inline namespace cpos {
 inline constexpr detail::_rule_var_fn _val{};
 
 [[maybe_unused]] inline constexpr detail::_as_var_fn _as_var{};
-[[maybe_unused]] inline constexpr detail::_where_fn _where{}; // obsolete
 [[maybe_unused]] inline constexpr detail::_attr_fn _attr{};
 
 } // cpos

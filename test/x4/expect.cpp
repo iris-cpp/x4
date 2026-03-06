@@ -33,7 +33,6 @@
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
-#include <iris/x4/directive/raw.hpp>
 #include <iris/x4/directive/repeat.hpp>
 #include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
@@ -152,7 +151,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     using x4::no_case;
     using x4::no_skip;
     using x4::omit;
-    using x4::raw;
     using x4::repeat;
     using x4::seek;
     using x4::skip;
@@ -216,7 +214,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)no_skip[int_ >> int_].parse(first, last, unused, dummy_ints);
 
     (void)omit[eps].parse(first, last, unused, unused);
-    (void)raw[eps].parse(first, last, unused, unused);
     (void)repeat(1)[eps].parse(first, last, unused, unused);
     (void)seek[eps].parse(first, last, unused, unused);
     (void)skip(space)[eps].parse(first, last, unused, unused);
@@ -252,7 +249,7 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)(-(int_ >> int_)).parse(first, last, unused, dummy_optional_ints);
 
     (void)(+eps(false)).parse(first, last, unused, unused);
-    (void)(+int_).parse(first, last, unused, dummy_int);
+    (void)(+int_).parse(first, last, unused, dummy_ints);
 
     (void)(eps >> eps).parse(first, last, unused, unused);
     (void)(int_ >> int_).parse(first, last, unused, dummy_ints);
@@ -292,7 +289,6 @@ TEST_CASE("expect")
     using x4::no_case;
     using x4::no_skip;
     using x4::omit;
-    using x4::raw;
     using x4::skip;
     using x4::seek;
     using x4::repeat;
@@ -655,15 +651,6 @@ TEST_CASE("expect")
     {
         X4_TEST_SUCCESS_PASS("ab", omit[lit('a') > 'b']);
         X4_TEST_FAILURE("ab", omit[lit('a') > 'c'], {
-            CHECK(which == "'c'"sv);
-            CHECK(where == "b"sv);
-        });
-    }
-
-    // raw
-    {
-        X4_TEST_SUCCESS_PASS("ab", raw[lit('a') > 'b']);
-        X4_TEST_FAILURE("ab", raw[lit('a') > 'c'], {
             CHECK(which == "'c'"sv);
             CHECK(where == "b"sv);
         });

@@ -27,8 +27,6 @@ namespace iris::x4 {
 
 namespace detail {
 
-struct raw_attribute_t;
-
 template<class Context, X4Attribute Attr>
 struct action_context;
 
@@ -206,17 +204,6 @@ private:
         // retrospectively
         first = saved_first;
         return false;
-    }
-
-    // attr==raw, action wants iterator_range (see raw.hpp)
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    [[nodiscard]] constexpr bool
-    parse_main(It& first, Se const& last, Context const& ctx, detail::raw_attribute_t&) const
-        noexcept(false) // construction of `subrange` is never noexcept as per the standard
-    {
-        // synthesize the attribute since one is not supplied
-        std::ranges::subrange<It, It> rng; // This must be It-It pair, NOT It-Se pair
-        return this->parse_main(first, last, ctx, rng);
     }
 };
 

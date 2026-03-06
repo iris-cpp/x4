@@ -13,8 +13,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/parser.hpp>
-#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/core/list_like_parser.hpp>
+#include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/expectation.hpp>
 
 #include <iterator>
@@ -39,7 +39,7 @@ struct exact_count // handles repeat(exact)[p]
     [[nodiscard]] constexpr bool got_max(T i) const noexcept { return i >= exact_value; }
     [[nodiscard]] constexpr bool got_min(T i) const noexcept { return i >= exact_value; }
 
-    T exact_value;
+    T exact_value{};
 };
 
 template<std::integral T>
@@ -49,8 +49,8 @@ struct finite_count // handles repeat(min, max)[p]
     [[nodiscard]] constexpr bool got_max(T i) const noexcept { return i >= max_value; }
     [[nodiscard]] constexpr bool got_min(T i) const noexcept { return i >= min_value; }
 
-    T min_value;
-    T max_value;
+    T min_value{};
+    T max_value{};
 };
 
 template<std::integral T>
@@ -60,7 +60,7 @@ struct infinite_count // handles repeat(min, inf)[p]
     [[nodiscard]] constexpr bool got_max(T /*i*/) const noexcept { return false; }
     [[nodiscard]] constexpr bool got_min(T i) const noexcept { return i >= min_value; }
 
-    T min_value;
+    T min_value{};
 };
 
 template<class Bounds>
@@ -87,9 +87,13 @@ template<class Subject, detail::RepeatBounds Bounds>
 struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds>>
 {
     using base_type = proxy_parser<Subject, repeat_directive>;
-    using attribute_type = traits::build_container<typename parser_traits<Subject>::attribute_type>::type;
+    using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
-    static constexpr bool handles_container = true;
+    template<class Container>
+    static constexpr bool handles_container = std::disjunction_v<
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, Container>,
+        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
+    >;
 
     template<class SubjectT, detail::RepeatBounds BoundsT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Bounds, BoundsT>
@@ -99,15 +103,55 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
         , bounds_(std::forward<BoundsT>(bounds))
     {}
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        // never noexcept (requires container insertion)
+        // never noexcept; requires container insertion
+    {
+        auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
+        list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+
+        It local_it = first;
+        typename Bounds::value_type i{};
+        for (; !bounds_.got_min(i); ++i) {
+            if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf)) {
+                // We can't merge here; it will lead to partial status
+            } else {
+                return false;
+            }
+        }
+        list_like_parser::successful_merge_into(chunk_buf, container_attr);
+
+        first = local_it;
+        // parse some more up to the maximum specified
+        for (; !bounds_.got_max(i); ++i) {
+            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
+                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+            } else {
+                break;
+            }
+        }
+
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            return !x4::has_expectation_failure(ctx);
+        } else {
+            return true;
+        }
+    }
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, UnusedAttr& unused_attr) const
+        noexcept(
+            noexcept(detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))) &&
+            std::is_nothrow_copy_assignable_v<It> &&
+            is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
+        )
     {
         It local_it = first;
         typename Bounds::value_type i{};
         for (; !bounds_.got_min(i); ++i) {
-            if (!detail::parse_into_container(this->subject, local_it, last, ctx, x4::assume_container(attr))) {
+            if (!detail::parse_into_container(this->subject, local_it, last, ctx, x4::assume_container(unused_attr))) {
                 return false;
             }
         }
@@ -115,7 +159,7 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
         first = local_it;
         // parse some more up to the maximum specified
         for (; !bounds_.got_max(i); ++i) {
-            if (!detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(attr))) {
+            if (!detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))) {
                 break;
             }
         }
@@ -136,12 +180,7 @@ namespace detail {
 struct repeat_gen
 {
     template<X4Subject Subject>
-    [[nodiscard, deprecated("`repeat[p]` has the exact same meaning as `*p`. Use `*p` instead.")]]
-    constexpr auto operator[](Subject&& subject) const
-        noexcept(noexcept(*as_parser(std::forward<Subject>(subject))))
-    {
-        return *as_parser(std::forward<Subject>(subject));
-    }
+    constexpr void operator[](Subject&& subject) = delete; // `repeat[p]` has the exact same meaning as `*p`. Use `*p` instead.
 
     template<RepeatBounds Bounds>
     struct [[nodiscard]] repeat_gen_impl

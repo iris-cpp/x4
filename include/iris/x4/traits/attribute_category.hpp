@@ -10,7 +10,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/traits/subrange_traits.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/optional_traits.hpp>
@@ -34,7 +33,6 @@ struct container_attr {};
 struct tuple_attr {};
 struct variant_attr {};
 struct optional_attr {};
-struct subrange_attr {};
 
 template<class T>
 struct attribute_category
@@ -106,13 +104,6 @@ template<class T>
 struct attribute_category<T>
 {
     using type = optional_attr;
-};
-
-template<class T>
-    requires is_subrange_v<std::remove_cvref_t<T>>
-struct attribute_category<T>
-{
-    using type = subrange_attr;
 };
 
 template<class T>

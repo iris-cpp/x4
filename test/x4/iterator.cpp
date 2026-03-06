@@ -30,7 +30,6 @@
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
-#include <iris/x4/directive/raw.hpp>
 #include <iris/x4/directive/repeat.hpp>
 #include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
@@ -290,7 +289,6 @@ TEST_CASE("rollback on failed parse (directive)")
     using x4::no_case;
     using x4::no_skip;
     using x4::omit;
-    using x4::raw;
     using x4::repeat;
     using x4::seek;
     using x4::skip;
@@ -468,34 +466,6 @@ TEST_CASE("rollback on failed parse (directive)")
     {
         constexpr auto input = "foo"sv;
         auto first = input.begin();
-        std::ranges::subrange<It> dummy_subrange{input.end(), input.end()};
-        REQUIRE_FALSE(raw[eps(false)].parse(first, input.end(), unused, dummy_subrange));
-        CHECK(first == input.begin());
-        CHECK(dummy_subrange.begin() == input.end());
-        CHECK(dummy_subrange.end() == input.end());
-    }
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        std::ranges::subrange<It> dummy_subrange{input.end(), input.end()};
-        REQUIRE_FALSE(raw[int_].parse(first, input.end(), unused, dummy_subrange));
-        CHECK(first == input.begin());
-        CHECK(dummy_subrange.begin() == input.end());
-        CHECK(dummy_subrange.end() == input.end());
-    }
-    {
-        constexpr auto input = "42"sv;
-        auto first = input.begin();
-        std::ranges::subrange<It> dummy_subrange{input.end(), input.end()};
-        REQUIRE_FALSE(raw[int_ >> eps(false)].parse(first, input.end(), unused, dummy_subrange));
-        CHECK(first == input.begin());
-        CHECK(dummy_subrange.begin() == input.end());
-        CHECK(dummy_subrange.end() == input.end());
-    }
-
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
         REQUIRE_FALSE(repeat(1)[eps(false)].parse(first, input.end(), unused, unused));
         CHECK(first == input.begin());
     }
@@ -513,7 +483,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(repeat(1)[true_ >> true_].parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // sequence parser has side effect
+        CHECK(dummy_bools == std::vector<bool>{});
     }
     {
         constexpr auto input = "true123"sv;
@@ -521,7 +491,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // sequence parser has side effect
+        CHECK(dummy_bools == std::vector<bool>{});
     }
 
     {
@@ -912,7 +882,6 @@ TEST_CASE("rollback on failed parse (rule)")
 
 TEST_CASE("transform iterator")
 {
-    using x4::raw;
     using x4::eps;
     using x4::eoi;
     using x4::standard::upper;
@@ -929,13 +898,6 @@ TEST_CASE("transform iterator")
         std::string str;
         REQUIRE(parse(std::ranges::begin(rng), std::ranges::end(rng), +upper >> eoi, str));
         CHECK("ABCDE" == str);
-    }
-
-    {
-        std::ranges::subrange<std::ranges::iterator_t<range_type>> str;
-
-        REQUIRE(parse(std::ranges::begin(rng), std::ranges::end(rng), raw[+upper >> eoi], str));
-        CHECK(std::ranges::equal(std::string("ABCDE"), str));
     }
 
     CHECK(parse(std::ranges::begin(rng), std::ranges::end(rng), (repeat(6)[upper] | repeat(5)[upper]) >> eoi));

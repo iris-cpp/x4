@@ -11,11 +11,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/x4/core/detail/parse_sequence.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/detail/parse_sequence.hpp>
+#include <iris/x4/core/move_to.hpp>
 
 #include <iris/x4/traits/attribute_of_binary.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/directive/expect.hpp>
 
@@ -28,6 +30,50 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+template<traits::X4Container Container, class Elem>
+struct container_can_hold_element : std::is_same<Container, Elem>
+{};
+
+template<traits::X4Container Container, class Elem>
+    requires
+        (!std::same_as<Container, Elem>) &&
+        (!traits::X4Container<Elem>) &&
+        requires (Container& c, Elem&& elem) {
+            traits::push_back(c, std::move(elem));
+        }
+struct container_can_hold_element<Container, Elem>
+    : std::true_type
+{};
+
+template<traits::X4Container Container, class ContainerElem>
+    requires
+        (!std::same_as<Container, ContainerElem>) &&
+        traits::X4Container<ContainerElem> &&
+        requires (Container& c, ContainerElem&& container_elem) {
+            x4::move_to(
+                std::make_move_iterator(traits::begin(container_elem)),
+                std::make_move_iterator(traits::end(container_elem)),
+                c
+            );
+        }
+struct container_can_hold_element<Container, ContainerElem>
+    : std::true_type
+{};
+
+template<traits::X4Container Container, class SequenceAttr_Maybe_Unwrapped>
+struct container_can_hold_sequence : container_can_hold_element<Container, SequenceAttr_Maybe_Unwrapped>
+{};
+
+template<traits::X4Container Container, class... Ts>
+struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
+    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion here.
+    : std::conjunction<container_can_hold_element<Container, Ts>...>
+{};
+
+} // detail
+
 template<class Left, class Right>
 struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 {
@@ -35,6 +81,14 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
 
     static constexpr std::size_t sequence_size =
         parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
+
+    template<traits::X4Container Container>
+    static constexpr bool handles_container =
+        (
+            parser_traits<Left>::template handles_container<Container> &&
+            parser_traits<Right>::template handles_container<Container>
+        ) ||
+        detail::container_can_hold_sequence<Container, attribute_type>::value;
 
     using binary_parser<Left, Right, sequence>::binary_parser;
 

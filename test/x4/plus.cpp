@@ -23,27 +23,6 @@
 #include <string>
 #include <vector>
 
-struct x_attr {};
-
-namespace iris::x4::traits {
-
-template<>
-struct container_value<x_attr>
-{
-    using type = char; // value type of container
-};
-
-template<>
-struct push_back_container<x_attr>
-{
-    static constexpr void call(x_attr& /*c*/, char /*val*/) noexcept
-    {
-        // push back value type into container
-    }
-};
-
-} // x4::traits
-
 TEST_CASE("plus")
 {
     using x4::char_;
@@ -129,7 +108,7 @@ TEST_CASE("plus")
 
     // attribute customization
     {
-        x_attr x;
+        x4_test::custom_container<char> x;
         (void)parse("abcde", +char_, x);
     }
 
