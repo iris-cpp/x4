@@ -29,6 +29,7 @@
 
 #include <iris/rvariant/rvariant.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <concepts>
@@ -71,14 +72,14 @@ TEST_CASE("sequence")
     CHECK(parse(" Hello, World", lit("Hello") >> ',' >> "World", space));
 
     {
-        alloy::tuple<char, char> vec;
+        std::tuple<char, char> vec;
         REQUIRE(parse("ab", char_ >> char_, vec));
         CHECK(alloy::get<0>(vec) == 'a');
         CHECK(alloy::get<1>(vec) == 'b');
     }
 
     {
-        alloy::tuple<char, char, char> vec;
+        std::tuple<char, char, char> vec;
         REQUIRE(parse(" a\n  b\n  c", char_ >> char_ >> char_, space, vec));
         CHECK(alloy::get<0>(vec) == 'a');
         CHECK(alloy::get<1>(vec) == 'b');
@@ -87,7 +88,7 @@ TEST_CASE("sequence")
 
     {
         // 'b' has an unused_type. unused attributes are not part of the sequence
-        alloy::tuple<char, char> vec;
+        std::tuple<char, char> vec;
         REQUIRE(parse("abc", char_ >> 'b' >> char_, vec));
         CHECK(alloy::get<0>(vec) == 'a');
         CHECK(alloy::get<1>(vec) == 'c');
@@ -95,7 +96,7 @@ TEST_CASE("sequence")
 
     {
         // 'b' has an unused_type. unused attributes are not part of the sequence
-        alloy::tuple<char, char> vec;
+        std::tuple<char, char> vec;
         REQUIRE(parse("acb", char_ >> char_ >> 'b', vec));
         CHECK(alloy::get<0>(vec) == 'a');
         CHECK(alloy::get<1>(vec) == 'c');
@@ -103,7 +104,7 @@ TEST_CASE("sequence")
 
     {
         // "hello" has an unused_type. unused attributes are not part of the sequence
-        alloy::tuple<char, char> vec;
+        std::tuple<char, char> vec;
         REQUIRE(parse("a hello c", char_ >> "hello" >> char_, space, vec));
         CHECK(alloy::get<0>(vec) == 'a');
         CHECK(alloy::get<1>(vec) == 'c');
@@ -118,7 +119,7 @@ TEST_CASE("sequence")
 
     {
         // a single element tuple
-        alloy::tuple<char> vec;
+        std::tuple<char> vec;
         REQUIRE(parse("ab", char_ >> 'b', vec));
         CHECK(alloy::get<0>(vec) == 'a');
     }
@@ -133,7 +134,7 @@ TEST_CASE("sequence")
 
         // rule version
         {
-            using attr_type = alloy::tuple<char, int>;
+            using attr_type = std::tuple<char, int>;
             attr_type tpl;
 
             auto r = rule<struct r_id, attr_type>{} = char_ >> ',' >> int_;
@@ -144,7 +145,7 @@ TEST_CASE("sequence")
 
         // as version
         {
-            using attr_type = alloy::tuple<char, int>;
+            using attr_type = std::tuple<char, int>;
             attr_type tpl;
 
             auto r = as<attr_type>(char_ >> ',' >> int_);
@@ -161,18 +162,18 @@ TEST_CASE("sequence")
 
         // rule version
         {
-            using attr_type = alloy::tuple<int>;
-            attr_type tpl;
+            using attr_type = x4_test::single_element_struct<int>;
+            attr_type ses;
 
             auto r = rule<struct r_id, attr_type>{} = int_;
 
-            REQUIRE(parse("test:1", "test:" >> r, tpl));
-            CHECK((tpl == attr_type(1)));
+            REQUIRE(parse("test:1", "test:" >> r, ses));
+            CHECK((ses == attr_type(1)));
         }
 
         // as version
         {
-            using attr_type = alloy::tuple<int>;
+            using attr_type = x4_test::single_element_struct<int>;
             attr_type tpl;
 
             auto r = as<attr_type>(int_);
@@ -396,7 +397,7 @@ TEST_CASE("sequence")
     // Test from spirit mailing list
     // "Error with container within sequence"
     {
-        using attr_type = alloy::tuple<std::string>;
+        using attr_type = std::tuple<std::string>;
         attr_type vec;
 
         constexpr auto r = *alnum;
@@ -405,7 +406,7 @@ TEST_CASE("sequence")
         CHECK(alloy::get<0>(vec) == "abcdef");
     }
     {
-        using attr_type = alloy::tuple<std::vector<int>>;
+        using attr_type = std::tuple<std::vector<int>>;
         attr_type vec;
 
         constexpr auto r = *int_;
@@ -418,7 +419,7 @@ TEST_CASE("sequence")
 
     {
         // Non-flat optional
-        alloy::tuple<int, std::optional<alloy::tuple<int, int>>> v;
+        std::tuple<int, std::optional<std::tuple<int, int>>> v;
         constexpr auto p = int_ >> -(':' >> int_ >> '-' >> int_);
         REQUIRE(parse("1:2-3", p, v));
         REQUIRE(alloy::get<1>(v).has_value());
@@ -430,12 +431,12 @@ TEST_CASE("sequence")
         constexpr auto p = char_ >> -(':' >> +char_);
 
         {
-            alloy::tuple<char, std::optional<std::string>> v;
+            std::tuple<char, std::optional<std::string>> v;
             REQUIRE(parse("x", p, v));
             CHECK(!alloy::get<1>(v).has_value());
         }
         {
-            alloy::tuple<char, std::optional<std::string>> v;
+            std::tuple<char, std::optional<std::string>> v;
             REQUIRE(parse("x:abc", p, v));
             REQUIRE(alloy::get<1>(v).has_value());
             CHECK(*alloy::get<1>(v) == "abc");

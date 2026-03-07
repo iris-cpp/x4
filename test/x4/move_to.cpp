@@ -7,6 +7,8 @@
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/rvariant/rvariant_io.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
+
 #include <vector>
 
 struct X {};
@@ -38,21 +40,21 @@ TEST_CASE("move_to")
     // tuple contains reference
     {
         int n = 0;
-        alloy::tuple<int&> ref_tuple{ n };
+        std::tuple<int&> ref_tuple{ n };
         x4::move_to(42, ref_tuple);
         CHECK(n == 42);
     }
     {
         int n = 42;
-        alloy::tuple<int&> ref_tuple{ n };
-        alloy::tuple<int> dest{ 0 };
+        std::tuple<int&> ref_tuple{ n };
+        std::tuple<int> dest{ 0 };
         x4::move_to(std::move(ref_tuple), dest);
         CHECK(alloy::get<0>(dest) == 42);
     }
     {
         x4_test::move_only mo;
-        alloy::tuple<x4_test::move_only&> ref_tuple{ mo };
-        alloy::tuple<x4_test::move_only> dest;
+        std::tuple<x4_test::move_only&> ref_tuple{ mo };
+        std::tuple<x4_test::move_only> dest;
         x4::move_to(std::move(ref_tuple), dest); // move "far" ownership
     }
 }

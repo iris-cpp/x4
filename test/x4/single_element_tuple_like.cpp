@@ -40,7 +40,7 @@ IRIS_X4_DECLARE_CONSTEXPR(VarRule)
 constexpr IdentRule ident;
 constexpr VarRule var;
 
-constexpr auto ident_def = x4::alpha >> *x4::alnum;
+constexpr auto ident_def = x4::as<std::string>(x4::alpha >> *x4::alnum);
 constexpr auto var_def = '$' >> ident;
 
 IRIS_X4_DEFINE_CONSTEXPR(ident)

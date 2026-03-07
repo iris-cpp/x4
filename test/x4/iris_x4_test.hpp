@@ -187,7 +187,21 @@ struct custom_container
     void insert(T*, It, Se) {}
 };
 
+template<class T>
+struct single_element_struct
+{
+    T value;
+
+    bool operator==(single_element_struct const&) const = default;
+};
+
 } // x4_test
+
+template<class T>
+struct ::iris::alloy::adaptor<x4_test::single_element_struct<T>>
+{
+    using getters_list = make_getters_list<&x4_test::single_element_struct<T>::value>;
+};
 
 using x4_test::parse;
 

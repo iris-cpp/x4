@@ -390,6 +390,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     static_assert(X4Attribute<RuleAttr>);
     static_assert(X4UnusedAttribute<RuleAttr> || !std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
     static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
+    static_assert(!is_ttp_specialization_of<RuleAttr, alloy::tuple>::value, "alloy::tuple is intended for internal use only");
 
     using id = RuleID;
     using attribute_type = RuleAttr;

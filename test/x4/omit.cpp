@@ -17,6 +17,7 @@
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <string>
@@ -65,7 +66,7 @@ TEST_CASE("omit")
 
     {
         // omit[] means we don't receive the attribute
-        alloy::tuple<> attr;
+        std::tuple<> attr;
         CHECK(parse("abc", omit[char_] >> omit['b'] >> omit[char_], attr));
     }
 
@@ -81,7 +82,7 @@ TEST_CASE("omit")
         // omit[] means we don't receive the attribute, if all elements of a
         // sequence have unused attributes, the whole sequence has an unused
         // attribute as well
-        alloy::tuple<char, char> attr;
+        std::tuple<char, char> attr;
         REQUIRE(parse("abcde", char_ >> (omit[char_] >> omit['c'] >> omit[char_]) >> char_, attr));
         CHECK(alloy::get<0>(attr) == 'a');
         CHECK(alloy::get<1>(attr) == 'e');
@@ -89,7 +90,7 @@ TEST_CASE("omit")
 
     {
         // "hello" has an unused_type. unused attrubutes are not part of the sequence
-        alloy::tuple<char, char> attr;
+        std::tuple<char, char> attr;
         REQUIRE(parse("a hello c", char_ >> "hello" >> char_, space, attr));
         CHECK(alloy::get<0>(attr) == 'a');
         CHECK(alloy::get<1>(attr) == 'c');

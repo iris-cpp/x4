@@ -31,18 +31,11 @@ struct is_variant;
 namespace detail {
 
 template<class TTuple, class UTuple, class IndexSeq = std::make_index_sequence<alloy::tuple_size_v<TTuple>>>
-struct is_all_substitute_for_tuple_impl {};
+struct is_all_substitute_for_tuple {};
 
 template<class TTuple, class UTuple, std::size_t... Is>
-struct is_all_substitute_for_tuple_impl<TTuple, UTuple, std::index_sequence<Is...>>
-    : std::conjunction<can_hold<alloy::tuple_element_t<Is, TTuple>, alloy::tuple_element_t<Is, UTuple>>...> {};
-
-template<class TTuple, class UTuple>
-struct is_all_substitute_for_tuple : std::false_type {};
-
-template<class TTuple, class UTuple>
-    requires is_same_size_tuple_like<TTuple, UTuple>::value
-struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
+struct is_all_substitute_for_tuple<TTuple, UTuple, std::index_sequence<Is...>>
+    : std::conjunction<can_hold<std::remove_reference_t<alloy::tuple_element_t<Is, TTuple>>, std::remove_reference_t<alloy::tuple_element_t<Is, UTuple>>>...> {};
 
 template<class T, class U>
 struct value_type_can_hold
@@ -55,10 +48,9 @@ struct can_hold_impl : std::false_type {};
 
 template<class T, class U>
     requires
-        alloy::is_tuple_like_v<T> &&
-        alloy::is_tuple_like_v<U>
+        is_same_size_tuple_like<T, U>::value
 struct can_hold_impl<T, U>
-    : detail::is_all_substitute_for_tuple<T, U>
+    : is_all_substitute_for_tuple<T, U>
 {};
 
 template<class T, class U>
@@ -66,7 +58,7 @@ template<class T, class U>
         is_container_v<T> &&
         is_container_v<U>
 struct can_hold_impl<T, U>
-    : detail::value_type_can_hold<T, U>
+    : value_type_can_hold<T, U>
 {};
 
 template<class T, class U>

@@ -47,6 +47,7 @@
 #include <iris/x4/operator/not_predicate.hpp>
 #include <iris/x4/operator/optional.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <optional>
@@ -354,7 +355,7 @@ TEST_CASE("expect")
 
     // Test that attributes with > (sequences) work just like >> (sequences)
     {
-        alloy::tuple<char, char, char> attr;
+        std::tuple<char, char, char> attr;
         X4_TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ > char_, space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));
@@ -362,7 +363,7 @@ TEST_CASE("expect")
     }
 
     {
-        alloy::tuple<char, char, char> attr;
+        std::tuple<char, char, char> attr;
         X4_TEST_ATTR_SUCCESS_PASS(" a\n  b\n  c", char_ > char_ >> char_, space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));
@@ -370,7 +371,7 @@ TEST_CASE("expect")
     }
 
     {
-        alloy::tuple<char, char, char> attr;
+        std::tuple<char, char, char> attr;
         X4_TEST_ATTR_SUCCESS_PASS(" a, b, c", char_ >> ',' >> expect[char_] >> ',' >> expect[char_], space, attr);
         CHECK((alloy::get<0>(attr) == 'a'));
         CHECK((alloy::get<1>(attr) == 'b'));

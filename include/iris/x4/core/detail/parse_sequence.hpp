@@ -20,6 +20,7 @@
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/can_hold.hpp>
 
+
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/utility.hpp>
 
@@ -29,6 +30,9 @@
 #include <utility>
 
 namespace iris::x4 {
+
+template<class RuleID, X4Attribute RuleAttr, bool ForceAttr>
+struct rule;
 
 template<class Left, class Right>
 struct sequence;
@@ -88,6 +92,24 @@ struct pass_sequence_attribute<sequence<LParser, RParser>, Attr>
     : pass_through_sequence_attribute<Attr>
 {};
 
+template<class RuleID, X4Attribute RuleAttr, bool ForceAttr, class Attr>
+    requires
+        traits::is_single_element_tuple_like<Attr>::value &&
+        (!traits::can_hold<RuleAttr, Attr>::value)
+struct pass_sequence_attribute<rule<RuleID, RuleAttr, ForceAttr>, Attr>
+{
+    using base_pass_sequence_attribute = pass_through_sequence_attribute<Attr>;
+
+    using type = alloy::tuple_element_t<0, Attr>&;
+
+    template<class Attr_>
+    [[nodiscard]] static constexpr type
+    call(Attr_& attribute) noexcept(noexcept(alloy::get<0>(attribute)))
+    {
+        return alloy::get<0>(attribute);
+    }
+};
+
 template<class Parser, class Attr>
     requires requires {
         typename Parser::proxy_backend_type;
@@ -117,16 +139,16 @@ struct partition_attribute<LParser, RParser, Attr>
     static_assert(
         actual_size >= expected_size,
         "Sequence size of the passed attribute is less than expected."
-    );
+        );
     static_assert(
         actual_size <= expected_size,
         "Sequence size of the passed attribute is greater than expected."
-    );
+        );
 
     using view = alloy::tuple_ref_t<Attr>;
-    using splitted = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = alloy::tuple_element_t<0, splitted>;
-    using r_part = alloy::tuple_element_t<1, splitted>;
+    using split = alloy::tuple_split_t<view, l_size, r_size>;
+    using l_part = alloy::tuple_element_t<0, split>;
+    using r_part = alloy::tuple_element_t<1, split>;
     using l_pass = pass_sequence_attribute<LParser, l_part>;
     using r_pass = pass_sequence_attribute<RParser, r_part>;
 
@@ -222,7 +244,6 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
     return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
-// Default overload, no constraints on attribute category
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
 parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
@@ -240,33 +261,29 @@ parse_sequence(Parser const& parser, It& first, Se const& last, Context const& c
         }
         return false;
     } else {
-        if constexpr (traits::is_single_element_tuple_like<Attr>::value && !traits::can_hold<typename parser_traits<Parser>::attribute_type, Attr>::value) {
-            return detail::parse_sequence(parser, first, last, ctx, traits::unwrap_single_element(attr));
-        } else {
-            using partition = partition_attribute<
-                typename Parser::left_type,
-                typename Parser::right_type,
-                Attr
-            >;
+        using partition = partition_attribute<
+            typename Parser::left_type,
+            typename Parser::right_type,
+            Attr
+        >;
 
-            auto&& l_part = partition::left(attr);
-            auto&& r_part = partition::right(attr);
-            auto&& l_attr = partition::l_pass::call(l_part);
-            auto&& r_attr = partition::r_pass::call(r_part);
+        auto&& l_part = partition::left(attr);
+        auto&& r_part = partition::right(attr);
+        auto&& l_attr = partition::l_pass::call(l_part);
+        auto&& r_attr = partition::r_pass::call(r_part);
 
-            auto&& l_attr_appender = x4::make_container_appender(l_attr);
-            auto&& r_attr_appender = x4::make_container_appender(r_attr);
+        auto&& l_attr_appender = x4::make_container_appender(l_attr);
+        auto&& r_attr_appender = x4::make_container_appender(r_attr);
 
-            It local_it = first;
-            if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
-                parser.right.parse(local_it, last, ctx, r_attr_appender)
-                ) {
-                first = std::move(local_it);
-                return true;
-            }
-
-            return false;
+        It local_it = first;
+        if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
+            parser.right.parse(local_it, last, ctx, r_attr_appender)
+            ) {
+            first = std::move(local_it);
+            return true;
         }
+
+        return false;
     }
 }
 
