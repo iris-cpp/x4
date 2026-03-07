@@ -14,10 +14,7 @@
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/rvariant/variant_helper.hpp>
 
-#include <iris/alloy/tuple.hpp>
 #include <iris/alloy/traits.hpp>
-
-#include <type_traits>
 
 namespace iris::x4 {
 
@@ -52,32 +49,6 @@ struct chunk_buffer_impl
     static_assert(traits::X4Container<typename unwrap_container_candidate<ParserAttr, ExposedAttr>::type>);
 };
 
-template<class T>
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
-{
-    return std::forward<T>(value);
-}
-
-template<class T>
-    requires traits::is_single_element_tuple_like<std::remove_cvref_t<T>>::value
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
-{
-    return std::forward_like<T>(alloy::get<0>(std::forward<T>(value)));
-}
-
-template<class T>
-struct unwrap_single_element_plain
-{
-    using type = std::remove_cvref_t<T>;
-};
-
-template<class T>
-    requires traits::is_single_element_tuple_like<std::remove_cvref_t<T>>::value
-struct unwrap_single_element_plain<T>
-{
-    using type = std::remove_cvref_t<alloy::tuple_element_t<0, T>>;
-};
-
 } // detail
 
 
@@ -88,10 +59,10 @@ using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 [[nodiscard]] constexpr auto& get_container(ExposedAttr& attr)
 {
-    using unwrapped_attr_type = detail::unwrap_single_element_plain<
+    using unwrapped_attr_type = traits::unwrap_single_element_plain<
         unwrap_recursive_type<ExposedAttr>
     >::type;
-    auto& unwrapped_attr = detail::unwrap_single_element(iris::unwrap_recursive(attr));
+    auto& unwrapped_attr = traits::unwrap_single_element(iris::unwrap_recursive(attr));
 
     if constexpr (traits::is_variant_v<unwrapped_attr_type>) {
         using container_alternative = traits::variant_find_holdable_type<
