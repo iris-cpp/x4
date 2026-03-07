@@ -7,6 +7,7 @@
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char.hpp>
 #include <iris/x4/rule.hpp>
 
@@ -36,6 +37,8 @@ IRIS_X4_DEFINE_CONSTEXPR(ident)
 TEST_CASE("single_element_tuple_like")
 {
     using x4::as;
+    using x4::alnum;
+    using x4::alpha;
     using x4::char_;
     using x4::eps;
     using x4::int_;
@@ -65,24 +68,24 @@ TEST_CASE("single_element_tuple_like")
 
     // see https://github.com/boostorg/spirit_x4/issues/27
     {
-        constexpr auto parser = char_ >> *char_;
+        constexpr auto parser = alpha >> *alnum;
         std::string attr;
         REQUIRE(parse("abc", parser, attr));
         CHECK(attr == "abc");
     }
     {
-        constexpr auto parser = lexeme[char_ >> *char_];
+        constexpr auto parser = lexeme[alpha >> *alnum];
         std::string attr;
         REQUIRE(parse("abc", parser, attr));
         CHECK(attr == "abc");
     }
     {
-        constexpr auto identifier = char_ >> *char_;
+        constexpr auto identifier = alpha >> *alnum;
         constexpr auto func_call = identifier >> '(' >> int_ >> ')';
         REQUIRE(parse("abc(42)", func_call));
     }
     {
-        constexpr auto identifier = lexeme[char_ >> *char_];
+        constexpr auto identifier = lexeme[alpha >> *alnum];
         constexpr auto func_call = identifier >> '(' >> int_ >> ')';
         REQUIRE(parse("abc(42)", func_call));
     }
