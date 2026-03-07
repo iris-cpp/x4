@@ -19,72 +19,55 @@ namespace iris::x4::traits {
 template<class A, class B>
 struct has_same_size
     : std::bool_constant<
-        alloy::tuple_size_v<std::remove_cvref_t<A>> ==
-        alloy::tuple_size_v<std::remove_cvref_t<B>>
+        alloy::tuple_size_v<A> ==
+        alloy::tuple_size_v<B>
     >
 {};
 
-template<class A, class B>
-constexpr bool has_same_size_v = has_same_size<A, B>::value;
-
 template<class T, std::size_t N>
 struct has_size
-    : std::bool_constant<alloy::tuple_size_v<std::remove_cvref_t<T>> == N>
+    : std::bool_constant<alloy::tuple_size_v<T> == N>
 {};
 
-template<class T, std::size_t N>
-constexpr bool has_size_v = has_size<T, N>::value;
-
 template<class A, class B>
-struct is_same_size_sequence
+struct is_same_size_tuple_like
     : std::bool_constant<std::conjunction_v<
-        alloy::is_tuple_like<std::remove_cvref_t<A>>,
-        alloy::is_tuple_like<std::remove_cvref_t<B>>,
+        alloy::is_tuple_like<A>,
+        alloy::is_tuple_like<B>,
         has_same_size<A, B>
     >>
 {};
 
-template<class A, class B>
-constexpr bool is_same_size_sequence_v = is_same_size_sequence<A, B>::value;
-
-template<class Seq>
-struct is_size_one_sequence
+template<class T>
+struct is_single_element_tuple_like
     : std::bool_constant<std::conjunction_v<
-        alloy::is_tuple_like<std::remove_cvref_t<Seq>>,
-        has_size<Seq, 1>
+        alloy::is_tuple_like<T>,
+        has_size<T, 1>
     >>
 {};
 
-template<class Seq>
-constexpr bool is_size_one_sequence_v = is_size_one_sequence<Seq>::value;
-
 template<class View>
-struct is_size_one_view
+struct is_single_element_tuple_like_view
     : std::bool_constant<std::conjunction_v<
-        alloy::is_tuple_like_view<std::remove_cvref_t<View>>,
+        alloy::is_tuple_like_view<View>,
         has_size<View, 1>
     >>
 {};
 
-template<class View>
-constexpr bool is_size_one_view_v = is_size_one_view<View>::value;
-
-
 template<class T>
-struct synthesized_value
+struct unwrap_single_element_tuple_like
 {
     using type = T;
 };
 
 template<class T>
-using synthesized_value_t = typename synthesized_value<T>::type;
-
-template<class T>
-    requires is_size_one_sequence_v<std::remove_cvref_t<T>>
-struct synthesized_value<T>
+    requires is_single_element_tuple_like<T>::value
+struct unwrap_single_element_tuple_like<T>
 {
-    using type = std::remove_cvref_t<alloy::tuple_element_t<0, T>>;
+    using type = alloy::tuple_element_t<0, T>;
 };
+
+
 
 } // iris::x4::traits
 

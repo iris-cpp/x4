@@ -84,7 +84,7 @@ struct parse_into_container_impl_default
             }
 
         } else {
-            if constexpr (traits::is_size_one_sequence_v<unwrapped_attribute_type>) {
+            if constexpr (traits::is_single_element_tuple_like<unwrapped_attribute_type>::value) {
                 // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {

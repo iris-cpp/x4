@@ -29,7 +29,7 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     // non-variant `ExposedAttr`
 struct unwrap_container_candidate
 {
-    using type = traits::synthesized_value<
+    using type = traits::unwrap_single_element_tuple_like<
         unwrap_recursive_type<
             typename unwrap_container_appender<ExposedAttr>::type
         >
@@ -59,7 +59,7 @@ template<class T>
 }
 
 template<class T>
-    requires traits::is_size_one_sequence_v<std::remove_cvref_t<T>>
+    requires traits::is_single_element_tuple_like<std::remove_cvref_t<T>>::value
 [[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
 {
     return std::forward_like<T>(alloy::get<0>(std::forward<T>(value)));
@@ -72,7 +72,7 @@ struct unwrap_single_element_plain
 };
 
 template<class T>
-    requires traits::is_size_one_sequence_v<std::remove_cvref_t<T>>
+    requires traits::is_single_element_tuple_like<std::remove_cvref_t<T>>::value
 struct unwrap_single_element_plain<T>
 {
     using type = std::remove_cvref_t<alloy::tuple_element_t<0, T>>;

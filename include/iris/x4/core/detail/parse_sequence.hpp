@@ -77,7 +77,7 @@ struct pass_through_sequence_attribute
 
 template<class Parser, class Attr>
 struct pass_sequence_attribute : std::conditional_t<
-    traits::is_size_one_view_v<Attr>,
+    traits::is_single_element_tuple_like_view<Attr>::value,
     pass_sequence_attribute_size_one_view<Attr>,
     pass_through_sequence_attribute<Attr>
 >
