@@ -203,43 +203,10 @@ struct partition_attribute<LParser, RParser, Attr>
     }
 };
 
-// Default overload, no constraints on attribute category
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
-[[nodiscard]] constexpr bool
-parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-    // TODO: noexcept
-{
-    static_assert(X4Attribute<Attr>);
-
-    using partition = partition_attribute<
-        typename Parser::left_type,
-        typename Parser::right_type,
-        Attr
-    >;
-
-    auto&& l_part = partition::left(attr);
-    auto&& r_part = partition::right(attr);
-    auto&& l_attr = partition::l_pass::call(l_part);
-    auto&& r_attr = partition::r_pass::call(r_part);
-
-    auto&& l_attr_appender = x4::make_container_appender(l_attr);
-    auto&& r_attr_appender = x4::make_container_appender(r_attr);
-
-    It local_it = first;
-    if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
-        parser.right.parse(local_it, last, ctx, r_attr_appender)
-    ) {
-        first = std::move(local_it);
-        return true;
-    }
-
-    return false;
-}
-
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires (parser_traits<Parser>::sequence_size > 1)
 [[nodiscard]] constexpr bool
-parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+    parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
     // static_assert(Parsable<Parser, It, Se, Context, Attr>);
@@ -249,32 +216,58 @@ parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context con
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires (parser_traits<Parser>::sequence_size <= 1)
 [[nodiscard]] constexpr bool
-parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+    parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
     return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
-template<
-    class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-    traits::CategorizedAttr<traits::container_attr> ContainerAttr
->
+// Default overload, no constraints on attribute category
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
-parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
-    noexcept(
-        std::is_nothrow_copy_assignable_v<It> &&
-        noexcept(detail::parse_sequence_impl(parser.left, first, last, ctx, container_attr)) &&
-        noexcept(detail::parse_sequence_impl(parser.right, first, last, ctx, container_attr))
-    )
+parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+    // TODO: noexcept
 {
-    It local_it = first;
-    if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, container_attr) &&
-        detail::parse_sequence_impl(parser.right, local_it, last, ctx, container_attr)
-    ) {
-        first = std::move(local_it);
-        return true;
+    static_assert(X4Attribute<Attr>);
+
+    if constexpr (traits::is_container_v<Attr>) {
+        It local_it = first;
+        if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, attr) &&
+            detail::parse_sequence_impl(parser.right, local_it, last, ctx, attr)
+            ) {
+            first = std::move(local_it);
+            return true;
+        }
+        return false;
+    } else {
+        if constexpr (traits::is_single_element_tuple_like<Attr>::value && !traits::can_hold<typename parser_traits<Parser>::attribute_type, Attr>::value) {
+            return detail::parse_sequence(parser, first, last, ctx, traits::unwrap_single_element(attr));
+        } else {
+            using partition = partition_attribute<
+                typename Parser::left_type,
+                typename Parser::right_type,
+                Attr
+            >;
+
+            auto&& l_part = partition::left(attr);
+            auto&& r_part = partition::right(attr);
+            auto&& l_attr = partition::l_pass::call(l_part);
+            auto&& r_attr = partition::r_pass::call(r_part);
+
+            auto&& l_attr_appender = x4::make_container_appender(l_attr);
+            auto&& r_attr_appender = x4::make_container_appender(r_attr);
+
+            It local_it = first;
+            if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
+                parser.right.parse(local_it, last, ctx, r_attr_appender)
+                ) {
+                first = std::move(local_it);
+                return true;
+            }
+
+            return false;
+        }
     }
-    return false;
 }
 
 template<class Left, class Right>
