@@ -198,7 +198,7 @@ struct single_element_struct
 } // x4_test
 
 template<class T>
-struct ::iris::alloy::adaptor<x4_test::single_element_struct<T>>
+struct iris::alloy::adaptor<x4_test::single_element_struct<T>>
 {
     using getters_list = make_getters_list<&x4_test::single_element_struct<T>::value>;
 };
