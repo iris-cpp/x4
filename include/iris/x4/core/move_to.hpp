@@ -223,9 +223,10 @@ move_to(It first, Se last, Dest& dest)
 template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::tuple_attr> Dest>
     requires traits::is_single_element_tuple_like<Dest>::value
 constexpr void
-move_to(It first, Se last, Dest& dest)
+move_to(It first, Se last, Dest& dest) // TODO: delete this overload
     noexcept(noexcept(x4::move_to(first, last, alloy::get<0>(dest))))
 {
+    static_assert(false);
     x4::move_to(first, last, alloy::get<0>(dest));
 }
 

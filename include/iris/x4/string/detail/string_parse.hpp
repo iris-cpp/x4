@@ -45,7 +45,7 @@ string_parse(
         }
     }
 
-    x4::move_to(first, it, attr);
+    x4::move_to(first, it, traits::unwrap_single_element(attr));
     first = it;
     return true;
 }
