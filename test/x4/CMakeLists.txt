@@ -85,6 +85,7 @@ x4_define_tests(
     rule4
     seek
     sequence
+	single_element_tuple_like
     skip
     substitution
     symbols1
