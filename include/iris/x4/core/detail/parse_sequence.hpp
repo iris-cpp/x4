@@ -20,7 +20,6 @@
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/can_hold.hpp>
 
-
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/utility.hpp>
 
