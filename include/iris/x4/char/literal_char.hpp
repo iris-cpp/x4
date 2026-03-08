@@ -11,9 +11,11 @@
 ==============================================================================*/
 
 #include <iris/x4/char/char_parser.hpp>
-#include <iris/x4/string/utf8.hpp>
 #include <iris/x4/string/case_compare.hpp>
 
+#include <iris/unicode/string.hpp>
+
+#include <format>
 #include <type_traits>
 #include <concepts>
 
@@ -51,18 +53,17 @@ struct literal_char : char_parser<Encoding, literal_char<Encoding, Attr>>
 
     [[nodiscard]] constexpr classify_type classify_ch() const noexcept { return classify_ch_; }
 
+    [[nodiscard]] std::string get_x4_info() const
+    {
+        // TODO: escape quote
+        return std::format(
+            "'{}'",
+            iris::unicode::transcode<char>(typename Encoding::string_type(1, this->classify_ch_))
+        );
+    }
+
 private:
     classify_type classify_ch_{};
-};
-
-template<class Encoding, X4Attribute Attr>
-struct get_info<literal_char<Encoding, Attr>>
-{
-    using result_type = std::string;
-    [[nodiscard]] std::string operator()(literal_char<Encoding, Attr> const& p) const
-    {
-        return '\'' + x4::to_utf8(Encoding::toucs4(p.classify_ch())) + '\'';
-    }
 };
 
 } // iris::x4

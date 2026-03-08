@@ -12,21 +12,66 @@
 ================================================_==============================*/
 
 #include <iris/x4/core/attribute.hpp>
+
+#include <iris/x4/char_encoding/unicode/classification.hpp>
+
 #include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
+#include <iris/x4/traits/string_traits.hpp>
 
 #include <iris/rvariant/rvariant_io.hpp>
+
+#include <iris/unicode/string.hpp>
 
 #include <iris/alloy/utility.hpp>
 #include <iris/string.hpp>
 
-#ifdef IRIS_X4_UNICODE
-# include <iris/x4/char_encoding/unicode.hpp>
-#endif
-
 #include <iosfwd>
+#include <print>
+#include <iterator>
 
-namespace iris::x4::traits {
+#include <cstdint>
+
+namespace iris::x4 {
+
+inline void print_chars(std::ostream& os, char32_t const ch)
+{
+    // https://en.cppreference.com/w/cpp/utility/format/spec.html#Formatting_escaped_characters_and_strings
+
+    switch (ch) {
+    case U'\t': os << "\\t"; return;
+    case U'\n': os << "\\n"; return;
+    case U'\r': os << "\\r"; return;
+    case U'\\': os << "\\"; return;
+    case U' ': os << ' '; return;
+    // fullwidth CJK space; we don't want this to be printed like `\u{3000}`
+    case U'　': os << "　"; return;
+    default: break;
+    }
+
+    auto const major_cat = unicode::get_major_category(ch);
+    if (
+        major_cat == unicode::properties::separator || major_cat == unicode::properties::other
+        // TODO: handle Grapheme_Extend=Yes
+    ) {
+        std::print(os, "\\u{{{:x}}}", static_cast<std::int32_t>(ch));
+        return;
+    }
+
+    std::print(os, "{}", iris::unicode::transcode<char>(std::u32string(1, ch)));
+}
+
+template<std::forward_iterator It, std::sentinel_for<It> Se>
+void print_chars(std::ostream& os, It const it, Se const se, std::size_t const max_code_points)
+{
+    iris::unicode::code_point_iterator<It> code_point_it{it, it, se};
+    iris::unicode::code_point_iterator<It> const code_point_se{se, it, se};
+
+    for (std::size_t printed_code_points = 0; printed_code_points < max_code_points && code_point_it != code_point_se; ++printed_code_points, ++code_point_it) {
+        x4::print_chars(os, *code_point_it);
+    }
+}
+
+// --------------------------------------
 
 template<X4Attribute Attr>
 void print_attribute(std::ostream& os, Attr const& attr_);
@@ -51,28 +96,11 @@ struct print_tuple_like
         } else {
             out << ", ";
         }
-        traits::print_attribute(out, val);
+        x4::print_attribute(out, val);
     }
 
     Out& out;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
     mutable bool is_first;
-};
-
-// print elements in a variant
-template<class Out>
-struct print_visitor
-{
-    explicit print_visitor(Out& out)
-        : out(out)
-    {}
-
-    template<class T>
-    void operator()(T const& val) const
-    {
-        traits::print_attribute(out, val);
-    }
-
-    Out& out;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 } // detail
@@ -90,7 +118,7 @@ struct print_attribute_debug
         out << "unused_container";
     }
 
-    static void call(std::ostream& out, CategorizedAttr<plain_attr> auto const& val)
+    static void call(std::ostream& out, traits::CategorizedAttr<traits::plain_attr> auto const& val)
     {
         if constexpr (std::formattable<T, char>) {
             std::format_to(std::ostreambuf_iterator{out}, "{}", val);
@@ -99,38 +127,15 @@ struct print_attribute_debug
         }
     }
 
-#ifdef IRIS_X4_UNICODE
-    static void call(std::ostream& out, char_encoding::unicode::char_type const& val)
-    {
-        if (val >= 0 && val < 127) {
-            if (iscntrl(val)) { // TODO
-                out << "\\" << std::oct << int(val) << std::dec;
-            } else if (isprint(val)) {
-                out << char(val);
-            } else {
-                out << "\\x" << std::hex << int(val) << std::dec;
-            }
-
-        } else {
-          out << "\\x" << std::hex << int(val) << std::dec;
-        }
-    }
-
-    static void call(std::ostream& out, char const& val)
-    {
-        print_attribute_debug::call(out, static_cast<char_encoding::unicode::char_type>(val));
-    }
-#endif
-
     // for tuple-likes
-    static void call(std::ostream& out, CategorizedAttr<tuple_attr> auto const& val)
+    static void call(std::ostream& out, traits::CategorizedAttr<traits::tuple_attr> auto const& val)
     {
         out << '[';
         alloy::for_each(val, detail::print_tuple_like<std::ostream>(out));
         out << ']';
     }
 
-    template<CategorizedAttr<container_attr> T_>
+    template<traits::CategorizedAttr<traits::container_attr> T_>
         requires (!std::is_same_v<T_, unused_container_type>)
     static void call(std::ostream& out, T_ const& val)
     {
@@ -147,22 +152,24 @@ struct print_attribute_debug
                 } else {
                     out << ", ";
                 }
-                traits::print_attribute(out, *it);
+                x4::print_attribute(out, *it);
             }
             out << ']';
         }
     }
 
     // for variant types
-    static void call(std::ostream& out, CategorizedAttr<variant_attr> auto const& val)
+    static void call(std::ostream& out, traits::CategorizedAttr<traits::variant_attr> auto const& val)
     {
-        iris::visit(detail::print_visitor<std::ostream>{out}, val);
+        val.visit([&](auto const& alt) {
+            x4::print_attribute(out, alt);
+        });
     }
 
-    static void call(std::ostream& out, CategorizedAttr<optional_attr> auto const& val)
+    static void call(std::ostream& out, traits::CategorizedAttr<traits::optional_attr> auto const& val)
     {
         if (val) {
-            traits::print_attribute(out, *val);
+            x4::print_attribute(out, *val);
         } else {
             out << "[empty]";
         }
@@ -175,6 +182,6 @@ void print_attribute(std::ostream& os, Attr const& attr_)
     print_attribute_debug<Attr>::call(os, attr_);
 }
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

@@ -13,6 +13,8 @@
 
 #include <iris/x4/char_encoding/unicode/classification.hpp>
 
+#include <string>
+
 #include <cstdint>
 
 namespace iris::x4::char_encoding {
@@ -20,6 +22,7 @@ namespace iris::x4::char_encoding {
 struct unicode
 {
     using char_type = char32_t;
+    using string_type = std::u32string;
     using classify_type = x4::unicode::classify_type;
 
     [[nodiscard]] static constexpr bool
