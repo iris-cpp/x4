@@ -17,6 +17,8 @@
 
 #include <iris/colorize_format.hpp>
 
+#include <print>
+#include <ranges>
 #include <filesystem>
 #include <iterator>
 #include <ostream>
@@ -31,8 +33,9 @@ class default_error_handler
 public:
     using iterator_type = It;
 
-    static constexpr int IndentSpaces = 2;
-    static constexpr int CharsToPrint = 20;
+    static constexpr int indent_space_width = 2;
+    static constexpr int code_points_to_print = 20;
+    static constexpr int highlight_chars = 2;
 
     inline static auto const colorize_cfg = iris::ansi_colorize::colorizer<>::make_config({
         {"$tag",   "fg:rgb(140,140,140)"},
@@ -75,9 +78,9 @@ public:
     //}
 
     template<std::sentinel_for<It> Se, class Context>
-    void on_expectation_failure(It const&, Se const&, Context const& /*ctx*/, expectation_failure<It> const& failure)
+    void on_expectation_failure(It const, Se const, Context const& /*ctx*/, expectation_failure<It> const& failure)
     {
-
+        this->print_expectation(failure.where(), "error: expecting `" + failure.which() + "` here:");
     }
 
     template<class Context, X4Attribute Attr>
@@ -148,7 +151,40 @@ public:
         }
     }
 
+    void print_line_highlight(std::ranges::subrange<It> const line, It const err_pos) const
+    {
+        if (!error_out_) return;
+
+        using char_type = std::iterator_traits<It>::value_type;
+        using string_view_type = std::basic_string_view<char_type>;
+
+        auto const [left_it, left_count] = iris::unicode::bounded_prev(line.begin(), err_pos, highlight_chars);
+        auto const [right_it, right_count] = iris::unicode::bounded_next(err_pos, line.end(), highlight_chars);
+
+        if (left_count > 0) {
+            this->print_error(
+                "{}[$expect_left]{}[/$expect_left]",
+                iris::unicode::transcode<char>(string_view_type{line.begin(), left_it}),
+                iris::unicode::transcode<char>(string_view_type{left_it, err_pos})
+            );
+        }
+        if (right_count > 0) {
+            this->print_error(
+                "[$expect_right]{}[/$expect_right]{}",
+                iris::unicode::transcode<char>(string_view_type{err_pos, right_it}),
+                iris::unicode::transcode<char>(string_view_type{right_it, line.end()})
+            );
+        }
+        *error_out_ << "\n";
+    }
+
 private:
+    template<class... Args>
+    void print_error(std::string_view fmt_str, Args&&... args) const
+    {
+        iris::colorize_format_to(*error_out_, colorize_cfg, fmt_str, std::forward<Args>(args)...);
+    }
+
     template<class... Args>
     void print_trace(std::string_view fmt_str, Args&&... args) const
     {
@@ -157,7 +193,7 @@ private:
 
     void print_indent(int n) const
     {
-        n *= IndentSpaces;
+        n *= indent_space_width;
         for (int i = 0; i != n; ++i) {
             *trace_out_ << ' ';
         }
@@ -175,8 +211,35 @@ private:
         this->print_trace("{}[$key]|[/$key]", tag);
 
         this->print_trace("[$text]");
-        x4::print_chars(*trace_out_, first, last, CharsToPrint);
+        x4::print_chars(*trace_out_, first, last, code_points_to_print);
         this->print_trace("[/$text][$key]|[/$key]\n");
+    }
+
+    void print_expectation(It err_pos, std::string_view error_message) const
+    {
+        if (!error_out_) return;
+
+        x4::skip_whitespace_for_print(err_pos, source_last_);
+
+        this->print_file_line(x4::calc_line_number(source_first_, err_pos));
+        *error_out_ << error_message << '\n';
+
+        std::ranges::subrange<It> const line{
+            x4::fetch_line_start(source_first_, err_pos),
+            x4::fetch_line_last(err_pos, source_last_)
+        };
+        this->print_line_highlight(line, err_pos);
+    }
+
+    void print_file_line(int line) const
+    {
+        if (!error_out_) return;
+
+        if (file_path_.empty()) {
+            std::print(*error_out_, "[in-memory source]({}): ", line);
+        } else {
+            std::print(*error_out_, "{}({}): ", file_path_.string(), line);
+        }
     }
 
     It source_first_, source_last_;

@@ -17,21 +17,111 @@
 
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/string_traits.hpp>
-
-#include <iris/rvariant/rvariant_io.hpp>
+#include <iris/x4/traits/variant_traits.hpp>
 
 #include <iris/unicode/string.hpp>
-
+#include <iris/rvariant/rvariant_io.hpp>
 #include <iris/alloy/utility.hpp>
-#include <iris/string.hpp>
 
-#include <iosfwd>
+#include <iris/string.hpp>
+#include <iris/io_fwd.hpp>
+
 #include <print>
 #include <iterator>
 
 #include <cstdint>
 
 namespace iris::x4 {
+
+template<std::forward_iterator It>
+[[nodiscard]] int calc_line_number(It const source_first, It const current_pos)
+{
+    int line = 1;
+    char32_t prev_ch = U'\0';
+
+    iris::unicode::code_point_iterator<It> code_point_it{source_first, source_first, current_pos};
+    iris::unicode::code_point_iterator<It> const code_point_se{current_pos, source_first, current_pos};
+
+    for (; code_point_it != code_point_se; ++code_point_it) {
+        char32_t const ch = *code_point_it;
+        switch (ch) {
+        case U'\n':
+            if (prev_ch != U'\r') ++line;
+            break;
+        case U'\r':
+            ++line;
+            break;
+        default:
+            break;
+        }
+        prev_ch = ch;
+    }
+    return line;
+}
+
+template<std::bidirectional_iterator It>
+[[nodiscard]] It fetch_line_start(It const source_first, It const current_pos)
+{
+    iris::unicode::code_point_iterator<It> const code_point_first{source_first, source_first, current_pos};
+    iris::unicode::code_point_iterator<It> code_point_it{current_pos, source_first, current_pos};
+
+    if (code_point_it == code_point_first) {
+        return current_pos;
+    }
+
+    auto last_it = code_point_it--;
+    for (;; --code_point_it) {
+        switch (*code_point_it) {
+        case U'\n':
+        case U'\r':
+            return last_it.base();
+        default:
+            break;
+        }
+        last_it = code_point_it;
+        if (code_point_it == code_point_first) break;
+    }
+    return code_point_it.base();
+}
+
+template<std::forward_iterator It>
+[[nodiscard]] It fetch_line_last(It const current_pos, It const source_last)
+{
+    iris::unicode::code_point_iterator<It> code_point_it{current_pos, current_pos, source_last};
+    iris::unicode::code_point_iterator<It> const code_point_se{source_last, current_pos, source_last};
+
+    for (; code_point_it != code_point_se; ++code_point_it) {
+        switch (*code_point_it) {
+        case U'\n':
+        case U'\r':
+            return code_point_it.base();
+        default:
+            break;
+        }
+    }
+    return code_point_it.base();
+}
+
+template<std::forward_iterator It>
+void skip_whitespace_for_print(It& it, It const se)
+{
+    iris::unicode::code_point_iterator<It> code_point_it{it, it, se};
+    iris::unicode::code_point_iterator<It> const code_point_se{se, it, se};
+
+    for (; code_point_it != code_point_se; ++code_point_it) {
+        switch (*code_point_it) {
+        case U'\r':
+        case U'\n':
+        case U'\t':
+        case U' ':
+            continue;
+        default:
+            break;
+        }
+        break;
+    }
+    it = code_point_it.base();
+}
 
 inline void print_chars(std::ostream& os, char32_t const ch)
 {
@@ -57,7 +147,7 @@ inline void print_chars(std::ostream& os, char32_t const ch)
         return;
     }
 
-    std::print(os, "{}", iris::unicode::transcode<char>(std::u32string(1, ch)));
+    iris::unicode::append8(ch, std::ostreambuf_iterator(os));
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se>
@@ -103,6 +193,22 @@ struct print_tuple_like
     mutable bool is_first;
 };
 
+template<class Out>
+struct print_visitor
+{
+    explicit print_visitor(Out& out)
+        : out(out)
+    {}
+
+    template<class T>
+    void operator()(T const& val) const
+    {
+        x4::print_attribute(out, val);
+    }
+
+    Out& out;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+};
+
 } // detail
 
 template<class T>
@@ -123,6 +229,8 @@ struct print_attribute_debug
         if constexpr (std::formattable<T, char>) {
             std::format_to(std::ostreambuf_iterator{out}, "{}", val);
         } else {
+            // TODO: https://github.com/iris-cpp/iris/issues/51
+            //static_assert(iris::req::ADL_ostreamable_v<T>);
             out << val;
         }
     }
@@ -161,9 +269,7 @@ struct print_attribute_debug
     // for variant types
     static void call(std::ostream& out, traits::CategorizedAttr<traits::variant_attr> auto const& val)
     {
-        val.visit([&](auto const& alt) {
-            x4::print_attribute(out, alt);
-        });
+        iris::visit(detail::print_visitor{out}, val);
     }
 
     static void call(std::ostream& out, traits::CategorizedAttr<traits::optional_attr> auto const& val)

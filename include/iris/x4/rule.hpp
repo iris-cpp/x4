@@ -334,7 +334,7 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     }
 
     RHS rhs;
-    std::string_view name = "unnamed";
+    std::string_view name = "unnamed_rule";
 };
 
 template<class Exposed>
@@ -397,7 +397,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleAttr>, unused_type>;
     static constexpr bool force_attribute = ForceAttr;
 
-    std::string_view name = "unnamed";
+    std::string_view name = "unnamed_rule";
 
     constexpr rule() = default;
 
