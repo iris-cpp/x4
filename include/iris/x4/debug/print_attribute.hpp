@@ -16,15 +16,12 @@
 #include <iris/x4/char_encoding/unicode/classification.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/string_traits.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
 
 #include <iris/unicode/string.hpp>
 #include <iris/rvariant/rvariant_io.hpp>
 #include <iris/alloy/utility.hpp>
 
 #include <iris/string.hpp>
-#include <iris/io_fwd.hpp>
 
 #include <print>
 #include <iterator>
