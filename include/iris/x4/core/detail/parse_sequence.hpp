@@ -260,6 +260,16 @@ parse_sequence(Parser const& parser, It& first, Se const& last, Context const& c
             return true;
         }
         return false;
+    } else if constexpr (
+        traits::is_single_element_tuple_like<Attr>::value &&
+        has_attribute_v<typename Parser::left_type> &&
+        has_attribute_v<typename Parser::right_type>
+    ) {
+        // Both sub-parsers have attributes (expected_size >= 2), but Attr is a
+        // single-element tuple-like (size 1). Unwrap to get<0>(attr) and recurse,
+        // so the inner type (e.g. a container or compatible tuple) receives the
+        // sequence elements directly.
+        return detail::parse_sequence(parser, first, last, ctx, alloy::get<0>(attr));
     } else {
         using partition = partition_attribute<
             typename Parser::left_type,
