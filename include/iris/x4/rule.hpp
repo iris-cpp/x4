@@ -178,6 +178,18 @@ private:
 
         It start = first; // backup
 
+        auto&& unwrapped_attr = [&]() -> decltype(auto) {
+            if constexpr (traits::is_single_element_tuple_like<RHSAttr>::value) {
+                if constexpr (traits::can_hold<typename parser_traits<RHS>::attribute_type, alloy::tuple_element_t<0, RHSAttr>>::value) {
+                    return alloy::get<0>(rhs_attr);
+                } else {
+                    return rhs_attr;
+                }
+            } else {
+                return rhs_attr;
+            }
+        }();
+
         //
         // NOTE: The branches below are intentionally written verbosely to make sure
         // we have the minimal call stack. DON'T extract these procedures into a
@@ -187,7 +199,7 @@ private:
 
         bool ok;
         if constexpr (SkipDefinitionInjection || !is_default_parse_rule) {
-            ok = rhs.parse(first, last, rcontext, rhs_attr);
+            ok = rhs.parse(first, last, rcontext, unwrapped_attr);
 
         } else {
             // If there is no `IRIS_X4_DEFINE` for this rule,
@@ -195,13 +207,13 @@ private:
             // so we can extract the rule later on in the default
             // `parse_rule` overload.
             auto const rule_id_context = x4::make_context<RuleID>(rhs, rcontext);
-            ok = rhs.parse(first, last, rule_id_context, rhs_attr);
+            ok = rhs.parse(first, last, rule_id_context, unwrapped_attr);
         }
 
         if constexpr (need_on_success<It, RContext, RHSAttr>) {
             if (ok) {
                 x4::skip_over(start, first, rcontext);
-                RuleID{}.on_success(std::as_const(start), std::as_const(first), rcontext, rhs_attr);
+                RuleID{}.on_success(std::as_const(start), std::as_const(first), rcontext, unwrapped_attr);
                 return true;
             }
 
