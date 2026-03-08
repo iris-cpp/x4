@@ -196,6 +196,7 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     // 1. Standalone: parse(input, parser, dest)
     // ===================================================================
 
+    SECTION("standalone") {
     // plain × identity
     { int a{}; REQUIRE(parse("42", int_, a)); CHECK(a == 42); }
     // plain × SET
@@ -216,12 +217,14 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { TwoInts a{}; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(a.a == 1); CHECK(a.b == 2); }
     // MET × variant
     { TwoInts a{}; REQUIRE(parse("1,2", (int_ >> ',' >> int_) | (char_ >> ',' >> char_), a)); CHECK(a.a == 1); CHECK(a.b == 2); }
+    }
 
     // ===================================================================
     // 2. In sequence: parse(input, unused >> parser, dest)
     //    Tests partition_attribute with one unused side
     // ===================================================================
 
+    SECTION("in sequence") {
     // plain × identity
     { int a{}; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(a == 42); }
     // plain × SET
@@ -242,6 +245,7 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { TwoInts a{}; REQUIRE(parse("+1,2", '+' >> (int_ >> ',' >> int_), a)); CHECK(a.a == 1); CHECK(a.b == 2); }
     // MET × variant
     { TwoInts a{}; REQUIRE(parse("+1,2", '+' >> ((int_ >> ',' >> int_) | (char_ >> ',' >> char_)), a)); CHECK(a.a == 1); CHECK(a.b == 2); }
+    }
 
     // ===================================================================
     // 3. Composition: left_parser >> right_parser → combined dest
@@ -263,8 +267,7 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     //                       SET<std::string>, TwoInts
     // ===================================================================
 
-    // --- Left: int_ ---
-
+    SECTION("composition: left int_") {
     // int_ × int_ → (int, int)
     { std::tuple<int, int> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // int_ × int_ → MET struct
@@ -293,9 +296,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<int, SET<std::string>> a; REQUIRE(parse("1abc", int_ >> +alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a).value == "abc"); }
     // int_ × +alpha → (SET<int>, string)
     { std::tuple<SET<int>, std::string> a; REQUIRE(parse("1abc", int_ >> +alpha, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a) == "abc"); }
+    }
 
-    // --- Left: attr(SET<int>{V}) ---
-
+    SECTION("composition: left attr(SET)") {
     // attr(SET) × int_
     { std::tuple<int, int> a; REQUIRE(parse("42", x4::attr(SET<int>{1}) >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 42); }
     // attr(SET) × int_ → (SET<int>, int)
@@ -312,9 +315,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<int, std::string> a; REQUIRE(parse("abc", x4::attr(SET<int>{1}) >> string("abc"), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
     // attr(SET) × +alpha
     { std::tuple<int, std::string> a; REQUIRE(parse("abc", x4::attr(SET<int>{1}) >> +alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
+    }
 
-    // --- Left: int_ | char_ (variant) ---
-
+    SECTION("composition: left variant") {
     // variant × int_
     { std::tuple<int, int> a; REQUIRE(parse("1,2", (int_ | char_) >> ',' >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // variant × int_ → (SET<int>, int)
@@ -331,9 +334,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<int, std::string> a; REQUIRE(parse("1abc", (int_ | char_) >> string("abc"), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
     // variant × +alpha
     { std::tuple<int, std::string> a; REQUIRE(parse("1abc", (int_ | char_) >> +alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
+    }
 
-    // --- Left: alpha ---
-
+    SECTION("composition: left alpha") {
     // alpha × int_
     { std::tuple<char, int> a; REQUIRE(parse("a42", alpha >> int_, a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a) == 42); }
     // alpha × int_ → (SET<char>, int)
@@ -354,9 +357,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<char, SET<std::string>> a; REQUIRE(parse("xabc", alpha >> string("abc"), a)); CHECK(alloy::get<0>(a) == 'x'); CHECK(alloy::get<1>(a).value == "abc"); }
     // alpha × +alpha
     { std::tuple<char, std::string> a; REQUIRE(parse("ab", alpha >> +alpha, a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a) == "b"); }
+    }
 
-    // --- Left: string("abc") ---
-
+    SECTION("composition: left string") {
     // string("abc") × int_
     { std::tuple<std::string, int> a; REQUIRE(parse("abc42", string("abc") >> int_, a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 42); }
     // string("abc") × int_ → (SET<string>, int)
@@ -373,9 +376,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<SET<std::string>, SET<std::string>> a; REQUIRE(parse("abcdef", string("abc") >> string("def"), a)); CHECK(alloy::get<0>(a).value == "abc"); CHECK(alloy::get<1>(a).value == "def"); }
     // string("abc") × +alpha
     { std::tuple<std::string, std::string> a; REQUIRE(parse("abcdef", string("abc") >> +alpha, a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == "def"); }
+    }
 
-    // --- Left: +alpha ---
-
+    SECTION("composition: left +alpha") {
     // +alpha × int_
     { std::tuple<std::string, int> a; REQUIRE(parse("abc42", +alpha >> int_, a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 42); }
     // +alpha × int_ → (SET<string>, int)
@@ -392,7 +395,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<std::string, std::string> a; REQUIRE(parse("abc,def", +alpha >> ',' >> +alpha, a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == "def"); }
     // +alpha × ',' >> +alpha → (SET<string>, SET<string>)
     { std::tuple<SET<std::string>, SET<std::string>> a; REQUIRE(parse("abc,def", +alpha >> ',' >> +alpha, a)); CHECK(alloy::get<0>(a).value == "abc"); CHECK(alloy::get<1>(a).value == "def"); }
+    }
 
+    SECTION("composition: SET dest wrapping") {
     // --- SET dest wrapping sequence result (core fix) ---
     // Exercises the parse_sequence unwrap path:
     //   is_single_element_tuple_like<Attr> && has_attribute_v<left> && has_attribute_v<right>
@@ -405,7 +410,9 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { SET<std::tuple<int, int>> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(alloy::get<0>(a.value) == 1); CHECK(alloy::get<1>(a.value) == 2); }
     // SET<MET> with variant parser
     { SET<TwoInts> a{}; REQUIRE(parse("1,2", (int_ >> ',' >> int_) | (char_ >> ',' >> char_), a)); CHECK(a.value.a == 1); CHECK(a.value.b == 2); }
+    }
 
+    SECTION("composition: MET parsers") {
     // --- MET parser compositions (sequence_size=2 parsers) ---
 
     // MET × int_ → 3-slot tuple
@@ -430,6 +437,7 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     { std::tuple<TwoInts, char> a; REQUIRE(parse("1,2a", ((int_ >> ',' >> int_) | (char_ >> ',' >> char_)) >> alpha, a)); CHECK(alloy::get<0>(a).a == 1); CHECK(alloy::get<0>(a).b == 2); CHECK(alloy::get<1>(a) == 'a'); }
     // alpha × MET_variant → 2-slot tuple
     { std::tuple<char, TwoInts> a; REQUIRE(parse("a1,2", alpha >> ((int_ >> ',' >> int_) | (char_ >> ',' >> char_)), a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a).a == 1); CHECK(alloy::get<1>(a).b == 2); }
+    }
 
     // --- Nested SET: recursive unwrap ---
     // TODO: these hit a noexcept evaluation issue in move_to (recursive
