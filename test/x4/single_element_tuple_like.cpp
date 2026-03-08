@@ -205,7 +205,7 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     // container × identity
     { std::string a; REQUIRE(parse("abc", string("abc"), a)); CHECK(a == "abc"); }
     // container × variant
-    { std::string a; REQUIRE(parse("a", int_ | char_, a)); CHECK(a == "a"); }
+    { std::string a; REQUIRE(parse("a", alpha | char_, a)); CHECK(a == "a"); }
     // SET × identity
     { SET<int> a{}; REQUIRE(parse("42", int_, a)); CHECK(a.value == 42); }
     // SET × SET
@@ -231,7 +231,7 @@ TEST_CASE("product_of_parent_child_attribute_categories")
     // container × identity
     { std::string a; REQUIRE(parse("+a", '+' >> alpha, a)); CHECK(a == "a"); }
     // container × variant
-    { std::string a; REQUIRE(parse("+a", '+' >> (int_ | char_), a)); CHECK(a == "a"); }
+    { std::string a; REQUIRE(parse("+a", '+' >> (alpha | char_), a)); CHECK(a == "a"); }
     // SET × identity
     { SET<int> a{}; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(a.value == 42); }
     // SET × SET
