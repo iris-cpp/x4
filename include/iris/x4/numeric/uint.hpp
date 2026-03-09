@@ -15,6 +15,7 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/numeric/utils/extract_int.hpp>
 
+#include <concepts>
 #include <iterator>
 #include <cstdint>
 
@@ -47,6 +48,39 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
     {
         x4::skip_over(first, last, ctx);
         return numeric::extract_uint<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
+    }
+
+    [[nodiscard]] static std::string get_x4_info()
+    {
+        if constexpr (MinDigits == 1 && MaxDigits == -1) {
+            if constexpr (Radix == 10) {
+                if constexpr (sizeof(T) == 1) {
+                    return "`uint8`";
+                } else if constexpr (sizeof(T) == 2) {
+                    return "`uint16`";
+                } else if constexpr (sizeof(T) == 4) {
+                    return "`uint32`";
+                } else if constexpr (sizeof(T) == 8) {
+                    return "`uint64`";
+                } else {
+                    static_assert(false, "sorry; unimplemented");
+                    return {};
+                }
+            } else if constexpr (Radix == 2) {
+                return "`bin`";
+            } else if constexpr (Radix == 8) {
+                return "`oct`";
+            } else if constexpr (Radix == 16) {
+                return "`hex`";
+            } else {
+                static_assert(false, "sorry; unimplemented");
+                return {};
+            }
+
+        } else {
+            static_assert(false, "sorry; unimplemented");
+            return {};
+        }
     }
 };
 

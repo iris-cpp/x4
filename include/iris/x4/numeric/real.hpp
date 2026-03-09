@@ -19,6 +19,7 @@
 
 #include <iris/x4/string/detail/string_parse.hpp>
 
+#include <concepts>
 #include <string_view>
 #include <iterator>
 #include <limits>
@@ -250,6 +251,25 @@ struct real_parser : parser<real_parser<T, Policy>>
             return true;
         }
         return false;
+    }
+
+    [[nodiscard]] static std::string get_x4_info()
+    {
+        if constexpr (std::same_as<Policy, real_policies<T>>) {
+            if constexpr (std::same_as<T, float>) {
+                return "`float`";
+            } else if constexpr (std::same_as<T, double>) {
+                return "`double`";
+            } else if constexpr (std::same_as<T, long double>) {
+                return "`long double`";
+            } else {
+                static_assert(false, "sorry; unimplemented");
+                return {};
+            }
+        } else {
+            static_assert(false, "sorry; unimplemented");
+            return {};
+        }
     }
 };
 

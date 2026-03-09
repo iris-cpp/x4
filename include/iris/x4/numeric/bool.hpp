@@ -122,6 +122,11 @@ struct bool_parser : parser<bool_parser<T, Encoding, Policy>>
         }
         return false;
     }
+
+    [[nodiscard]] static std::string get_x4_info()
+    {
+        return "`bool`";
+    }
 };
 
 template<class T, class Encoding, class Policy = bool_policies<T>>
@@ -185,8 +190,13 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, Policy>>
         return false;
     }
 
+    [[nodiscard]] std::string get_x4_info() const
+    {
+        return expected_bool_ ? "`true`" : "`false`";
+    }
+
 private:
-    T expected_bool_;
+    T expected_bool_; // TODO: remove this runtime param; make this CTP
 };
 
 namespace standard {
