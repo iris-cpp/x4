@@ -73,13 +73,13 @@ public:
     [[nodiscard]] std::ostream* trace_out() const noexcept { return trace_out_; }
     [[nodiscard]] std::filesystem::path const& file_path() const noexcept { return file_path_; }
 
-    //template<std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    //void on_success(It const first, Se const last, Context const& /*ctx*/, Attr& attr)
+    //template<class Context, X4Attribute Attr>
+    //void on_success(It const first, std::sentinel_for<It> auto const last, Context const& /*ctx*/, Attr& attr)
     //{
     //}
 
-    template<std::sentinel_for<It> Se, class Context>
-    void on_expectation_failure(It const, Se const, Context const& /*ctx*/, expectation_failure<It> const& failure)
+    template<class Context>
+    void on_expectation_failure(It const, std::sentinel_for<It> auto const, Context const& /*ctx*/, expectation_failure<It> const& failure)
     {
         this->print_expectation(failure.where(), "error: expecting `" + failure.which() + "` here:");
     }
