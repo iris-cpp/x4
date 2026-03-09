@@ -13,7 +13,7 @@
 
 #include <iris/x4/core/attribute.hpp>
 
-#include <iris/x4/char_encoding/unicode/classification.hpp>
+#include <iris/x4/char_encoding/unicode/classify_category.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
 
