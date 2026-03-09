@@ -27,11 +27,12 @@
 
 namespace iris::x4 {
 
-template<std::forward_iterator It>
+template<std::forward_iterator It, std::sentinel_for<It> Se = It>
 class default_error_handler
 {
 public:
     using iterator_type = It;
+    using sentinel_type = Se;
 
     static constexpr int indent_space_width = 2;
     static constexpr int code_points_to_print = 20;
@@ -56,7 +57,7 @@ public:
         return false;
     }
 
-    default_error_handler(It source_first, It source_last, std::ostream* error_out, std::ostream* trace_out, std::filesystem::path file_path = {})
+    default_error_handler(It source_first, Se source_last, std::ostream* error_out, std::ostream* trace_out, std::filesystem::path file_path = {})
         : source_first_(std::move(source_first))
         , source_last_(std::move(source_last))
         , error_out_(error_out)
@@ -66,7 +67,7 @@ public:
     }
 
     [[nodiscard]] It source_first() const { return source_first_; }
-    [[nodiscard]] It source_last() const { return source_last_; }
+    [[nodiscard]] Se source_last() const { return source_last_; }
 
     [[nodiscard]] std::ostream* error_out() const noexcept { return error_out_; }
     [[nodiscard]] std::ostream* trace_out() const noexcept { return trace_out_; }
@@ -242,7 +243,8 @@ private:
         }
     }
 
-    It source_first_, source_last_;
+    It source_first_;
+    Se source_last_;
     std::ostream* error_out_ = nullptr, *trace_out_ = nullptr;
     std::filesystem::path file_path_;
 

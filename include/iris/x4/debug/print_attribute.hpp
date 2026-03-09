@@ -37,9 +37,8 @@ template<std::forward_iterator It>
     char32_t prev_ch = U'\0';
 
     iris::unicode::code_point_iterator<It> code_point_it{source_first, source_first, current_pos};
-    iris::unicode::code_point_iterator<It> const code_point_se{current_pos, source_first, current_pos};
 
-    for (; code_point_it != code_point_se; ++code_point_it) {
+    for (; code_point_it.base() != current_pos; ++code_point_it) {
         char32_t const ch = *code_point_it;
         switch (ch) {
         case U'\n':
@@ -59,12 +58,11 @@ template<std::forward_iterator It>
 template<std::bidirectional_iterator It>
 [[nodiscard]] It fetch_line_start(It const source_first, It const current_pos)
 {
-    iris::unicode::code_point_iterator<It> const code_point_first{source_first, source_first, current_pos};
-    iris::unicode::code_point_iterator<It> code_point_it{current_pos, source_first, current_pos};
-
-    if (code_point_it == code_point_first) {
+    if (current_pos == source_first) {
         return current_pos;
     }
+
+    iris::unicode::code_point_iterator<It> code_point_it{current_pos, source_first, current_pos};
 
     auto last_it = code_point_it--;
     for (;; --code_point_it) {
@@ -76,18 +74,17 @@ template<std::bidirectional_iterator It>
             break;
         }
         last_it = code_point_it;
-        if (code_point_it == code_point_first) break;
+        if (code_point_it.base() == source_first) break;
     }
     return code_point_it.base();
 }
 
-template<std::forward_iterator It>
-[[nodiscard]] It fetch_line_last(It const current_pos, It const source_last)
+template<std::forward_iterator It, std::sentinel_for<It> Se>
+[[nodiscard]] It fetch_line_last(It const current_pos, Se const source_last)
 {
     iris::unicode::code_point_iterator<It> code_point_it{current_pos, current_pos, source_last};
-    iris::unicode::code_point_iterator<It> const code_point_se{source_last, current_pos, source_last};
 
-    for (; code_point_it != code_point_se; ++code_point_it) {
+    for (; code_point_it.base() != source_last; ++code_point_it) {
         switch (*code_point_it) {
         case U'\n':
         case U'\r':
@@ -99,13 +96,12 @@ template<std::forward_iterator It>
     return code_point_it.base();
 }
 
-template<std::forward_iterator It>
-void skip_whitespace_for_print(It& it, It const se)
+template<std::forward_iterator It, std::sentinel_for<It> Se>
+void skip_whitespace_for_print(It& it, Se const source_last)
 {
-    iris::unicode::code_point_iterator<It> code_point_it{it, it, se};
-    iris::unicode::code_point_iterator<It> const code_point_se{se, it, se};
+    iris::unicode::code_point_iterator<It> code_point_it{it, it, source_last};
 
-    for (; code_point_it != code_point_se; ++code_point_it) {
+    for (; code_point_it.base() != source_last; ++code_point_it) {
         switch (*code_point_it) {
         case U'\r':
         case U'\n':

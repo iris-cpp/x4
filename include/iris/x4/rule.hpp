@@ -12,7 +12,6 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/type_traits.hpp>
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
@@ -26,6 +25,8 @@
 #include <iris/x4/debug/error_handler.hpp>
 
 #include <iris/pp/cat.hpp>
+
+#include <iris/bits/specialization_of.hpp>
 
 #include <string_view>
 #include <concepts>

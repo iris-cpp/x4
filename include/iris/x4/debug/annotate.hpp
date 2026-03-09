@@ -29,6 +29,7 @@ struct error_handler;
 
 enum struct annotated_rule_kind : unsigned
 {
+    annotate_none                = 0,
     annotate_success             = 1 << 0, // suitable for any child parsers
     annotate_expectation_failure = 1 << 1, // suitable for root parser
     annotate_trace               = 1 << 2, // suitable for any child parsers (except for the primitive ones)
@@ -52,7 +53,7 @@ template<std::forward_iterator It>
 struct expectation_failure;
 
 template<annotated_rule_kind anno>
-struct annotated_rule
+struct annotated_rule : detail::annotated_rule_base
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
         requires
