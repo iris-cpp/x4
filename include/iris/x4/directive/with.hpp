@@ -12,6 +12,7 @@
 
 #include <iris/x4/core/parser.hpp>
 
+#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -129,6 +130,11 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
             x4::make_context<ID>(this->val_, ctx),
             attr
         );
+    }
+
+    [[nodiscard]] std::string get_x4_info() const
+    {
+        return std::format("with<...>[{}]", get_info<Subject>{}(this->subject));
     }
 
 private:

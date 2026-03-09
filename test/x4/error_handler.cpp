@@ -14,7 +14,6 @@
 #include <iris/x4/directive/expect.hpp>
 #include <iris/x4/debug/annotate.hpp>
 #include <iris/x4/debug/error_handler.hpp>
-#include <iris/x4/debug/default_error_handler.hpp>
 #include <iris/x4/directive/with.hpp>
 
 #include <iterator>

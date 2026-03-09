@@ -56,6 +56,7 @@ x4_define_tests(
     eol
     eps
     error_handler
+    default_error_handler
     expect
     extract_int
     int
@@ -90,7 +91,6 @@ x4_define_tests(
     symbols1
     symbols2
     symbols3
-    to_utf8
     tst
     uint
     uint_radix

@@ -13,9 +13,11 @@
 #include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/detail/cast_char.hpp>
 #include <iris/x4/char/detail/basic_chset.hpp>
-#include <iris/x4/string/utf8.hpp>
 #include <iris/x4/string/case_compare.hpp>
 
+#include <iris/unicode/string.hpp>
+
+#include <format>
 #include <ranges>
 #include <type_traits>
 
@@ -47,6 +49,17 @@ struct char_range : char_parser<Encoding, char_range<Encoding, Attr>>
     }
 
     char_type from, to;
+
+    [[nodiscard]] std::string get_x4_info() const
+    {
+        // TODO: make more user-friendly && make the format consistent with above
+        // TODO: escape
+        return std::format(
+            "char_range \"{}-{}\"",
+            iris::unicode::transcode<char>(typename Encoding::string_type(1, this->from)),
+            iris::unicode::transcode<char>(typename Encoding::string_type(1, this->to))
+        );
+    }
 };
 
 // Parser for a character set
@@ -103,26 +116,11 @@ struct char_set : char_parser<Encoding, char_set<Encoding, Attr>>
     }
 
     detail::basic_chset<char_type> chset;
-};
 
-template<class Encoding, X4Attribute Attr>
-struct get_info<char_set<Encoding, Attr>>
-{
-    using result_type = std::string;
-    [[nodiscard]] constexpr std::string operator()(char_set<Encoding, Attr> const& /* p */) const
+    [[nodiscard]] std::string get_x4_info() const
     {
+        // TODO: escape
         return "char-set"; // TODO: make more user-friendly
-    }
-};
-
-template<class Encoding, X4Attribute Attr>
-struct get_info<char_range<Encoding, Attr>>
-{
-    using result_type = std::string;
-    [[nodiscard]] constexpr std::string operator()(char_range<Encoding, Attr> const& p) const
-    {
-        // TODO: make more user-friendly && make the format consistent with above
-        return "char_range \"" + x4::to_utf8(Encoding::toucs4(p.from)) + '-' + x4::to_utf8(Encoding::toucs4(p.to))+ '"';
     }
 };
 

@@ -13,58 +13,82 @@
 #include <iris/x4/core/unused.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
-#include <iris/x4/debug/print_token.hpp>
 #include <iris/x4/debug/print_attribute.hpp>
 
-#include <iris/x4/ast/position_tagged.hpp>
-#include <iris/x4/string/utf8.hpp>
+#include <iris/colorize_format.hpp>
 
+#include <print>
 #include <ranges>
+#include <filesystem>
+#include <iterator>
 #include <ostream>
 #include <string>
 #include <string_view>
-#include <iterator>
 
 namespace iris::x4 {
 
-template<std::forward_iterator It>
+template<std::forward_iterator It, std::sentinel_for<It> Se = It>
 class default_error_handler
 {
-    static constexpr int IndentSpaces = 2;
-    static constexpr int CharsToPrint = 20;
-
 public:
     using iterator_type = It;
+    using sentinel_type = Se;
 
-    default_error_handler(
-        It first, It last,
-        std::ostream& err_out,
-        std::string file = "",
-        int tabs = 4
-    )
-        : err_out_(err_out)
-        , file_(file)
-        , tabs_(tabs)
-        , pos_cache_(first, last)
-    {}
+    static constexpr int indent_space_width = 2;
+    static constexpr int code_points_to_print = 20;
+    static constexpr int highlight_chars = 2;
 
-    template<std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    void on_success(It const& first, Se const& last, Context const& /*ctx*/, Attr& attr)
+    inline static auto const colorize_cfg = iris::ansi_colorize::colorizer<>::make_config({
+        {"$tag",   "fg:rgb(140,140,140)"},
+        {"$text",  "fg:rgb(249,190,182)"},
+        {"$key",   "fg:rgb(118,118,118)|bold"},
+        {"$attr",  "fg:rgb(145,220,254)"},
+        {"$fail",  "fg:rgb(141,44,43)|bold"},
+
+        // source highlight for expectation failure
+        {"$expect_left",  "bg:rgb(40,40,140)"},
+        {"$expect_right", "bg:rgb(120,0,0)"},
+    });
+
+    [[nodiscard]] static bool is_internal_rule(std::string_view rule_name) noexcept
     {
-        pos_cache_.annotate(attr, first, last);
+        if (rule_name.empty()) return true;
+        if (rule_name.starts_with(std::string_view{"__"})) return true;
+        return false;
     }
 
-    template<std::sentinel_for<It> Se, class Context>
-    void on_expectation_failure(It const&, Se const&, Context const& /*ctx*/, expectation_failure<It> const& failure)
+    default_error_handler(It source_first, Se source_last, std::ostream* error_out, std::ostream* trace_out, std::filesystem::path file_path = {})
+        : source_first_(std::move(source_first))
+        , source_last_(std::move(source_last))
+        , error_out_(error_out)
+        , trace_out_(trace_out)
+        , file_path_(std::move(file_path))
     {
-        (*this)(failure.where(), "Error! Expecting: " + failure.which() + " here:");
+    }
+
+    [[nodiscard]] It source_first() const { return source_first_; }
+    [[nodiscard]] Se source_last() const { return source_last_; }
+
+    [[nodiscard]] std::ostream* error_out() const noexcept { return error_out_; }
+    [[nodiscard]] std::ostream* trace_out() const noexcept { return trace_out_; }
+    [[nodiscard]] std::filesystem::path const& file_path() const noexcept { return file_path_; }
+
+    //template<class Context, X4Attribute Attr>
+    //void on_success(It const first, std::sentinel_for<It> auto const last, Context const& /*ctx*/, Attr& attr)
+    //{
+    //}
+
+    template<class Context>
+    void on_expectation_failure(It const, std::sentinel_for<It> auto const, Context const& /*ctx*/, expectation_failure<It> const& failure)
+    {
+        this->print_expectation(failure.where(), "error: expecting `" + failure.which() + "` here:");
     }
 
     template<class Context, X4Attribute Attr>
     void on_trace(
         It first,
-        std::sentinel_for<It> auto last,
-        Context const& /* ctx */,
+        std::sentinel_for<It> auto const last,
+        Context const& /*ctx*/,
         Attr const& attr,
         std::string_view rule_name,
         tracer_state const state
@@ -72,204 +96,161 @@ public:
     {
         using enum tracer_state;
 
+        if (!this->trace_out()) return;
+
         switch (state) {
         case pre_parse:
-            default_error_handler::print_indent(trace_indent_++);
-            err_out_ << '<' << rule_name << '>' << std::endl;
-            default_error_handler::print_some("try", first, last);
+            if (default_error_handler::is_internal_rule(rule_name)) ++tracer_internal_rule_stack_;
+            if (tracer_internal_rule_stack_ > 0) break;
+
+            this->print_indent(tracer_indent_++);
+            this->print_trace("[$tag]<{}>[/$tag]\n", rule_name);
+            this->print_some("try   ", first, last);
             break;
 
         case parse_succeeded:
-            default_error_handler::print_some("success", first, last);
-            if constexpr (!std::same_as<Attr, unused_type>) {
-                default_error_handler::print_indent(trace_indent_);
-                err_out_ << "<attributes>";
-                traits::print_attribute(err_out_, attr);
-                err_out_ << "</attributes>";
-                err_out_ << std::endl;
+            if (default_error_handler::is_internal_rule(rule_name)) {
+                --tracer_internal_rule_stack_;
+                if (tracer_internal_rule_stack_ >= 0) break;
+
+            } else {
+                if (tracer_internal_rule_stack_ > 0) break;
             }
-            default_error_handler::print_indent(--trace_indent_);
-            err_out_ << "</" << rule_name << '>' << std::endl;
+            this->print_some("ok    ", first, last);
+
+            if constexpr (!std::same_as<Attr, unused_type>) {
+                this->print_indent(tracer_indent_);
+
+                this->print_trace("attr  ");
+                this->print_trace("[$attr]");
+                x4::print_attribute(*this->trace_out(), attr);
+                this->print_trace("[/$attr]\n");
+            }
+            this->print_indent(--tracer_indent_);
+
+            this->print_trace("[$tag]</{}>[/$tag]\n", rule_name);
             break;
 
         case parse_failed:
-            default_error_handler::print_indent(trace_indent_);
-            err_out_ << "<fail/>" << std::endl;
-            default_error_handler::print_indent(--trace_indent_);
-            err_out_ << "</" << rule_name << '>' << std::endl;
-            break;
-        }
-    }
+            if (default_error_handler::is_internal_rule(rule_name)) {
+                --tracer_internal_rule_stack_;
+                if (tracer_internal_rule_stack_ >= 0) break;
 
-private:
-    void operator()(It err_pos, std::string const& error_message) const;
-    void operator()(It err_first, It err_last, std::string const& error_message) const;
-
-    void operator()(ast::position_tagged const& pos, std::string const& message) const
-    {
-        auto where = pos_cache_.position_of(pos);
-        (*this)(where.begin(), where.end(), message);
-    }
-
-    [[nodiscard]] std::ranges::subrange<It>
-    position_of(ast::position_tagged const& pos) const
-    {
-        return pos_cache_.position_of(pos);
-    }
-
-    [[nodiscard]] ast::position_cache<std::vector<It>> const&
-    get_position_cache() const noexcept
-    {
-        return pos_cache_;
-    }
-
-    // tracer related
-    void print_indent(int n) const
-    {
-        n *= IndentSpaces;
-        for (int i = 0; i != n; ++i) {
-            err_out_ << ' ';
-        }
-    }
-
-    void print_some(std::string_view tag, It first, It last) const
-    {
-        default_error_handler::print_indent(trace_indent_);
-
-        err_out_ << '<' << tag << '>';
-
-        for (int i = 0; first != last && i != CharsToPrint && *first; ++i, ++first) {
-            traits::print_token(err_out_, *first);
-        }
-        err_out_ << "</" << tag << '>' << std::endl;
-
-        // TODO: convert invalid xml characters (e.g. '<') to valid character entities
-    }
-
-    void print_file_line(std::size_t line) const;
-    void print_line(It line_start, It last) const;
-    void print_indicator(It& line_start, It last, char ind) const;
-    It get_line_start(It first, It pos) const;
-    std::size_t position(It i) const;
-
-    std::ostream& err_out_;
-    std::string file_;
-    int tabs_;
-    ast::position_cache<std::vector<It>> pos_cache_;
-
-    int trace_indent_ = 0;
-};
-
-template<std::forward_iterator It>
-void default_error_handler<It>::print_file_line(std::size_t line) const
-{
-    if (file_ != "") {
-        err_out_ << "In file " << file_ << ", ";
-    } else {
-        err_out_ << "In ";
-    }
-
-    err_out_ << "line " << line << ':' << '\n';
-}
-
-template<std::forward_iterator It>
-void default_error_handler<It>::print_line(It start, It last) const
-{
-    auto end = start;
-    while (end != last) {
-        auto c = *end;
-        if (c == '\r' || c == '\n') break;
-        ++end;
-    }
-    using char_type = typename std::iterator_traits<It>::value_type;
-    std::basic_string<char_type> line{start, end};
-    err_out_ << x4::to_utf8(line) << '\n';
-}
-
-template<std::forward_iterator It>
-void default_error_handler<It>::print_indicator(It& start, It last, char ind) const
-{
-    for (; start != last; ++start) {
-        auto c = *start;
-        if (c == '\r' || c == '\n') break;
-        if (c == '\t') {
-            for (int i = 0; i < tabs_; ++i) {
-                err_out_ << ind;
+            } else {
+                if (tracer_internal_rule_stack_ > 0) break;
             }
-        } else {
-            err_out_ << ind;
-        }
-    }
-}
 
-template<std::forward_iterator It>
-It default_error_handler<It>::get_line_start(It first, It pos) const
-{
-    It latest = first;
-    for (It i = first; i != pos;) {
-        if (*i == '\r' || *i == '\n') {
-            latest = ++i;
-        } else {
-            ++i;
-        }
-    }
-    return latest;
-}
+            this->print_indent(tracer_indent_);
+            this->print_trace("[$fail]fail[/$fail]\n");
+            this->print_indent(--tracer_indent_);
 
-template<std::forward_iterator It>
-std::size_t default_error_handler<It>::position(It i) const
-{
-    std::size_t line {1};
-    typename std::iterator_traits<It>::value_type prev {0};
-
-    for (It pos = pos_cache_.first(); pos != i; ++pos) {
-        auto c = *pos;
-        switch (c) {
-        case '\n':
-            if (prev != '\r') ++line;
+            this->print_trace("[$tag]</{}>[/$tag]\n", rule_name);
             break;
-        case '\r':
-            ++line;
-            break;
+
         default:
             break;
         }
-        prev = c;
     }
 
-    return line;
-}
+    void print_line_highlight(std::ranges::subrange<It> const line, It const err_pos) const
+    {
+        if (!error_out_) return;
 
-template<std::forward_iterator It>
-void default_error_handler<It>::operator()(It err_pos, std::string const& error_message) const
-{
-    It first = pos_cache_.first();
-    It last = pos_cache_.last();
+        using char_type = std::iterator_traits<It>::value_type;
+        using string_view_type = std::basic_string_view<char_type>;
 
-    print_file_line(position(err_pos));
-    err_out_ << error_message << '\n';
+        auto const [left_it, left_count] = iris::unicode::bounded_prev(line.begin(), err_pos, highlight_chars);
+        auto const [right_it, right_count] = iris::unicode::bounded_next(err_pos, line.end(), highlight_chars);
 
-    It start = get_line_start(first, err_pos);
-    print_line(start, last);
-    print_indicator(start, err_pos, '_');
-    err_out_ << "^_" << '\n';
-}
+        if (left_count > 0) {
+            this->print_error(
+                "{}[$expect_left]{}[/$expect_left]",
+                iris::unicode::transcode<char>(string_view_type{line.begin(), left_it}),
+                iris::unicode::transcode<char>(string_view_type{left_it, err_pos})
+            );
+        }
+        if (right_count > 0) {
+            this->print_error(
+                "[$expect_right]{}[/$expect_right]{}",
+                iris::unicode::transcode<char>(string_view_type{err_pos, right_it}),
+                iris::unicode::transcode<char>(string_view_type{right_it, line.end()})
+            );
+        }
+        *error_out_ << "\n";
+    }
 
-template<std::forward_iterator It>
-void default_error_handler<It>::operator()(It err_first, It err_last, std::string const& error_message) const
-{
-    It first = pos_cache_.first();
-    It last = pos_cache_.last();
+private:
+    template<class... Args>
+    void print_error(std::string_view fmt_str, Args&&... args) const
+    {
+        iris::colorize_format_to(*error_out_, colorize_cfg, fmt_str, std::forward<Args>(args)...);
+    }
 
-    print_file_line(position(err_first));
-    err_out_ << error_message << '\n';
+    template<class... Args>
+    void print_trace(std::string_view fmt_str, Args&&... args) const
+    {
+        iris::colorize_format_to(*trace_out_, colorize_cfg, fmt_str, std::forward<Args>(args)...);
+    }
 
-    It start = get_line_start(first, err_first);
-    print_line(start, last);
-    print_indicator(start, err_first, ' ');
-    print_indicator(start, err_last, '~');
-    err_out_ << " <<-- Here" << '\n';
-}
+    void print_indent(int n) const
+    {
+        n *= indent_space_width;
+        for (int i = 0; i != n; ++i) {
+            *trace_out_ << ' ';
+        }
+    }
+
+    void print_some(char const* tag, It first, It const last) const
+    {
+        this->print_indent(tracer_indent_);
+
+        if (first == last) {
+            this->print_trace("{}[$key]eoi[/$key]\n", tag);
+            return;
+        }
+
+        this->print_trace("{}[$key]|[/$key]", tag);
+
+        this->print_trace("[$text]");
+        x4::print_chars(*trace_out_, first, last, code_points_to_print);
+        this->print_trace("[/$text][$key]|[/$key]\n");
+    }
+
+    void print_expectation(It err_pos, std::string_view error_message) const
+    {
+        if (!error_out_) return;
+
+        x4::skip_whitespace_for_print(err_pos, source_last_);
+
+        this->print_file_line(x4::calc_line_number(source_first_, err_pos));
+        *error_out_ << error_message << '\n';
+
+        std::ranges::subrange<It> const line{
+            x4::fetch_line_start(source_first_, err_pos),
+            x4::fetch_line_last(err_pos, source_last_)
+        };
+        this->print_line_highlight(line, err_pos);
+    }
+
+    void print_file_line(int line) const
+    {
+        if (!error_out_) return;
+
+        if (file_path_.empty()) {
+            std::print(*error_out_, "[in-memory source]({}): ", line);
+        } else {
+            std::print(*error_out_, "{}({}): ", file_path_.string(), line);
+        }
+    }
+
+    It source_first_;
+    Se source_last_;
+    std::ostream* error_out_ = nullptr, *trace_out_ = nullptr;
+    std::filesystem::path file_path_;
+
+    int tracer_internal_rule_stack_ = 0;
+    int tracer_indent_ = 0;
+};
 
 } // iris::x4
 

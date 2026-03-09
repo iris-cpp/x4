@@ -11,6 +11,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <string>
+
 #include <cassert>
 #include <cstdint>
 #include <cctype>
@@ -22,6 +24,7 @@ namespace iris::x4::char_encoding {
 struct standard
 {
     using char_type = char;
+    using string_type = std::string;
     using classify_type = unsigned char;
 
     [[nodiscard]] static constexpr bool
