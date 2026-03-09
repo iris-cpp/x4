@@ -152,7 +152,7 @@ template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class
 struct [[nodiscard]] scoped_tracer<RuleID, It, Se, Context, Attr>
 {
     constexpr scoped_tracer(
-        It first, Se last,
+        It const& first, Se const& last,
         Context const& ctx,
         Attr const& attr_,
         std::string_view rule_name,
