@@ -88,8 +88,9 @@ template<class T>
 
 template<class T>
     requires traits::is_single_element_tuple_like<std::remove_cvref_t<T>>::value
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
+[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept(noexcept(alloy::get<0>(std::declval<T>())))
 {
+    // forward_like is *required*, since when Source is `alloy::tuple<int&>` `alloy::get<0>(std::forward<Source>(src))` returns `int&` whereas we want `int&&` instead 
     return std::forward_like<T>(alloy::get<0>(std::forward<T>(value)));
 }
 
