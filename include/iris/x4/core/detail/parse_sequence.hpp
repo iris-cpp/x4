@@ -91,24 +91,6 @@ struct pass_sequence_attribute<sequence<LParser, RParser>, Attr>
     : pass_through_sequence_attribute<Attr>
 {};
 
-template<class RuleID, X4Attribute RuleAttr, bool ForceAttr, class Attr>
-    requires
-        traits::is_single_element_tuple_like<Attr>::value &&
-        (!traits::can_hold<RuleAttr, Attr>::value)
-struct pass_sequence_attribute<rule<RuleID, RuleAttr, ForceAttr>, Attr>
-{
-    using base_pass_sequence_attribute = pass_through_sequence_attribute<Attr>;
-
-    using type = alloy::tuple_element_t<0, Attr>&;
-
-    template<class Attr_>
-    [[nodiscard]] static constexpr type
-    call(Attr_& attribute) noexcept(noexcept(alloy::get<0>(attribute)))
-    {
-        return alloy::get<0>(attribute);
-    }
-};
-
 template<class Parser, class Attr>
     requires requires {
         typename Parser::proxy_backend_type;
