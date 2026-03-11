@@ -218,7 +218,7 @@ private:
         if constexpr (need_on_success<It, RContext, RHSAttr>) {
             if (ok) {
                 x4::skip_over(start, first, rcontext);
-                RuleID{}.on_success(std::as_const(start), std::as_const(first), rcontext, unwrapped_attr);
+                RuleID{}.on_success(std::as_const(start), std::as_const(first), rcontext, rhs_attr);
                 return true;
             }
 
