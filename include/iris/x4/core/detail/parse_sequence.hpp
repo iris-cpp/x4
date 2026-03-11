@@ -209,7 +209,7 @@ struct partition_attribute<LParser, RParser, Attr>
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires (parser_traits<Parser>::sequence_size > 1)
 [[nodiscard]] constexpr bool
-    parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
     // static_assert(Parsable<Parser, It, Se, Context, Attr>);
@@ -219,7 +219,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires (parser_traits<Parser>::sequence_size <= 1)
 [[nodiscard]] constexpr bool
-    parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
     noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
     return detail::parse_into_container(parser, first, last, ctx, attr);
