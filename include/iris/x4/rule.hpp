@@ -42,6 +42,15 @@ struct rule;
 
 namespace detail {
 
+template<class ParserAttr, class ExposedAttr>
+struct rule_should_unwrap : std::false_type {};
+
+template<class ParserAttr, class ExposedAttr>
+    requires traits::is_single_element_tuple_like<ExposedAttr>::value
+struct rule_should_unwrap<ParserAttr, ExposedAttr>
+    : traits::can_hold<ParserAttr, alloy::tuple_element_t<0, ExposedAttr>>
+{};
+
 template<class RuleID>
 struct rule_id
 {
@@ -179,12 +188,8 @@ private:
         It start = first; // backup
 
         auto&& unwrapped_attr = [&]() -> decltype(auto) {
-            if constexpr (traits::is_single_element_tuple_like<RHSAttr>::value) {
-                if constexpr (traits::can_hold<typename parser_traits<RHS>::attribute_type, alloy::tuple_element_t<0, RHSAttr>>::value) {
-                    return alloy::get<0>(rhs_attr);
-                } else {
-                    return rhs_attr;
-                }
+            if constexpr (rule_should_unwrap<typename parser_traits<RHS>::attribute_type, RHSAttr>::value) {
+                return alloy::get<0>(rhs_attr);
             } else {
                 return rhs_attr;
             }
