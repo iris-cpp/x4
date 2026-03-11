@@ -20,13 +20,11 @@
 
 #include <iris/rvariant.hpp>
 
-#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <tuple>
 
 #include <cstring>
 
