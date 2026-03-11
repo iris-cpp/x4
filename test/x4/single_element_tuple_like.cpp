@@ -613,3 +613,25 @@ TEST_CASE("SES composition: MET parsers")
         CHECK(a.value.value == "abc");
     }
 }
+
+// ===================================================================
+// Narrowing conversion static_assert tests
+//
+// The following test cases are commented out because they are expected
+// to produce static_assert failures. Uncomment any single case to
+// verify the assertion fires.
+// ===================================================================
+
+// --- move_to: source to plain (narrowing) ---
+// TEST_CASE("narrowing: source to plain (char)") { char a{}; REQUIRE(parse("42", x4::int_, a)); }
+// TEST_CASE("narrowing: source to plain (short)") { short a{}; REQUIRE(parse("42", x4::int_, a)); }
+
+// --- move_to: single-element tuple-like to plain (narrowing) ---
+// TEST_CASE("narrowing: single-element to plain") { SES<char> a{}; REQUIRE(parse("42", x4::int_, a)); }
+
+// --- move_to: source to optional (narrowing) ---
+// TEST_CASE("narrowing: source to optional") { std::optional<char> a; REQUIRE(parse("42", x4::int_, a)); }
+
+// --- move_to: tuple element-wise (narrowing) ---
+// TEST_CASE("narrowing: tuple element-wise 1") { std::tuple<char, int> a; REQUIRE(parse("1,2", x4::int_ >> ',' >> x4::int_, a)); }
+// TEST_CASE("narrowing: tuple element-wise 2") { std::tuple<int, char> a; REQUIRE(parse("1,2", x4::int_ >> ',' >> x4::int_, a)); }

@@ -21,6 +21,7 @@
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/container_appender.hpp>
 
+#include <iris/x4/traits/narrowing.hpp>
 #include <iris/x4/traits/transform_attribute.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
@@ -354,18 +355,6 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     std::string_view name = "unnamed";
 };
 
-template<class Exposed>
-struct narrowing_checker
-{
-    using Dest = Exposed[];
-
-    // emulate `Exposed x[] = {std::forward<T>(t)};`
-    template<class T>
-    static void operator()(T&&)
-        requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
-};
-
-
 template<class Exposed, class RuleAttr>
 concept RuleAttrConvertible =
     X4Attribute<RuleAttr> &&
@@ -374,11 +363,10 @@ concept RuleAttrConvertible =
 template<class Exposed, class RuleAttr>
 concept RuleAttrConvertibleWithoutNarrowing =
     RuleAttrConvertible<Exposed, RuleAttr> &&
-    requires {
-        narrowing_checker<
-            unwrap_container_appender_t<std::remove_const_t<Exposed>>
-        >::operator()(std::declval<RuleAttr>());
-    };
+    is_assignable_without_narrowing<
+        unwrap_container_appender_t<std::remove_const_t<Exposed>>&,
+        RuleAttr
+    >::value;
 
 // Resolves "The Spirit X3 rule problem" in Boost.Parser's documentation
 // https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
@@ -471,7 +459,10 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
                     std::make_move_iterator(traits::end(rule_attr))
                 );
             } else {
-                static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
+                static_assert(
+                    detail::is_assignable_without_narrowing<Exposed&, RuleAttr>::value,
+                    "Narrowing conversion detected in rule (rule attribute to exposed attribute)"
+                );
                 exposed_attr = std::move(rule_attr);
             }
             return true;

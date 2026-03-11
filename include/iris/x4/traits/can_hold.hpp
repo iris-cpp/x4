@@ -43,9 +43,12 @@ struct value_type_can_hold
     : can_hold<typename container_value<T>::type, typename container_value<U>::type>
 {};
 
-// This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations
+// This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations.
+// Note: narrowing conversions are NOT rejected here. Instead, the actual conversion
+// sites (e.g. move_to overloads) static_assert against narrowing, so the user gets
+// a clear error message at the point of use.
 template<class T, class U>
-struct can_hold_impl : is_convertible_without_narrowing<U, T> {};
+struct can_hold_impl : std::is_convertible<U, T> {};
 
 template<class T, class U>
     requires

@@ -237,33 +237,33 @@ TEST_CASE("uint")
     }
     {
         x4::uint_parser<std::int8_t> u_int8_;
-        std::uint8_t u8 = 0;
+        std::int8_t i8 = 0;
 
-        CHECK(!parse("999", u_int8_, u8));
-        CHECK(!parse("-1", u_int8_, u8));
-        CHECK(!parse("128", u_int8_, u8));
-        CHECK(parse("127", u_int8_, u8));
-        CHECK(parse("0", u_int8_, u8));
+        CHECK(!parse("999", u_int8_, i8));
+        CHECK(!parse("-1", u_int8_, i8));
+        CHECK(!parse("128", u_int8_, i8));
+        CHECK(parse("127", u_int8_, i8));
+        CHECK(parse("0", u_int8_, i8));
     }
     {
         x4::uint_parser<std::int16_t> u_int16_;
-        std::uint16_t u16 = 0;
+        std::int16_t i16 = 0;
 
-        CHECK(!parse("99999", u_int16_, u16));
-        CHECK(!parse("-1", u_int16_, u16));
-        CHECK(!parse("32768", u_int16_, u16));
-        CHECK(parse("32767", u_int16_, u16));
-        CHECK(parse("0", u_int16_, u16));
+        CHECK(!parse("99999", u_int16_, i16));
+        CHECK(!parse("-1", u_int16_, i16));
+        CHECK(!parse("32768", u_int16_, i16));
+        CHECK(parse("32767", u_int16_, i16));
+        CHECK(parse("0", u_int16_, i16));
     }
     {
         x4::uint_parser<std::int32_t> u_int32_;
-        std::uint32_t u32 = 0;
+        std::int32_t i32 = 0;
 
-        CHECK(!parse("9999999999", u_int32_, u32));
-        CHECK(!parse("-1", u_int32_, u32));
-        CHECK(!parse("2147483648", u_int32_, u32));
-        CHECK(parse("2147483647", u_int32_, u32));
-        CHECK(parse("0", u_int32_, u32));
+        CHECK(!parse("9999999999", u_int32_, i32));
+        CHECK(!parse("-1", u_int32_, i32));
+        CHECK(!parse("2147483648", u_int32_, i32));
+        CHECK(parse("2147483647", u_int32_, i32));
+        CHECK(parse("0", u_int32_, i32));
     }
 
     // custom uint tests
