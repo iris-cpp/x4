@@ -257,12 +257,36 @@ move_to(Source&& src, Dest& dest)
     }
 }
 
+namespace detail {
+
+template<class Source, class Dest>
+struct is_single_element_move_to_nothrow
+    : std::bool_constant<
+        noexcept(x4::move_to(std::declval<Source>(), std::declval<Dest&>()))
+    >
+{};
+
+template<class Source, class Dest>
+    requires traits::is_single_element_tuple_like<Dest>::value
+struct is_single_element_move_to_nothrow<Source, Dest>
+    : std::bool_constant<
+        noexcept(alloy::get<0>(std::declval<Dest&>())) &&
+        is_single_element_move_to_nothrow<
+            Source,
+            alloy::tuple_element_t<0, Dest>
+        >::value
+    >
+{};
+
+} // detail
+
+
 // Size-one tuple-like forwarding
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attr> Dest>
     requires traits::is_single_element_tuple_like<Dest>::value
 constexpr void
 move_to(Source&& src, Dest& dest)
-    noexcept(noexcept(x4::move_to(std::forward<Source>(src), alloy::get<0>(dest))))
+    noexcept(detail::is_single_element_move_to_nothrow<Source, Dest>::value)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 

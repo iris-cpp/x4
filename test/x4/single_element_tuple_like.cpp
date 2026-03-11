@@ -522,6 +522,7 @@ TEST_CASE("SES composition: MET parsers")
 {
     using x4::int_;
     using x4::alpha;
+    using x4::alnum;
     using x4::string;
     using x4::standard::char_;
 
@@ -548,21 +549,16 @@ TEST_CASE("SES composition: MET parsers")
     // alpha x MET_variant → 2-slot tuple
     { std::tuple<char, TwoInts> a; REQUIRE(parse("a1,2", alpha >> ((int_ >> ',' >> int_) | (char_ >> ',' >> char_)), a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a).a == 1); CHECK(alloy::get<1>(a).b == 2); }
 
-    // --- Nested SES: recursive unwrap ---
-    // TODO: these hit a noexcept evaluation issue in move_to (recursive
-    //       single-element-tuple-like forwarding through two layers).
-    //       Uncomment once that is resolved.
-
     // SES<SES<int>>: double unwrap through move_to
-    // {
-    //     SES<SES<int>> a;
-    //     REQUIRE(parse("42", int_, a));
-    //     CHECK(a.value.value == 42);
-    // }
+    {
+        SES<SES<int>> a;
+        REQUIRE(parse("42", int_, a));
+        CHECK(a.value.value == 42);
+    }
     // SES<SES<string>>: double unwrap through parse_sequence (= Var pattern)
-    // {
-    //     SES<SES<std::string>> a;
-    //     REQUIRE(parse("abc", alpha >> *alnum, a));
-    //     CHECK(a.value.value == "abc");
-    // }
+    {
+        SES<SES<std::string>> a;
+        REQUIRE(parse("abc", alpha >> *alnum, a));
+        CHECK(a.value.value == "abc");
+    }
 }

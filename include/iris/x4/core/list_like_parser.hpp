@@ -26,7 +26,7 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     // non-variant `ExposedAttr`
 struct unwrap_container_candidate
 {
-    using type = traits::unwrap_single_element_tuple_like<
+    using type = traits::unwrap_if_single_element_tuple_like<
         unwrap_recursive_type<
             typename unwrap_container_appender<ExposedAttr>::type
         >
@@ -62,7 +62,7 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     using unwrapped_attr_type = traits::unwrap_single_element_plain<
         unwrap_recursive_type<ExposedAttr>
     >::type;
-    auto& unwrapped_attr = traits::unwrap_single_element(iris::unwrap_recursive(attr));
+    auto& unwrapped_attr = traits::do_unwrap_if_single_element_tuple_like(iris::unwrap_recursive(attr));
 
     if constexpr (traits::is_variant_v<unwrapped_attr_type>) {
         using container_alternative = traits::variant_find_holdable_type<

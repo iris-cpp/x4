@@ -66,19 +66,19 @@ struct partition_attribute<LParser, RParser, Attr>
 
     using view = alloy::tuple_ref_t<Attr>;
     using split = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = traits::unwrap_single_element_tuple_like<alloy::tuple_element_t<0, split>>::type;
-    using r_part = traits::unwrap_single_element_tuple_like<alloy::tuple_element_t<1, split>>::type;
+    using l_part = traits::unwrap_if_single_element_tuple_like<alloy::tuple_element_t<0, split>>::type;
+    using r_part = traits::unwrap_if_single_element_tuple_like<alloy::tuple_element_t<1, split>>::type;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        return traits::unwrap_single_element(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
+        return traits::do_unwrap_if_single_element_tuple_like(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return traits::unwrap_single_element(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
+        return traits::do_unwrap_if_single_element_tuple_like(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 };
 

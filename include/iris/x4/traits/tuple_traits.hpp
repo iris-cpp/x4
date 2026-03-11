@@ -41,14 +41,14 @@ struct is_single_element_tuple_like<T>
 {};
 
 template<class T>
-struct unwrap_single_element_tuple_like
+struct unwrap_if_single_element_tuple_like
 {
     using type = T;
 };
 
 template<class T>
     requires is_single_element_tuple_like<T>::value
-struct unwrap_single_element_tuple_like<T>
+struct unwrap_if_single_element_tuple_like<T>
 {
     using type = alloy::tuple_element_t<0, T>;
 };
@@ -67,14 +67,14 @@ struct unwrap_single_element_plain<T>
 };
 
 template<class T>
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
+[[nodiscard]] constexpr auto&& do_unwrap_if_single_element_tuple_like(T&& value) noexcept
 {
     return std::forward<T>(value);
 }
 
 template<class T>
     requires traits::is_single_element_tuple_like<std::remove_cvref_t<T>>::value
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept(noexcept(alloy::get<0>(std::declval<T>())))
+[[nodiscard]] constexpr auto&& do_unwrap_if_single_element_tuple_like(T&& value) noexcept(noexcept(alloy::get<0>(std::declval<T>())))
 {
     return alloy::get<0>(std::forward<T>(value));
 }

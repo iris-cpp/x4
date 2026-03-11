@@ -31,7 +31,7 @@ string_parse(
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
     if constexpr (traits::is_single_element_tuple_like<Attr>::value) {
-        return detail::string_parse(str, first, last, traits::unwrap_single_element(attr), compare);
+        return detail::string_parse(str, first, last, traits::do_unwrap_if_single_element_tuple_like(attr), compare);
     } else {
         static_assert(std::same_as<typename traits::attribute_category<Attr>::type, traits::container_attr>);
         using value_type = traits::container_value<Attr>::type;
@@ -81,7 +81,7 @@ string_parse(
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
     if constexpr (traits::is_single_element_tuple_like<Attr>::value) {
-        return detail::string_parse(ucstr, lcstr, first, last, traits::unwrap_single_element(attr));
+        return detail::string_parse(ucstr, lcstr, first, last, traits::do_unwrap_if_single_element_tuple_like(attr));
     } else {
         static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
         using value_type = traits::container_value<Attr>::type;
