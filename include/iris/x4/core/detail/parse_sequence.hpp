@@ -37,65 +37,6 @@ struct sequence;
 
 namespace iris::x4::detail {
 
-struct pass_sequence_attribute_unused
-{
-    using type = unused_type;
-
-    template<class T>
-    [[nodiscard]] static constexpr unused_type
-    call(T&) noexcept
-    {
-        return unused_type{};
-    }
-};
-
-template<class Attr>
-struct pass_sequence_attribute_size_one_view
-{
-    using type = alloy::tuple_element_t<0, Attr>;
-
-    [[nodiscard]] static constexpr type
-    call(Attr& attribute)
-        noexcept(noexcept(alloy::get<0>(attribute)))
-    {
-        return alloy::get<0>(attribute);
-    }
-};
-
-template<class Attr>
-struct pass_through_sequence_attribute
-{
-    using type = Attr&;
-
-    template<class Attr_>
-    [[nodiscard]] static constexpr Attr_&
-    call(Attr_& attribute) noexcept
-    {
-        return attribute;
-    }
-};
-
-template<class Parser, class Attr>
-struct pass_sequence_attribute : std::conditional_t<
-    traits::is_single_element_tuple_like_view<Attr>::value,
-    pass_sequence_attribute_size_one_view<Attr>,
-    pass_through_sequence_attribute<Attr>
->
-{};
-
-template<class LParser, class RParser, class Attr>
-struct pass_sequence_attribute<sequence<LParser, RParser>, Attr>
-    : pass_through_sequence_attribute<Attr>
-{};
-
-template<class Parser, class Attr>
-    requires requires {
-        typename Parser::proxy_backend_type;
-    }
-struct pass_sequence_attribute<Parser, Attr>
-    : pass_sequence_attribute<typename Parser::proxy_backend_type, Attr>
-{};
-
 template<class LParser, class RParser, class Attr>
 struct partition_attribute {};
 
@@ -125,21 +66,19 @@ struct partition_attribute<LParser, RParser, Attr>
 
     using view = alloy::tuple_ref_t<Attr>;
     using split = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = alloy::tuple_element_t<0, split>;
-    using r_part = alloy::tuple_element_t<1, split>;
-    using l_pass = pass_sequence_attribute<LParser, l_part>;
-    using r_pass = pass_sequence_attribute<RParser, r_part>;
+    using l_part = traits::unwrap_single_element_tuple_like<alloy::tuple_element_t<0, split>>::type;
+    using r_part = traits::unwrap_single_element_tuple_like<alloy::tuple_element_t<1, split>>::type;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        return alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
+        return traits::unwrap_single_element(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
+        return traits::unwrap_single_element(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 };
 
@@ -149,9 +88,6 @@ template<class LParser, class RParser, class Attr>
         has_attribute_v<RParser>
 struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute<RParser, Attr>;
-
     [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
     {
         return unused;
@@ -169,9 +105,6 @@ template<class LParser, class RParser, class Attr>
         (!has_attribute_v<RParser>)
 struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute<LParser, Attr>;
-    using r_pass = pass_sequence_attribute_unused;
-
     [[nodiscard]] static constexpr Attr& left(Attr& s) noexcept
     {
         return s;
@@ -189,9 +122,6 @@ template<class LParser, class RParser, class Attr>
         (!has_attribute_v<RParser>)
 struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute_unused;
-
     [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
     {
         return unused;
@@ -255,10 +185,8 @@ parse_sequence(Parser const& parser, It& first, Se const& last, Context const& c
             Attr
         >;
 
-        auto&& l_part = partition::left(attr);
-        auto&& r_part = partition::right(attr);
-        auto&& l_attr = partition::l_pass::call(l_part);
-        auto&& r_attr = partition::r_pass::call(r_part);
+        auto&& l_attr = partition::left(attr);
+        auto&& r_attr = partition::right(attr);
 
         auto&& l_attr_appender = x4::make_container_appender(l_attr);
         auto&& r_attr_appender = x4::make_container_appender(r_attr);
