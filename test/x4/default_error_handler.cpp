@@ -12,7 +12,6 @@
 #include <iris/unicode/string.hpp>
 #include <iris/colorize_format.hpp>
 
-#define NOMINMAX
 #ifdef _WIN32
 #include <Windows.h>
 #endif
