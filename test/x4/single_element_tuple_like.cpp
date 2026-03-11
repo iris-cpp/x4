@@ -226,7 +226,7 @@ TEST_CASE("single_element_tuple_like")
 //
 
 // Tests attribute compatibility across the matrix of:
-//   attribute_category: plain, container, single_element_tuple (SES), multi_element_tuple (MET)
+//   attribute_category: plain, container, single_element_tuple (SES), multi_element_tuple (MET), variant
 //   parser_form: identity, single_element_tuple, variant
 //
 // Invalid combos: (container, SES) and (MET, SES) — no valid move_to
@@ -273,6 +273,18 @@ TEST_CASE("SES standalone")
     { TwoInts a{}; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(a.a == 1); CHECK(a.b == 2); }
     // MET x variant
     { TwoInts a{}; REQUIRE(parse("1,2", (int_ >> ',' >> int_) | (char_ >> ',' >> char_), a)); CHECK(a.a == 1); CHECK(a.b == 2); }
+    // variant_attr x identity
+    { iris::rvariant<int, char> a; REQUIRE(parse("42", int_, a)); CHECK(iris::get<int>(a) == 42); }
+    // variant_attr x SES
+    { iris::rvariant<int, char> a; REQUIRE(parse("", x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a) == 42); }
+    // variant_attr x variant
+    { iris::rvariant<int, char> a; REQUIRE(parse("42", int_ | char_, a)); CHECK(iris::get<int>(a) == 42); }
+    // SES<variant_attr> x identity
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("42", int_, a)); CHECK(iris::get<int>(a.value) == 42); }
+    // SES<variant_attr> x SES
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("", x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a.value) == 42); }
+    // SES<variant_attr> x variant
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("42", int_ | char_, a)); CHECK(iris::get<int>(a.value) == 42); }
 }
 
 // ===================================================================
@@ -307,6 +319,18 @@ TEST_CASE("SES in sequence")
     { TwoInts a{}; REQUIRE(parse("+1,2", '+' >> (int_ >> ',' >> int_), a)); CHECK(a.a == 1); CHECK(a.b == 2); }
     // MET x variant
     { TwoInts a{}; REQUIRE(parse("+1,2", '+' >> ((int_ >> ',' >> int_) | (char_ >> ',' >> char_)), a)); CHECK(a.a == 1); CHECK(a.b == 2); }
+    // variant_attr x identity
+    { iris::rvariant<int, char> a; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(iris::get<int>(a) == 42); }
+    // variant_attr x SES
+    { iris::rvariant<int, char> a; REQUIRE(parse("+", '+' >> x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a) == 42); }
+    // variant_attr x variant
+    { iris::rvariant<int, char> a; REQUIRE(parse("+42", '+' >> (int_ | char_), a)); CHECK(iris::get<int>(a) == 42); }
+    // SES<variant_attr> x identity
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(iris::get<int>(a.value) == 42); }
+    // SES<variant_attr> x SES
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+", '+' >> x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a.value) == 42); }
+    // SES<variant_attr> x variant
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+42", '+' >> (int_ | char_), a)); CHECK(iris::get<int>(a.value) == 42); }
 }
 
 // ===================================================================
@@ -516,6 +540,33 @@ TEST_CASE("SES composition: SES dest wrapping")
     { SES<std::tuple<int, int>> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(alloy::get<0>(a.value) == 1); CHECK(alloy::get<1>(a.value) == 2); }
     // SES<MET> with variant parser
     { SES<TwoInts> a{}; REQUIRE(parse("1,2", (int_ >> ',' >> int_) | (char_ >> ',' >> char_), a)); CHECK(a.value.a == 1); CHECK(a.value.b == 2); }
+    // SES<variant_attr>: int_ >> ',' >> int_ → SES<rvariant<TwoInts, ...>> (variant dest wrapping)
+    { SES<iris::rvariant<TwoInts, int>> a; REQUIRE(parse("1,2", (int_ >> ',' >> int_) | (char_ >> ',' >> char_), a)); CHECK(iris::get<TwoInts>(a.value).a == 1); CHECK(iris::get<TwoInts>(a.value).b == 2); }
+}
+
+TEST_CASE("SES composition: variant_attr dest")
+{
+    using x4::int_;
+    using x4::alpha;
+    using x4::string;
+    using x4::standard::char_;
+
+    // int_ x int_ → (rvariant<int, char>, int)
+    { std::tuple<iris::rvariant<int, char>, int> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(iris::get<int>(alloy::get<0>(a)) == 1); CHECK(alloy::get<1>(a) == 2); }
+    // int_ x int_ → (int, rvariant<int, char>)
+    { std::tuple<int, iris::rvariant<int, char>> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(iris::get<int>(alloy::get<1>(a)) == 2); }
+    // int_ x int_ → (SES<rvariant<int, char>>, int)
+    { std::tuple<SES<iris::rvariant<int, char>>, int> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(iris::get<int>(alloy::get<0>(a).value) == 1); CHECK(alloy::get<1>(a) == 2); }
+    // int_ x int_ → (int, SES<rvariant<int, char>>)
+    { std::tuple<int, SES<iris::rvariant<int, char>>> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(iris::get<int>(alloy::get<1>(a).value) == 2); }
+    // variant x int_ → (rvariant<int, char>, int)
+    { std::tuple<iris::rvariant<int, char>, int> a; REQUIRE(parse("1,2", (int_ | char_) >> ',' >> int_, a)); CHECK(iris::get<int>(alloy::get<0>(a)) == 1); CHECK(alloy::get<1>(a) == 2); }
+    // int_ x variant → (int, rvariant<int, char>)
+    { std::tuple<int, iris::rvariant<int, char>> a; REQUIRE(parse("1,2", int_ >> ',' >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(iris::get<int>(alloy::get<1>(a)) == 2); }
+    // variant x variant → (rvariant<int, char>, rvariant<int, char>)
+    { std::tuple<iris::rvariant<int, char>, iris::rvariant<int, char>> a; REQUIRE(parse("1,2", (int_ | char_) >> ',' >> (int_ | char_), a)); CHECK(iris::get<int>(alloy::get<0>(a)) == 1); CHECK(iris::get<int>(alloy::get<1>(a)) == 2); }
+    // alpha x +alpha → (rvariant<char, int>, rvariant<std::string, int>)
+    { std::tuple<iris::rvariant<char, int>, iris::rvariant<std::string, int>> a; REQUIRE(parse("ab", alpha >> +alpha, a)); CHECK(iris::get<char>(alloy::get<0>(a)) == 'a'); CHECK(iris::get<std::string>(alloy::get<1>(a)) == "b"); }
 }
 
 TEST_CASE("SES composition: MET parsers")
