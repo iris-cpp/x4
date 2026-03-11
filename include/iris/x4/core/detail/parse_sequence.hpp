@@ -30,9 +30,6 @@
 
 namespace iris::x4 {
 
-template<class RuleID, X4Attribute RuleAttr, bool ForceAttr>
-struct rule;
-
 template<class Left, class Right>
 struct sequence;
 
