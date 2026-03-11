@@ -20,6 +20,7 @@
 #include <iris/alloy/tuple.hpp>
 
 #include <string>
+#include <tuple>
 
 TEST_CASE("lit")
 {

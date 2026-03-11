@@ -9,6 +9,8 @@
 
 #include <iris/alloy/adapted/std_tuple.hpp>
 
+#include <tuple>
+
 template<class T, class U>
 inline constexpr bool can_hold_v = x4::traits::can_hold<T, U>::value;
 

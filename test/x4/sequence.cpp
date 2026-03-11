@@ -35,6 +35,7 @@
 #include <concepts>
 #include <optional>
 #include <string>
+#include <tuple>
 
 TEST_CASE("sequence")
 {

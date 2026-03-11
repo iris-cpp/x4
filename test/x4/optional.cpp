@@ -24,6 +24,7 @@
 
 #include <concepts>
 #include <optional>
+#include <tuple>
 #include <type_traits>
 
 #ifdef _MSC_VER

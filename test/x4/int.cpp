@@ -18,6 +18,7 @@
 #include <iris/alloy/tuple.hpp>
 
 #include <string_view>
+#include <tuple>
 
 #include <climits>
 #include <cstdint>

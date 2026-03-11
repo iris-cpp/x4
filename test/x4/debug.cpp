@@ -23,11 +23,13 @@
 #include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
-#include <iterator>
-#include <vector>
-#include <string>
-#include <cstring>
 #include <iostream>
+#include <iterator>
+#include <string>
+#include <tuple>
+#include <vector>
+
+#include <cstring>
 
 namespace {
 

@@ -9,6 +9,7 @@
 
 #include <iris/alloy/adapted/std_tuple.hpp>
 
+#include <tuple>
 #include <vector>
 
 struct X {};
