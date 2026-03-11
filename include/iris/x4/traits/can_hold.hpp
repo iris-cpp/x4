@@ -16,6 +16,7 @@
 #include <iris/x4/core/attribute.hpp>
 
 #include <iris/alloy/traits.hpp>
+#include <iris/type_traits.hpp>
 
 #include <optional>
 #include <type_traits>
@@ -44,7 +45,7 @@ struct value_type_can_hold
 
 // This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations
 template<class T, class U>
-struct can_hold_impl : std::false_type {};
+struct can_hold_impl : is_convertible_without_narrowing<U, T> {};
 
 template<class T, class U>
     requires
