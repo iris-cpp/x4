@@ -17,41 +17,27 @@
 namespace iris::x4::traits {
 
 template<class A, class B>
-struct has_same_size
-    : std::bool_constant<
-        alloy::tuple_size_v<A> ==
-        alloy::tuple_size_v<B>
-    >
-{};
-
-template<class T, std::size_t N>
-struct has_size
-    : std::bool_constant<alloy::tuple_size_v<T> == N>
+struct is_same_size_tuple_like
+    : std::false_type
 {};
 
 template<class A, class B>
-struct is_same_size_tuple_like
-    : std::bool_constant<std::conjunction_v<
-        alloy::is_tuple_like<A>,
-        alloy::is_tuple_like<B>,
-        has_same_size<A, B>
-    >>
+    requires
+        alloy::is_tuple_like_v<A> &&
+        alloy::is_tuple_like_v<B>
+struct is_same_size_tuple_like<A, B>
+    : std::bool_constant<alloy::tuple_size_v<A> == alloy::tuple_size_v<B>>
 {};
 
 template<class T>
 struct is_single_element_tuple_like
-    : std::bool_constant<std::conjunction_v<
-        alloy::is_tuple_like<T>,
-        has_size<T, 1>
-    >>
+    : std::false_type
 {};
 
-template<class View>
-struct is_single_element_tuple_like_view
-    : std::bool_constant<std::conjunction_v<
-        alloy::is_tuple_like_view<View>,
-        has_size<View, 1>
-    >>
+template<class T>
+    requires alloy::is_tuple_like_v<T>
+struct is_single_element_tuple_like<T>
+    : std::bool_constant<alloy::tuple_size_v<T> == 1>
 {};
 
 template<class T>
