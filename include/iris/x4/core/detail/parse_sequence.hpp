@@ -203,6 +203,27 @@ parse_sequence(Parser const& parser, It& first, Se const& last, Context const& c
     }
 }
 
+// Whether the appender path is needed for parsing a sequence into a container.
+// The primary template returns false for non-container Attr (always use the
+// default path). The container specialization checks whether the container's
+// value_type is broad enough to represent every possible result the sequence
+// parser produces. When it is NOT, each sub-parser must decide individually
+// whether to append (e.g. an optional sub-parser skips appending on no-match).
+//
+// e.g. sequence_attr = char,            container_value = char            → false (same type, direct path OK)
+// e.g. sequence_attr = optional<char>,  container_value = char            → true  (optional may be empty; needs appender)
+// e.g. sequence_attr = optional<char>,  container_value = optional<char>  → false (same type, direct path OK)
+template<class Sequence, class Attr>
+struct sequence_needs_appender : std::false_type {};
+
+template<class Sequence, traits::X4Container Container>
+struct sequence_needs_appender<Sequence, Container>
+    : std::negation<traits::can_hold<
+        typename traits::container_value<Container>::type,
+        typename Sequence::attribute_type
+    >>
+{};
+
 template<class Left, class Right>
 struct parse_into_container_impl<sequence<Left, Right>>
 {
@@ -213,18 +234,9 @@ struct parse_into_container_impl<sequence<Left, Right>>
         Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
-        if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = traits::can_hold<
-                typename sequence<Left, Right>::attribute_type,
-                typename traits::container_value<Attr>::type
-            >::value;
-            if constexpr (sequence_attribute_can_directly_hold_value_type) {
-                return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);
-
-            } else {
-                auto&& appender = x4::make_container_appender(x4::assume_container(attr));
-                return detail::parse_sequence(parser, first, last, ctx, appender);
-            }
+        if constexpr (sequence_needs_appender<sequence<Left, Right>, Attr>::value) {
+            auto&& appender = x4::make_container_appender(x4::assume_container(attr));
+            return detail::parse_sequence(parser, first, last, ctx, appender);
         } else {
             return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);
         }

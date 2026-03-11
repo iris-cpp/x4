@@ -261,6 +261,14 @@ namespace detail {
 
 template<class Source, class Dest>
 struct is_single_element_move_to_nothrow
+    : std::false_type
+{};
+
+template<class Source, class Dest>
+    requires
+        (!traits::is_single_element_tuple_like<Dest>::value) &&
+        requires { x4::move_to(std::declval<Source>(), std::declval<Dest&>()); }
+struct is_single_element_move_to_nothrow<Source, Dest>
     : std::bool_constant<
         noexcept(x4::move_to(std::declval<Source>(), std::declval<Dest&>()))
     >
