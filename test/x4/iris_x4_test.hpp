@@ -11,12 +11,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include "iris_test.hpp"
+#include <iris/config.hpp>
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/parse.hpp>
 #include <iris/x4/parse_debug.hpp>
+
+#include <catch2/catch_test_macros.hpp>  // IWYU pragma: export
 
 #include <iterator>
 #include <string_view>
