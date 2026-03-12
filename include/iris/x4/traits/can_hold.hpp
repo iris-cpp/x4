@@ -48,7 +48,7 @@ struct value_type_can_hold
 // sites (e.g. move_to overloads) static_assert against narrowing, so the user gets
 // a clear error message at the point of use.
 template<class T, class U>
-struct can_hold_impl : std::is_convertible<U, T> {};
+struct can_hold_impl : std::is_assignable<T&, U> {};
 
 template<class T, class U>
     requires
