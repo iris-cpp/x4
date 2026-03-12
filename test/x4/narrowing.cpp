@@ -60,49 +60,49 @@ IRIS_X4_DEFINE_CONSTEXPR(double_rule)
 // Trait-level static checks
 // ===================================================================
 
-TEST_CASE("narrowing: is_assignable_without_narrowing trait")
+TEST_CASE("narrowing: is_assignable_without_lossy_conversion trait")
 {
-    using x4::detail::is_assignable_without_narrowing;
+    using x4::detail::is_assignable_without_lossy_conversion;
 
     // Non-narrowing: same type
-    STATIC_CHECK(is_assignable_without_narrowing<int&, int>::value);
-    STATIC_CHECK(is_assignable_without_narrowing<double&, double>::value);
+    STATIC_CHECK(is_assignable_without_lossy_conversion<int&, int>::value);
+    STATIC_CHECK(is_assignable_without_lossy_conversion<double&, double>::value);
 
     // Non-narrowing: widening
-    STATIC_CHECK(is_assignable_without_narrowing<long long&, int>::value);
-    STATIC_CHECK(is_assignable_without_narrowing<double&, float>::value);
-    STATIC_CHECK(is_assignable_without_narrowing<int&, short>::value);
+    STATIC_CHECK(is_assignable_without_lossy_conversion<long long&, int>::value);
+    STATIC_CHECK(is_assignable_without_lossy_conversion<double&, float>::value);
+    STATIC_CHECK(is_assignable_without_lossy_conversion<int&, short>::value);
 
     // Narrowing: lossy conversions
-    STATIC_CHECK(!is_assignable_without_narrowing<int&, long long>::value);
-    STATIC_CHECK(!is_assignable_without_narrowing<short&, int>::value);
-    STATIC_CHECK(!is_assignable_without_narrowing<float&, double>::value);
-    STATIC_CHECK(!is_assignable_without_narrowing<int&, float>::value);
-    STATIC_CHECK(!is_assignable_without_narrowing<float&, int>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<int&, long long>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<short&, int>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<float&, double>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<int&, float>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<float&, int>::value);
 
     // Signed/unsigned mismatch
-    STATIC_CHECK(!is_assignable_without_narrowing<int&, unsigned>::value);
-    STATIC_CHECK(!is_assignable_without_narrowing<unsigned&, int>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<int&, unsigned>::value);
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<unsigned&, int>::value);
 
     // Non-arithmetic dest: narrowing not checked
-    STATIC_CHECK(is_assignable_without_narrowing<std::string&, const char*>::value);
+    STATIC_CHECK(is_assignable_without_lossy_conversion<std::string&, const char*>::value);
 }
 
-TEST_CASE("narrowing: is_tuple_assignable_without_narrowing trait")
+TEST_CASE("narrowing: is_tuple_assignable_without_lossy_conversion trait")
 {
-    using x4::detail::is_tuple_assignable_without_narrowing;
+    using x4::detail::is_tuple_assignable_without_lossy_conversion;
 
-    STATIC_CHECK((is_tuple_assignable_without_narrowing<
+    STATIC_CHECK((is_tuple_assignable_without_lossy_conversion<
         std::tuple<int, double>,
         std::tuple<int, float>
     >::value));
 
-    STATIC_CHECK((!is_tuple_assignable_without_narrowing<
+    STATIC_CHECK((!is_tuple_assignable_without_lossy_conversion<
         std::tuple<char, int>,
         std::tuple<int, int>
     >::value));
 
-    STATIC_CHECK((!is_tuple_assignable_without_narrowing<
+    STATIC_CHECK((!is_tuple_assignable_without_lossy_conversion<
         std::tuple<int, char>,
         std::tuple<int, int>
     >::value));

@@ -18,13 +18,14 @@
 
 namespace iris::x4::detail {
 
-// is_assignable_without_narrowing<Dest, Source>
+// is_assignable_without_lossy_conversion<Dest, Source>
 //
-// True when `Dest = Source` is valid AND does not involve a narrowing conversion.
-// For non-arithmetic Dest types, narrowing is not checked — we trust that the
-// user-defined operator= handles the conversion correctly.
+// True when `Dest = Source` is valid AND does not involve a lossy conversion.
+// Currently this only rejects arithmetic narrowing ([dcl.init.list]), but
+// the intent is broader: any conversion that silently loses information
+// should eventually be caught here.
 template<class Dest, class Source>
-struct is_assignable_without_narrowing
+struct is_assignable_without_lossy_conversion
     : std::bool_constant<
         std::is_assignable_v<Dest, Source> &&
         (!std::is_arithmetic_v<std::remove_reference_t<Dest>> ||
@@ -33,12 +34,12 @@ struct is_assignable_without_narrowing
 {};
 
 template<class DestTuple, class SourceTuple, class = std::make_index_sequence<alloy::tuple_size_v<DestTuple>>>
-struct is_tuple_assignable_without_narrowing;
+struct is_tuple_assignable_without_lossy_conversion;
 
 template<class DestTuple, class SourceTuple, std::size_t... Is>
-struct is_tuple_assignable_without_narrowing<DestTuple, SourceTuple, std::index_sequence<Is...>>
+struct is_tuple_assignable_without_lossy_conversion<DestTuple, SourceTuple, std::index_sequence<Is...>>
     : std::conjunction<
-        is_assignable_without_narrowing<
+        is_assignable_without_lossy_conversion<
             alloy::tuple_element_t<Is, DestTuple>&,
             decltype(alloy::get<Is>(std::declval<SourceTuple&>()))
         >...

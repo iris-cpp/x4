@@ -364,7 +364,7 @@ concept RuleAttrConvertible =
 template<class Exposed, class RuleAttr>
 concept RuleAttrConvertibleWithoutNarrowing =
     RuleAttrConvertible<Exposed, RuleAttr> &&
-    is_assignable_without_narrowing<
+    is_assignable_without_lossy_conversion<
         unwrap_container_appender_t<std::remove_const_t<Exposed>>&,
         RuleAttr
     >::value;
@@ -461,7 +461,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
                 );
             } else {
                 static_assert(
-                    detail::is_assignable_without_narrowing<Exposed&, RuleAttr>::value,
+                    detail::is_assignable_without_lossy_conversion<Exposed&, RuleAttr>::value,
                     "Narrowing conversion detected in rule (rule attribute to exposed attribute)"
                 );
                 exposed_attr = std::move(rule_attr);
