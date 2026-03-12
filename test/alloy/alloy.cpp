@@ -5,8 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris_test.hpp>
-
+#include <iris/config.hpp>
 #include <iris/io_fwd.hpp>
 
 #include <iris/alloy/adapted/std_tuple.hpp>
@@ -16,6 +15,8 @@
 #include <iris/alloy/io.hpp>
 #include <iris/alloy/tuple.hpp>
 #include <iris/alloy/utility.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace alloy = iris::alloy;
 
@@ -395,16 +396,16 @@ TEST_CASE("tuple")
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, double>);
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, double&>);
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, double&&>);
-    
+
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double>&>);
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double&>&>);
-    
+
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double> const&>);
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double&> const&>);
-    
+
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double>&&>);
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double&>&&>);
-    
+
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double> const&&>);
     STATIC_CHECK(!std::is_constructible_v<alloy::tuple<int const&>, alloy::tuple<double&> const&&>);
 
