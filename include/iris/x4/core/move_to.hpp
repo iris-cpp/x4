@@ -124,7 +124,7 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(
-        detail::is_assignable_without_narrowing<Dest&, decltype(std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src))))>::value,
+        iris::is_assignable_without_narrowing<Dest&, decltype(std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src))))>::value,
         "Narrowing conversion detected in move_to (single-element tuple-like to plain)"
     );
     dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
@@ -138,7 +138,7 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(
-        detail::is_assignable_without_narrowing<Dest&, Source>::value,
+        iris::is_assignable_without_narrowing<Dest&, Source>::value,
         "Narrowing conversion detected in move_to (source to plain)"
     );
     dest = std::forward<Source>(src);
@@ -202,7 +202,7 @@ move_to(Source&& src, Dest& dest)
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(std::is_assignable_v<Dest&, Source>);
     static_assert(
-        detail::is_assignable_without_narrowing<typename Dest::value_type&, Source>::value,
+        iris::is_assignable_without_narrowing<typename Dest::value_type&, Source>::value,
         "Narrowing conversion detected in move_to (source to optional)"
     );
     dest = std::forward<Source>(src);
