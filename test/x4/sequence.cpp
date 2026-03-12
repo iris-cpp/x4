@@ -538,3 +538,23 @@ TEST_CASE("sequence")
         CHECK(v.size() == 4);
     }
 }
+
+// commented-out test case that verifies whether static_assert will correctly fire
+// TEST_CASE("wrong_sequence_size")
+// {
+//     using x4::char_;
+//     using x4::int_;
+
+//     // actual < expected
+//     {
+//         constexpr auto parser = char_ >> int_;
+//         std::tuple<char> attr;
+//         REQUIRE(!parse("a123", parser, attr));
+//     }
+//     // actual > expected
+//     {
+//         constexpr auto parser = char_ >> int_;
+//         std::tuple<char, int, double> attr;
+//         REQUIRE(!parse("a123", parser, attr));
+//     }
+// }

@@ -16,6 +16,7 @@
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
+#include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/can_hold.hpp>
@@ -37,6 +38,13 @@ struct sequence;
 
 namespace iris::x4::detail {
 
+// Note: `ExpectedAttr` parameter exists for a better debugging experience
+template<
+    class LParser, class RParser, traits::CategorizedAttr<traits::tuple_attr> ActualAttr,
+    class ExpectedAttr = typename traits::detail::attribute_of_sequence<LParser, RParser>::type
+>
+inline constexpr bool has_same_sequence_size_v = parser_traits<LParser>::sequence_size + parser_traits<RParser>::sequence_size == alloy::tuple_size_v<ActualAttr>;
+
 template<class LParser, class RParser, class Attr>
 struct partition_attribute {};
 
@@ -49,20 +57,10 @@ struct partition_attribute<LParser, RParser, Attr>
     static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
     static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
 
-    static constexpr std::size_t actual_size = alloy::tuple_size_v<Attr>;
-    static constexpr std::size_t expected_size = l_size + r_size;
-
     // If you got an error here, then you are trying to pass
     // a tuple-like with the wrong number of elements
     // as that expected by the (sequence) parser.
-    static_assert(
-        actual_size >= expected_size,
-        "Sequence size of the passed attribute is less than expected."
-        );
-    static_assert(
-        actual_size <= expected_size,
-        "Sequence size of the passed attribute is greater than expected."
-        );
+    static_assert(has_same_sequence_size_v<LParser, RParser, Attr>, "sequence size mismatch");
 
     using view = alloy::tuple_ref_t<Attr>;
     using split = alloy::tuple_split_t<view, l_size, r_size>;
