@@ -11,7 +11,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/char_encoding/unicode/classification.hpp>
+#include <iris/x4/char_encoding/unicode/classify_category.hpp>
+#include <iris/x4/char_encoding/unicode/classify_script.hpp>
+#include <iris/x4/char_encoding/unicode/classify_case.hpp>
+
+#include <string>
 
 #include <cstdint>
 
@@ -20,6 +24,7 @@ namespace iris::x4::char_encoding {
 struct unicode
 {
     using char_type = char32_t;
+    using string_type = std::u32string;
     using classify_type = x4::unicode::classify_type;
 
     [[nodiscard]] static constexpr bool

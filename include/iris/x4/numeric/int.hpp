@@ -49,6 +49,27 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
         x4::skip_over(first, last, ctx);
         return numeric::extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
     }
+
+    [[nodiscard]] static std::string get_x4_info()
+    {
+        if constexpr (Radix == 10 && MinDigits == 1 && MaxDigits == -1) {
+            if constexpr (sizeof(T) == 1) {
+                return "`int8`";
+            } else if constexpr (sizeof(T) == 2) {
+                return "`int16`";
+            } else if constexpr (sizeof(T) == 4) {
+                return "`int32`";
+            } else if constexpr (sizeof(T) == 8) {
+                return "`int64`";
+            } else {
+                static_assert(false, "sorry; unimplemented");
+                return {};
+            }
+        } else {
+            static_assert(false, "sorry; unimplemented");
+            return {};
+        }
+    }
 };
 
 namespace parsers {

@@ -59,6 +59,8 @@ using AorB = iris::rvariant<
 
 } // ast
 
+namespace alloy_wrong_substitute_test_case {
+
 using ARule = x4::rule<struct a_tag, ast::A>;
 using BRule = x4::rule<struct b_tag, ast::B>;
 using AorBRule = x4::rule<struct a_or_b_tag, ast::AorB>;
@@ -89,3 +91,5 @@ TEST_CASE("alloy_wrong_substitute_test_case")
     ast::AorB result;
     (void)a_or_b.parse(ptr, nullptr, x4::unused, result);
 }
+
+} // alloy_wrong_substitute_test_case

@@ -24,6 +24,7 @@ namespace iris::x4::char_encoding {
 struct standard_wide
 {
     using char_type = wchar_t;
+    using string_type = std::wstring;
     using classify_type = wchar_t;
 
     template<class Char>

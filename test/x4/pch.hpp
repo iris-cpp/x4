@@ -7,6 +7,8 @@
 #include <iris/rvariant.hpp>
 #include <iris/rvariant/rvariant_io.hpp>
 
+#include <iris/x4/char_encoding/unicode.hpp>
+
 #include <algorithm>
 #include <concepts>
 #include <iostream>

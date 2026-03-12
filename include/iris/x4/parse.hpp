@@ -158,25 +158,26 @@ concept X4RangeParseSkipper =
         typename range_parse_parser_impl<R>::sentinel_type
     >;
 
+template<std::ranges::forward_range R>
+    requires (!traits::CharArray<R>)
+[[nodiscard]] static constexpr decltype(auto) as_parse_range(R const& range) noexcept
+{
+    return range;
+}
+
+template<std::ranges::forward_range R>
+    requires traits::CharArray<R>
+[[nodiscard]] static constexpr auto as_parse_range(R const& str)
+    noexcept(noexcept(std::basic_string_view{str}))
+{
+    return std::basic_string_view{str};
+}
+
+template<std::ranges::forward_range R>
+using as_parse_range_t = decltype(detail::as_parse_range(std::declval<R const&>()));
+
 struct parse_fn_main
 {
-private:
-    template<std::ranges::forward_range R>
-        requires (!traits::CharArray<R>)
-    [[nodiscard]] static constexpr decltype(auto) as_parse_range(R const& range) noexcept
-    {
-        return range;
-    }
-
-    template<std::ranges::forward_range R>
-        requires traits::CharArray<R>
-    [[nodiscard]] static constexpr auto as_parse_range(R const& str)
-        noexcept(noexcept(std::basic_string_view{str}))
-    {
-        return std::basic_string_view{str};
-    }
-
-public:
     // --------------------------------------------
     // parse(range)
 
@@ -186,7 +187,7 @@ public:
     operator()(R const& range, Parser&& p, ParseAttr& attr)
     {
         // Treat "str" as `string_view`
-        auto const& range_ = parse_fn_main::as_parse_range(range);
+        auto const& range_ = detail::as_parse_range(range);
 
         using It = typename parse_result_for<R>::iterator_type;
         using Se = typename parse_result_for<R>::sentinel_type;
@@ -217,7 +218,7 @@ public:
     operator()(parse_result_for<R>& res, R const& range, Parser&& p, ParseAttr& attr)
     {
         // Treat "str" as `string_view`
-        auto const& range_ = parse_fn_main::as_parse_range(range);
+        auto const& range_ = detail::as_parse_range(range);
 
         using It = typename parse_result_for<R>::iterator_type;
         using Se = typename parse_result_for<R>::sentinel_type;
@@ -247,7 +248,7 @@ public:
     operator()(R const& range, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         // Treat "str" as `string_view`
-        auto const& range_ = parse_fn_main::as_parse_range(range);
+        auto const& range_ = detail::as_parse_range(range);
 
         using It = typename parse_result_for<R>::iterator_type;
         using Se = typename parse_result_for<R>::sentinel_type;
@@ -280,7 +281,7 @@ public:
     operator()(parse_result_for<R>& res, R const& range, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         // Treat "str" as `string_view`
-        auto const& range_ = parse_fn_main::as_parse_range(range);
+        auto const& range_ = detail::as_parse_range(range);
 
         using It = typename parse_result_for<R>::iterator_type;
         using Se = typename parse_result_for<R>::sentinel_type;

@@ -17,8 +17,10 @@
 #include <iris/x4/core/unused.hpp>
 
 #include <iris/x4/string/case_compare.hpp>
-#include <iris/x4/string/utf8.hpp>
 
+#include <iris/unicode/string.hpp>
+
+#include <format>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -49,7 +51,7 @@ struct literal_string : parser<literal_string<String, Encoding, Attr>>
             std::is_constructible_v<String, T, Rest...>
     constexpr literal_string(T&& val, Rest&&... rest)
         noexcept(std::is_nothrow_constructible_v<String, T, Rest...>)
-        : str(std::forward<T>(val), std::forward<Rest>(rest)...)
+        : str_(std::forward<T>(val), std::forward<Rest>(rest)...)
     {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
@@ -57,25 +59,22 @@ struct literal_string : parser<literal_string<String, Encoding, Attr>>
     parse(It& first, Se const& last, Context const& ctx, Attr_& attr) const
         noexcept(
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(detail::string_parse(str, first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx)))
+            noexcept(detail::string_parse(str_, first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx)))
         )
     {
         static_assert(std::same_as<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
         x4::skip_over(first, last, ctx);
-        return detail::string_parse(str, first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx));
+        return detail::string_parse(str_, first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx));
     }
 
-    String str;
-};
-
-template<class String, class Encoding, X4Attribute Attr>
-struct get_info<literal_string<String, Encoding, Attr>>
-{
-    using result_type = std::string;
-    [[nodiscard]] constexpr std::string operator()(literal_string<String, Encoding, Attr> const& p) const
+    [[nodiscard]] std::string get_x4_info() const
     {
-        return '"' + x4::to_utf8(p.str) + '"';
+        // TODO: escape quotes
+        return std::format("\"{}\"", iris::unicode::transcode<char>(this->str_));
     }
+
+private:
+    String str_;
 };
 
 } // iris::x4

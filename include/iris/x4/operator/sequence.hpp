@@ -22,7 +22,9 @@
 #include <iris/x4/directive/expect.hpp>
 
 #include <iris/alloy/tuple.hpp>
+#include <iris/type_traits.hpp>
 
+#include <format>
 #include <concepts>
 #include <iterator>
 #include <type_traits>
@@ -126,6 +128,23 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
         noexcept(noexcept(detail::parse_sequence(*this, first, last, ctx, attr)))
     {
         return detail::parse_sequence(*this, first, last, ctx, attr);
+    }
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        if constexpr (iris::is_ttp_specialization_of_v<Right, expect_directive>) {
+            return std::format(
+                "{} > {}",
+                get_info<Left>{}(this->left),
+                get_info<typename Right::subject_type>{}(this->right.subject)
+            );
+        } else {
+            return std::format(
+                "{} >> {}",
+                get_info<Left>{}(this->left),
+                get_info<Right>{}(this->right)
+            );
+        }
     }
 };
 
