@@ -364,7 +364,7 @@ concept RuleAttrConvertible =
 template<class Exposed, class RuleAttr>
 concept RuleAttrConvertibleWithoutNarrowing =
     RuleAttrConvertible<Exposed, RuleAttr> &&
-    iris::is_assignable_without_narrowing<
+    is_assignable_without_narrowing<
         unwrap_container_appender_t<std::remove_const_t<Exposed>>&,
         RuleAttr
     >::value;
@@ -461,7 +461,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
                 );
             } else {
                 static_assert(
-                    iris::is_assignable_without_narrowing<Exposed&, RuleAttr>::value,
+                    detail::is_assignable_without_narrowing<Exposed&, RuleAttr>::value,
                     "Narrowing conversion detected in rule (rule attribute to exposed attribute)"
                 );
                 exposed_attr = std::move(rule_attr);

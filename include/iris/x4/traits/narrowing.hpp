@@ -18,13 +18,27 @@
 
 namespace iris::x4::detail {
 
+// is_assignable_without_narrowing<Dest, Source>
+//
+// True when `Dest = Source` is valid AND does not involve a narrowing conversion.
+// For non-arithmetic Dest types, narrowing is not checked — we trust that the
+// user-defined operator= handles the conversion correctly.
+template<class Dest, class Source>
+struct is_assignable_without_narrowing
+    : std::bool_constant<
+        std::is_assignable_v<Dest, Source> &&
+        (!std::is_arithmetic_v<std::remove_reference_t<Dest>> ||
+         iris::is_convertible_without_narrowing_v<std::remove_cvref_t<Source>, std::remove_reference_t<Dest>>)
+    >
+{};
+
 template<class DestTuple, class SourceTuple, class = std::make_index_sequence<alloy::tuple_size_v<DestTuple>>>
 struct is_tuple_assignable_without_narrowing;
 
 template<class DestTuple, class SourceTuple, std::size_t... Is>
 struct is_tuple_assignable_without_narrowing<DestTuple, SourceTuple, std::index_sequence<Is...>>
     : std::conjunction<
-        iris::is_assignable_without_narrowing<
+        is_assignable_without_narrowing<
             alloy::tuple_element_t<Is, DestTuple>&,
             decltype(alloy::get<Is>(std::declval<SourceTuple&>()))
         >...
