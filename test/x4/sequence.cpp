@@ -544,7 +544,6 @@ TEST_CASE("sequence")
 // {
 //     using x4::char_;
 //     using x4::int_;
-
 //     // actual < expected
 //     {
 //         constexpr auto parser = char_ >> int_;
