@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_NARROWING_HPP
-#define IRIS_ZZ_X4_TRAITS_NARROWING_HPP
+#ifndef IRIS_ZZ_X4_TRAITS_LOSSY_CONVERSION_HPP
+#define IRIS_ZZ_X4_TRAITS_LOSSY_CONVERSION_HPP
 
 /*=============================================================================
     Copyright (c) 2026 The Iris Project Contributors
@@ -18,18 +18,34 @@
 
 namespace iris::x4::detail {
 
+// is_lossy_assignment<Dest, Source>
+//
+// Customization point: determines whether `Dest = Source` is a lossy assignment.
+// The default implementation detects arithmetic narrowing conversions ([dcl.init.list]).
+// Users can specialize this trait for their own types (e.g. big integer libraries)
+// to flag additional lossy assignments.
+//
+// Dest and Source are unqualified types (no references, no cv).
+template<class Dest, class Source>
+struct is_lossy_assignment : std::false_type {};
+
+template<class Dest, class Source>
+    requires std::is_arithmetic_v<Dest>
+struct is_lossy_assignment<Dest, Source>
+    : std::bool_constant<
+        !iris::is_convertible_without_narrowing_v<Source, Dest>
+    >
+{};
+
 // is_assignable_without_lossy_conversion<Dest, Source>
 //
-// True when `Dest = Source` is valid AND does not involve a lossy conversion.
-// Currently this only rejects arithmetic narrowing ([dcl.init.list]), but
-// the intent is broader: any conversion that silently loses information
-// should eventually be caught here.
+// True when `Dest = Source` is valid AND does not involve a lossy conversion
+// as determined by `is_lossy_assignment`.
 template<class Dest, class Source>
 struct is_assignable_without_lossy_conversion
     : std::bool_constant<
         std::is_assignable_v<Dest, Source> &&
-        (!std::is_arithmetic_v<std::remove_reference_t<Dest>> ||
-         iris::is_convertible_without_narrowing_v<std::remove_cvref_t<Source>, std::remove_reference_t<Dest>>)
+        !is_lossy_assignment<std::remove_reference_t<Dest>, std::remove_cvref_t<Source>>::value
     >
 {};
 

@@ -44,9 +44,9 @@ struct value_type_can_hold
 {};
 
 // This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations.
-// Note: narrowing conversions are NOT rejected here. Instead, the actual conversion
-// sites (e.g. move_to overloads) static_assert against narrowing, so the user gets
-// a clear error message at the point of use.
+// Note: lossy conversions are NOT rejected here. Instead, the actual conversion
+// sites (e.g. move_to overloads) static_assert against lossy conversions, so the
+// user gets a clear error message at the point of use.
 template<class T, class U>
 struct can_hold_impl : std::is_assignable<T&, U> {};
 

@@ -15,7 +15,7 @@
 #include <iris/type_traits.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/narrowing.hpp>
+#include <iris/x4/traits/lossy_conversion.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
@@ -125,7 +125,7 @@ move_to(Source&& src, Dest& dest)
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(
         detail::is_assignable_without_lossy_conversion<Dest&, decltype(std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src))))>::value,
-        "Narrowing conversion detected in move_to (single-element tuple-like to plain)"
+        "Lossy conversion detected in move_to (single-element tuple-like to plain)"
     );
     dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
 }
@@ -139,7 +139,7 @@ move_to(Source&& src, Dest& dest)
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(
         detail::is_assignable_without_lossy_conversion<Dest&, Source>::value,
-        "Narrowing conversion detected in move_to (source to plain)"
+        "Lossy conversion detected in move_to (source to plain)"
     );
     dest = std::forward<Source>(src);
 }
@@ -156,7 +156,7 @@ move_to(Source&& src, Dest& dest)
 
     static_assert(
         detail::is_tuple_assignable_without_lossy_conversion<Dest, std::remove_cvref_t<Source>>::value,
-        "Narrowing conversion detected in move_to (tuple element-wise assignment)"
+        "Lossy conversion detected in move_to (tuple element-wise assignment)"
     );
 
     alloy::tuple_assign(std::forward<Source>(src), dest);
@@ -203,7 +203,7 @@ move_to(Source&& src, Dest& dest)
     static_assert(std::is_assignable_v<Dest&, Source>);
     static_assert(
         detail::is_assignable_without_lossy_conversion<typename Dest::value_type&, Source>::value,
-        "Narrowing conversion detected in move_to (source to optional)"
+        "Lossy conversion detected in move_to (source to optional)"
     );
     dest = std::forward<Source>(src);
 }
@@ -220,6 +220,14 @@ move_to(It first, Se last, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
+
+    static_assert(
+        detail::is_assignable_without_lossy_conversion<
+            typename traits::container_value<Dest>::type&,
+            std::iter_reference_t<It>
+        >::value,
+        "Lossy conversion detected in move_to (container element-wise)"
+    );
 
     if constexpr (!is_ttp_specialization_of_v<Dest, container_appender>) {
         if (!traits::is_empty(dest)) {

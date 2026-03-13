@@ -67,7 +67,7 @@ x4_define_tests(
     lit
     matches
     move_to
-    narrowing
+    lossy_conversion
     not_predicate
     no_case
     no_skip

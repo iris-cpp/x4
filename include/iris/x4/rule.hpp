@@ -20,7 +20,7 @@
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/container_appender.hpp>
 
-#include <iris/x4/traits/narrowing.hpp>
+#include <iris/x4/traits/lossy_conversion.hpp>
 #include <iris/x4/traits/transform_attribute.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
@@ -357,13 +357,13 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
 };
 
 template<class Exposed, class RuleAttr>
-concept RuleAttrConvertible =
+concept RuleAttrAssignable =
     X4Attribute<RuleAttr> &&
     std::is_assignable_v<unwrap_container_appender_t<std::remove_const_t<Exposed>>&, RuleAttr>;
 
 template<class Exposed, class RuleAttr>
-concept RuleAttrConvertibleWithoutNarrowing =
-    RuleAttrConvertible<Exposed, RuleAttr> &&
+concept RuleAttrAssignableWithoutLoss =
+    RuleAttrAssignable<Exposed, RuleAttr> &&
     is_assignable_without_lossy_conversion<
         unwrap_container_appender_t<std::remove_const_t<Exposed>>&,
         RuleAttr
@@ -377,8 +377,8 @@ concept RuleAttrTransformable =
     X4Attribute<std::remove_const_t<Exposed>> &&
     X4Attribute<RuleAttr> &&
     std::default_initializable<RuleAttr> &&
-    RuleAttrConvertible<Exposed, RuleAttr> &&
-    RuleAttrConvertibleWithoutNarrowing<
+    RuleAttrAssignable<Exposed, RuleAttr> &&
+    RuleAttrAssignableWithoutLoss<
         unwrap_container_appender_t<std::remove_const_t<Exposed>>,
         RuleAttr
     >;
@@ -462,7 +462,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             } else {
                 static_assert(
                     detail::is_assignable_without_lossy_conversion<Exposed&, RuleAttr>::value,
-                    "Narrowing conversion detected in rule (rule attribute to exposed attribute)"
+                    "Lossy conversion detected in rule (rule attribute to exposed attribute)"
                 );
                 exposed_attr = std::move(rule_attr);
             }
@@ -474,10 +474,10 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         requires
             (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
             (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
-            detail::RuleAttrConvertible<Exposed, RuleAttr> &&
-            (!detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>)
+            detail::RuleAttrAssignable<Exposed, RuleAttr> &&
+            (!detail::RuleAttrAssignableWithoutLoss<Exposed, RuleAttr>)
     [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
+    parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs lossy conversion
 
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
