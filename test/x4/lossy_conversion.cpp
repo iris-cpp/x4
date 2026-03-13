@@ -22,9 +22,9 @@ template<class T>
 using SES = x4_test::single_element_struct<T>;
 
 
-// ===================================================================
+// =======================================================================
 // Mock "small int" type for is_lossy_assignment customization point test
-// ===================================================================
+// =======================================================================
 
 struct small_int {
     std::int8_t value{};
@@ -49,9 +49,9 @@ struct convertible_to_long_long {
 };
 
 
-// ===================================================================
+// =======================================================================
 // Rule definitions for lossy conversion tests
-// ===================================================================
+// =======================================================================
 
 using IntRule = x4::rule<struct int_rule_tag, int>;
 using LongLongRule = x4::rule<struct long_long_rule_tag, long long>;
@@ -84,9 +84,9 @@ IRIS_X4_DEFINE_CONSTEXPR(float_rule)
 IRIS_X4_DEFINE_CONSTEXPR(double_rule)
 
 
-// ===================================================================
+// =======================================================================
 // Trait-level static checks
-// ===================================================================
+// =======================================================================
 
 TEST_CASE("lossy: is_assignable_without_lossy_conversion trait")
 {
@@ -165,9 +165,9 @@ TEST_CASE("lossy: is_lossy_assignment trait")
 }
 
 
-// ===================================================================
+// =======================================================================
 // Parse-level tests (non-lossy conversions that must compile & run)
-// ===================================================================
+// =======================================================================
 
 TEST_CASE("lossy: parse int to long long (widening)")
 {
@@ -229,14 +229,14 @@ TEST_CASE("lossy: parse same type (char to char)")
 }
 
 
-// ===================================================================
+// =======================================================================
 // Rule-level tests
 //
-// When the exposed attribute type differs from the rule's attribute
-// type, the rule materializes its own attribute internally and then
-// assigns it to the exposed attribute. The lossy conversion check applies
-// to that assignment.
-// ===================================================================
+// When the exposed attribute type differs from the rule's attribute type,
+// the rule materializes its own attribute internally and then assigns it
+// to the exposed attribute. The lossy conversion check applies to that
+// assignment.
+// =======================================================================
 
 TEST_CASE("lossy: RuleAttrAssignableWithoutLoss concept")
 {
@@ -299,13 +299,13 @@ TEST_CASE("lossy: immediate rule widening (int to long long)")
 }
 
 
-// ===================================================================
+// =======================================================================
 // Lossy conversion static_assert tests
 //
-// The following test cases are commented out because they are expected
-// to produce static_assert failures. Uncomment any single case to
-// verify the assertion fires.
-// ===================================================================
+// The following test cases are commented out because they are expected to
+// produce static_assert failures. Uncomment any single case to verify the
+// assertion fires.
+// =======================================================================
 
 // --- move_to: source to plain (lossy) ---
 // TEST_CASE("lossy: int to char") { char a{}; REQUIRE(parse("42", x4::int_, a)); }
