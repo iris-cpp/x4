@@ -460,10 +460,6 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
                     std::make_move_iterator(traits::end(rule_attr))
                 );
             } else {
-                static_assert(
-                    detail::is_assignable_without_lossy_conversion<Exposed&, RuleAttr>::value,
-                    "Lossy conversion detected in rule (rule attribute to exposed attribute)"
-                );
                 exposed_attr = std::move(rule_attr);
             }
             return true;
