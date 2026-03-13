@@ -88,6 +88,30 @@ IRIS_X4_DEFINE_CONSTEXPR(double_rule)
 // Trait-level static checks
 // =======================================================================
 
+TEST_CASE("lossy: is_lossy_assignment trait")
+{
+    using x4::detail::is_lossy_assignment;
+
+    // Default: arithmetic narrowing
+    STATIC_CHECK(!is_lossy_assignment<int, int>::value);
+    STATIC_CHECK(!is_lossy_assignment<long long, int>::value);
+    STATIC_CHECK(!is_lossy_assignment<double, float>::value);
+    STATIC_CHECK(is_lossy_assignment<int, long long>::value);
+    STATIC_CHECK(is_lossy_assignment<float, double>::value);
+    STATIC_CHECK(is_lossy_assignment<short, int>::value);
+
+    // Non-arithmetic Dest: not checked by default
+    STATIC_CHECK(!is_lossy_assignment<std::string, const char*>::value);
+
+    // Non-arithmetic Source with conversion operator to arithmetic Dest
+    STATIC_CHECK(!is_lossy_assignment<int, convertible_to_int>::value);
+    STATIC_CHECK(is_lossy_assignment<int, convertible_to_long_long>::value);
+    STATIC_CHECK(!is_lossy_assignment<long long, convertible_to_int>::value);
+
+    // Customization point: small_int = int is flagged as lossy (user-specialized)
+    STATIC_CHECK(is_lossy_assignment<small_int, int>::value);
+}
+
 TEST_CASE("lossy: is_assignable_without_lossy_conversion trait")
 {
     using x4::detail::is_assignable_without_lossy_conversion;
@@ -114,6 +138,9 @@ TEST_CASE("lossy: is_assignable_without_lossy_conversion trait")
 
     // Non-arithmetic dest: lossy conversion not checked
     STATIC_CHECK(is_assignable_without_lossy_conversion<std::string&, const char*>::value);
+
+    // Customization point: small_int::operator=(int) exists, but the specialization rejects it
+    STATIC_CHECK(!is_assignable_without_lossy_conversion<small_int&, int>::value);
 }
 
 TEST_CASE("lossy: is_tuple_assignable_without_lossy_conversion trait")
@@ -134,34 +161,6 @@ TEST_CASE("lossy: is_tuple_assignable_without_lossy_conversion trait")
         std::tuple<int, char>,
         std::tuple<int, int>
     >::value));
-}
-
-TEST_CASE("lossy: is_lossy_assignment trait")
-{
-    using x4::detail::is_lossy_assignment;
-
-    // Default: arithmetic narrowing
-    STATIC_CHECK(!is_lossy_assignment<int, int>::value);
-    STATIC_CHECK(!is_lossy_assignment<long long, int>::value);
-    STATIC_CHECK(!is_lossy_assignment<double, float>::value);
-    STATIC_CHECK(is_lossy_assignment<int, long long>::value);
-    STATIC_CHECK(is_lossy_assignment<float, double>::value);
-    STATIC_CHECK(is_lossy_assignment<short, int>::value);
-
-    // Non-arithmetic Dest: not checked by default
-    STATIC_CHECK(!is_lossy_assignment<std::string, const char*>::value);
-
-    // Non-arithmetic Source with conversion operator to arithmetic Dest
-    STATIC_CHECK(!is_lossy_assignment<int, convertible_to_int>::value);
-    STATIC_CHECK(is_lossy_assignment<int, convertible_to_long_long>::value);
-    STATIC_CHECK(!is_lossy_assignment<long long, convertible_to_int>::value);
-
-    // Customization point: small_int = int is flagged as lossy (user-specialized)
-    STATIC_CHECK(is_lossy_assignment<small_int, int>::value);
-
-    // small_int = int via is_assignable_without_lossy_conversion
-    // small_int::operator=(int) exists, but the specialization rejects it
-    STATIC_CHECK(!x4::detail::is_assignable_without_lossy_conversion<small_int&, int>::value);
 }
 
 
@@ -323,9 +322,23 @@ TEST_CASE("lossy: immediate rule widening (int to long long)")
 // TEST_CASE("lossy: tuple char,int") { std::tuple<char, int> a; REQUIRE(parse("1,2", x4::int_ >> ',' >> x4::int_, a)); }
 // TEST_CASE("lossy: tuple int,char") { std::tuple<int, char> a; REQUIRE(parse("1,2", x4::int_ >> ',' >> x4::int_, a)); }
 
+// --- move_to: source to non-arithmetic dest (lossy via customization point) ---
+// TEST_CASE("lossy: int to small_int") { small_int a; REQUIRE(parse("42", x4::int_, a)); }
+
+// --- move_to: single-element tuple-like with non-arithmetic dest (lossy) ---
+// TEST_CASE("lossy: SES small_int from int") { SES<small_int> a{}; REQUIRE(parse("42", x4::int_, a)); }
+
+// --- move_to: optional with non-arithmetic dest (lossy) ---
+// TEST_CASE("lossy: int to optional<small_int>") { std::optional<small_int> a; REQUIRE(parse("42", x4::int_, a)); }
+
+// --- move_to: tuple with non-arithmetic dest (lossy) ---
+// TEST_CASE("lossy: tuple small_int,int") { std::tuple<small_int, int> a; REQUIRE(parse("1,2", x4::int_ >> ',' >> x4::int_, a)); }
+// TEST_CASE("lossy: tuple int,small_int") { std::tuple<int, small_int> a; REQUIRE(parse("1,2", x4::int_ >> ',' >> x4::int_, a)); }
+
 // --- rule: rule attribute to exposed attribute (lossy) ---
 // TEST_CASE("lossy: int rule to char") { char a{}; REQUIRE(parse("42", int_rule, a)); }
 // TEST_CASE("lossy: int rule to short") { short a{}; REQUIRE(parse("42", int_rule, a)); }
 // TEST_CASE("lossy: long long rule to int") { int a{}; REQUIRE(parse("42", long_long_rule, a)); }
 // TEST_CASE("lossy: double rule to float") { float a{}; REQUIRE(parse("3.14", double_rule, a)); }
 // TEST_CASE("lossy: immediate rule lossy") { char a{}; REQUIRE(parse("42", x4::rule<struct imm_n_tag, int>{} = x4::int_, a)); }
+// TEST_CASE("lossy: int rule to small_int") { small_int a; REQUIRE(parse("42", int_rule, a)); }
