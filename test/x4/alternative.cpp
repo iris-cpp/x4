@@ -27,13 +27,15 @@
 
 #include <iris/rvariant.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/adapt.hpp>
 #include <iris/alloy/tuple.hpp>
 
-#include <string>
-#include <vector>
-#include <type_traits>
 #include <concepts>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <vector>
 
 struct di_ignore
 {
@@ -135,7 +137,7 @@ TEST_CASE("alternative")
         // test if alternatives with all components having unused
         // attributes have an unused attribute
 
-        alloy::tuple<char, char> v;
+        std::tuple<char, char> v;
         REQUIRE((parse("abc", char_ >> (omit[char_] | omit[char_]) >> char_, v)));
         CHECK((alloy::get<0>(v) == 'a'));
         CHECK((alloy::get<1>(v) == 'c'));
@@ -256,12 +258,12 @@ TEST_CASE("alternative")
 
     // single element tuple-like case
     {
-        alloy::tuple<iris::rvariant<int, std::string>> fv;
+        std::tuple<iris::rvariant<int, std::string>> fv;
         REQUIRE(parse("12345", int_ | +char_, fv));
         CHECK(iris::get<int>(alloy::get<0>(fv)) == 12345);
     }
     {
-        alloy::tuple<iris::rvariant<int, std::string>> fvi;
+        std::tuple<iris::rvariant<int, std::string>> fvi;
         REQUIRE(parse("12345", int_ | int_, fvi));
         CHECK(iris::get<int>(alloy::get<0>(fvi)) == 12345);
     }
@@ -273,7 +275,7 @@ TEST_CASE("alternative")
         constexpr auto keys = key1 | key2;
         constexpr auto pair = keys >> lit("=") >> +char_;
 
-        alloy::tuple<iris::rvariant<long, char>, std::string> attr_;
+        std::tuple<iris::rvariant<long, char>, std::string> attr_;
 
         REQUIRE(parse("long=ABC", pair, attr_));
         CHECK(iris::get_if<long>(&alloy::get<0>(attr_)) != nullptr);
@@ -357,7 +359,7 @@ TEST_CASE("alternative of same attributes (a | a)")
         >);
         STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 2);
 
-        alloy::tuple<int, bool> var;
+        std::tuple<int, bool> var;
         auto const res = parse("42true", int_bool, var);
         REQUIRE(res.completed());
         CHECK(var == decltype(var){42, true});
@@ -373,7 +375,7 @@ TEST_CASE("alternative of same attributes (a | a)")
         >);
         STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 3);
 
-        alloy::tuple<std::string, int, bool> var;
+        std::tuple<std::string, int, bool> var;
         auto const res = parse("foo42true", foo_int_bool, var);
         REQUIRE(res.completed());
         CHECK(var == decltype(var){"foo", 42, true});
@@ -406,7 +408,7 @@ TEST_CASE("alternative of same attributes (a | a)")
         >);
         STATIC_CHECK(x4::parser_traits<Parser>::sequence_size == 2);
 
-        alloy::tuple<std::string, std::vector<bool>> var;
+        std::tuple<std::string, std::vector<bool>> var;
         auto const res = parse("footruefalse", foo_bools, var);
         REQUIRE(res.completed());
         CHECK(var == decltype(var){"foo", {true, false}});

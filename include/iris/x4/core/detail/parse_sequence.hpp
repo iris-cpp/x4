@@ -16,6 +16,7 @@
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
+#include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/can_hold.hpp>
@@ -37,64 +38,12 @@ struct sequence;
 
 namespace iris::x4::detail {
 
-struct pass_sequence_attribute_unused
-{
-    using type = unused_type;
-
-    template<class T>
-    [[nodiscard]] static constexpr unused_type
-    call(T&) noexcept
-    {
-        return unused_type{};
-    }
-};
-
-template<class Attr>
-struct pass_sequence_attribute_size_one_view
-{
-    using type = alloy::tuple_element_t<0, Attr>;
-
-    [[nodiscard]] static constexpr type
-    call(Attr& attribute)
-        noexcept(noexcept(alloy::get<0>(attribute)))
-    {
-        return alloy::get<0>(attribute);
-    }
-};
-
-template<class Attr>
-struct pass_through_sequence_attribute
-{
-    using type = Attr&;
-
-    template<class Attr_>
-    [[nodiscard]] static constexpr Attr_&
-    call(Attr_& attribute) noexcept
-    {
-        return attribute;
-    }
-};
-
-template<class Parser, class Attr>
-struct pass_sequence_attribute : std::conditional_t<
-    traits::is_size_one_view_v<Attr>,
-    pass_sequence_attribute_size_one_view<Attr>,
-    pass_through_sequence_attribute<Attr>
+// Note: `ExpectedAttr` parameter exists for a better debugging experience
+template<
+    class LParser, class RParser, traits::CategorizedAttr<traits::tuple_attr> ActualAttr,
+    class ExpectedAttr = typename traits::detail::attribute_of_sequence<LParser, RParser>::type
 >
-{};
-
-template<class LParser, class RParser, class Attr>
-struct pass_sequence_attribute<sequence<LParser, RParser>, Attr>
-    : pass_through_sequence_attribute<Attr>
-{};
-
-template<class Parser, class Attr>
-    requires requires {
-        typename Parser::proxy_backend_type;
-    }
-struct pass_sequence_attribute<Parser, Attr>
-    : pass_sequence_attribute<typename Parser::proxy_backend_type, Attr>
-{};
+inline constexpr bool has_same_sequence_size_v = parser_traits<LParser>::sequence_size + parser_traits<RParser>::sequence_size == alloy::tuple_size_v<ActualAttr>;
 
 template<class LParser, class RParser, class Attr>
 struct partition_attribute {};
@@ -108,38 +57,26 @@ struct partition_attribute<LParser, RParser, Attr>
     static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
     static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
 
-    static constexpr std::size_t actual_size = alloy::tuple_size_v<Attr>;
-    static constexpr std::size_t expected_size = l_size + r_size;
-
     // If you got an error here, then you are trying to pass
     // a tuple-like with the wrong number of elements
     // as that expected by the (sequence) parser.
-    static_assert(
-        actual_size >= expected_size,
-        "Sequence size of the passed attribute is less than expected."
-    );
-    static_assert(
-        actual_size <= expected_size,
-        "Sequence size of the passed attribute is greater than expected."
-    );
+    static_assert(has_same_sequence_size_v<LParser, RParser, Attr>, "sequence size mismatch");
 
     using view = alloy::tuple_ref_t<Attr>;
-    using splitted = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = alloy::tuple_element_t<0, splitted>;
-    using r_part = alloy::tuple_element_t<1, splitted>;
-    using l_pass = pass_sequence_attribute<LParser, l_part>;
-    using r_pass = pass_sequence_attribute<RParser, r_part>;
+    using split = alloy::tuple_split_t<view, l_size, r_size>;
+    using l_part = traits::unwrap_if_single_element_tuple_like<alloy::tuple_element_t<0, split>>::type;
+    using r_part = traits::unwrap_if_single_element_tuple_like<alloy::tuple_element_t<1, split>>::type;
 
     [[nodiscard]] static constexpr l_part left(Attr& s)
         // TODO: noexcept
     {
-        return alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
+        return traits::do_unwrap_if_single_element_tuple_like(alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 
     [[nodiscard]] static constexpr r_part right(Attr& s)
         // TODO: noexcept
     {
-        return alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
+        return traits::do_unwrap_if_single_element_tuple_like(alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s))));
     }
 };
 
@@ -149,9 +86,6 @@ template<class LParser, class RParser, class Attr>
         has_attribute_v<RParser>
 struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute<RParser, Attr>;
-
     [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
     {
         return unused;
@@ -169,9 +103,6 @@ template<class LParser, class RParser, class Attr>
         (!has_attribute_v<RParser>)
 struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute<LParser, Attr>;
-    using r_pass = pass_sequence_attribute_unused;
-
     [[nodiscard]] static constexpr Attr& left(Attr& s) noexcept
     {
         return s;
@@ -189,9 +120,6 @@ template<class LParser, class RParser, class Attr>
         (!has_attribute_v<RParser>)
 struct partition_attribute<LParser, RParser, Attr>
 {
-    using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute_unused;
-
     [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
     {
         return unused;
@@ -202,39 +130,6 @@ struct partition_attribute<LParser, RParser, Attr>
         return unused;
     }
 };
-
-// Default overload, no constraints on attribute category
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
-[[nodiscard]] constexpr bool
-parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-    // TODO: noexcept
-{
-    static_assert(X4Attribute<Attr>);
-
-    using partition = partition_attribute<
-        typename Parser::left_type,
-        typename Parser::right_type,
-        Attr
-    >;
-
-    auto&& l_part = partition::left(attr);
-    auto&& r_part = partition::right(attr);
-    auto&& l_attr = partition::l_pass::call(l_part);
-    auto&& r_attr = partition::r_pass::call(r_part);
-
-    auto&& l_attr_appender = x4::make_container_appender(l_attr);
-    auto&& r_attr_appender = x4::make_container_appender(r_attr);
-
-    It local_it = first;
-    if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
-        parser.right.parse(local_it, last, ctx, r_attr_appender)
-    ) {
-        first = std::move(local_it);
-        return true;
-    }
-
-    return false;
-}
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires (parser_traits<Parser>::sequence_size > 1)
@@ -255,27 +150,77 @@ parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context con
     return detail::parse_into_container(parser, first, last, ctx, attr);
 }
 
-template<
-    class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-    traits::CategorizedAttr<traits::container_attr> ContainerAttr
->
+template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
-parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
-    noexcept(
-        std::is_nothrow_copy_assignable_v<It> &&
-        noexcept(detail::parse_sequence_impl(parser.left, first, last, ctx, container_attr)) &&
-        noexcept(detail::parse_sequence_impl(parser.right, first, last, ctx, container_attr))
-    )
+parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+    // TODO: noexcept
 {
-    It local_it = first;
-    if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, container_attr) &&
-        detail::parse_sequence_impl(parser.right, local_it, last, ctx, container_attr)
+    static_assert(X4Attribute<Attr>);
+
+    if constexpr (traits::is_container_v<Attr>) {
+        It local_it = first;
+        if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, attr) &&
+            detail::parse_sequence_impl(parser.right, local_it, last, ctx, attr)
+            ) {
+            first = std::move(local_it);
+            return true;
+        }
+        return false;
+    } else if constexpr (
+        traits::is_single_element_tuple_like<Attr>::value &&
+        has_attribute_v<typename Parser::left_type> &&
+        has_attribute_v<typename Parser::right_type>
     ) {
-        first = std::move(local_it);
-        return true;
+        // Both sub-parsers have attributes (expected_size >= 2), but Attr is a
+        // single-element tuple-like (size 1). Unwrap to get<0>(attr) and recurse,
+        // so the inner type (e.g. a container or compatible tuple) receives the
+        // sequence elements directly.
+        return detail::parse_sequence(parser, first, last, ctx, alloy::get<0>(attr));
+    } else {
+        using partition = partition_attribute<
+            typename Parser::left_type,
+            typename Parser::right_type,
+            Attr
+        >;
+
+        auto&& l_attr = partition::left(attr);
+        auto&& r_attr = partition::right(attr);
+
+        auto&& l_attr_appender = x4::make_container_appender(l_attr);
+        auto&& r_attr_appender = x4::make_container_appender(r_attr);
+
+        It local_it = first;
+        if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
+            parser.right.parse(local_it, last, ctx, r_attr_appender)
+            ) {
+            first = std::move(local_it);
+            return true;
+        }
+
+        return false;
     }
-    return false;
 }
+
+// Whether the appender path is needed for parsing a sequence into a container.
+// The primary template returns false for non-container Attr (always use the
+// default path). The container specialization checks whether the container's
+// value_type is broad enough to represent every possible result the sequence
+// parser produces. When it is NOT, each sub-parser must decide individually
+// whether to append (e.g. an optional sub-parser skips appending on no-match).
+//
+// e.g. sequence_attr = char,            container_value = char            → false (same type, direct path OK)
+// e.g. sequence_attr = optional<char>,  container_value = char            → true  (optional may be empty; needs appender)
+// e.g. sequence_attr = optional<char>,  container_value = optional<char>  → false (same type, direct path OK)
+template<class Sequence, class Attr>
+struct sequence_needs_appender : std::false_type {};
+
+template<class Sequence, traits::X4Container Container>
+struct sequence_needs_appender<Sequence, Container>
+    : std::negation<traits::can_hold<
+        typename traits::container_value<Container>::type,
+        typename Sequence::attribute_type
+    >>
+{};
 
 template<class Left, class Right>
 struct parse_into_container_impl<sequence<Left, Right>>
@@ -287,18 +232,9 @@ struct parse_into_container_impl<sequence<Left, Right>>
         Context const& ctx, Attr& attr
     ) // never noexcept (requires container insertion)
     {
-        if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = traits::can_hold<
-                typename sequence<Left, Right>::attribute_type,
-                typename traits::container_value<Attr>::type
-            >::value;
-            if constexpr (sequence_attribute_can_directly_hold_value_type) {
-                return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);
-
-            } else {
-                auto&& appender = x4::make_container_appender(x4::assume_container(attr));
-                return detail::parse_sequence(parser, first, last, ctx, appender);
-            }
+        if constexpr (sequence_needs_appender<sequence<Left, Right>, Attr>::value) {
+            auto&& appender = x4::make_container_appender(x4::assume_container(attr));
+            return detail::parse_sequence(parser, first, last, ctx, appender);
         } else {
             return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);
         }

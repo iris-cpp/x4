@@ -60,8 +60,10 @@ struct ts_real_policies : x4::ureal_policies<T>
         constexpr uint_parser<unsigned, 10, 1, 3> uint3;
         constexpr uint_parser<unsigned, 10, 3, 3> uint3_3;
 
-        if (auto res = parse(first, last, uint3, result); res.ok) {
-            Accumulator n;
+        unsigned u;
+        if (auto res = parse(first, last, uint3, u); res.ok) {
+            result = u;
+            unsigned n;
             It iter = res.remainder.begin();
             first = iter;
 

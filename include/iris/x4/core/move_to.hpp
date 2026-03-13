@@ -15,6 +15,7 @@
 #include <iris/type_traits.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
+#include <iris/x4/traits/lossy_conversion.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
@@ -116,38 +117,47 @@ constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // t
 // Category specific --------------------------------------
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attr> Dest>
-    requires traits::is_size_one_sequence_v<Source>
+    requires traits::is_single_element_tuple_like<std::remove_cvref_t<Source>>::value
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)))))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
-    // TODO: preliminarily invoke static_assert to check if the assignment is valid
+    static_assert(
+        detail::is_assignable_without_lossy_conversion<Dest&, decltype(std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src))))>::value,
+        "Lossy conversion detected in move_to (single-element tuple-like to plain)"
+    );
     dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)));
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::plain_attr> Dest>
-    requires (!traits::is_size_one_sequence_v<Source>)
+    requires (!traits::is_single_element_tuple_like<std::remove_cvref_t<Source>>::value)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
-    static_assert(std::is_assignable_v<Dest&, Source>);
+    static_assert(
+        detail::is_assignable_without_lossy_conversion<Dest&, Source>::value,
+        "Lossy conversion detected in move_to (source to plain)"
+    );
     dest = std::forward<Source>(src);
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attr> Dest>
     requires
-        traits::is_same_size_sequence_v<Dest, Source> &&
-        (!traits::is_size_one_sequence_v<Dest>)
+        traits::is_same_size_tuple_like<Dest, std::remove_cvref_t<Source>>::value &&
+        (!traits::is_single_element_tuple_like<Dest>::value)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(alloy::tuple_assign(std::forward<Source>(src), dest)))
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    // TODO: preliminarily invoke static_assert to check if the assignment is valid
+    static_assert(
+        detail::is_tuple_assignable_without_lossy_conversion<Dest, std::remove_cvref_t<Source>>::value,
+        "Lossy conversion detected in move_to (tuple element-wise assignment)"
+    );
 
     alloy::tuple_assign(std::forward<Source>(src), dest);
 }
@@ -166,7 +176,7 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::variant_attr> Dest>
-    requires (!std::is_assignable_v<Dest&, Source&&>) && traits::is_size_one_sequence_v<Source>
+    requires (!std::is_assignable_v<Dest&, Source&&>) && traits::is_single_element_tuple_like<std::remove_cvref_t<Source>>::value
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)))))
@@ -191,6 +201,10 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(std::is_assignable_v<Dest&, Source>);
+    static_assert(
+        detail::is_assignable_without_lossy_conversion<typename Dest::value_type&, Source>::value,
+        "Lossy conversion detected in move_to (source to optional)"
+    );
     dest = std::forward<Source>(src);
 }
 
@@ -207,6 +221,14 @@ move_to(It first, Se last, Dest& dest)
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
 
+    static_assert(
+        detail::is_assignable_without_lossy_conversion<
+            typename traits::container_value<Dest>::type&,
+            std::iter_reference_t<It>
+        >::value,
+        "Lossy conversion detected in move_to (container element-wise)"
+    );
+
     if constexpr (!is_ttp_specialization_of_v<Dest, container_appender>) {
         if (!traits::is_empty(dest)) {
             traits::clear(dest);
@@ -218,15 +240,6 @@ move_to(It first, Se last, Dest& dest)
     // handled *before* invoking `move_to`.
 
     traits::append(dest, first, last); // try to reuse underlying memory buffer
-}
-
-template<std::forward_iterator It, std::sentinel_for<It> Se, traits::CategorizedAttr<traits::tuple_attr> Dest>
-    requires traits::is_size_one_sequence_v<Dest>
-constexpr void
-move_to(It first, Se last, Dest& dest)
-    noexcept(noexcept(x4::move_to(first, last, alloy::get<0>(dest))))
-{
-    x4::move_to(first, last, alloy::get<0>(dest));
 }
 
 // Move non-container `src` into container `dest`.
@@ -266,12 +279,44 @@ move_to(Source&& src, Dest& dest)
     }
 }
 
+namespace detail {
+
+template<class Source, class Dest>
+struct is_single_element_move_to_nothrow
+    : std::false_type
+{};
+
+template<class Source, class Dest>
+    requires
+        (!traits::is_single_element_tuple_like<Dest>::value) &&
+        requires { x4::move_to(std::declval<Source>(), std::declval<Dest&>()); }
+struct is_single_element_move_to_nothrow<Source, Dest>
+    : std::bool_constant<
+        noexcept(x4::move_to(std::declval<Source>(), std::declval<Dest&>()))
+    >
+{};
+
+template<class Source, class Dest>
+    requires traits::is_single_element_tuple_like<Dest>::value
+struct is_single_element_move_to_nothrow<Source, Dest>
+    : std::bool_constant<
+        noexcept(alloy::get<0>(std::declval<Dest&>())) &&
+        is_single_element_move_to_nothrow<
+            Source,
+            alloy::tuple_element_t<0, Dest>
+        >::value
+    >
+{};
+
+} // detail
+
+
 // Size-one tuple-like forwarding
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::tuple_attr> Dest>
-    requires traits::is_size_one_sequence_v<Dest>
+    requires traits::is_single_element_tuple_like<Dest>::value
 constexpr void
 move_to(Source&& src, Dest& dest)
-    noexcept(noexcept(x4::move_to(std::forward<Source>(src), alloy::get<0>(dest))))
+    noexcept(detail::is_single_element_move_to_nothrow<Source, Dest>::value)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 

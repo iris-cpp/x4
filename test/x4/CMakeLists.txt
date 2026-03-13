@@ -67,6 +67,7 @@ x4_define_tests(
     lit
     matches
     move_to
+    lossy_conversion
     not_predicate
     no_case
     no_skip
@@ -86,6 +87,7 @@ x4_define_tests(
     rule4
     seek
     sequence
+    single_element_tuple_like
     skip
     substitution
     symbols1

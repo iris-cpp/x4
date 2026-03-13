@@ -18,11 +18,13 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/adapt.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <concepts>
 #include <optional>
+#include <tuple>
 #include <type_traits>
 
 #ifdef _MSC_VER
@@ -105,7 +107,7 @@ TEST_CASE("optional")
             static_assert(!x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::has_attribute);
             static_assert(std::same_as<x4::parser_traits<std::remove_const_t<decltype(opt_omit_int_p)>>::attribute_type, unused_type>);
 
-            alloy::tuple<char, char> v;
+            std::tuple<char, char> v;
             REQUIRE(parse("a1234c", char_ >> -omit[int_] >> char_, v));
             CHECK(alloy::get<0>(v) == 'a');
             CHECK(alloy::get<1>(v) == 'c');
@@ -132,7 +134,7 @@ TEST_CASE("optional")
             }
         }
         {
-            alloy::tuple<char, char> v;
+            std::tuple<char, char> v;
             REQUIRE(parse("a1234c", char_ >> omit[-int_] >> char_, v));
             CHECK(alloy::get<0>(v) == 'a');
             CHECK(alloy::get<1>(v) == 'c');

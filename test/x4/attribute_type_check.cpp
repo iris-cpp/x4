@@ -13,12 +13,14 @@
 #include <iris/x4/auxiliary/eps.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <concepts>
 #include <iterator>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <type_traits>
 
 namespace {
@@ -97,7 +99,7 @@ void gen_tests(Values const&... values)
 {
     gen_single_item_tests<Expected...>(values...);
 
-    alloy::tuple<Expected...> attribute(values...);
+    std::tuple<Expected...> attribute(values...);
     gen_sequence_tests<Expected...>(attribute, values...);
 }
 
@@ -109,13 +111,13 @@ void make_test(Attributes const&... attrs)
     gen_tests<Attributes...>(attrs...);
     gen_tests<
         std::optional<Attributes>...,
-        alloy::tuple<Attributes>...
+        std::tuple<Attributes>...
     >(attrs..., attrs...);
 
     gen_tests<
-        std::optional<alloy::tuple<Attributes>>...,
-        alloy::tuple<std::optional<Attributes>>...
-    >(alloy::tuple<Attributes>(attrs)..., attrs...);
+        std::optional<std::tuple<Attributes>>...,
+        std::tuple<std::optional<Attributes>>...
+    >(std::tuple<Attributes>(attrs)..., attrs...);
 }
 
 } // anonymous

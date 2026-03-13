@@ -7,6 +7,10 @@
 
 #include <iris/rvariant.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
+
+#include <tuple>
+
 template<class T, class U>
 inline constexpr bool can_hold_v = x4::traits::can_hold<T, U>::value;
 
@@ -15,7 +19,7 @@ TEST_CASE("can_hold")
     // identical types
     STATIC_CHECK(can_hold_v<int, int>);
     STATIC_CHECK(can_hold_v<std::vector<int>, std::vector<int>>);
-    STATIC_CHECK(can_hold_v<alloy::tuple<int>, alloy::tuple<int>>);
+    STATIC_CHECK(can_hold_v<std::tuple<int>, std::tuple<int>>);
     STATIC_CHECK(can_hold_v<iris::rvariant<int>, iris::rvariant<int>>);
 
     // `iris::rvariant<int, double>` is "broader" than `int`
@@ -26,5 +30,5 @@ TEST_CASE("can_hold")
     STATIC_CHECK(can_hold_v<std::vector<iris::rvariant<int, double>>, std::vector<int>>);
 
     // tuple-like types
-    STATIC_CHECK(can_hold_v<alloy::tuple<iris::rvariant<int, double>>, alloy::tuple<int>>);
+    STATIC_CHECK(can_hold_v<std::tuple<iris::rvariant<int, double>>, std::tuple<int>>);
 }
