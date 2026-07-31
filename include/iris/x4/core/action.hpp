@@ -17,7 +17,6 @@
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
-#include <ranges> // subrange
 #include <iterator>
 #include <concepts>
 #include <type_traits>
@@ -71,6 +70,7 @@ struct action : proxy_parser<Subject, action<Subject, ActionF>>
 
     static constexpr bool has_action = true;
     static constexpr bool need_rcontext = true;
+    static constexpr bool requires_exact_attribute_type = false; // reset
 
     ActionF f;
 
@@ -83,27 +83,63 @@ struct action : proxy_parser<Subject, action<Subject, ActionF>>
     {
     }
 
-    // attr==unused, action wants attribute
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    // When the exposed attribute is `unused_type`.
+    // Since we can assume that the subject unconditionally requires `_attr`,
+    // we must create a temporary variable to pass it to the subject.
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, unused_type) const
+    parse(It& first, Se const& last, Context const& ctx, UnusedAttr&) const
         noexcept(
             std::is_nothrow_default_constructible_v<typename base_type::attribute_type> &&
             noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
         )
     {
-        // Synthesize the attribute since one is not supplied
-        typename base_type::attribute_type attribute; // default-initialize
-        return this->parse_main(first, last, ctx, attribute);
+        typename base_type::attribute_type attr_temp; // default-initialize
+        return this->parse_main(first, last, ctx, attr_temp);
     }
 
-    // Catch-all overload for non-unused_type attribute
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+private:
+    // We need to handle the general case when `Attr` and the subject's attribute
+    // type are different.
+    //
+    // We can't unconditionally create `attr_temp` of the exact matching type
+    // because there exists some cases where the temporary variable is truly
+    // unnecessary.
+    //
+    // For instance, when the exposed attribute is `std::vector<int>` and the
+    // underlying parser is `int_ >> int_` (attr is `alloy::tuple<int, int>`),
+    // we must just pass the exposed vector variable directly.
+    //
+    // Conversely, the only reliable method to determine whether the underlying
+    // parser really needs the exact matching type is by checking the dedicated
+    // trait flag like below.
+    template<X4NonUnusedAttribute Attr>
+    static constexpr bool can_pass_exposed_attr =
+        std::same_as<Attr, typename base_type::attribute_type> || !Subject::requires_exact_attribute_type;
+
+public:
+    // When the exposed attribute is NOT `unused_type`.
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
+        requires can_pass_exposed_attr<Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(noexcept(this->parse_main(first, last, ctx, attr)))
     {
         return this->parse_main(first, last, ctx, attr);
+    }
+
+    // When the exposed attribute is NOT `unused_type`.
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
+        requires (!can_pass_exposed_attr<Attr>)
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& /* attr is discarded */) const
+        noexcept(
+            std::is_nothrow_default_constructible_v<typename base_type::attribute_type> &&
+            noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
+        )
+    {
+        typename base_type::attribute_type attr_temp; // default-initialize
+        return this->parse_main(first, last, ctx, attr_temp);
     }
 
     constexpr void operator[](auto const&) const = delete; // You can't add semantic action for semantic action

@@ -48,6 +48,7 @@ struct parser : private detail::parser_base
 
     static constexpr bool has_action = false;
     static constexpr bool need_rcontext = false;
+    static constexpr bool requires_exact_attribute_type = false;
 
     [[nodiscard]] constexpr Derived& derived() & noexcept
     {
