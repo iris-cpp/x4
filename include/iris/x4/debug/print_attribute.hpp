@@ -25,6 +25,7 @@
 
 #include <print>
 #include <iterator>
+#include <concepts>
 
 #include <cstdint>
 
@@ -144,7 +145,7 @@ inline void print_chars(std::ostream& os, char32_t const ch)
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se>
-void print_chars(std::ostream& os, It const it, Se const se, std::size_t const max_code_points)
+void print_chars(std::ostream& os, It it, Se const se, std::size_t const max_code_points)
 {
     iris::unicode::code_point_iterator<It> code_point_it{it, it, se};
     iris::unicode::code_point_iterator<It> const code_point_se{se, it, se};
@@ -241,7 +242,7 @@ struct print_attribute_debug
     static void call(std::ostream& out, T_ const& val)
     {
         if constexpr (iris::StringLike<T_>) {
-            out << std::basic_string_view{val};
+            out << iris::unicode::transcode_ref<char>(std::basic_string_view{val});
 
         } else {
             out << '[';

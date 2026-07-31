@@ -14,9 +14,9 @@
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/string_traits.hpp>
 
 #include <string>
 #include <string_view>
@@ -104,7 +104,7 @@ struct attr_parser<T, void> : parser<attr_parser<T, void>>
 
 namespace detail {
 
-template<traits::CharArray R>
+template<CharArray R>
 using string_array_attr_parser_t = attr_parser<
     std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>,
     std::basic_string_view<std::remove_extent_t<std::remove_cvref_t<R>>>
@@ -112,7 +112,7 @@ using string_array_attr_parser_t = attr_parser<
 
 } // detail
 
-template<traits::CharArray R>
+template<CharArray R>
 attr_parser(R const&) -> attr_parser<
     std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>,
     std::basic_string_view<std::remove_extent_t<std::remove_cvref_t<R>>>
@@ -141,7 +141,7 @@ struct attr_gen
         return attr_parser<std::remove_cvref_t<T>>{std::forward<T>(value)};
     }
 
-    template<traits::CharArray R>
+    template<CharArray R>
     [[nodiscard]] static constexpr string_array_attr_parser_t<R>
     operator()(R&& value)
         noexcept(std::is_nothrow_constructible_v<string_array_attr_parser_t<R>, R>)

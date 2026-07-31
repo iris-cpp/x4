@@ -12,7 +12,8 @@
 =============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/type_traits.hpp>
+
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
@@ -74,7 +75,7 @@ constexpr void move_to(T&, T&) noexcept
     );
 
     static_assert(
-        false,
+        !std::is_lvalue_reference_v<T&>,
         "lvalue reference detected on the `src` argument of `x4::move_to`. "
         "The caller is definitely lacking `std::move` or `std::forward`. If you "
         "intend to *copy* the mutable value, apply `x4::move_to(std::as_const(attr_), attr)`."
@@ -134,6 +135,8 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
     static_assert(std::is_assignable_v<Dest&, Source>);
+    static_assert((!CharLike<Dest> && !CharLike<std::remove_cvref_t<Source>>) || !CharIncompatibleWith<Dest, std::remove_cvref_t<Source>>, "Mixing incompatible char types is not allowed");
+
     dest = std::forward<Source>(src);
 }
 
@@ -206,6 +209,13 @@ move_to(It first, Se last, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
+    static_assert(
+        // If either `It` or `Dest` is relevant to any character type,
+        (!CharLike<std::remove_cvref_t<std::iter_value_t<It>>> && !CharLike<std::remove_cvref_t<typename traits::container_value<Dest>::type>>) ||
+        // ... then do the check below:
+        !CharIncompatibleWith<std::remove_cvref_t<std::iter_value_t<It>>, std::remove_cvref_t<typename traits::container_value<Dest>::type>>,
+        "Mixing incompatible char types is not allowed"
+    );
 
     if constexpr (!is_ttp_specialization_of_v<Dest, container_appender>) {
         if (!traits::is_empty(dest)) {

@@ -17,8 +17,6 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/move_to.hpp>
 
-#include <iris/x4/traits/string_traits.hpp>
-
 #include <iris/x4/string/tst.hpp>
 #include <iris/x4/string/case_compare.hpp>
 
@@ -312,14 +310,14 @@ private:
     [[nodiscard]] constexpr value_type* find_impl(Iterator begin, Iterator end) noexcept
     {
         value_type* r = lookup->find(begin, end, case_compare<Encoding>());
-        return begin == end ? r : 0;
+        return begin == end ? r : nullptr;
     }
 
     template<std::forward_iterator Iterator>
     [[nodiscard]] constexpr value_type const* find_impl(Iterator begin, Iterator end) const noexcept
     {
         value_type const* r = lookup->find(begin, end, case_compare<Encoding>());
-        return begin == end ? r : 0;
+        return begin == end ? r : nullptr;
     }
 
     std::conditional_t<IsShared, std::shared_ptr<Lookup>, std::unique_ptr<Lookup>> lookup;

@@ -23,6 +23,20 @@ namespace iris::x4::traits {
 
 namespace detail {
 
+template<CharLike CharT> struct char_encoding_for_impl;
+template<> struct char_encoding_for_impl<char> { using type = char_encoding::standard; };
+
+#ifndef IRIS_X4_NO_STANDARD_WIDE
+template<> struct char_encoding_for_impl<wchar_t> { using type = char_encoding::standard_wide; };
+#endif
+
+#ifdef IRIS_X4_UNICODE
+template<> struct char_encoding_for_impl<char8_t> { using type = char_encoding::unicode; };
+template<> struct char_encoding_for_impl<char16_t> { using type = char_encoding::unicode; };
+template<> struct char_encoding_for_impl<char32_t> { using type = char_encoding::unicode; };
+#endif
+
+
 template<class Encoding>
 struct char_encoding_traits_impl
 {
@@ -44,6 +58,11 @@ struct char_encoding_traits_impl
 };
 
 } // detail
+
+
+template<CharLike CharT>
+using char_encoding_for = typename detail::char_encoding_for_impl<CharT>::type;
+
 
 template<CharLike CharT>
 struct char_encoding_traits;
