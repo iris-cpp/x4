@@ -10,9 +10,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/core/char_traits.hpp>
 #include <iris/x4/char/any_char.hpp>
 #include <iris/x4/char/literal_char.hpp>
-#include <iris/x4/traits/string_traits.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
 
@@ -39,7 +39,7 @@ lit(char ch) noexcept
 }
 
 [[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
-lit(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
+lit(X4VagueArrayOf2Chars<char> auto const& ch) noexcept
 {
     return {ch[0]};
 }
@@ -51,8 +51,8 @@ lit(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
 // If you still see errors after the inclusion, that might be due to
 // mixing incompatible string literals. Don't do that.
 
-constexpr void lit(traits::CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
-constexpr void lit(traits::CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
 
 } // standard
 
@@ -76,15 +76,15 @@ lit(wchar_t ch) noexcept
 }
 
 [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
-lit(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
+lit(X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
 {
     return {ch[0]};
 }
 
 } // helpers
 
-constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto const*) = delete; // Mixing incompatible character types is not allowed
-constexpr void lit(traits::CharIncompatibleWith<wchar_t> auto) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(CharIncompatibleWith<wchar_t> auto const*) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(CharIncompatibleWith<wchar_t> auto) = delete; // Mixing incompatible character types is not allowed
 
 } // standard_wide
 
@@ -108,15 +108,15 @@ lit(char32_t ch) noexcept
 }
 
 [[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
-lit(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
+lit(X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
 {
     return {ch[0]};
 }
 
 } // helpers
 
-constexpr void lit(traits::CharIncompatibleWith<char32_t> auto const*) = delete; // Mixing incompatible character types is not allowed
-constexpr void lit(traits::CharIncompatibleWith<char32_t> auto) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(CharIncompatibleWith<char32_t> auto const*) = delete; // Mixing incompatible character types is not allowed
+constexpr void lit(CharIncompatibleWith<char32_t> auto) = delete; // Mixing incompatible character types is not allowed
 
 } // unicode
 
@@ -143,7 +143,7 @@ using x4::standard_wide::lit;
 namespace unicode {
 using x4::unicode::char_;
 using x4::unicode::lit;
-} // standard_wide
+} // unicode
 #endif
 
 using x4::char_; // TODO: make `any_parser` encoding-agnostic
@@ -178,10 +178,24 @@ struct as_parser<wchar_t>
         return {ch};
     }
 };
-#endif
+#endif // IRIS_X4_NO_STANDARD_WIDE
+
+#ifdef IRIS_X4_UNICODE
+template<>
+struct as_parser<char32_t>
+{
+    using type = literal_char<char_encoding::unicode, unused_type>;
+    using value_type = type;
+
+    [[nodiscard]] static constexpr type call(char32_t ch) noexcept
+    {
+        return {ch};
+    }
+};
+#endif // IRIS_X4_UNICODE
 
 template<>
-struct as_parser<char [2]>
+struct as_parser<char[2]>
 {
     using type = literal_char<char_encoding::standard, unused_type>;
     using value_type = type;
@@ -194,7 +208,7 @@ struct as_parser<char [2]>
 
 #ifndef IRIS_X4_NO_STANDARD_WIDE
 template<>
-struct as_parser<wchar_t [2]>
+struct as_parser<wchar_t[2]>
 {
     using type = literal_char<char_encoding::standard_wide, unused_type>;
     using value_type = type;
@@ -205,6 +219,20 @@ struct as_parser<wchar_t [2]>
     }
 };
 #endif // IRIS_X4_NO_STANDARD_WIDE
+
+#ifdef IRIS_X4_UNICODE
+template<>
+struct as_parser<char32_t[2]>
+{
+    using type = literal_char<char_encoding::unicode, unused_type>;
+    using value_type = type;
+
+    [[nodiscard]] static constexpr type call(char32_t const ch[]) noexcept
+    {
+        return {ch[0]};
+    }
+};
+#endif // IRIS_X4_UNICODE
 
 } // extension
 

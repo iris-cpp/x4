@@ -127,7 +127,7 @@ struct parser_traits
     // to bypass the type deduction for better compile times. If such member is
     // defined as a contradicting value, the program is ill-formed, no diagnostic
     // required.
-    static constexpr bool has_attribute = x4::has_attribute<Parser>::value;
+    static constexpr bool has_attribute = has_attribute<Parser>::value;
 
     static constexpr std::size_t sequence_size = detail::get_sequence_size<Parser>::value;
 

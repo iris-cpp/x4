@@ -13,8 +13,7 @@
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/move_to.hpp>
-
-#include <iris/x4/traits/string_traits.hpp>
+#include <iris/x4/core/char_traits.hpp>
 
 #include <concepts>
 #include <iterator>
@@ -47,8 +46,8 @@ public:
             noexcept(++first)
         )
     {
-        static_assert(std::same_as<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
-        static_assert(!traits::CharLike<Attr> || std::same_as<Attr, char_type>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
 
         x4::skip_over(first, last, ctx);
 
@@ -72,8 +71,8 @@ public:
             noexcept(++first)
         )
     {
-        static_assert(std::same_as<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
-        static_assert(!traits::CharLike<Attr> || std::same_as<Attr, char_type>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
 
         x4::skip_over(first, last, ctx);
 
