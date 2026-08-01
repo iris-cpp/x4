@@ -16,6 +16,7 @@
 #include <iris/x4/core/skip_over.hpp>
 
 #include <iris/x4/string/detail/string_parse.hpp>
+#include <iris/x4/traits/numeric_traits.hpp>
 
 #include <iris/x4/traits/char_encoding_traits.hpp>
 
@@ -27,23 +28,6 @@
 
 namespace iris::x4 {
 
-template<class CharT>
-struct bool_token;
-
-template<>
-struct bool_token<char>
-{
-    static constexpr auto true_ = "true";
-    static constexpr auto false_ = "false";
-};
-
-template<>
-struct bool_token<char32_t>
-{
-    static constexpr auto true_ = U"true";
-    static constexpr auto false_ = U"false";
-};
-
 //  Default boolean policies
 template<class T = bool>
 struct bool_policies
@@ -53,8 +37,8 @@ struct bool_policies
     parse_true(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
         noexcept(noexcept(x4::move_to(T(true), attr_)))
     {
-        using CharT = std::remove_const_t<std::iter_value_t<It>>;
-        if (detail::string_parse(std::basic_string_view{bool_token<CharT>::true_}, first, last, unused_container, compare)) {
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        if (detail::string_parse(std::basic_string_view{token_def::true_}, first, last, unused_container, compare)) {
             x4::move_to(T(true), attr_);
             return true;
         }
@@ -66,8 +50,8 @@ struct bool_policies
     parse_false(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
         noexcept(noexcept(x4::move_to(T(false), attr_)))
     {
-        using CharT = std::remove_const_t<std::iter_value_t<It>>;
-        if (detail::string_parse(std::basic_string_view{bool_token<CharT>::false_}, first, last, unused_container, compare)) {
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        if (detail::string_parse(std::basic_string_view{token_def::false_}, first, last, unused_container, compare)) {
             x4::move_to(T(false), attr_);
             return true;
         }

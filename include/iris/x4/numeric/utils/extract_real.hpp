@@ -140,7 +140,7 @@ struct extract_real
 
         // Start by parsing the sign. neg will be true if
         // we got a "-" sign, false otherwise.
-        bool neg = Policy::parse_sign(first, last);
+        bool const neg = Policy::parse_sign(first, last);
 
         // Now attempt to parse an integer
         T n = 0;

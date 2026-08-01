@@ -16,11 +16,11 @@
 
 #include <iris/x4/numeric/utils/extract_int.hpp>
 #include <iris/x4/numeric/utils/extract_real.hpp>
+#include <iris/x4/traits/numeric_traits.hpp>
 
 #include <iris/x4/string/detail/string_parse.hpp>
 
 #include <concepts>
-#include <string_view>
 #include <iterator>
 #include <limits>
 #include <type_traits>
@@ -58,7 +58,8 @@ struct ureal_policies
     parse_dot(It& first, Se const& last)
         noexcept(noexcept(*first) && noexcept(++first))
     {
-        if (first == last || *first != '.') {
+        using CharT = std::iter_value_t<It>;
+        if (first == last || *first != traits::numeric_token<CharT>::dot) {
             return false;
         }
         ++first;
@@ -78,7 +79,8 @@ struct ureal_policies
     parse_exp(It& first, Se const& last)
         noexcept(noexcept(*first) && noexcept(++first))
     {
-        if (first == last || (*first != 'e' && *first != 'E')) {
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        if (first == last || (*first != token_def::e && *first != token_def::E)) {
             return false;
         }
         ++first;
@@ -109,21 +111,23 @@ struct ureal_policies
     [[nodiscard]] static constexpr bool
     parse_nan(It& first, Se const& last, Attr& attr_)
     {
-        using namespace std::string_view_literals;
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
 
-        if (first == last) return false;   // end of input reached
-        if (*first != 'n' && *first != 'N') return false;   // not "nan"
+        if (first == last) return false; // end of input reached
+        if (*first != token_def::n && *first != token_def::N) {
+            return false; // not "nan"
+        }
 
         // nan[(...)] ?
-        if (detail::string_parse("nan"sv, "NAN"sv, first, last, unused_container)) {
-            if (first != last && *first == '(') {
+        if (detail::string_parse(token_def::nan, token_def::NAN_, first, last, unused_container)) {
+            if (first != last && *first == token_def::lparen) {
                 // skip trailing (...) part
                 It i = first;
 
-                while (++i != last && *i != ')')
+                while (++i != last && *i != token_def::rparen)
                     /* loop */;
 
-                if (i == last) return false;     // no trailing ')' found, give up
+                if (i == last) return false; // no trailing ')' found, give up
 
                 first = ++i;
             }
@@ -137,15 +141,15 @@ struct ureal_policies
     [[nodiscard]] static constexpr bool
     parse_inf(It& first, Se const& last, Attr& attr_)
     {
-        using namespace std::string_view_literals;
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
 
         if (first == last) return false;   // end of input reached
-        if (*first != 'i' && *first != 'I') return false;   // not "inf"
+        if (*first != token_def::i && *first != token_def::I) return false; // not "inf"
 
         // inf or infinity ?
-        if (detail::string_parse("inf"sv, "INF"sv, first, last, unused_container)) {
+        if (detail::string_parse(token_def::inf, token_def::INF, first, last, unused_container)) {
             // skip allowed 'inity' part of infinity
-            (void)detail::string_parse("inity"sv, "INITY"sv, first, last, unused_container);
+            (void)detail::string_parse(token_def::inity, token_def::INITY, first, last, unused_container);
             attr_ = std::numeric_limits<T>::infinity();
             return true;
         }
