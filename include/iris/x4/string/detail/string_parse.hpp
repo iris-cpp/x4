@@ -34,6 +34,7 @@ string_parse(
     static_assert(std::same_as<traits::attribute_category_t<synthesized_value_type>, traits::container_attr>);
     using value_type = traits::container_value<synthesized_value_type>::type;
     static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
+    static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
     It it = first;
     auto stri = str.begin();
@@ -81,6 +82,7 @@ string_parse(
     static_assert(std::same_as<traits::attribute_category_t<synthesized_value_type>, traits::container_attr>);
     using value_type = traits::container_value<synthesized_value_type>::type;
     static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
+    static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
     auto uc_it = ucstr.begin();
     auto uc_last = ucstr.end();
