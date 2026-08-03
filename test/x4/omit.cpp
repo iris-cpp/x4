@@ -111,7 +111,7 @@ TEST_CASE("omit")
         char c = 0;
         auto f = [&](auto&& ctx){ c = _attr(ctx); };
 
-        REQUIRE(parse("x123\"a string\"", (char_ >> omit[int_] >> "\"a string\"")[f]));
+        REQUIRE(parse("x123\"a string\"", (char_ >> omit[int_] >> "\"a string\"").on_match(f)));
         CHECK(c == 'x');
     }
 
@@ -120,7 +120,7 @@ TEST_CASE("omit")
         int n = 0;
         auto f = [&](auto&& ctx){ n = _attr(ctx); };
 
-        REQUIRE(parse("x 123 \"a string\"", (omit[char_] >> int_ >> "\"a string\"")[f], space));
+        REQUIRE(parse("x 123 \"a string\"", (omit[char_] >> int_ >> "\"a string\"").on_match(f), space));
         CHECK(n == 123);
     }
 

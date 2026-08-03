@@ -477,7 +477,7 @@ TEST_CASE("sequence")
             n = alloy::get<1>(_attr(ctx));
         };
 
-        REQUIRE(parse("x123\"a string\"", (char_ >> int_ >> "\"a string\"")[f]));
+        REQUIRE(parse("x123\"a string\"", (char_ >> int_ >> "\"a string\"").on_match(f)));
         CHECK(c == 'x');
         CHECK(n == 123);
     }
@@ -491,7 +491,7 @@ TEST_CASE("sequence")
             n = alloy::get<1>(_attr(ctx));
         };
 
-        REQUIRE(parse("x 123 \"a string\"", (char_ >> int_ >> "\"a string\"")[f], space));
+        REQUIRE(parse("x 123 \"a string\"", (char_ >> int_ >> "\"a string\"").on_match(f), space));
         CHECK(c == 'x');
         CHECK(n == 123);
     }

@@ -148,7 +148,7 @@ TEST_CASE("optional")
     {
         // test action
         std::optional<int> n = 0;
-        REQUIRE(parse("1234", (-int_)[test_attribute_type()], n));
+        REQUIRE(parse("1234", (-int_).on_match(test_attribute_type()), n));
         CHECK(*n == 1234);
     }
 
@@ -161,13 +161,13 @@ TEST_CASE("optional")
     {
         std::optional<int> n;
         auto f = [&](auto&& ctx) { n = _attr(ctx); };
-        CHECK(parse("abcd", (-int_)[f]).is_partial_match());
+        CHECK(parse("abcd", (-int_).on_match(f)).is_partial_match());
         CHECK(!n.has_value());
     }
     {
         std::optional<int> n = 0;
         auto f = [&](auto&& ctx){ n = _attr(ctx); };
-        REQUIRE(parse("1234", (-int_)[f]));
+        REQUIRE(parse("1234", (-int_).on_match(f)));
         CHECK(*n == 1234);
     }
 

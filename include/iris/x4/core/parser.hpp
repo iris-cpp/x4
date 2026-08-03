@@ -76,8 +76,9 @@ struct parser : private detail::parser_base
             decltype(std::declval<Self>().derived()),
             Action
         >
-    [[nodiscard]] constexpr action<Derived, std::remove_cvref_t<Action>>
-    operator[](this Self&& self, Action&& f)
+    [[nodiscard]]
+    constexpr action<Derived, std::remove_cvref_t<Action>>
+    on_match(this Self&& self, Action&& f)
         noexcept(std::is_nothrow_constructible_v<
             action<Derived, std::remove_cvref_t<Action>>,
             decltype(std::forward<Self>(self).derived()),
@@ -85,6 +86,24 @@ struct parser : private detail::parser_base
         >)
     {
         return {std::forward<Self>(self).derived(), std::forward<Action>(f)};
+    }
+
+    template<class Self, class Action>
+        requires std::is_constructible_v<
+            action<Derived, std::remove_cvref_t<Action>>,
+            decltype(std::declval<Self>().derived()),
+            Action
+        >
+    [[nodiscard, deprecated("Use `p.on_match(...)` instead. The legacy `operator[]` syntax will be removed because it frequently conflicts with lambda syntax.")]]
+    constexpr action<Derived, std::remove_cvref_t<Action>>
+    operator[](this Self&& self, Action&& f)
+        noexcept(std::is_nothrow_constructible_v<
+            action<Derived, std::remove_cvref_t<Action>>,
+            decltype(std::forward<Self>(self).derived()),
+            Action
+        >)
+    {
+        return std::forward<Self>(self).on_match(std::forward<Action>(f));
     }
 };
 

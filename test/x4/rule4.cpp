@@ -105,8 +105,8 @@ TEST_CASE("rule4")
         rule<class b, int> rb;
         (void)rb;
         auto f = [](auto&&) {};
-        auto ra_def = ra %= int_[f];
-        auto ra_def2 = (rb = (ra %= int_[f]));
+        auto ra_def = ra %= int_.on_match(f);
+        auto ra_def2 = (rb = (ra %= int_.on_match(f)));
 
         {
             int attr = 0;

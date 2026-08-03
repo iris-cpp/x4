@@ -213,12 +213,12 @@ TEST_CASE("int")
 
         auto f = [&](auto&& ctx){ n = _attr(ctx); };
 
-        REQUIRE(parse("123", int_[f]));
+        REQUIRE(parse("123", int_.on_match(f)));
         CHECK(n == 123);
-        REQUIRE(parse("789", int_[f], m));
+        REQUIRE(parse("789", int_.on_match(f), m));
         REQUIRE(n == 789);
         CHECK(m == 789);
-        REQUIRE(parse("   456", int_[f], space));
+        REQUIRE(parse("   456", int_.on_match(f), space));
         CHECK(n == 456);
     }
 

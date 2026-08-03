@@ -173,9 +173,9 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
 
     bool dummy_bool = false;
 
-    (void)eps[([]{})].parse(first, last, unused, unused); // action
-    (void)int_[([]{})].parse(first, last, unused, dummy_int); // action
-    (void)(int_ >> int_)[([]{})].parse(first, last, unused, dummy_ints); // action
+    (void)eps.on_match([]{}).parse(first, last, unused, unused); // action
+    (void)int_.on_match([]{}).parse(first, last, unused, dummy_int); // action
+    (void)(int_ >> int_).on_match([]{}).parse(first, last, unused, dummy_ints); // action
 
     (void)fixed_value(42).parse(first, last, unused, unused);
     (void)fixed_value("foo").parse(first, last, unused, unused);

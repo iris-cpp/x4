@@ -167,8 +167,8 @@ TEST_CASE("alternative")
 
         constexpr auto f = [&](auto& ctx){ _rule_var(ctx) = _attr(ctx); };
 
-        (void)(r3 = (eps >> r1)[f]);
-        (void)(r3 = (r1 | r2)[f]);
+        (void)(r3 = (eps >> r1).on_match(f));
+        (void)(r3 = (r1 | r2).on_match(f));
         (void)(r3 = eps >> r1 | r2);
         (void)r3;
     }
