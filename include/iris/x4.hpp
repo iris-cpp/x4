@@ -13,7 +13,7 @@
 #include <iris/config.hpp>
 
 #include <iris/x4/core/action.hpp>
-#include <iris/x4/auxiliary.hpp>
+#include <iris/x4/primitive.hpp>
 #include <iris/x4/attribute.hpp>
 #include <iris/x4/char.hpp>
 #include <iris/x4/directive.hpp>

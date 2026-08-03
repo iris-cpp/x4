@@ -10,17 +10,20 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
+
 #include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/value.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/directive/no_case.hpp>
-#include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/real.hpp>
 #include <iris/x4/string/string.hpp>
+
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/directive/omit.hpp>
+
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>

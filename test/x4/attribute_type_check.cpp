@@ -10,7 +10,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/attribute/value.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
 #include <iris/alloy/tuple.hpp>

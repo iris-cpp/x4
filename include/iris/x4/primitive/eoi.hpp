@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_AUXILIARY_EOL_HPP
-#define IRIS_ZZ_X4_AUXILIARY_EOL_HPP
+#ifndef IRIS_ZZ_X4_PRIMITIVE_EOI_HPP
+#define IRIS_ZZ_X4_PRIMITIVE_EOI_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -19,49 +19,37 @@
 
 namespace iris::x4 {
 
-struct eol_parser : parser<eol_parser>
+struct eoi_parser : parser<eoi_parser>
 {
     using attribute_type = unused_type;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr&) const
-        // TODO: noexcept
+        noexcept(
+            noexcept(x4::skip_over(first, last, ctx)) &&
+            noexcept(first == last)
+        )
     {
         x4::skip_over(first, last, ctx);
-        It iter = first;
-        bool matched = false;
-
-        using iter_value_type = std::iter_value_t<It>;
-
-        if (iter != last && *iter == static_cast<iter_value_type>('\r')) {
-            matched = true;
-            ++iter;
-        }
-        if (iter != last && *iter == static_cast<iter_value_type>('\n')) {
-            matched = true;
-            ++iter;
-        }
-
-        if (matched) first = iter;
-        return matched;
+        return first == last;
     }
 };
 
 template<>
-struct get_info<eol_parser>
+struct get_info<eoi_parser>
 {
     using result_type = std::string;
-    [[nodiscard]] result_type operator()(eol_parser const &) const { return "eol"; }
+    [[nodiscard]] result_type operator()(eoi_parser const &) const { return "eoi"; }
 };
 
 namespace parsers {
 
-[[maybe_unused]] inline constexpr eol_parser eol{};
+[[maybe_unused]] inline constexpr eoi_parser eoi{};
 
 } // parsers
 
-using parsers::eol;
+using parsers::eoi;
 
 } // iris::x4
 

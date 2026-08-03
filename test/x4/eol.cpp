@@ -9,7 +9,7 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/eol.hpp>
+#include <iris/x4/primitive/eol.hpp>
 
 TEST_CASE("eol")
 {

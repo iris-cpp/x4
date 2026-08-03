@@ -12,11 +12,13 @@
 
 #include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/value.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/primitive/eps.hpp>
+
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/unicode_char_class.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/string/string.hpp>
+
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/kleene.hpp>

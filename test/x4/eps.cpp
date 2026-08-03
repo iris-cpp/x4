@@ -9,7 +9,7 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/operator/not_predicate.hpp>
 
 TEST_CASE("eps")

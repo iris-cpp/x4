@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_AUXILIARY_HPP
-#define IRIS_ZZ_X4_AUXILIARY_HPP
+#ifndef IRIS_ZZ_X4_PRIMITIVE_HPP
+#define IRIS_ZZ_X4_PRIMITIVE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -12,9 +12,8 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
-#include <iris/x4/auxiliary/eol.hpp>
-#include <iris/x4/auxiliary/eoi.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/primitive/eoi.hpp>
+#include <iris/x4/primitive/eol.hpp>
+#include <iris/x4/primitive/eps.hpp>
 
 #endif
