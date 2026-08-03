@@ -26,7 +26,7 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/optional.hpp>
 
 #include <iris/rvariant.hpp>

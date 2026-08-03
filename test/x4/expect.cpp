@@ -45,7 +45,7 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/and_predicate.hpp>
 #include <iris/x4/operator/difference.hpp>
@@ -700,7 +700,7 @@ TEST_CASE("expect")
         });
     }
 
-    // list
+    // delimited_list
     {
         X4_TEST_SUCCESS_PASS("ab::ab::ac", (lit('a') >> 'b') % (lit(':') >> ':') >> "::ac");
         X4_TEST_SUCCESS_PASS("ab::ab:ac", (lit('a') > 'b') % (lit(':') >> ':') >> ":ac");

@@ -43,7 +43,7 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/and_predicate.hpp>
 #include <iris/x4/operator/difference.hpp>
@@ -738,7 +738,7 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((true_ % eps(false) >> eps(false)).parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true});// `list` parser (within sequence) exposes the side effects
+        CHECK(dummy_bools == std::vector<bool>{true});// `delimited_list` parser (within sequence) exposes the side effects
     }
 
     {

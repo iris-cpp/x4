@@ -23,7 +23,7 @@
 // list-like
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/directive/repeat.hpp>
 
 #include <concepts>
@@ -273,7 +273,7 @@ TEST_CASE("partial success (list-like)")
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
     }
 
     // kleene
@@ -300,7 +300,7 @@ TEST_CASE("partial success (list-like)")
         CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
     }
 
-    // list
+    // delimited_list
     {
         std::string abcs;
         REQUIRE(parse("abc,abx", abc % ',' >> ",abx", abcs));
@@ -367,7 +367,7 @@ TEST_CASE("partial success (list-like)")
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
     }
 
     // kleene
@@ -394,7 +394,7 @@ TEST_CASE("partial success (list-like)")
         CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
     }
 
-    // list
+    // delimited_list
     {
         std::string aOOcs;
         REQUIRE(parse("aOOc,aOOx", aOOc % ',' >> ",aOOx", aOOcs));

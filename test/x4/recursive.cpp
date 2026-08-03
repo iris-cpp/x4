@@ -10,7 +10,7 @@
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/numeric/int.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 
 #include <iris/rvariant/recursive_wrapper.hpp>
 

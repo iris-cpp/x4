@@ -51,6 +51,7 @@ x4_define_tests(
     container_support
     context
     debug
+    delimited_list
     difference
     eoi
     eol
@@ -63,7 +64,6 @@ x4_define_tests(
     iterator
     kleene
     lexeme
-    list
     lit
     matches
     move_to
