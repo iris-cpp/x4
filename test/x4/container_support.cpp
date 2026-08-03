@@ -11,12 +11,12 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
+#include <iris/x4/attribute/as.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/directive/as.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
 

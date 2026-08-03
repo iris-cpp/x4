@@ -14,7 +14,7 @@
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 
 #include <vector>
 #include <concepts>
@@ -50,11 +50,11 @@ using x4::with;
 using x4::_attr;
 
 template<class T>
-constexpr auto value_equals = int_[([](auto&& ctx) {
+constexpr auto value_equals = int_.on_match([](auto&& ctx) {
     auto&& with_val = x4::get<my_tag>(ctx);
     static_assert(std::same_as<decltype(with_val), T>);
     return with_val == _attr(ctx);
-})];
+});
 
 } // anonymous
 
@@ -148,22 +148,22 @@ TEST_CASE("with")
     {
         // injecting non-const lvalue into the context
         int val = 0;
-        auto const r = int_[([](auto&& ctx){
+        auto const r = int_.on_match([](auto&& ctx){
             x4::get<my_tag>(ctx) += x4::_attr(ctx);
-        })];
+        });
         REQUIRE(parse("123,456", with<my_tag>(val)[r % ',']));
         CHECK(val == 579);
     }
 
     {
         // injecting rvalue into the context
-        auto const r1 = int_[([](auto&& ctx){
+        auto const r1 = int_.on_match([](auto&& ctx){
             x4::get<my_tag>(ctx) += x4::_attr(ctx);
-        })];
+        });
         auto const r2 = rule<struct my_rvalue_rule_class, int>() =
-            x4::lit('(') >> (r1 % ',') >> x4::lit(')')[([](auto&& ctx){
+            x4::lit('(') >> (r1 % ',') >> x4::lit(')').on_match([](auto&& ctx){
                 x4::_rule_var(ctx) = x4::get<my_tag>(ctx);
-            })];
+            });
         int attr = 0;
         REQUIRE(parse("(1,2,3)", with<my_tag>(100)[r2], attr));
         CHECK(attr == 106);
@@ -186,7 +186,7 @@ TEST_CASE("with")
         auto f = [](auto&& ctx){
             x4::_rule_var(ctx) = x4::_attr(ctx) + functor()(x4::get<my_tag>(ctx));
         };
-        auto const r = rule<struct my_rule_class2, int>() = int_[f];
+        auto const r = rule<struct my_rule_class2, int>() = int_.on_match(f);
 
         {
             int attr = 0;

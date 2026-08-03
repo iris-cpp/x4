@@ -87,7 +87,7 @@ TEST_CASE("plus")
         std::string v;
         auto f = [&](auto&& ctx){ v = _attr(ctx); };
 
-        REQUIRE(parse("bbb", (+char_)[f]));
+        REQUIRE(parse("bbb", (+char_).on_match(f)));
         REQUIRE(v.size() == 3);
         CHECK(v[0] == 'b');
         CHECK(v[1] == 'b');
@@ -99,7 +99,7 @@ TEST_CASE("plus")
         std::vector<int> v;
         auto f = [&](auto&& ctx){ v = _attr(ctx); };
 
-        REQUIRE(parse("1 2 3", (+int_)[f], space));
+        REQUIRE(parse("1 2 3", (+int_).on_match(f), space));
         REQUIRE(v.size() == 3);
         CHECK(v[0] == 1);
         CHECK(v[1] == 2);

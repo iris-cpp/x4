@@ -10,17 +10,20 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+
+#include <iris/x4/attribute/as.hpp>
+#include <iris/x4/attribute/value.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/directive/as.hpp>
-#include <iris/x4/directive/no_case.hpp>
-#include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/real.hpp>
 #include <iris/x4/string/string.hpp>
+
+#include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/directive/omit.hpp>
+
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>
@@ -44,7 +47,7 @@ TEST_CASE("sequence")
     using x4::standard::string;
     using x4::standard::lit;
     using x4::standard::alnum;
-    using x4::attr;
+    using x4::fixed_value;
     using x4::omit;
     using x4::unused;
     using x4::int_;
@@ -460,7 +463,7 @@ TEST_CASE("sequence")
 
     // Test that sequence with only one parser producing attribute makes it unwrapped
     STATIC_CHECK(std::same_as<
-        x4::parser_traits<decltype(lit("abc") >> attr(long()))>::attribute_type,
+        x4::parser_traits<decltype(lit("abc") >> fixed_value(long{}))>::attribute_type,
         long
     >);
 
@@ -474,7 +477,7 @@ TEST_CASE("sequence")
             n = alloy::get<1>(_attr(ctx));
         };
 
-        REQUIRE(parse("x123\"a string\"", (char_ >> int_ >> "\"a string\"")[f]));
+        REQUIRE(parse("x123\"a string\"", (char_ >> int_ >> "\"a string\"").on_match(f)));
         CHECK(c == 'x');
         CHECK(n == 123);
     }
@@ -488,7 +491,7 @@ TEST_CASE("sequence")
             n = alloy::get<1>(_attr(ctx));
         };
 
-        REQUIRE(parse("x 123 \"a string\"", (char_ >> int_ >> "\"a string\"")[f], space));
+        REQUIRE(parse("x 123 \"a string\"", (char_ >> int_ >> "\"a string\"").on_match(f), space));
         CHECK(c == 'x');
         CHECK(n == 123);
     }

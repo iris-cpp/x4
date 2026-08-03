@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_AUXILIARY_ATTR_HPP
-#define IRIS_ZZ_X4_AUXILIARY_ATTR_HPP
+#ifndef IRIS_ZZ_X4_ATTRIBUTE_VALUE_HPP
+#define IRIS_ZZ_X4_ATTRIBUTE_VALUE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Hartmut Kaiser
@@ -26,16 +26,17 @@
 
 namespace iris::x4 {
 
+// `fixed_value(...)`
 template<class T, class HeldValueT = T>
-struct attr_parser : parser<attr_parser<T, HeldValueT>>
+struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
 {
     static_assert(X4Attribute<T>);
-    static_assert(!X4UnusedAttribute<T>, "attr_parser with `unused_type` is meaningless");
+    static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
 
     // `HeldValueT` is almost always equal to `T`.
     //
-    // The most notable situation where they differ is when `attr_parser` is initialized
-    // by `char const (&)[N]`. In such case, `attr_parser` must hold the value by
+    // The most notable situation where they differ is when `fixed_value_parser` is initialized
+    // by `char const (&)[N]`. In such case, `fixed_value_parser` must hold the value by
     // `std::string_view`, instead of `std::string`, to be constexpr.
 
     static_assert(X4Movable<HeldValueT const&, T>);
@@ -45,9 +46,9 @@ struct attr_parser : parser<attr_parser<T, HeldValueT>>
 
     template<class U>
         requires
-            (!std::is_same_v<std::remove_cvref_t<U>, attr_parser>) &&
+            (!std::is_same_v<std::remove_cvref_t<U>, fixed_value_parser>) &&
             std::is_constructible_v<HeldValueT, U>
-    constexpr explicit attr_parser(U&& value)
+    constexpr explicit fixed_value_parser(U&& value)
         noexcept(std::is_nothrow_constructible_v<HeldValueT, U>)
         : held_value_(std::forward<U>(value))
     {}
@@ -66,12 +67,12 @@ private:
     HeldValueT held_value_;
 };
 
-// `init_attr<T>`
+// `reset_value<T>`
 template<class T>
-struct attr_parser<T, void> : parser<attr_parser<T, void>>
+struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
 {
     static_assert(X4Attribute<T>);
-    static_assert(!X4UnusedAttribute<T>, "attr_parser with `unused_type` is meaningless");
+    static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
 
     using attribute_type = T;
 
@@ -105,7 +106,7 @@ struct attr_parser<T, void> : parser<attr_parser<T, void>>
 namespace detail {
 
 template<CharArray R>
-using string_array_attr_parser_t = attr_parser<
+using string_array_attr_parser_t = fixed_value_parser<
     std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>,
     std::basic_string_view<std::remove_extent_t<std::remove_cvref_t<R>>>
 >;
@@ -113,40 +114,44 @@ using string_array_attr_parser_t = attr_parser<
 } // detail
 
 template<CharArray R>
-attr_parser(R const&) -> attr_parser<
+fixed_value_parser(R const&) -> fixed_value_parser<
     std::basic_string<std::remove_extent_t<std::remove_cvref_t<R>>>,
     std::basic_string_view<std::remove_extent_t<std::remove_cvref_t<R>>>
 >;
 
 template<class T, class HeldValueT>
-struct get_info<attr_parser<T, HeldValueT>>
+struct get_info<fixed_value_parser<T, HeldValueT>>
 {
     using result_type = std::string;
     [[nodiscard]] constexpr std::string
-    operator()(attr_parser<T, HeldValueT> const&) const
+    operator()(fixed_value_parser<T, HeldValueT> const&) const
     {
-        return "attr";
+        if constexpr (std::is_void_v<HeldValueT>) {
+            return "reset_value<T>";
+        } else {
+            return "fixed_value<T>(...)";
+        }
     }
 };
 
 namespace detail {
 
-struct attr_gen
+struct fixed_value_gen
 {
     template<class T>
-    [[nodiscard]] static constexpr attr_parser<std::remove_cvref_t<T>>
+    [[nodiscard]] static constexpr fixed_value_parser<std::remove_cvref_t<T>>
     operator()(T&& value)
-        noexcept(std::is_nothrow_constructible_v<attr_parser<std::remove_cvref_t<T>>, T>)
+        noexcept(std::is_nothrow_constructible_v<fixed_value_parser<std::remove_cvref_t<T>>, T>)
     {
-        return attr_parser<std::remove_cvref_t<T>>{std::forward<T>(value)};
+        return fixed_value_parser<std::remove_cvref_t<T>>{std::forward<T>(value)};
     }
 
-    template<CharArray R>
-    [[nodiscard]] static constexpr string_array_attr_parser_t<R>
-    operator()(R&& value)
-        noexcept(std::is_nothrow_constructible_v<string_array_attr_parser_t<R>, R>)
+    template<CharArray CharArrayT>
+    [[nodiscard]] static constexpr string_array_attr_parser_t<CharArrayT>
+    operator()(CharArrayT&& char_array)
+        noexcept(std::is_nothrow_constructible_v<string_array_attr_parser_t<CharArrayT>, CharArrayT>)
     {
-        return string_array_attr_parser_t<R>{std::forward<R>(value)};
+        return string_array_attr_parser_t<CharArrayT>{std::forward<CharArrayT>(char_array)};
     }
 };
 
@@ -156,21 +161,21 @@ namespace parsers {
 
 // An always-succeeding parser that has the `attribute_type` equivalent
 // to the given parameter. Copies the held instance on each invocation.
-[[maybe_unused]] inline constexpr detail::attr_gen attr{};
+[[maybe_unused]] inline constexpr detail::fixed_value_gen fixed_value{};
 
-// A special `attr` parser that resets the variable and always succeeds.
+// A special `fixed_value` parser that resets the variable and always succeeds.
 //
 // This can be used for constructing `constexpr` instance of a parser
 // even when `T` has dynamically allocated storage.
-// For example, normal `attr(std::vector<int>{})` cannot be assigned
-// to a `constexpr` instance, but `init_attr<std::vector<int>>` can.
+// For example, normal `fixed_value(std::vector<int>{})` cannot be assigned
+// to a `constexpr` instance, but `reset_value<std::vector<int>>` can.
 template<class T>
-[[maybe_unused]] inline constexpr attr_parser<T, void> init_attr{};
+[[maybe_unused]] inline constexpr fixed_value_parser<T, void> reset_value{};
 
 } // parsers
 
-using parsers::attr;
-using parsers::init_attr;
+using parsers::fixed_value;
+using parsers::reset_value;
 
 } // iris::x4
 

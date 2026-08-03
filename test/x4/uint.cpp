@@ -204,9 +204,9 @@ TEST_CASE("uint")
         int n = 0;
         auto f = [&](auto&& ctx){ n = _attr(ctx); };
 
-        REQUIRE(parse("123", uint_[f]));
+        REQUIRE(parse("123", uint_.on_match(f)));
         CHECK(n == 123);
-        REQUIRE(parse("   456", uint_[f], space));
+        REQUIRE(parse("   456", uint_.on_match(f), space));
         CHECK(n == 456);
     }
 

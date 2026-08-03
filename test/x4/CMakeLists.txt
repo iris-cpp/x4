@@ -40,10 +40,10 @@ endfunction()
 
 x4_define_tests(
     actions
+    alloy_wrong_substitute
     alternative
     and_predicate
     as
-    attr
     attribute_type_check
     bool
     char
@@ -51,6 +51,7 @@ x4_define_tests(
     container_support
     context
     debug
+    delimited_list
     difference
     eoi
     eol
@@ -63,7 +64,6 @@ x4_define_tests(
     iterator
     kleene
     lexeme
-    list
     lit
     matches
     move_to
@@ -84,7 +84,6 @@ x4_define_tests(
     rule2
     rule3
     rule4
-    seek
     sequence
     skip
     smart_ptr
@@ -96,11 +95,11 @@ x4_define_tests(
     uint
     uint_radix
     unused
+    value
     with
     with_local
     without
     x3_rule_problem
-    alloy_wrong_substitute_test_case
 )
 
 x4_define_test(rule_separate_tu rule_separate_tu.cpp rule_separate_tu_grammar.cpp)

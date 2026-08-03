@@ -8,10 +8,10 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/directive/with_local.hpp>
-#include <iris/x4/directive/as.hpp>
+#include <iris/x4/attribute/as.hpp>
 #include <iris/x4/numeric/int.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/primitive/eps.hpp>
+#include <iris/x4/directive/with_local.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
 #include <concepts>
@@ -34,13 +34,13 @@ TEST_CASE("with_local")
     {
         constexpr auto p = with_local<int>[
             as<int>(
-                int_[([](auto&& ctx) {
+                int_.on_match([](auto&& ctx) {
                     CHECK(_local_var(ctx) == 0);
                     _local_var(ctx) = _attr(ctx) * 100;
-                })] >>
-                eps[([](auto&& ctx) {
+                }) >>
+                eps.on_match([](auto&& ctx) {
                     _as_var(ctx) = _local_var(ctx);
-                })]
+                })
             )
         ];
         constexpr std::string_view input = "42";
@@ -55,13 +55,13 @@ TEST_CASE("with_local")
         int i = -1;
 
         auto const p = with_local<int>[
-            int_[([](auto&& ctx) {
+            int_.on_match([](auto&& ctx) {
                 CHECK(_local_var(ctx) == 0);
                 _local_var(ctx) = _attr(ctx) * 100;
-            })] >>
-            eps[([&](auto&& ctx) {
+            }) >>
+            eps.on_match([&](auto&& ctx) {
                 i = _local_var(ctx);
-            })]
+            })
         ];
         constexpr std::string_view input = "42";
         auto first = input.begin();
@@ -74,25 +74,25 @@ TEST_CASE("with_local")
         int i = -1;
 
         auto const p = with_local<int>[
-            eps[([](auto&& ctx) {
+            eps.on_match([](auto&& ctx) {
                 CHECK(_local_var(ctx) == 0);
-            })] >>
+            }) >>
 
             with_local<int>[
-                eps[([](auto&& ctx) {
+                eps.on_match([](auto&& ctx) {
                     CHECK(_local_var(ctx) == 0);
-                })] >>
-                int_[([](auto&& ctx) {
+                }) >>
+                int_.on_match([](auto&& ctx) {
                     _local_var(ctx) = _attr(ctx);
-                })] >>
-                eps[([&](auto&& ctx) {
+                }) >>
+                eps.on_match([&](auto&& ctx) {
                     i = _local_var(ctx) * 100;
-                })]
+                })
             ] >>
 
-            eps[([](auto&& ctx) {
+            eps.on_match([](auto&& ctx) {
                 CHECK(_local_var(ctx) == 0);
-            })]
+            })
         ];
         constexpr std::string_view input = "42";
         auto first = input.begin();
@@ -105,27 +105,27 @@ TEST_CASE("with_local")
         double d = -1.0;
 
         auto const p = with_local<int>[
-            eps[([](auto&& ctx) {
+            eps.on_match([](auto&& ctx) {
                 static_assert(std::same_as<decltype(_local_var(ctx)), int&>);
                 CHECK(_local_var(ctx) == 0);
-            })] >>
+            }) >>
 
             with_local<double>[
-                eps[([](auto&& ctx) {
+                eps.on_match([](auto&& ctx) {
                     static_assert(std::same_as<decltype(_local_var(ctx)), double&>);
                     CHECK(_local_var(ctx) == 0.0);
-                })] >>
-                int_[([](auto&& ctx) {
+                }) >>
+                int_.on_match([](auto&& ctx) {
                     _local_var(ctx) = _attr(ctx);
-                })] >>
-                eps[([&](auto&& ctx) {
+                }) >>
+                eps.on_match([&](auto&& ctx) {
                     d = std::ceil(_local_var(ctx) / 10);
-                })]
+                })
             ] >>
 
-            eps[([](auto&& ctx) {
+            eps.on_match([](auto&& ctx) {
                 CHECK(_local_var(ctx) == 0);
-            })]
+            })
         ];
         constexpr std::string_view input = "42";
         auto first = input.begin();
@@ -141,26 +141,26 @@ TEST_CASE("with_local")
         struct B_ID {};
 
         auto const p = with_local<int, A_ID>[
-            eps[([](auto&& ctx) {
+            eps.on_match([](auto&& ctx) {
                 CHECK(x4::get<A_ID>(ctx) == 0);
-            })] >>
+            }) >>
 
             with_local<int, B_ID>[
-                eps[([](auto&& ctx) {
+                eps.on_match([](auto&& ctx) {
                     CHECK(x4::get<B_ID>(ctx) == 0.0);
-                })] >>
-                int_[([](auto&& ctx) {
+                }) >>
+                int_.on_match([](auto&& ctx) {
                     x4::get<A_ID>(ctx) = _attr(ctx) * 10;
                     x4::get<B_ID>(ctx) = _attr(ctx) * 100;
-                })] >>
-                eps[([&](auto&& ctx) {
+                }) >>
+                eps.on_match([&](auto&& ctx) {
                     res = std::make_tuple(x4::get<A_ID>(ctx), x4::get<B_ID>(ctx));
-                })]
+                })
             ] >>
 
-            eps[([](auto&& ctx) {
+            eps.on_match([](auto&& ctx) {
                 CHECK(x4::get<A_ID>(ctx) == 420);
-            })]
+            })
         ];
         constexpr std::string_view input = "42";
         auto first = input.begin();

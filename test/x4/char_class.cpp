@@ -199,9 +199,9 @@ TEST_CASE("char_class")
         char ch = '\0';
         auto f = [&](auto&& ctx){ ch = _attr(ctx); };
 
-        REQUIRE(parse("x", alnum[f]));
+        REQUIRE(parse("x", alnum.on_match(f)));
         CHECK(ch == 'x');
-        REQUIRE(parse("   A", alnum[f], space));
+        REQUIRE(parse("   A", alnum.on_match(f), space));
         CHECK(ch == 'A');
     }
 }

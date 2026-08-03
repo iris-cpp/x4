@@ -10,11 +10,11 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/numeric/int.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/primitive/eps.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
@@ -117,9 +117,9 @@ TEST_CASE("rule3")
         std::string s;
         using rule_type = rule<class r, std::string>;
 
-        auto rdef = rule_type{} = alpha[([](auto&& ctx) {
+        auto rdef = rule_type{} = alpha.on_match([](auto&& ctx) {
             x4::_rule_var(ctx) += x4::_attr(ctx);
-        })];
+        });
 
         REQUIRE(parse("abcdef", +rdef, s));
         CHECK(s == "abcdef");
@@ -131,21 +131,21 @@ TEST_CASE("rule3")
         using rule_type = rule<class r, std::string>;
 
         auto rdef = rule_type() =
-            alpha[([](auto&& ctx) {
+            alpha.on_match([](auto&& ctx) {
                 _rule_var(ctx) += _attr(ctx);
-            })];
+            });
 
         REQUIRE(parse("abcdef", +rdef, s));
         CHECK(s == "abcdef");
     }
 
     {
-        auto r = rule<class r_id, int>{} = eps[([] ([[maybe_unused]] auto&& ctx) {
+        auto r = rule<class r_id, int>{} = eps.on_match([] ([[maybe_unused]] auto&& ctx) {
             static_assert(
                 std::is_same_v<std::decay_t<decltype(_rule_var(ctx))>, unused_type>,
                 "Attr must not be synthesized"
             );
-        })];
+        });
         CHECK(parse("", r));
     }
 

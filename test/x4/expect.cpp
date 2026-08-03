@@ -15,18 +15,24 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/rule.hpp>
+
+#include <iris/x4/core/expectation.hpp>
+
+#include <iris/x4/attribute/value.hpp>
+#include <iris/x4/primitive/eoi.hpp>
+#include <iris/x4/primitive/eol.hpp>
+#include <iris/x4/primitive/eps.hpp>
+
 #include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/symbols.hpp>
-#include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eoi.hpp>
-#include <iris/x4/auxiliary/eol.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
-#include <iris/x4/char/char_class.hpp>
+
+#include <iris/x4/numeric/int.hpp>
+
 #include <iris/x4/directive/with.hpp>
-#include <iris/x4/core/expectation.hpp>
 #include <iris/x4/directive/expect.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/directive/matches.hpp>
@@ -34,13 +40,12 @@
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/directive/repeat.hpp>
-#include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
-#include <iris/x4/numeric/int.hpp>
+
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/and_predicate.hpp>
 #include <iris/x4/operator/difference.hpp>
@@ -139,7 +144,7 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     using x4::eoi;
     using x4::eol;
     using x4::eps;
-    using x4::attr;
+    using x4::fixed_value;
     using x4::lit;
     using x4::string;
     using x4::char_;
@@ -152,7 +157,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     using x4::no_skip;
     using x4::omit;
     using x4::repeat;
-    using x4::seek;
     using x4::skip;
     using x4::with;
 
@@ -169,11 +173,12 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
 
     bool dummy_bool = false;
 
-    (void)eps[([]{})].parse(first, last, unused, unused); // action
-    (void)int_[([]{})].parse(first, last, unused, dummy_int); // action
-    (void)(int_ >> int_)[([]{})].parse(first, last, unused, dummy_ints); // action
+    (void)eps.on_match([]{}).parse(first, last, unused, unused); // action
+    (void)int_.on_match([]{}).parse(first, last, unused, dummy_int); // action
+    (void)(int_ >> int_).on_match([]{}).parse(first, last, unused, dummy_ints); // action
 
-    (void)attr(42).parse(first, last, unused, unused);
+    (void)fixed_value(42).parse(first, last, unused, unused);
+    (void)fixed_value("foo").parse(first, last, unused, unused);
     (void)eoi.parse(first, last, unused, unused);
     (void)eol.parse(first, last, unused, unused);
     (void)eps.parse(first, last, unused, unused);
@@ -215,7 +220,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
 
     (void)omit[eps].parse(first, last, unused, unused);
     (void)repeat(1)[eps].parse(first, last, unused, unused);
-    (void)seek[eps].parse(first, last, unused, unused);
     (void)skip(space)[eps].parse(first, last, unused, unused);
     (void)with<struct with_id_>(input)[eps].parse(first, last, unused, unused);
 
@@ -290,7 +294,6 @@ TEST_CASE("expect")
     using x4::no_skip;
     using x4::omit;
     using x4::skip;
-    using x4::seek;
     using x4::repeat;
     using x4::matches;
     using x4::eps;
@@ -478,7 +481,7 @@ TEST_CASE("expect")
         });
     }
 
-    // auxilary parsers
+    // primitive parsers
     {
         X4_TEST_SUCCESS_PASS("a12", lit('a') > eps > +digit);
         X4_TEST_SUCCESS_PASS("a12", lit('a') > +digit > eoi);
@@ -495,7 +498,7 @@ TEST_CASE("expect")
         });
 
         int n = 0;
-        X4_TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::attr(12) > eoi, n);
+        X4_TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::fixed_value(12) > eoi, n);
         CHECK(n == 12);
     }
 
@@ -653,15 +656,6 @@ TEST_CASE("expect")
         X4_TEST_SUCCESS_PASS("bcab", repeat(2, 3)[lit('a') > 'b'] | +alpha);
     }
 
-    // seek
-    {
-        X4_TEST_SUCCESS_PASS("a1b1c1", seek[lit('c') > '1']);
-        X4_TEST_FAILURE("a1b1c2c1", seek[lit('c') > '1'], {
-            CHECK(which == "'1'"sv);
-            CHECK(where == "2c1"sv);
-        });
-    }
-
     // alternative
     {
         X4_TEST_SUCCESS_PASS("ac", lit('a') >> 'b' | "ac");
@@ -706,7 +700,7 @@ TEST_CASE("expect")
         });
     }
 
-    // list
+    // delimited_list
     {
         X4_TEST_SUCCESS_PASS("ab::ab::ac", (lit('a') >> 'b') % (lit(':') >> ':') >> "::ac");
         X4_TEST_SUCCESS_PASS("ab::ab:ac", (lit('a') > 'b') % (lit(':') >> ':') >> ":ac");

@@ -240,7 +240,7 @@ move_to(It first, Se last, Dest& dest)
 }
 
 // Move non-container `src` into container `dest`.
-// e.g. Source=std::string_view, Dest=std::string (used in `attr_parser`)
+// e.g. Source=std::string_view, Dest=std::string (used in `fixed_value_parser`)
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::container_attr> Dest>
     requires
         (!traits::X4Container<Source>) &&

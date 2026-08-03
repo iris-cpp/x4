@@ -8,7 +8,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/attribute/smart_ptr.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/numeric/int.hpp>
 
 #include <stdexcept>

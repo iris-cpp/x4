@@ -11,18 +11,22 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+
+#include <iris/x4/attribute/value.hpp>
+#include <iris/x4/primitive/eps.hpp>
+
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/string/string.hpp>
-#include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/bool.hpp>
 #include <iris/x4/numeric/int.hpp>
+
+#include <iris/x4/directive/omit.hpp>
+
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/optional.hpp>
 
 #include <iris/rvariant.hpp>
@@ -61,7 +65,7 @@ TEST_CASE("alternative")
 {
     using x4::standard::char_;
     using x4::standard::lit;
-    using x4::attr;
+    using x4::fixed_value;
     using x4::int_;
     using x4::unused;
     using x4::omit;
@@ -163,8 +167,8 @@ TEST_CASE("alternative")
 
         constexpr auto f = [&](auto& ctx){ _rule_var(ctx) = _attr(ctx); };
 
-        (void)(r3 = (eps >> r1)[f]);
-        (void)(r3 = (r1 | r2)[f]);
+        (void)(r3 = (eps >> r1).on_match(f));
+        (void)(r3 = (r1 | r2).on_match(f));
         (void)(r3 = eps >> r1 | r2);
         (void)r3;
     }
@@ -268,8 +272,8 @@ TEST_CASE("alternative")
 
     // alternative over single element tuple as part of another tuple
     {
-        constexpr auto key1 = lit("long") >> attr(long());
-        constexpr auto key2 = lit("char") >> attr(char());
+        constexpr auto key1 = lit("long") >> fixed_value(long{});
+        constexpr auto key2 = lit("char") >> fixed_value(char{});
         constexpr auto keys = key1 | key2;
         constexpr auto pair = keys >> lit("=") >> +char_;
 
@@ -305,7 +309,7 @@ TEST_CASE("alternative")
         // regressing test for #603
         struct X {};
         std::vector<iris::rvariant<std::string, int, X>> v;
-        REQUIRE(parse("xx42x9y", *(int_ | +char_('x') | 'y' >> attr(X{})), v));
+        REQUIRE(parse("xx42x9y", *(int_ | +char_('x') | 'y' >> fixed_value(X{})), v));
         CHECK(v.size() == 5);
     }
 
@@ -324,7 +328,7 @@ TEST_CASE("alternative")
         iris::rvariant<X, Y, Z> v;
         iris::rvariant<Y, X> x{X{}};
         v = x; // iris::rvariant supports that convertion
-        auto const p = 'x' >> attr(x) | 'z' >> attr(Z{});
+        auto const p = 'x' >> fixed_value(x) | 'z' >> fixed_value(Z{});
         REQUIRE(parse("z", p, v));
         CHECK(iris::get_if<Z>(&v) != nullptr);
         REQUIRE(parse("x", p, v));
@@ -337,7 +341,7 @@ TEST_CASE("alternative")
         using Foo = std::vector<iris::rvariant<Qaz, int>>;
         using Bar = std::vector<iris::rvariant<Foo, int>>;
         Bar x;
-        CHECK(parse("abaabb", +('a' >> attr(Foo{}) | 'b' >> attr(int{})), x));
+        CHECK(parse("abaabb", +('a' >> fixed_value(Foo{}) | 'b' >> fixed_value(int{})), x));
     }
 }
 

@@ -10,13 +10,15 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
-#include <iris/x4/directive/as.hpp>
+#include <iris/x4/attribute/as.hpp>
+#include <iris/x4/attribute/value.hpp>
+#include <iris/x4/primitive/eps.hpp>
+
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/unicode_char_class.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/string/string.hpp>
+
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/kleene.hpp>
@@ -43,7 +45,7 @@ using Se = It;
 using Context = unused_type;
 
 constexpr auto do_nothing = [](auto&&) {};
-constexpr auto disable_attr = eps[([](auto&&) {})];
+constexpr auto disable_attr = eps.on_match([](auto&&) {});
 constexpr auto quoted_string = '\'' >> *~x4::char_('\'') >> '\'';
 
 char const* empty_input_first = nullptr;
@@ -53,6 +55,7 @@ TEST_CASE("as<T>(p)")
 {
     using x4::_as_var;
     using x4::_attr;
+    using x4::fixed_value;
 
     // result = int or long long
     // T = int
@@ -61,11 +64,11 @@ TEST_CASE("as<T>(p)")
     // with semantic action
     {
         {
-            constexpr auto p = x4::as<int>(x4::attr(3))[([](auto&& ctx) {
+            constexpr auto p = x4::as<int>(fixed_value(3)).on_match([](auto&& ctx) {
                 static_assert(std::same_as<std::remove_cvref_t<decltype(x4::_as_var(ctx))>, unused_type>);
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_attr(ctx))>, int>);
                 _attr(ctx) += 5;
-            })];
+            });
             {
                 int result = 42;
                 REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
@@ -80,13 +83,13 @@ TEST_CASE("as<T>(p)")
 
         // do nothing in semantic action
         {
-            constexpr auto p = x4::attr(3);
+            constexpr auto p = fixed_value(3);
             int result = 42;
             REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
             CHECK(result == 3);
         }
         {
-            constexpr auto p = x4::attr(3)[do_nothing];
+            constexpr auto p = fixed_value(3).on_match(do_nothing);
             int result = 42;
             REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
             CHECK(result == 3);
@@ -94,7 +97,7 @@ TEST_CASE("as<T>(p)")
 
         {
             constexpr auto p = x4::as<int>(
-                x4::attr(3)
+                fixed_value(3)
             );
             int result = 42;
             REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
@@ -102,7 +105,7 @@ TEST_CASE("as<T>(p)")
         }
         {
             constexpr auto p = x4::as<int>(
-                x4::attr(3)[do_nothing]
+                fixed_value(3).on_match(do_nothing)
             );
             int result = 42;
             REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
@@ -113,16 +116,16 @@ TEST_CASE("as<T>(p)")
         // the intermediate value always propagates up.
         {
             constexpr auto p = x4::as<int>(
-                x4::attr(3)
-            )[do_nothing];
+                fixed_value(3)
+            ).on_match(do_nothing);
             int result = 42;
             REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
             CHECK(result == 3);
         }
         {
             constexpr auto p = x4::as<int>(
-                x4::attr(3)[do_nothing]
-            )[do_nothing];
+                fixed_value(3).on_match(do_nothing)
+            ).on_match(do_nothing);
             int result = 42;
             REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
             CHECK(result == 42);
@@ -132,7 +135,7 @@ TEST_CASE("as<T>(p)")
     // -------------------------------------------
     // without semantic action
     {
-        constexpr auto p = x4::as<int>(x4::attr(3));
+        constexpr auto p = x4::as<int>(fixed_value(3));
         int result = 42;
         REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
         CHECK(result == 3);
@@ -151,6 +154,7 @@ TEST_CASE("as<T>(as<T>(p))")
 {
     using x4::_as_var;
     using x4::_attr;
+    using x4::fixed_value;
 
     // result = int or long long
     // T = int
@@ -160,12 +164,12 @@ TEST_CASE("as<T>(as<T>(p))")
     // with semantic action
     {
         constexpr auto p = x4::as<int>(
-            x4::as<int>(x4::attr(3))[([](auto&& ctx) {
+            x4::as<int>(fixed_value(3)).on_match([](auto&& ctx) {
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_as_var(ctx))>, int>);
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_attr(ctx))>, int>);
                 CHECK(std::addressof(_as_var(ctx)) != std::addressof(_attr(ctx)));
                 _as_var(ctx) = _attr(ctx) + 5;
-            })]
+            })
         );
         {
             int result = 42;
@@ -182,7 +186,7 @@ TEST_CASE("as<T>(as<T>(p))")
     // do nothing in semantic action
     {
         constexpr auto p = x4::as<int>(
-            x4::as<int>(x4::attr(3))[do_nothing]
+            x4::as<int>(fixed_value(3)).on_match(do_nothing)
         );
 
         {
@@ -201,7 +205,7 @@ TEST_CASE("as<T>(as<T>(p))")
     // without semantic action
     {
         constexpr auto p = x4::as<int>(
-            x4::as<int>(x4::attr(3))
+            x4::as<int>(fixed_value(3))
         );
 
         {
@@ -221,6 +225,7 @@ TEST_CASE("as<T>(as<U>(p))")
 {
     using x4::_as_var;
     using x4::_attr;
+    using x4::fixed_value;
 
     // result = int or long long
     // T = int
@@ -230,11 +235,11 @@ TEST_CASE("as<T>(as<U>(p))")
     // with semantic action
     {
         constexpr auto p = x4::as<int>(
-            x4::as<short>(x4::attr(short(3)))[([](auto&& ctx) {
+            x4::as<short>(fixed_value(short(3))).on_match([](auto&& ctx) {
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_as_var(ctx))>, int>);
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_attr(ctx))>, short>);
                 _as_var(ctx) = _attr(ctx) + 5;
-            })]
+            })
         );
         {
             int result = 42;
@@ -251,7 +256,7 @@ TEST_CASE("as<T>(as<U>(p))")
     // do nothing in semantic action
     {
         constexpr auto p = x4::as<int>(
-            x4::as<short>(x4::attr(short(3)))[do_nothing]
+            x4::as<short>(fixed_value(short(3))).on_match(do_nothing)
         );
 
         {
@@ -270,7 +275,7 @@ TEST_CASE("as<T>(as<U>(p))")
     // without semantic action
     {
         constexpr auto p = x4::as<int>(
-            x4::as<short>(x4::attr(short(3)))
+            x4::as<short>(fixed_value(short(3)))
         );
 
         {
@@ -290,11 +295,11 @@ TEST_CASE("as<T>(as<U>(p))")
 
     {
         constexpr auto p = x4::as<std::string>(
-            x4::as<std::u32string>(+x4::unicode::char_)[([](auto&& ctx) {
+            x4::as<std::u32string>(+x4::unicode::char_).on_match([](auto&& ctx) {
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_as_var(ctx))>, std::string>);
                 static_assert(std::same_as<std::remove_reference_t<decltype(x4::_attr(ctx))>, std::u32string>);
                 _as_var(ctx) = iris::unicode::transcode<char>(_attr(ctx));
-            })]
+            })
         );
 
         std::u32string_view input = U"テスト";
@@ -440,6 +445,7 @@ TEST_CASE("_as_var")
     using x4::_attr;
     using x4::_rule_var;
     using x4::_as_var;
+    using x4::fixed_value;
 
     // `_as_var(ctx)` (with auto attribute propagation)
     {
@@ -447,13 +453,13 @@ TEST_CASE("_as_var")
 
         constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
             x4::as<std::string>(
-                eps[([](auto&& ctx) {
+                eps.on_match([](auto&& ctx) {
                     _rule_var(ctx) = "default";
-                })] >>
+                }) >>
 
-                eps[([](auto&& ctx) {
+                eps.on_match([](auto&& ctx) {
                     _as_var(ctx) = "foo";
-                })]
+                })
             );
 
         std::string_view const input;
@@ -469,13 +475,13 @@ TEST_CASE("_as_var")
 
         constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
             x4::as<std::string>(
-                eps[([](auto&& ctx) {
+                eps.on_match([](auto&& ctx) {
                     _rule_var(ctx) = "default";
-                })] >>
+                }) >>
 
-                eps[([]([[maybe_unused]] auto&& ctx) {
+                eps.on_match([]([[maybe_unused]] auto&& ctx) {
                     static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
-                })]
+                })
             ) >> disable_attr; // <----------
 
         std::string_view const input;
@@ -491,9 +497,9 @@ TEST_CASE("_as_var")
 
         constexpr auto unused_rule = x4::as<unused_type>(
             x4::as<std::string>(
-                eps[([]([[maybe_unused]] auto&& ctx) {
+                eps.on_match([]([[maybe_unused]] auto&& ctx) {
                     static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
-                })]
+                })
             )
         );
 
@@ -509,16 +515,16 @@ TEST_CASE("_as_var")
         std::string result;
 
         /*constexpr*/ auto unused_rule = x4::as<std::string>(
-            x4::attr("default") >>
+            fixed_value("default") >>
 
-            eps[([]([[maybe_unused]] auto&& ctx) {
+            eps.on_match([]([[maybe_unused]] auto&& ctx) {
                 static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, std::string>);
-            })] >>
+            }) >>
 
             x4::as<unused_type>(
-                eps[([]([[maybe_unused]] auto&& ctx) {
+                eps.on_match([]([[maybe_unused]] auto&& ctx) {
                     static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
-                })]
+                })
             )
         );
 
@@ -542,15 +548,15 @@ TEST_CASE("_as_var")
 
         {
             constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-                eps[([](auto& ctx) { _rule_var(ctx).is_quoted = false; })] >>
+                eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
                 x4::as<std::string>(
-                    x4::lit('"')[([](auto&& ctx) {
+                    x4::lit('"').on_match([](auto&& ctx) {
                         StringLiteral& rule_var = _rule_var(ctx);
                         rule_var.is_quoted = true;
-                    })] >>
-                    *(~x4::char_('"'))[([](auto&& ctx) { _as_var(ctx).push_back(_attr(ctx)); })] >>
+                    }) >>
+                    *(~x4::char_('"')).on_match([](auto&& ctx) { _as_var(ctx).push_back(_attr(ctx)); }) >>
                     '"'
-                )[([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })];
+                ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); });
 
             It first = input.begin();
             Se const last = input.end();
@@ -562,15 +568,15 @@ TEST_CASE("_as_var")
         }
         {
             constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-                eps[([](auto& ctx) { _rule_var(ctx).is_quoted = false; })] >>
+                eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
                 x4::as<std::string>(
-                    x4::lit('"')[([](auto&& ctx) {
+                    x4::lit('"').on_match([](auto&& ctx) {
                         StringLiteral& rule_var = _rule_var(ctx);
                         rule_var.is_quoted = true;
-                    })] >>
+                    }) >>
                     *~x4::char_('"') >> // <----------------- attribute ignored
                     '"'
-                )[([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })];
+                ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); });
 
             It first = input.begin();
             Se const last = input.end();
@@ -582,12 +588,12 @@ TEST_CASE("_as_var")
         }
         {
             constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-                eps[([](auto& ctx) { _rule_var(ctx).is_quoted = false; })] >>
+                eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
                 x4::as<std::string>(
                     x4::lit('"') >>     // <----------------- no semantic action
                     *~x4::char_('"') >> // <----------------- attribute NOT ignored
                     '"'
-                )[([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })];
+                ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); });
 
             It first = input.begin();
             Se const last = input.end();

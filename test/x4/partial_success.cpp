@@ -8,12 +8,12 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/attribute/value.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/numeric/int.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/alternative.hpp>
@@ -23,7 +23,7 @@
 // list-like
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/directive/repeat.hpp>
 
 #include <concepts>
@@ -81,7 +81,7 @@ struct strong_int
 
 TEST_CASE("partial success (alternative)")
 {
-    using x4::attr;
+    using x4::fixed_value;
     using x4::eps;
     using x4::omit;
     using x4::int_;
@@ -94,12 +94,12 @@ TEST_CASE("partial success (alternative)")
     // Sanity checks
     {
         int i = -1;
-        REQUIRE(parse("", attr(42), i));
+        REQUIRE(parse("", fixed_value(42), i));
         CHECK(i == 42);
     }
     {
         std::string str;
-        REQUIRE(parse("", attr("foo"), str));
+        REQUIRE(parse("", fixed_value("foo"), str));
         CHECK(str == "foo");
     }
     {
@@ -117,12 +117,12 @@ TEST_CASE("partial success (alternative)")
 
         {
             std::vector<int> ints;
-            REQUIRE(parse("1 2", eps(false) | attr(98) >> attr(99), ints).is_partial_match());
+            REQUIRE(parse("1 2", eps(false) | fixed_value(98) >> fixed_value(99), ints).is_partial_match());
             CHECK(ints == std::vector<int>{98, 99});
         }
         {
             std::vector<int> ints;
-            REQUIRE(parse("1 2", int_ >> int_ >> eps(false) | attr(98) >> attr(99), space, ints).is_partial_match());
+            REQUIRE(parse("1 2", int_ >> int_ >> eps(false) | fixed_value(98) >> fixed_value(99), space, ints).is_partial_match());
             // If we don't properly "hold" the value on the failed branch of
             // `x4::alternative`, we would see {1, 2, 98, 99} here.
             CHECK(ints == std::vector<int>{98, 99});
@@ -130,13 +130,13 @@ TEST_CASE("partial success (alternative)")
         // Failed parse should not modify the exposed attribute
         {
             std::vector<int> ints;
-            REQUIRE(!parse("1 2", int_ >> int_ >> eps(false) | attr(98) >> attr(99) >> eps(false), space, ints));
+            REQUIRE(!parse("1 2", int_ >> int_ >> eps(false) | fixed_value(98) >> fixed_value(99) >> eps(false), space, ints));
             // Wrong implementation yields {1, 2, 98, 99} or {98, 99}
             CHECK(ints == std::vector<int>{});
         }
         {
             std::vector<int> ints;
-            REQUIRE(parse("1 2", attr(std::vector<int>{3, 4}) >> eps(false) | attr(98) >> attr(99), space, ints).is_partial_match());
+            REQUIRE(parse("1 2", fixed_value(std::vector<int>{3, 4}) >> eps(false) | fixed_value(98) >> fixed_value(99), space, ints).is_partial_match());
             // Wrong implementation yields {3, 4, 98, 99}
             CHECK(ints == std::vector<int>{98, 99});
         }
@@ -173,14 +173,14 @@ TEST_CASE("partial success (alternative)")
         }
         {
             std::string str;
-            REQUIRE(parse("foodie", attr("bookworm") >> eps(false) | string("foodie"), str));
+            REQUIRE(parse("foodie", fixed_value("bookworm") >> eps(false) | string("foodie"), str));
             // Wrong implementation yields "bookwormfoodie"
             CHECK(str == "foodie");
         }
         // Failed parse should not modify the exposed attribute
         {
             std::string str;
-            REQUIRE(!parse("foodie", attr("bookworm") >> eps(false) | string("foodie") >> eps(false), str));
+            REQUIRE(!parse("foodie", fixed_value("bookworm") >> eps(false) | string("foodie") >> eps(false), str));
             // Wrong implementation yields "bookwormfoodie" or "foodie"
             CHECK(str == "");
         }
@@ -201,7 +201,7 @@ TEST_CASE("partial success (alternative)")
 
         {
             strong_int si;
-            REQUIRE(parse("1", int_ | attr(strong_int{9}), si));
+            REQUIRE(parse("1", int_ | fixed_value(strong_int{9}), si));
             CHECK(si == strong_int{1});
             CHECK(si.assigned_count == 1);
         }
@@ -224,13 +224,13 @@ TEST_CASE("partial success (alternative)")
 
         {
             pair_int pi;
-            REQUIRE(parse("1 2", int_ >> int_ | attr(pair_int{98, 99}), space, pi));
+            REQUIRE(parse("1 2", int_ >> int_ | fixed_value(pair_int{98, 99}), space, pi));
             CHECK(pi == pair_int{1, 2});
         }
         {
             pair_int pi;
             REQUIRE(parse("1 2",
-                int_ >> int_ >> eps(false) | attr(pair_int{98, 99}) >> omit[int_ >> int_],
+                int_ >> int_ >> eps(false) | fixed_value(pair_int{98, 99}) >> omit[int_ >> int_],
                 space, pi
             ));
             CHECK(pi == pair_int{98, 99});
@@ -273,7 +273,7 @@ TEST_CASE("partial success (list-like)")
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
     }
 
     // kleene
@@ -300,7 +300,7 @@ TEST_CASE("partial success (list-like)")
         CHECK(abcs == "abcabc"sv); // wrong implementation yields "abcabcab"
     }
 
-    // list
+    // delimited_list
     {
         std::string abcs;
         REQUIRE(parse("abc,abx", abc % ',' >> ",abx", abcs));
@@ -367,7 +367,7 @@ TEST_CASE("partial success (list-like)")
         STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
         STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
     }
 
     // kleene
@@ -394,7 +394,7 @@ TEST_CASE("partial success (list-like)")
         CHECK(aOOcs == "aOOcaOOc"sv); // wrong implementation yields "aOOcaOOcab"
     }
 
-    // list
+    // delimited_list
     {
         std::string aOOcs;
         REQUIRE(parse("aOOc,aOOx", aOOc % ',' >> ",aOOx", aOOcs));

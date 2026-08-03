@@ -12,18 +12,20 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/core/expectation.hpp>
+
+#include <iris/x4/attribute/value.hpp>
+#include <iris/x4/primitive/eoi.hpp>
+#include <iris/x4/primitive/eol.hpp>
+#include <iris/x4/primitive/eps.hpp>
+
 #include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/symbols.hpp>
-#include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eoi.hpp>
-#include <iris/x4/auxiliary/eol.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
-#include <iris/x4/char/char_class.hpp>
+
 #include <iris/x4/directive/with.hpp>
-#include <iris/x4/core/expectation.hpp>
 #include <iris/x4/directive/expect.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/directive/matches.hpp>
@@ -31,21 +33,24 @@
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/directive/repeat.hpp>
-#include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
+
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/uint.hpp>
 #include <iris/x4/numeric/real.hpp>
 #include <iris/x4/numeric/bool.hpp>
+
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/and_predicate.hpp>
 #include <iris/x4/operator/difference.hpp>
 #include <iris/x4/operator/not_predicate.hpp>
 #include <iris/x4/operator/optional.hpp>
+
+#include <iris/x4/rule.hpp>
 
 #include <ranges>
 #include <algorithm>
@@ -213,14 +218,14 @@ TEST_CASE("rollback on failed parse (action)")
     {
         constexpr auto input = "foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(eps[([](auto&&) { return false; })].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(eps.on_match([](auto&&) { return false; }).parse(first, input.end(), unused, unused));
         CHECK(first == input.begin());
     }
     {
         constexpr auto input = "42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(int_[([](auto&&) { return false; })].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(int_.on_match([](auto&&) { return false; }).parse(first, input.end(), unused, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser itself succeeds; always results in side effect
     }
@@ -228,15 +233,15 @@ TEST_CASE("rollback on failed parse (action)")
         constexpr auto input = "42,43"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE((int_ >> ',' >> int_)[([](auto&&) { return false; })].parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE((int_ >> ',' >> int_).on_match([](auto&&) { return false; }).parse(first, input.end(), unused, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{42, 43}); // sequence parser itself succeeds; always results in side effect
     }
 }
 
-TEST_CASE("rollback on failed parse (auxiliary)")
+TEST_CASE("rollback on failed parse (primitive)")
 {
-    using x4::attr;
+    using x4::fixed_value;
     using x4::eps;
     using x4::eoi;
     using x4::eol;
@@ -245,7 +250,7 @@ TEST_CASE("rollback on failed parse (auxiliary)")
         constexpr auto input = "foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((attr(42) >> eps(false)).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((fixed_value(42) >> eps(false)).parse(first, input.end(), unused, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
@@ -290,7 +295,6 @@ TEST_CASE("rollback on failed parse (directive)")
     using x4::no_skip;
     using x4::omit;
     using x4::repeat;
-    using x4::seek;
     using x4::skip;
     using x4::with;
 
@@ -492,29 +496,6 @@ TEST_CASE("rollback on failed parse (directive)")
         REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{});
-    }
-
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        REQUIRE_FALSE(seek[eps(false)].parse(first, input.end(), unused, unused));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        int dummy_int = -1;
-        REQUIRE_FALSE(seek[int_].parse(first, input.end(), unused, dummy_int));
-        CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
-    }
-    {
-        constexpr auto input = "42"sv;
-        auto first = input.begin();
-        int dummy_int = -1;
-        REQUIRE_FALSE(seek[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
-        CHECK(first == input.begin());
-        CHECK(dummy_int == 2); // `seek` has side effect
     }
 
     {
@@ -757,7 +738,7 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((true_ % eps(false) >> eps(false)).parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true});// `list` parser (within sequence) exposes the side effects
+        CHECK(dummy_bools == std::vector<bool>{true});// `delimited_list` parser (within sequence) exposes the side effects
     }
 
     {
