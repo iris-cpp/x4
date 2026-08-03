@@ -249,27 +249,6 @@ private:
     }
 };
 
-template<X4Subject Subject, class Action>
-[[nodiscard, deprecated(
-    "Use `operator[]` instead. The symbol `/` normally means \"ordered choice\" "
-    "in PEG, and is irrelevant to semantic actions. Furthermore, using C++'s "
-    "`operator/` for this purpose may introduce surprising behavior when it's "
-    "mixed with ordinary PEG operators, for instance, the unary `operator+`, "
-    "due to precedence."
-)]]
-constexpr action<as_parser_plain_t<Subject>, std::remove_cvref_t<Action>>
-operator/(Subject&& p, Action&& f)
-    noexcept(
-        is_parser_nothrow_castable_v<Subject> &&
-        std::is_nothrow_constructible_v<
-            action<as_parser_plain_t<Subject>, std::remove_cvref_t<Action>>,
-            as_parser_t<Subject>, Action
-        >
-    )
-{
-    return {as_parser(std::forward<Subject>(p)), std::forward<Action>(f)};
-}
-
 } // iris::x4
 
 #endif
