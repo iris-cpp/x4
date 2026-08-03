@@ -9,8 +9,6 @@
 
 #include <iris/rvariant.hpp>
 
-namespace alloy_wrong_substitute_test_case {
-
 struct A
 {
     int foo;
@@ -23,47 +21,37 @@ struct B
     std::string fuga;
 };
 
-} // alloy_wrong_substitute_test_case
-
 namespace iris::alloy {
 
 // If enabled, `B` can be wrongly treated as substitutable to `A`
 template<>
-struct adaptor<alloy_wrong_substitute_test_case::A>
+struct adaptor<A>
 {
    using getters_list = make_getters_list<
-       &alloy_wrong_substitute_test_case::A::foo,
-       &alloy_wrong_substitute_test_case::A::bar
+       &A::foo,
+       &A::bar
    >;
 };
 
 template<>
-struct adaptor<alloy_wrong_substitute_test_case::B>
+struct adaptor<B>
 {
     using getters_list = make_getters_list<
-        &alloy_wrong_substitute_test_case::B::hoge,
-        &alloy_wrong_substitute_test_case::B::fuga
+        &B::hoge,
+        &B::fuga
     >;
 };
 
 } // iris::alloy
 
-namespace ast {
-
-using A = alloy_wrong_substitute_test_case::A;
-using B = alloy_wrong_substitute_test_case::B;
 using AorB = iris::rvariant<
-    alloy_wrong_substitute_test_case::A,
-    alloy_wrong_substitute_test_case::B
+    A,
+    B
 >;
 
-} // ast
-
-namespace alloy_wrong_substitute_test_case {
-
-using ARule = x4::rule<struct a_tag, ast::A>;
-using BRule = x4::rule<struct b_tag, ast::B>;
-using AorBRule = x4::rule<struct a_or_b_tag, ast::AorB>;
+using ARule = x4::rule<struct a_tag, A>;
+using BRule = x4::rule<struct b_tag, B>;
+using AorBRule = x4::rule<struct a_or_b_tag, AorB>;
 
 constexpr ARule a;
 constexpr BRule b;
@@ -85,11 +73,9 @@ IRIS_X4_DEFINE(a_or_b);
 
 IRIS_X4_INSTANTIATE(AorBRule, const char*, x4::unused_type);
 
-TEST_CASE("alloy_wrong_substitute_test_case")
+TEST_CASE("alloy_wrong_substitute")
 {
     const char* ptr = nullptr;
-    ast::AorB result;
+    AorB result;
     (void)a_or_b.parse(ptr, nullptr, x4::unused, result);
 }
-
-} // alloy_wrong_substitute_test_case
