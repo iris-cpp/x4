@@ -34,7 +34,6 @@
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/directive/repeat.hpp>
-#include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/sequence.hpp>
@@ -152,7 +151,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     using x4::no_skip;
     using x4::omit;
     using x4::repeat;
-    using x4::seek;
     using x4::skip;
     using x4::with;
 
@@ -215,7 +213,6 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
 
     (void)omit[eps].parse(first, last, unused, unused);
     (void)repeat(1)[eps].parse(first, last, unused, unused);
-    (void)seek[eps].parse(first, last, unused, unused);
     (void)skip(space)[eps].parse(first, last, unused, unused);
     (void)with<struct with_id_>(input)[eps].parse(first, last, unused, unused);
 
@@ -290,7 +287,6 @@ TEST_CASE("expect")
     using x4::no_skip;
     using x4::omit;
     using x4::skip;
-    using x4::seek;
     using x4::repeat;
     using x4::matches;
     using x4::eps;
@@ -651,15 +647,6 @@ TEST_CASE("expect")
         });
 
         X4_TEST_SUCCESS_PASS("bcab", repeat(2, 3)[lit('a') > 'b'] | +alpha);
-    }
-
-    // seek
-    {
-        X4_TEST_SUCCESS_PASS("a1b1c1", seek[lit('c') > '1']);
-        X4_TEST_FAILURE("a1b1c2c1", seek[lit('c') > '1'], {
-            CHECK(which == "'1'"sv);
-            CHECK(where == "2c1"sv);
-        });
     }
 
     // alternative

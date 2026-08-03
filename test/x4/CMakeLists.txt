@@ -84,7 +84,6 @@ x4_define_tests(
     rule2
     rule3
     rule4
-    seek
     sequence
     skip
     smart_ptr

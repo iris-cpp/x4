@@ -31,7 +31,6 @@
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/directive/repeat.hpp>
-#include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/uint.hpp>
@@ -290,7 +289,6 @@ TEST_CASE("rollback on failed parse (directive)")
     using x4::no_skip;
     using x4::omit;
     using x4::repeat;
-    using x4::seek;
     using x4::skip;
     using x4::with;
 
@@ -492,29 +490,6 @@ TEST_CASE("rollback on failed parse (directive)")
         REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), unused, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{});
-    }
-
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        REQUIRE_FALSE(seek[eps(false)].parse(first, input.end(), unused, unused));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        int dummy_int = -1;
-        REQUIRE_FALSE(seek[int_].parse(first, input.end(), unused, dummy_int));
-        CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
-    }
-    {
-        constexpr auto input = "42"sv;
-        auto first = input.begin();
-        int dummy_int = -1;
-        REQUIRE_FALSE(seek[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
-        CHECK(first == input.begin());
-        CHECK(dummy_int == 2); // `seek` has side effect
     }
 
     {
