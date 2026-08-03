@@ -214,28 +214,28 @@ struct as_parser_fn
 
     template<class Derived>
     [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived>& p) noexcept
+    operator()(parser<Derived>& p IRIS_LIFETIMEBOUND) noexcept
     {
         return p.derived();
     }
 
     template<class Derived>
     [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived> const& p) noexcept
+    operator()(parser<Derived> const& p IRIS_LIFETIMEBOUND) noexcept
     {
         return p.derived();
     }
 
     template<class Derived>
     [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived>&& p) noexcept
+    operator()(parser<Derived>&& p IRIS_LIFETIMEBOUND) noexcept
     {
         return std::move(p).derived();
     }
 
     template<class Derived>
     [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived> const&& p) noexcept
+    operator()(parser<Derived> const&& p IRIS_LIFETIMEBOUND) noexcept
     {
         return std::move(p).derived();
     }

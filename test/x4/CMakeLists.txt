@@ -87,6 +87,7 @@ x4_define_tests(
     seek
     sequence
     skip
+    smart_ptr
     substitution
     symbols1
     symbols2
