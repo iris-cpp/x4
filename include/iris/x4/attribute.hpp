@@ -9,6 +9,7 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
+#include <iris/x4/attribute/as.hpp>
 // #include <iris/x4/attribute/smart_ptr.hpp> // excluded
 #include <iris/x4/attribute/value.hpp>
 

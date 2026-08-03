@@ -268,7 +268,7 @@ public:
             //
             // Note: `x4::as<T>(...)` explicitly unsets `has_action` even if the underlying subject
             // has semantic action, so it will be dispatched to the latter branch (unless the
-            // `as_directive` itself has semantic action).
+            // `as_type_parser` itself has semantic action).
             if constexpr (RHS::has_action) {
                 if constexpr (ForceAttr) {
                     parse_ok = rule_impl::parse_rhs(

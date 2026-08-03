@@ -11,7 +11,6 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/directive/as.hpp>
 #include <iris/x4/directive/expect.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/directive/matches.hpp>

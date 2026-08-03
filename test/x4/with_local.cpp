@@ -8,8 +8,8 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/attribute/as.hpp>
 #include <iris/x4/directive/with_local.hpp>
-#include <iris/x4/directive/as.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/auxiliary/eps.hpp>
 #include <iris/x4/operator/sequence.hpp>
