@@ -8,7 +8,6 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/auxiliary/eps.hpp>
-#include <iris/x4/directive/without.hpp>
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/core/parser.hpp>
 
