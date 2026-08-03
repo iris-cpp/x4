@@ -9,7 +9,7 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/attribute/value.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/char/char.hpp>
@@ -27,23 +27,23 @@ TEST_CASE("attr")
     using namespace std::string_literals;
     using namespace std::string_view_literals;
 
-    using x4::attr;
+    using x4::fixed_value;
     using x4::int_;
 
     {
-        [[maybe_unused]] constexpr auto attr_p = attr(1);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<int>>);
+        [[maybe_unused]] constexpr auto attr_p = fixed_value(1);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<int>>);
     }
     {
-        [[maybe_unused]] constexpr auto attr_p = attr(3.14);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<double>>);
+        [[maybe_unused]] constexpr auto attr_p = fixed_value(3.14);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<double>>);
     }
 
     {
-        constexpr auto attr_p = attr("foo");
-        STATIC_REQUIRE(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string<char>, std::basic_string_view<char>>>);
+        constexpr auto attr_p = fixed_value("foo");
+        STATIC_REQUIRE(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string<char>, std::basic_string_view<char>>>);
 
-        // Make sure `attr(std::string_view)` is parsable into std::string
+        // Make sure `fixed_value(std::string_view)` is parsable into std::string
         {
             constexpr auto result = [&](std::string_view expected_str) consteval {
                 std::string str;
@@ -66,71 +66,71 @@ TEST_CASE("attr")
         }
     }
     {
-        [[maybe_unused]] /*constexpr*/ auto attr_p = attr("foo"s);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string<char>>>);
+        [[maybe_unused]] /*constexpr*/ auto attr_p = fixed_value("foo"s);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string<char>>>);
     }
     {
-        [[maybe_unused]] constexpr auto attr_p = attr("foo"sv);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string_view<char>>>);
+        [[maybe_unused]] constexpr auto attr_p = fixed_value("foo"sv);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string_view<char>>>);
     }
 
     {
-        [[maybe_unused]] constexpr auto attr_p = attr(U"foo");
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string<char32_t>, std::basic_string_view<char32_t>>>);
+        [[maybe_unused]] constexpr auto attr_p = fixed_value(U"foo");
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string<char32_t>, std::basic_string_view<char32_t>>>);
     }
     {
-        [[maybe_unused]] /*constexpr*/ auto attr_p = attr(U"foo"s);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string<char32_t>>>);
+        [[maybe_unused]] /*constexpr*/ auto attr_p = fixed_value(U"foo"s);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string<char32_t>>>);
     }
     {
-        [[maybe_unused]] constexpr auto attr_p = attr(U"foo"sv);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::attr_parser<std::basic_string_view<char32_t>>>);
+        [[maybe_unused]] constexpr auto attr_p = fixed_value(U"foo"sv);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string_view<char32_t>>>);
     }
 
-    IRIS_X4_ASSERT_CONSTEXPR_CTORS(attr(1));
-    IRIS_X4_ASSERT_CONSTEXPR_CTORS(attr("asd"));
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(fixed_value(1));
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(fixed_value("asd"));
 
     {
         constexpr char s[] = "asd";
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(attr(s));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(fixed_value(s));
     }
 
     {
         int d = 0;
-        REQUIRE(parse("", attr(1), d));
+        REQUIRE(parse("", fixed_value(1), d));
         CHECK(d == 1);
     }
     {
         int d = 0;
         int d1 = 1;
-        REQUIRE(parse("", attr(d1), d));
+        REQUIRE(parse("", fixed_value(d1), d));
         CHECK(d == 1);
     }
     {
         std::pair<int, int> p;
-        REQUIRE(parse("1", int_ >> attr(2), p));
+        REQUIRE(parse("1", int_ >> fixed_value(2), p));
         CHECK(p.first == 1);
         CHECK(p.second == 2);
     }
     {
         char c = '\0';
-        REQUIRE(parse("", attr('a'), c));
+        REQUIRE(parse("", fixed_value('a'), c));
         CHECK(c == 'a');
     }
     {
         std::string str;
-        REQUIRE(parse("", attr("test"), str));
+        REQUIRE(parse("", fixed_value("test"), str));
         CHECK(str == "test");
     }
     {
         std::string str;
-        REQUIRE(parse("", attr(std::string("test")), str));
+        REQUIRE(parse("", fixed_value(std::string("test")), str));
         CHECK(str == "test");
     }
     {
         std::vector<int> array = {0, 1, 2};
         std::vector<int> vec;
-        REQUIRE(parse("", attr(array), vec));
+        REQUIRE(parse("", fixed_value(array), vec));
         REQUIRE(vec.size() == 3);
         CHECK(vec[0] == 0);
         CHECK(vec[1] == 1);
@@ -139,7 +139,7 @@ TEST_CASE("attr")
 
     {
         std::string s;
-        REQUIRE(parse("s", "s" >> attr(std::string("123")), s));
+        REQUIRE(parse("s", "s" >> fixed_value(std::string("123")), s));
         CHECK(s == "123");
     }
 
@@ -154,7 +154,7 @@ TEST_CASE("attr")
     }
     {
         std::vector<std::vector<int>> vecs;
-        REQUIRE(parse("", attr(std::vector<int>{1, 2, 3}) >> attr(std::vector<int>{4, 5, 6}), vecs));
+        REQUIRE(parse("", fixed_value(std::vector<int>{1, 2, 3}) >> fixed_value(std::vector<int>{4, 5, 6}), vecs));
         CHECK(vecs == std::vector{std::vector{1, 2, 3}, std::vector{4, 5, 6}});
     }
 
@@ -167,41 +167,41 @@ TEST_CASE("attr")
     }
     {
         std::vector<std::string> strs;
-        REQUIRE(parse("", attr(std::string("123")) >> attr(std::string("456")), strs));
+        REQUIRE(parse("", fixed_value(std::string("123")) >> fixed_value(std::string("456")), strs));
         CHECK(strs == std::vector<std::string>{"123", "456"});
     }
 
     {
         std::string s;
-        REQUIRE(parse("", attr(std::string("123")) >> attr(std::string("456")), s));
+        REQUIRE(parse("", fixed_value(std::string("123")) >> fixed_value(std::string("456")), s));
         CHECK(s == "123456");
     }
 
     {
         std::vector<int> ints;
-        REQUIRE(parse("", attr(std::vector<int>{1, 2, 3}) >> attr(std::vector<int>{4, 5, 6}), ints));
+        REQUIRE(parse("", fixed_value(std::vector<int>{1, 2, 3}) >> fixed_value(std::vector<int>{4, 5, 6}), ints));
         CHECK(ints == std::vector<int>{1, 2, 3, 4, 5, 6});
     }
 
     {
         std::vector<int> ints;
         REQUIRE(parse("",
-            (attr(std::vector<int>{1, 2, 3}) >> attr(std::vector<int>{4, 5, 6})) >>
-            (attr(std::vector<int>{7, 8, 9}) >> attr(std::vector<int>{0, 1, 2})),
+            (fixed_value(std::vector<int>{1, 2, 3}) >> fixed_value(std::vector<int>{4, 5, 6})) >>
+            (fixed_value(std::vector<int>{7, 8, 9}) >> fixed_value(std::vector<int>{0, 1, 2})),
             ints
         ));
         CHECK(ints == std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2});
     }
 }
 
-TEST_CASE("init_attr")
+TEST_CASE("reset_value")
 {
-    using x4::init_attr;
+    using x4::reset_value;
 
     {
         int val = 42;
-        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(init_attr<int>)>::attribute_type, int>);
-        REQUIRE(parse("", init_attr<int>, val));
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(reset_value<int>)>::attribute_type, int>);
+        REQUIRE(parse("", reset_value<int>, val));
         CHECK(val == 0);
     }
     {
@@ -210,8 +210,8 @@ TEST_CASE("init_attr")
         val.emplace_back(42);
         auto const prev_capacity = val.capacity();
 
-        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(init_attr<std::vector<int>>)>::attribute_type, std::vector<int>>);
-        REQUIRE(parse("", init_attr<std::vector<int>>, val));
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(reset_value<std::vector<int>>)>::attribute_type, std::vector<int>>);
+        REQUIRE(parse("", reset_value<std::vector<int>>, val));
         CHECK(val.empty());
         CHECK(val.capacity() == prev_capacity); // should preserve capacity as per `.clear()`
     }

@@ -44,7 +44,6 @@ x4_define_tests(
     alternative
     and_predicate
     as
-    attr
     attribute_type_check
     bool
     char
@@ -96,6 +95,7 @@ x4_define_tests(
     uint
     uint_radix
     unused
+    value
     with
     with_local
     without

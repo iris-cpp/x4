@@ -9,7 +9,7 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/attribute/value.hpp>
 #include <iris/x4/auxiliary/eps.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
@@ -25,12 +25,12 @@ namespace {
 
 // just an `attr` with added type checker
 template<class Value, class Expected>
-struct checked_attr_parser : x4::attr_parser<Value>
+struct checked_fixed_value_parser : x4::fixed_value_parser<Value>
 {
-    using base_type = x4::attr_parser<Value>;
+    using base_type = x4::fixed_value_parser<Value>;
 
-    checked_attr_parser(Value const& value) : base_type(value) {}
-    checked_attr_parser(Value&& value) : base_type(std::move(value)) {}
+    checked_fixed_value_parser(Value const& value) : base_type(value) {}
+    checked_fixed_value_parser(Value&& value) : base_type(std::move(value)) {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] constexpr bool
@@ -42,7 +42,7 @@ struct checked_attr_parser : x4::attr_parser<Value>
 };
 
 template<class Expected, class Value>
-checked_attr_parser<std::decay_t<Value>, Expected>
+checked_fixed_value_parser<std::decay_t<Value>, Expected>
 checked_attr(Value&& value) { return { std::forward<Value>(value) }; }
 
 // instantiate our type checker

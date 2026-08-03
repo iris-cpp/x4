@@ -17,7 +17,7 @@
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/symbols.hpp>
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/attribute/value.hpp>
 #include <iris/x4/auxiliary/eoi.hpp>
 #include <iris/x4/auxiliary/eol.hpp>
 #include <iris/x4/auxiliary/eps.hpp>
@@ -235,7 +235,7 @@ TEST_CASE("rollback on failed parse (action)")
 
 TEST_CASE("rollback on failed parse (auxiliary)")
 {
-    using x4::attr;
+    using x4::fixed_value;
     using x4::eps;
     using x4::eoi;
     using x4::eol;
@@ -244,7 +244,7 @@ TEST_CASE("rollback on failed parse (auxiliary)")
         constexpr auto input = "foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((attr(42) >> eps(false)).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((fixed_value(42) >> eps(false)).parse(first, input.end(), unused, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }

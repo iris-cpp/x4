@@ -10,7 +10,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/attribute/value.hpp>
 #include <iris/x4/auxiliary/eps.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/negated_char.hpp>
@@ -44,7 +44,7 @@ TEST_CASE("sequence")
     using x4::standard::string;
     using x4::standard::lit;
     using x4::standard::alnum;
-    using x4::attr;
+    using x4::fixed_value;
     using x4::omit;
     using x4::unused;
     using x4::int_;
@@ -460,7 +460,7 @@ TEST_CASE("sequence")
 
     // Test that sequence with only one parser producing attribute makes it unwrapped
     STATIC_CHECK(std::same_as<
-        x4::parser_traits<decltype(lit("abc") >> attr(long()))>::attribute_type,
+        x4::parser_traits<decltype(lit("abc") >> fixed_value(long{}))>::attribute_type,
         long
     >);
 

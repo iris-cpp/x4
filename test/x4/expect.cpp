@@ -20,7 +20,7 @@
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/symbols.hpp>
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/attr.hpp>
+#include <iris/x4/attribute/value.hpp>
 #include <iris/x4/auxiliary/eoi.hpp>
 #include <iris/x4/auxiliary/eol.hpp>
 #include <iris/x4/auxiliary/eps.hpp>
@@ -138,7 +138,7 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     using x4::eoi;
     using x4::eol;
     using x4::eps;
-    using x4::attr;
+    using x4::fixed_value;
     using x4::lit;
     using x4::string;
     using x4::char_;
@@ -171,7 +171,8 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)int_[([]{})].parse(first, last, unused, dummy_int); // action
     (void)(int_ >> int_)[([]{})].parse(first, last, unused, dummy_ints); // action
 
-    (void)attr(42).parse(first, last, unused, unused);
+    (void)fixed_value(42).parse(first, last, unused, unused);
+    (void)fixed_value("foo").parse(first, last, unused, unused);
     (void)eoi.parse(first, last, unused, unused);
     (void)eol.parse(first, last, unused, unused);
     (void)eps.parse(first, last, unused, unused);
@@ -491,7 +492,7 @@ TEST_CASE("expect")
         });
 
         int n = 0;
-        X4_TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::attr(12) > eoi, n);
+        X4_TEST_ATTR_SUCCESS_PASS("abc", lit("abc") > x4::fixed_value(12) > eoi, n);
         CHECK(n == 12);
     }
 
