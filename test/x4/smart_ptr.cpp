@@ -12,6 +12,27 @@
 #include <iris/x4/numeric/int.hpp>
 
 #include <stdexcept>
+#include <memory>
+
+template<class T>
+struct throwing_parser : x4::parser<throwing_parser<T>>
+{
+    using attribute_type = T;
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
+    [[nodiscard]] static constexpr bool
+    parse(It&, Se const&, Context const&, Attr& attr_)
+    {
+        // Dummy condition for suppressing potential warning
+        if (std::addressof(attr_)) {
+            throw std::runtime_error("throwing_parser");
+        }
+        return false;
+    }
+};
+
+template<class T>
+[[maybe_unused]] inline constexpr throwing_parser<T> always_throw{};
 
 template<class T>
 struct custom_deleter
@@ -43,7 +64,7 @@ TEST_CASE("unique_ptr (std::default_delete<T>)")
     {
         std::unique_ptr<int> result;
         REQUIRE_THROWS_AS(
-            parse("1", unique_ptr<int>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", unique_ptr<int>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!result);
@@ -65,7 +86,7 @@ TEST_CASE("unique_ptr (std::default_delete<T>)")
     {
         std::unique_ptr<int> result = std::make_unique<int>(42);
         REQUIRE_THROWS_AS(
-            parse("1", unique_ptr<int>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", unique_ptr<int>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!!result);
@@ -94,7 +115,7 @@ TEST_CASE("unique_ptr (custom deleter)")
     {
         std::unique_ptr<int, custom_deleter<int>> result;
         REQUIRE_THROWS_AS(
-            parse("1", unique_ptr<int, custom_deleter<int>>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", unique_ptr<int, custom_deleter<int>>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!result);
@@ -116,7 +137,7 @@ TEST_CASE("unique_ptr (custom deleter)")
     {
         std::unique_ptr<int, custom_deleter<int>> result(new int(42), custom_deleter<int>{});
         REQUIRE_THROWS_AS(
-            parse("1", unique_ptr<int, custom_deleter<int>>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", unique_ptr<int, custom_deleter<int>>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!!result);
@@ -145,7 +166,7 @@ TEST_CASE("shared_ptr (std::default_delete<T>)")
     {
         std::shared_ptr<int> result;
         REQUIRE_THROWS_AS(
-            parse("1", shared_ptr<int>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", shared_ptr<int>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!result);
@@ -167,7 +188,7 @@ TEST_CASE("shared_ptr (std::default_delete<T>)")
     {
         std::shared_ptr<int> result = std::make_shared<int>(42);
         REQUIRE_THROWS_AS(
-            parse("1", shared_ptr<int>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", shared_ptr<int>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!!result);
@@ -196,7 +217,7 @@ TEST_CASE("shared_ptr (custom deleter)")
     {
         std::shared_ptr<int> result;
         REQUIRE_THROWS_AS(
-            parse("1", shared_ptr<int, custom_deleter<int>>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", shared_ptr<int, custom_deleter<int>>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!result);
@@ -218,7 +239,7 @@ TEST_CASE("shared_ptr (custom deleter)")
     {
         std::shared_ptr<int> result(new int(42), custom_deleter<int>{});
         REQUIRE_THROWS_AS(
-            parse("1", shared_ptr<int, custom_deleter<int>>(eps[([] { throw std::runtime_error{"failed"}; })]), result),
+            parse("1", shared_ptr<int, custom_deleter<int>>(always_throw<int>), result),
             std::runtime_error
         );
         REQUIRE(!!result);
