@@ -23,9 +23,12 @@
 
 #include <iris/string.hpp>
 
+#include <iris/bits/specialization_of.hpp>
+
 #include <print>
 #include <iterator>
-#include <concepts>
+#include <memory>
+#include <type_traits>
 
 #include <cstdint>
 
@@ -220,8 +223,23 @@ struct print_attribute_debug
 
     static void call(std::ostream& out, traits::CategorizedAttr<traits::plain_attr> auto const& val)
     {
-        if constexpr (std::formattable<T, char>) {
+        if constexpr (
+            std::disjunction_v<
+                std::is_pointer<T>,
+                is_ttp_specialization_of<T, std::unique_ptr>,
+                is_ttp_specialization_of<T, std::shared_ptr>
+            >
+        ) {
+            auto const* ptr = std::to_address(val);
+            if (!ptr) {
+                out << "nullptr";
+            } else {
+                print_attribute_debug<typename std::pointer_traits<T>::element_type>::call(out, *ptr);
+            }
+
+        } else if constexpr (std::formattable<T, char>) {
             std::format_to(std::ostreambuf_iterator{out}, "{}", val);
+
         } else {
             // TODO: https://github.com/iris-cpp/iris/issues/51
             //static_assert(iris::req::ADL_ostreamable_v<T>);
