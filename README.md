@@ -36,7 +36,7 @@ target_link_libraries(my_app PUBLIC Iris::X4)
 
 An *attribute* is the value produced by a successful parse. It represents the semantic result of a parser after it consumes input, and is propagated through combinators, directives, and rules according to their transformation rules. Attributes may be primitive values, containers, or user-defined types, and can be constructed, transformed, or suppressed depending on the parser expression.
 
-Phrases like "the attribute type of a parser" usually refer to the value type of the attribute produced by that parser class.
+Some parsers do not produce an attribute. For such parsers, the attribute type is `x4::unused_type`.
 
 ### exposed attribute
 
@@ -61,6 +61,8 @@ constexpr auto p = x4::int_;
 
 The `x4::sequence` parser (normally instantiated via `a >> b` syntax) yields a special tuple attribute. This attribute is generic in nature and can be transformed into any tuple-like or sequence-like concrete type, depending on the caller.
 
+To adapt a user-defined type as an tuple-like type, use `IRIS_ALLOY_ADAPT_STRUCT` from [<iris/alloy/adapt.hpp>](https://github.com/iris-cpp/x4/blob/main/include/iris/alloy/adapt.hpp).
+
 ```cpp
 // parser attr: `iris::alloy::tuple<int, int>`
 constexpr auto p = x4::int_ >> x4::int_;
@@ -71,7 +73,13 @@ x4::parse("...", p, ints);
 
 // exposed attr: `std::tuple<int, int>`
 std::tuple<int, int> int_int_tup;
-x4::parse("...". p, int_int_tup);
+x4::parse("...", p, int_int_tup);
+
+// exposed attr: `Point`
+struct Point { int x, y; };
+IRIS_ALLOY_ADAPT_STRUCT(Point, x, y);
+Point point;
+x4::parse("...", p, point);
 ```
 
 When multiple nested parser invocations are involved, the exposed attribute type may vary depending on context.
