@@ -38,6 +38,11 @@ An *attribute* is the value produced by a successful parse. It represents the se
 
 Phrases like "the attribute type of a parser" usually refer to the value type of the attribute produced by that parser class.
 
+### "exposed attribute"
+
+TODO: write this section
+TODO: add some example (plain type, container type)
+
 ### "semantic action"
 
 A *semantic action* is a user-provided invocable object (usually a lambda) that is executed when a parser successfully matches its input. It is used to inspect, transform, or validate the parsed result, and may optionally influence control flow by accepting or rejecting the match. Semantic actions operate on the current parsing context and the attribute produced by the parser, allowing fine-grained post-processing of successful parses.
@@ -92,7 +97,7 @@ The descriptions below focus on recognition behavior and omit many details conce
 | `*p`     | Parse zero or more occurrences of `p`.                                                                                                                    |
 | `+p`     | Parse one or more occurrences of `p`.                                                                                                                     |
 | `p % d`  | Parse one or more occurrences of `p`, separated by `d`.                                                                                                   |
-| `a - b`  | Parse `a` only when `b` does not match at the same input position. The test of `b` does not consume input.                                                |
+| `a - b`  | Parse `a` only when `b` does not match at the same input position. The test of `b` does not consume input.<br>Equivalent to `!b >> a`.                                                |
 | `-p`     | Parse zero or one occurrence of `p`.                                                                                                                      |
 | `&p`     | Succeed when `p` matches, without consuming input or producing its attribute.                                                                             |
 | `!p`     | Succeed when `p` does not match, without consuming input or producing an attribute.                                                                       |
@@ -107,7 +112,7 @@ These facilities commonly appear in production language grammars.
 | `expect[p]`            | Parse `p`. If it fails, record an expectation failure that prevents ordinary backtracking and alternative recovery. Usually invoked indirectly via the `a > b` syntax. |
 | `lexeme[p]`            | Perform the normal pre-skip, then parse `p` with automatic skipping disabled inside it.                                                     |
 | `with<ID>(value)[p]`   | Bind `value` to the context id `ID` while parsing `p`.<br>The instance be fetched via `x4::get<ID>(ctx)` in semantic action.               |
-| `with_local<T, ID>[p]`     | Create a value-initialized local value of type `T` for each invocation of `p` and bind it to the context id `ID`. If `ID` is omitted, the default local-variable context id (`x4::contexts::local_var`) is used.<br>The instance be fetched via `x4::get<ID>(ctx)` or `x4::_local_var(ctx)`, respectively, in semantic action. |
+| `with_local<T, ID>[p]`     | Create a value-initialized local value of type `T` for each invocation of `p` and bind it to the context id `ID`. If `ID` is omitted, the default local-variable context id (`x4::contexts::local_var`) is used.<br>The instance be fetched via `x4::get<ID>(ctx)` or `x4::_local_var(ctx)`, respectively, in semantic action. |
 
 ### Minor Directives
 
@@ -214,7 +219,7 @@ The following function objects retrieve commonly used values from the parsing co
 
 | Syntax            | Meaning                                                                                                                                                                                                                                                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `_attr(ctx)`      | Return the attribute associated with the current semantic action. This is the attribute instance produced by the parser `p` on the expression `p.on_match(f)`. It is available only when that parser exposes a non-`unused_type` attribute. Equivalent to `x4::get<x4::contexts::attr>(ctx)`.                                          |
-| `_rule_var(ctx)`  | Return the attribute variable of the innermost active `x4::rule` invocation. In a recursive rule, this always refers to the current recursive invocation rather than an outer invocation. Equivalent to `x4::get<x4::contexts::rule_var>(ctx)`. |
-| `_local_var(ctx)` | Return the innermost local variable created by `with_local<T>[p]` using the default `x4::contexts::local_var` context id. Equivalent to `x4::get<x4::contexts::local_var>(ctx)`.<br>*Note:* when `with_local<T, ID>[p]` uses a custom id, retrieve the value with `x4::get<ID>(ctx)` instead. |
-| `_as_var(ctx)`    | Return the attribute variable managed by the innermost active `as<T>(p)` facility. Semantic actions inside `p` can use this fetcher to access the value being constructed for the enclosing `as<T>` parser. Equivalent to `x4::get<x4::contexts::as_var>(ctx)`.                                                      |
+| `_attr(ctx)`      | Return the reference to the attribute associated with the current semantic action. This is the attribute instance produced by the parser `p` on the expression `p.on_match(f)`. It is available only when that parser exposes a non-`unused_type` attribute. Equivalent to `x4::get<x4::contexts::attr>(ctx)`.                                          |
+| `_rule_var(ctx)`  | Return the reference to the attribute variable of the innermost active `x4::rule` invocation. In a recursive rule, this always refers to the current recursive invocation rather than an outer invocation. Equivalent to `x4::get<x4::contexts::rule_var>(ctx)`. |
+| `_local_var(ctx)` | Return the reference to the innermost local variable created by `with_local<T>[p]` using the default `x4::contexts::local_var` context id. Equivalent to `x4::get<x4::contexts::local_var>(ctx)`.<br>*Note:* when `with_local<T, ID>[p]` uses a custom id, retrieve the value with `x4::get<ID>(ctx)` instead. |
+| `_as_var(ctx)`    | Return the reference to the attribute variable managed by the innermost active `as<T>(p)` facility. Semantic actions inside `p` can use this fetcher to access the value being constructed for the enclosing `as<T>` parser. Equivalent to `x4::get<x4::contexts::as_var>(ctx)`.                                                      |
