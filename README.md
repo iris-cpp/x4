@@ -30,20 +30,64 @@ target_link_libraries(my_app PUBLIC Iris::X4)
 ```
 
 
-## Terminology
+## Core Concepts
 
-### "attribute"
+### attribute
 
 An *attribute* is the value produced by a successful parse. It represents the semantic result of a parser after it consumes input, and is propagated through combinators, directives, and rules according to their transformation rules. Attributes may be primitive values, containers, or user-defined types, and can be constructed, transformed, or suppressed depending on the parser expression.
 
 Phrases like "the attribute type of a parser" usually refer to the value type of the attribute produced by that parser class.
 
-### "exposed attribute"
+### exposed attribute
 
-TODO: write this section
-TODO: add some example (plain type, container type)
+An *exposed attribute* is an attribute instance supplied by the parser's caller. Its type may either match the parser's own attribute type or be entirely different, depending on the caller.
 
-### "semantic action"
+```cpp
+// exposed attr: `int`, parser attr: `int`
+int i;
+x4::parse("...", x4::int_, i);
+
+// exposed attr: `long`, parser attr: `int`
+long l;
+x4::parse("...", x4::int_, l);
+```
+
+When a parser is instantiated as a plain variable and has not yet been passed to `x4::parse(...)`, its exposed attribute type is *unspecified*. In this state, the parser behaves as a generic function and may accept any user-provided type as input.
+
+```cpp
+// exposed attr: unspecified, parser attr: `int`
+constexpr auto p = x4::int_;
+```
+
+The `x4::sequence` parser (normally instantiated via `a >> b` syntax) yields a special tuple attribute. This attribute is generic in nature and can be transformed into any tuple-like or sequence-like concrete type, depending on the caller.
+
+```cpp
+// parser attr: `iris::alloy::tuple<int, int>`
+constexpr auto p = x4::int_ >> x4::int_;
+
+// exposed attr: `std::vector<int>`
+std::vector<int> ints;
+x4::parse("...", p, ints);
+
+// exposed attr: `std::tuple<int, int>`
+std::tuple<int, int> int_int_tup;
+x4::parse("...". p, int_int_tup);
+```
+
+When multiple nested parser invocations are involved, the exposed attribute type may vary depending on context.
+
+```cpp
+long long result;
+x4::parse(
+    "...",
+    x4::as<int>( // <-- exposed attr: `long long`, parser attr: `int`
+        x4::short_ // <-- exposed attr: `int`, parser attr: `short`
+    ),
+    result
+);
+```
+
+### semantic action
 
 A *semantic action* is a user-provided invocable object (usually a lambda) that is executed when a parser successfully matches its input. It is used to inspect, transform, or validate the parsed result, and may optionally influence control flow by accepting or rejecting the match. Semantic actions operate on the current parsing context and the attribute produced by the parser, allowing fine-grained post-processing of successful parses.
 
