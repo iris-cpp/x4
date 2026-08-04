@@ -250,11 +250,13 @@ struct print_attribute_debug
                 x4::print_attribute(out, *ptr);
             }
 
+        } else if constexpr (iris::StringLike<T>) {
+            out << "\"";
+            x4::print_chars(out, iris::unicode::transcode_ref<char32_t>(val));
+            out << "\"";
+
         } else if constexpr (std::formattable<T, char>) {
             x4::print_chars(out, iris::unicode::transcode<char32_t>(std::format("{}", val)));
-
-        } else if constexpr (iris::StringLike<T>) {
-            x4::print_chars(out, iris::unicode::transcode_ref<char32_t>(val));
 
         } else {
             // TODO: https://github.com/iris-cpp/iris/issues/51
@@ -266,9 +268,9 @@ struct print_attribute_debug
     // for tuple-likes
     static void call(std::ostream& out, traits::CategorizedAttr<traits::tuple_attr> auto const& val)
     {
-        out << '[';
+        out << '<';
         alloy::for_each(val, detail::print_tuple_like<std::ostream>(out));
-        out << ']';
+        out << '>';
     }
 
     template<traits::CategorizedAttr<traits::container_attr> T_>
@@ -276,7 +278,9 @@ struct print_attribute_debug
     static void call(std::ostream& out, T_ const& val)
     {
         if constexpr (iris::StringLike<T_>) {
+            out << "\"";
             x4::print_chars(out, iris::unicode::transcode_ref<char32_t>(val));
+            out << "\"";
 
         } else {
             out << '[';
