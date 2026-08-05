@@ -21,6 +21,7 @@
 
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
+#include <iris/x4/char/unicode_char_class.hpp>
 #include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/symbols.hpp>
@@ -70,6 +71,9 @@ using namespace std::string_view_literals;
 
 // NOLINTBEGIN(readability-container-size-empty)
 
+constexpr auto skipper_ctx = x4::make_context<x4::contexts::skipper>(x4::standard::blank);
+constexpr auto uskipper_ctx = x4::make_context<x4::contexts::skipper>(x4::unicode::blank);
+
 TEST_CASE("rollback on failed parse (numeric)")
 {
     using x4::int_;
@@ -77,35 +81,35 @@ TEST_CASE("rollback on failed parse (numeric)")
     using x4::double_;
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -99;
-        REQUIRE_FALSE(int_.parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(int_.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -99);
     }
     {
-        constexpr auto input = "-"sv;
+        constexpr auto input = " -"sv;
         auto first = input.begin();
         int dummy_int = -99;
-        REQUIRE_FALSE(int_.parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(int_.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -99);
     }
     {
-        constexpr auto input = "-9999999999999999999999999999999999999"sv; // overflow
+        constexpr auto input = " -9999999999999999999999999999999999999"sv; // overflow
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(int_.parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(int_.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
 
     {
-        constexpr auto input = "9999999999999999999999999999999999999"sv; // overflow
+        constexpr auto input = " 9999999999999999999999999999999999999"sv; // overflow
         auto first = input.begin();
         unsigned dummy_uint = static_cast<unsigned>(-1);
-        REQUIRE_FALSE(uint_.parse(first, input.end(), unused, dummy_uint));
+        REQUIRE_FALSE(uint_.parse(first, input.end(), skipper_ctx, dummy_uint));
         CHECK(first == input.begin());
         CHECK(dummy_uint == static_cast<unsigned>(-1));
     }
@@ -113,10 +117,10 @@ TEST_CASE("rollback on failed parse (numeric)")
     // TODO: https://github.com/boostorg/spirit_x4/issues/63
     //{
     //    //constexpr double aaa = 9.9e999999999999999999999; // error
-    //    constexpr auto input = "9.9e999999999999999999999"sv; // overflow
+    //    constexpr auto input = " 9.9e999999999999999999999"sv; // overflow
     //    auto first = input.begin();
     //    double dummy_double = 3.14;
-    //    REQUIRE_FALSE(double_.parse(first, input.end(), unused, dummy_double));
+    //    REQUIRE_FALSE(double_.parse(first, input.end(), skipper_ctx, dummy_double));
     //    CHECK(first == input.begin());
     //    CHECK(dummy_double == static_cast<double>(3.14));
     //}
@@ -128,51 +132,51 @@ TEST_CASE("rollback on failed parse (char)")
     using x4::lit;
 
     {
-        constexpr auto input = U"\x00110000"sv; // not a valid Unicode code point
+        constexpr auto input = U" \x00110000"sv; // not a valid Unicode code point
         auto first = input.begin();
         char32_t dummy_char = U'd';
-        REQUIRE_FALSE(x4::unicode::char_.parse(first, input.end(), unused, dummy_char)); // NOLINT(readability-static-accessed-through-instance)
+        REQUIRE_FALSE(x4::unicode::char_.parse(first, input.end(), uskipper_ctx, dummy_char)); // NOLINT(readability-static-accessed-through-instance)
         CHECK(first == input.begin());
         CHECK(dummy_char == U'd');
     }
     {
-        constexpr auto input = "x"sv;
+        constexpr auto input = " x"sv;
         auto first = input.begin();
         char dummy_char = 'd';
-        REQUIRE_FALSE(char_('a').parse(first, input.end(), unused, dummy_char));
+        REQUIRE_FALSE(char_('a').parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
         CHECK(dummy_char == 'd');
     }
 
     {
-        constexpr auto input = "1"sv;
+        constexpr auto input = " 1"sv;
         auto first = input.begin();
         char dummy_char = 'd';
-        REQUIRE_FALSE(char_('a', 'z').parse(first, input.end(), unused, dummy_char));
+        REQUIRE_FALSE(char_('a', 'z').parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
         CHECK(dummy_char == 'd');
     }
     {
-        constexpr auto input = "1"sv;
+        constexpr auto input = " 1"sv;
         auto first = input.begin();
         char dummy_char = 'd';
-        REQUIRE_FALSE(char_("a-z").parse(first, input.end(), unused, dummy_char));
+        REQUIRE_FALSE(char_("a-z").parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
         CHECK(dummy_char == 'd');
     }
     {
-        constexpr auto input = "1"sv;
+        constexpr auto input = " 1"sv;
         auto first = input.begin();
         char dummy_char = 'd';
-        REQUIRE_FALSE((~char_).parse(first, input.end(), unused, dummy_char));
+        REQUIRE_FALSE((~char_).parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
         CHECK(dummy_char == 'd');
     }
     {
-        constexpr auto input = "1"sv;
+        constexpr auto input = " 1"sv;
         auto first = input.begin();
         char dummy_char = 'd';
-        REQUIRE_FALSE(lit('a').parse(first, input.end(), unused, dummy_char));
+        REQUIRE_FALSE(lit('a').parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
         CHECK(dummy_char == 'd');
     }
@@ -185,25 +189,25 @@ TEST_CASE("rollback on failed parse (string)")
     using x4::unique_symbols;
 
     {
-        constexpr auto input = "x"sv;
+        constexpr auto input = " x"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(lit("foo").parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(lit("foo").parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "x"sv;
+        constexpr auto input = " x"sv;
         auto first = input.begin();
         std::string dummy_string = "dummy";
-        REQUIRE_FALSE(string("foo").parse(first, input.end(), unused, dummy_string));
+        REQUIRE_FALSE(string("foo").parse(first, input.end(), skipper_ctx, dummy_string));
         CHECK(first == input.begin());
         CHECK(dummy_string == "dummy");
     }
     {
         unique_symbols<int> syms{{"foo", 0}, {"bar", 1}};
-        constexpr auto input = "baz"sv;
+        constexpr auto input = " baz"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(syms.parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(syms.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
@@ -216,24 +220,24 @@ TEST_CASE("rollback on failed parse (action)")
     using x4::_pass;
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(eps.on_match([](auto&&) { return false; }).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(eps.on_match([](auto&&) { return false; }).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(int_.on_match([](auto&&) { return false; }).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(int_.on_match([](auto&&) { return false; }).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser itself succeeds; always results in side effect
     }
     {
-        constexpr auto input = "42,43"sv;
+        constexpr auto input = " 42,43"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE((int_ >> ',' >> int_).on_match([](auto&&) { return false; }).parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE((int_ >> ',' >> int_).on_match([](auto&&) { return false; }).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{42, 43}); // sequence parser itself succeeds; always results in side effect
     }
@@ -247,34 +251,35 @@ TEST_CASE("rollback on failed parse (primitive)")
     using x4::eol;
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((fixed_value(42) >> eps(false)).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((fixed_value(42) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(eoi.parse(first, input.end(), unused, unused));
-    }
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        REQUIRE_FALSE(eol.parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(eoi.parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(eps(false).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(eol.parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(eps([]{ return false; }).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(eps(false).parse(first, input.end(), skipper_ctx, unused));
+        CHECK(first == input.begin());
+    }
+    {
+        constexpr auto input = " foo"sv;
+        auto first = input.begin();
+        REQUIRE_FALSE(eps([]{ return false; }).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
 }
@@ -299,38 +304,38 @@ TEST_CASE("rollback on failed parse (directive)")
     using x4::with;
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure);
+        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
         REQUIRE_FALSE(expect[eps(false)].parse(first, input.end(), ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure);
+        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
         int dummy_int = -1;
         REQUIRE_FALSE(expect[int_].parse(first, input.end(), ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42!"sv;
+        constexpr auto input = " 42!"sv;
         auto first = input.begin();
         x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure);
+        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
         int dummy_int = -1;
         REQUIRE_FALSE((int_ >> expect['i']).parse(first, input.end(), ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure);
+        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> expect[','] >> int_).parse(first, input.end(), ctx, dummy_ints));
         CHECK(first == input.begin());
@@ -338,93 +343,93 @@ TEST_CASE("rollback on failed parse (directive)")
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(lexeme[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(lexeme[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(lexeme[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(lexeme[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE(lexeme[int_ >> ',' >> int_].parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE(lexeme[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because attribute is a container
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE(matches[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE(matches[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         bool dummy_bool = false;
-        REQUIRE(matches[int_].parse(first, input.end(), unused, dummy_bool));
+        REQUIRE(matches[int_].parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.end());
         CHECK(dummy_bool == true);
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         bool dummy_bool = true;
-        REQUIRE(matches[int_].parse(first, input.end(), unused, dummy_bool));
+        REQUIRE(matches[int_].parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
         CHECK(dummy_bool == false);
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(no_case[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(no_case[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(no_case[int_].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(no_case[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(no_case[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(no_case[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE(no_case[int_ >> ',' >> int_].parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE(no_case[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because attribute is a container
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(no_skip[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(no_skip[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(no_skip[int_].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(no_skip[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
@@ -432,7 +437,7 @@ TEST_CASE("rollback on failed parse (directive)")
         constexpr auto input = "42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(no_skip[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(no_skip[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
@@ -440,114 +445,114 @@ TEST_CASE("rollback on failed parse (directive)")
         constexpr auto input = "42"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE(no_skip[int_ >> ',' >> int_].parse(first, input.end(), unused, dummy_ints));
-        CHECK(first == input.begin()); // sequence parser has NO side effect because attribute is not a container
+        REQUIRE_FALSE(no_skip[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
+        CHECK(first == input.begin());
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(omit[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(omit[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(omit[int_].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(omit[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(omit[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(omit[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1); // `omit` never yields an attribute
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(repeat(1)[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(repeat(1)[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE(repeat(1)[int_ >> eps(false)].parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE(repeat(1)[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{});
     }
     {
-        constexpr auto input = "true123"sv;
+        constexpr auto input = " true123"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE(repeat(1)[true_ >> true_].parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE(repeat(1)[true_ >> true_].parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{});
     }
     {
-        constexpr auto input = "true123"sv;
+        constexpr auto input = " true123"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{});
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(skip(space)[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(skip(space)[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(skip(space)[int_].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(skip(space)[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(skip(space)[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(skip(space)[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42 foo"sv;
+        constexpr auto input = " 42 foo"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE(skip(space)[int_ >> int_].parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE(skip(space)[int_ >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{42}); // sequence parser has side effect
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE(with<struct with_id_>(input)[eps(false)].parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(with<struct with_id_>(input)[eps(false)].parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(with<struct with_id_>(input)[int_].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(with<struct with_id_>(input)[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE(with<struct with_id_>(input)[int_ >> eps(false)].parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE(with<struct with_id_>(input)[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect
     }
@@ -562,16 +567,16 @@ TEST_CASE("rollback on failed parse (operator)")
 
     // `sequence` should be tested first because it is the requirement for subsequent test cases
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((eps >> eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((eps >> eps(false)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((true_ >> true_).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE((true_ >> true_).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{true}); // `sequence` parser exposes the side effects
     }
@@ -579,259 +584,259 @@ TEST_CASE("rollback on failed parse (operator)")
     // -----------------------------------------------
 
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((int_ >> eps(false)).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((int_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
-        constexpr auto input = "42,43"sv;
+        constexpr auto input = " 42,43"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE((int_ >> eps(false) >> int_).parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE((int_ >> eps(false) >> int_).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because LHS is `sequence<int_, eps(false)>`, which does not move the result until `eps(false)` is evaluated
     }
     {
-        constexpr auto input = "42,43"sv;
+        constexpr auto input = " 42,43"sv;
         auto first = input.begin();
         std::vector<int> dummy_ints;
-        REQUIRE_FALSE((int_ >> (eps(false) >> int_)).parse(first, input.end(), unused, dummy_ints));
+        REQUIRE_FALSE((int_ >> (eps(false) >> int_)).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
         CHECK(dummy_ints == std::vector<int>{42}); // sequence parser has side effect, in contrast to above
     }
 
     // NOLINTBEGIN(misc-redundant-expression)
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((eps(false) | eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((eps(false) | eps(false)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((eps(false) | int_).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((eps(false) | int_).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((eps(false) | int_ >> eps(false)).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((eps(false) | int_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1); // `alternative` parser shall not expose the side effects on the failed branch
     }
     {
-        constexpr auto input = "true"sv;
+        constexpr auto input = " true"sv;
         auto first = input.begin();
         bool dummy_bool = true;
-        REQUIRE_FALSE((false_ | false_).parse(first, input.end(), unused, dummy_bool));
+        REQUIRE_FALSE((false_ | false_).parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
         CHECK(dummy_bool == true);
     }
     {
-        constexpr auto input = "true"sv;
+        constexpr auto input = " true"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((true_ >> false_ | true_ >> false_).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE((true_ >> false_ | true_ >> false_).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{});
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((eps - eps).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((eps - eps).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((int_ - eps).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((int_ - eps).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1);
     }
     {
-        constexpr auto input = "42"sv;
+        constexpr auto input = " 42"sv;
         auto first = input.begin();
         int dummy_int = -1;
-        REQUIRE_FALSE((int_ - eps).parse(first, input.end(), unused, dummy_int));
+        REQUIRE_FALSE((int_ - eps).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
         CHECK(dummy_int == -1); // `difference` parser shall not expose the side effects
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE(((true_ >> true_) - eps).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE(((true_ >> true_) - eps).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{}); // `difference` parser shall not expose the side effects
     }
     {
-        constexpr auto input = "truetrue"sv;
+        constexpr auto input = " truetrue"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE(((true_ >> true_) - eps).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE(((true_ >> true_) - eps).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{}); // `difference` parser shall not expose the side effects
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((*eps(false) >> eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((*eps(false) >> eps(false)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((*true_ >> eps(false)).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE((*true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{true}); // `kleene` parser (within sequence) exposes the side effects
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((+eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((+eps(false)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((+true_ >> eps(false)).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE((+true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{true}); // `plus` parser (within sequence) exposes the side effects
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((eps(false) % eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((eps(false) % eps(false)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "false"sv;
+        constexpr auto input = " false"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((true_ % eps(false)).parse(first, input.end(), unused, dummy_bools)); // initial unmatch shall result in total parse failure
+        REQUIRE_FALSE((true_ % eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools)); // initial unmatch shall result in total parse failure
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "false"sv;
+        constexpr auto input = " false"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((true_ % eps(true)).parse(first, input.end(), unused, dummy_bools)); // initial unmatch shall result in total parse failure (even if the delimiter parse succeeds)
+        REQUIRE_FALSE((true_ % eps(true)).parse(first, input.end(), skipper_ctx, dummy_bools)); // initial unmatch shall result in total parse failure (even if the delimiter parse succeeds)
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((true_ % eps(false) >> eps(false)).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE((true_ % eps(false) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{true});// `delimited_list` parser (within sequence) exposes the side effects
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((&eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((&eps(false)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "true"sv;
+        constexpr auto input = " true"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((&false_).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((&false_).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((&(true_ >> true_)).parse(first, input.end(), unused, unused));
-        CHECK(first == input.begin());
-    }
-
-    {
-        constexpr auto input = "foo"sv;
-        auto first = input.begin();
-        REQUIRE_FALSE((!eps).parse(first, input.end(), unused, unused));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = "true"sv;
-        auto first = input.begin();
-        REQUIRE_FALSE((!true_).parse(first, input.end(), unused, unused));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = "truetrue"sv;
-        auto first = input.begin();
-        REQUIRE_FALSE((!(true_ >> true_)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((&(true_ >> true_)).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
 
     {
-        constexpr auto input = "foo"sv;
+        constexpr auto input = " foo"sv;
         auto first = input.begin();
-        REQUIRE_FALSE((-eps >> eps(false)).parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE((!eps).parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "false"sv;
+        constexpr auto input = " true"sv;
+        auto first = input.begin();
+        REQUIRE_FALSE((!true_).parse(first, input.end(), skipper_ctx, unused));
+        CHECK(first == input.begin());
+    }
+    {
+        constexpr auto input = " truetrue"sv;
+        auto first = input.begin();
+        REQUIRE_FALSE((!(true_ >> true_)).parse(first, input.end(), skipper_ctx, unused));
+        CHECK(first == input.begin());
+    }
+
+    {
+        constexpr auto input = " foo"sv;
+        auto first = input.begin();
+        REQUIRE_FALSE((-eps >> eps(false)).parse(first, input.end(), skipper_ctx, unused));
+        CHECK(first == input.begin());
+    }
+    {
+        constexpr auto input = " false"sv;
         auto first = input.begin();
         bool dummy_bool = false;
-        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), unused, dummy_bool));
+        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
         CHECK(dummy_bool == false);
     }
     {
-        constexpr auto input = "true"sv;
+        constexpr auto input = " true"sv;
         auto first = input.begin();
         bool dummy_bool = false;
-        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), unused, dummy_bool));
+        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
         CHECK(dummy_bool == true);
     }
     {
-        constexpr auto input = "false"sv;
+        constexpr auto input = " false"sv;
         auto first = input.begin();
         std::optional<bool> dummy_optional_bool = false;
-        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), unused, dummy_optional_bool));
+        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_optional_bool));
         CHECK(first == input.begin());
         REQUIRE(dummy_optional_bool.has_value());
         CHECK(*dummy_optional_bool == false);
     }
     {
-        constexpr auto input = "true"sv;
+        constexpr auto input = " true"sv;
         auto first = input.begin();
         std::optional<bool> dummy_optional_bool = false;
-        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), unused, dummy_optional_bool));
+        REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_optional_bool));
         CHECK(first == input.begin());
         REQUIRE(dummy_optional_bool.has_value());
         CHECK(*dummy_optional_bool == true);
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::vector<bool> dummy_bools;
-        REQUIRE_FALSE((-(true_ >> true_) >> eps(false)).parse(first, input.end(), unused, dummy_bools));
+        REQUIRE_FALSE((-(true_ >> true_) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
         CHECK(dummy_bools == std::vector<bool>{true});
     }
     {
-        constexpr auto input = "truefalse"sv;
+        constexpr auto input = " truefalse"sv;
         auto first = input.begin();
         std::optional<std::vector<bool>> dummy_optional_bools;
-        REQUIRE_FALSE((-(true_ >> true_) >> eps(false)).parse(first, input.end(), unused, dummy_optional_bools));
+        REQUIRE_FALSE((-(true_ >> true_) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_optional_bools));
         CHECK(first == input.begin());
         CHECK(dummy_optional_bools.has_value() == false); // `optional` parser for `optional<container attribute>` shall not expose the side effects
     }
@@ -844,19 +849,19 @@ TEST_CASE("rollback on failed parse (rule)")
     using x4::lit;
 
     {
-        constexpr auto input = "ab"sv;
+        constexpr auto input = " ab"sv;
         auto first = input.begin();
         constexpr x4::rule<struct _, unused_type> r("r");
         constexpr auto p = r = lit('a') >> r;
-        REQUIRE_FALSE(p.parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(p.parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
     {
-        constexpr auto input = "ab"sv;
+        constexpr auto input = " ab"sv;
         auto first = input.begin();
         constexpr x4::rule<struct _, unused_type> r("r");
         constexpr auto p = r %= lit('a') >> r;
-        REQUIRE_FALSE(p.parse(first, input.end(), unused, unused));
+        REQUIRE_FALSE(p.parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
 }

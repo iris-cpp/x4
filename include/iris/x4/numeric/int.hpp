@@ -42,12 +42,16 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr)
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(numeric::extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr))
         )
     {
-        x4::skip_over(first, last, ctx);
-        return numeric::extract_int<T, Radix, MinDigits, MaxDigits>::call(first, last, attr);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
+        bool const ok = numeric::extract_int<T, Radix, MinDigits, MaxDigits>::call(it, last, attr);
+        if (ok) first = it;
+        return ok;
     }
 
     [[nodiscard]] static std::string get_x4_info()

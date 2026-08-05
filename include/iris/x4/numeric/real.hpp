@@ -229,12 +229,16 @@ struct real_parser : parser<real_parser<T, Policy>>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, U& attr)
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(numeric::extract_real<T, Policy>::parse(first, last, attr))
         )
     {
-        x4::skip_over(first, last, ctx);
-        return numeric::extract_real<T, Policy>::parse(first, last, attr);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
+        bool const ok = numeric::extract_real<T, Policy>::parse(it, last, attr);
+        if (ok) first = it;
+        return ok;
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>

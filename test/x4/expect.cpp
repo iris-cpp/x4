@@ -394,7 +394,7 @@ TEST_CASE("expect")
 
         X4_TEST_FAILURE_EX(" x i", char_('x') > char_('o'), space, {
             CHECK(which == "'o'"sv);
-            CHECK(where == "i"sv);
+            CHECK(where == " i"sv);
         });
     }
 
@@ -592,7 +592,7 @@ TEST_CASE("expect")
 
         X4_TEST_FAILURE_EX("a b c", lit('a') > 'c', space, {
             CHECK(which == "'c'"sv);
-            CHECK(where == "b c"sv);
+            CHECK(where == " b c"sv);
         });
 
 
@@ -613,7 +613,7 @@ TEST_CASE("expect")
             std::string s;
             X4_TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('z') > skip(space)[char_('c') > char_('d')], blank, s, {
                 CHECK(which == "'z'"sv);
-                CHECK(where == "b\n c\n d"sv);
+                CHECK(where == " b\n c\n d"sv);
             });
         }
         {
@@ -626,7 +626,7 @@ TEST_CASE("expect")
             std::string s;
             X4_TEST_ATTR_FAILURE("a b\n c\n d", char_('a') > char_('b') > skip(space)[char_('c') > char_('z')], blank, s, {
                 CHECK(which == "'z'"sv);
-                CHECK(where == "d"sv);
+                CHECK(where == "\n d"sv);
             });
         }
     }

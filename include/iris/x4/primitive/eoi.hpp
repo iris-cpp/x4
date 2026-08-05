@@ -16,6 +16,7 @@
 #include <iris/x4/core/unused.hpp>
 
 #include <iterator>
+#include <type_traits>
 
 namespace iris::x4 {
 
@@ -24,15 +25,19 @@ struct eoi_parser : parser<eoi_parser>
     using attribute_type = unused_type;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr&) const
+    [[nodiscard]] static constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr&)
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(first == last)
         )
     {
-        x4::skip_over(first, last, ctx);
-        return first == last;
+        auto it = first;
+        x4::skip_over(it, last, ctx);
+        bool const ok = it == last;
+        if (ok) first = it;
+        return ok;
     }
 };
 

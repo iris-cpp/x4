@@ -33,7 +33,7 @@ struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
             is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
         )
     {
-        It it = first;
+        auto it = first;
         return this->subject.parse(it, last, ctx, unused);
     }
 };
