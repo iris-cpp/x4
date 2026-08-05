@@ -141,18 +141,29 @@ The descriptions below focus on recognition behavior and omit many details conce
 
 ### Operators
 
-| Syntax   | Meaning                                                                                                                                                   |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `a \| b` | Try `a`. If it fails normally, restore the input position and try `b`. An expectation failure prevents the fallback to `b`.                               |
-| `a >> b` | Parse `a`, followed by `b`. If either parser fails normally, restore the input position to the beginning of the sequence.                                 |
-| `a > b`  | Parse `a`, followed by an expected `b`. Equivalent to `a >> expect[b]`. Failure of `b` records an expectation failure and prevents ordinary backtracking. |
-| `*p`     | Parse zero or more occurrences of `p`.                                                                                                                    |
-| `+p`     | Parse one or more occurrences of `p`.                                                                                                                     |
-| `p % d`  | Parse one or more occurrences of `p`, separated by `d`.                                                                                                   |
-| `a - b`  | Parse `a` only when `b` does not match at the same input position. The test of `b` does not consume input.<br>Equivalent to `!b >> a`.                                                |
-| `-p`     | Parse zero or one occurrence of `p`.                                                                                                                      |
-| `&p`     | Succeed when `p` matches, without consuming input or producing its attribute.                                                                             |
-| `!p`     | Succeed when `p` does not match, without consuming input or producing an attribute.                                                                       |
+| Syntax   | Attribute | Meaning                                                                                                                                                   |
+| -------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `a \| b` | [`rvariant<A, B>`](https://github.com/iris-cpp/iris/blob/main/doc/rvariant.adoc) | Try `a`. If it fails normally, restore the input position and try `b`.                               |
+| `a >> b` | `tuple<A, B>` | Parse `a`, followed by `b`. If either parser fails normally, restore the input position to the beginning of the sequence.                                 |
+| `a > b`  | `tuple<A, B>` | Parse `a`, followed by an expected `b`. Failure of `b` records an expectation failure and prevents ordinary backtracking.<br>Equivalent to `a >> expect[b]`. |
+| `*p`     | `vector<P>` | Parse zero or more occurrences of `p`.                                                                                                                    |
+| `+p`     | `vector<P>` | Parse one or more occurrences of `p`.                                                                                                                     |
+| `a % b`  | `vector<A>` | Parse one or more occurrences of `a`, delimited by `b`.                                                                                                   |
+| `a - b`  | `A` | Parse `a` only when `b` does not match at the same input position. The test of `b` does not consume input.<br>Equivalent to `!b >> a`.                                                |
+| `-p`     | `optional<P>` | Parse zero or one occurrence of `p`.                                                                                                                      |
+| `&p`     | `unused_type` | Succeed when `p` matches, without consuming input or producing its attribute.                                                                             |
+| `!p`     | `unused_type` | Succeed when `p` does not match, without consuming input or producing an attribute.                                                                       |
+
+#### Notes
+
+- `a`, `b`, `p`: parsers.
+- `A`, `B`, `P`: the corresponding attribute types of the parsers, respectively.
+- **`unused_type` compaction:**
+  When `unused_type` appears as an element of a tuple, that element is discarded. After compaction, if the tuple contains only a single element, the tuple is *unwrapped* and replaced with the element's type.
+- **Tuple-to-container conversion**:
+  When the attribute type is a tuple and the exposed attribute is a container type, each decomposed tuple element is appended to the container, unless the container's value type is itself a tuple-like type and the components match exactly.
+- **Optional elements in containers**:
+  When the attribute type is `optional<T>` and the exposed attribute is a container type, the contained object `T` is appended to the container if and only if the optional instance contains a value; otherwise, it is discarded.
 
 ### Major Directives
 
@@ -268,6 +279,14 @@ These facilities are used less frequently in ordinary language grammars.
 ### Context Fetchers
 
 The following function objects retrieve commonly used values from the parsing context (usually via a semantic action). Each fetcher returns the context entry itself, normally by reference, and is available only when the corresponding entry exists in the current context.
+
+#### Example
+
+```cpp
+constexpr auto p = x4::int_.on_match([](auto&& ctx) {
+    x4::_attr(ctx) *= 5;
+});
+```
 
 | Syntax            | Meaning                                                                                                                                                                                                                                                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
