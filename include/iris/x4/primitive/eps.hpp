@@ -36,7 +36,9 @@ struct semantic_predicate : parser<semantic_predicate>
     parse(It& first, Se const& last, Context const& ctx, Attr&) const
         noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
-        x4::skip_over(first, last, ctx);
+        if (predicate_) {
+            x4::skip_over(first, last, ctx);
+        }
         return predicate_;
     }
 
@@ -62,24 +64,21 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr&) const
     {
-        x4::skip_over(first, last, ctx);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
 
         if constexpr (std::invocable<F const&, Context const&>) {
             static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
-            return f_(ctx);
-
-        } else if constexpr (std::invocable<F const&, unused_type const&>) {
-            static_assert(
-                false,
-                "We no longer accept a lazy semantic predicate that expects a single `unused_type`. "
-                "Just make your functor take no arguments instead."
-            );
-            return false; // silence linter warning
+            bool const ok = f_(ctx);
+            if (ok) first = it;
+            return ok;
 
         } else {
             static_assert(std::invocable<F const&>);
             static_assert(std::same_as<std::invoke_result_t<F const&>, bool>);
-            return f_();
+            bool const ok = f_();
+            if (ok) first = it;
+            return ok;
         }
     }
 
@@ -94,8 +93,8 @@ struct eps_parser : parser<eps_parser>
     using attribute_type = unused_type;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr&) const
+    [[nodiscard]] static constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr&)
         noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
         x4::skip_over(first, last, ctx);

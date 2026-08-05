@@ -240,14 +240,17 @@ struct symbols_parser_impl : parser<Derived>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(x4::move_to(std::declval<value_type const&>(), attr))
         )
     {
-        x4::skip_over(first, last, ctx);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
 
-        if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(ctx))) {
+        if (value_type const* val_ptr = lookup->find(it, last, x4::get_case_compare<Encoding>(ctx))) {
             x4::move_to(*val_ptr, attr);
+            first = it;
             return true;
         }
         return false;

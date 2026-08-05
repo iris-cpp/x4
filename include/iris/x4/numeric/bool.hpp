@@ -74,6 +74,7 @@ struct bool_parser : parser<bool_parser<T, Policy>>
 
     constexpr bool_parser(Policy const&) = delete; // Policy should be stateless
 
+    // Attribute is `T` or `unused_type`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class U>
         requires
             std::same_as<std::remove_const_t<U>, T> ||
@@ -81,18 +82,24 @@ struct bool_parser : parser<bool_parser<T, Policy>>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, U& attr)
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::remove_const_t<std::iter_value_t<It>>>>(ctx))) &&
-            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::remove_const_t<std::iter_value_t<It>>>>(ctx)))
+            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
+            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx)))
         )
     {
-        x4::skip_over(first, last, ctx);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
 
-        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::remove_const_t<std::iter_value_t<It>>>>(ctx);
-        return Policy::parse_true(first, last, attr, compare)
-            || Policy::parse_false(first, last, attr, compare);
+        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
+        bool const ok = Policy::parse_true(it, last, attr, compare)
+            || Policy::parse_false(it, last, attr, compare);
+
+        if (ok) first = it;
+        return ok;
     }
 
+    // Attribute is NOT (`T` or `unused_type`)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr)
@@ -141,6 +148,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
     template<class U>
     constexpr literal_bool_parser(U&&, Policy const&) = delete; // Policy should be stateless
 
+    // Attribute is `T` or `unused_type`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class U>
         requires
             std::same_as<std::remove_const_t<U>, T> ||
@@ -148,18 +156,25 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, U& attr) const
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::remove_const_t<std::iter_value_t<It>>>>(ctx))) &&
-            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::remove_const_t<std::iter_value_t<It>>>>(ctx)))
+            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
+            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx)))
         )
     {
-        x4::skip_over(first, last, ctx);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
 
-        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::remove_const_t<std::iter_value_t<It>>>>(ctx);
-        return (expected_bool_ && Policy::parse_true(first, last, attr, compare))
-            || (!expected_bool_ && Policy::parse_false(first, last, attr, compare));
+        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
+        bool const ok = (expected_bool_ && Policy::parse_true(it, last, attr, compare))
+            || (!expected_bool_ && Policy::parse_false(it, last, attr, compare));
+
+        if (ok) first = it;
+        return ok;
     }
 
+    // Attribute is NOT (`T` or `unused_type`)
+    // Needs temporary instance of `T` and do conversion
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -171,8 +186,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
     {
         static_assert(X4NonUnusedAttribute<Attr>);
 
-        // this case is called when Attribute is not T
-        T attr_{};
+        T attr_;
         if (literal_bool_parser::parse(first, last, ctx, attr_)) {
             x4::move_to(std::move(attr_), attr);
             return true;

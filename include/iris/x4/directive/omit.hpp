@@ -33,7 +33,6 @@ struct omit_directive : unary_parser<Subject, omit_directive<Subject>>
     parse(It& first, Se const& last, Context const& ctx, Attr const&) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
     {
-        static_assert(Parsable<Subject, It, Se, Context, unused_type>);
         return this->subject.parse(first, last, ctx, unused);
     }
 };

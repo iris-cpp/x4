@@ -24,26 +24,32 @@ struct eol_parser : parser<eol_parser>
     using attribute_type = unused_type;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr&) const
-        // TODO: noexcept
+    [[nodiscard]] static constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr&)
+        noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
+            noexcept(x4::skip_over(first, last, ctx)) &&
+            noexcept(first != last) &&
+            noexcept(*first == static_cast<std::iter_value_t<It>>('\r')) &&
+            noexcept(++first)
+        )
     {
-        x4::skip_over(first, last, ctx);
-        It iter = first;
+        auto it = first;
+        x4::skip_over(it, last, ctx);
         bool matched = false;
 
         using iter_value_type = std::iter_value_t<It>;
 
-        if (iter != last && *iter == static_cast<iter_value_type>('\r')) {
+        if (it != last && *it == static_cast<iter_value_type>('\r')) {
             matched = true;
-            ++iter;
+            ++it;
         }
-        if (iter != last && *iter == static_cast<iter_value_type>('\n')) {
+        if (it != last && *it == static_cast<iter_value_type>('\n')) {
             matched = true;
-            ++iter;
+            ++it;
         }
 
-        if (matched) first = iter;
+        if (matched) first = it;
         return matched;
     }
 };
