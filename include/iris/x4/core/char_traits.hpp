@@ -8,6 +8,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
 
+// This header is intended for inclusion by user-facing, non-parser headers.
+// Do not add includes specific to X4's parser implementation here.
+
 #include <iris/config.hpp>
 
 #include <concepts>
