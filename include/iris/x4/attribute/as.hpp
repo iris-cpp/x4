@@ -15,8 +15,11 @@
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
+#include <typeinfo>
 #include <concepts>
 #include <iterator>
+#include <string>
+#include <format>
 #include <type_traits>
 #include <utility>
 
@@ -127,6 +130,15 @@ public:
 
         x4::move_to(std::move(attr_), outer_attr);
         return true;
+    }
+
+    [[nodiscard]] /*constexpr*/ std::string get_x4_info() const
+    {
+        return std::format(
+            "as<{}>({})",
+            typeid(T).name(),
+            get_info<Subject>{}(this->subject)
+        );
     }
 };
 

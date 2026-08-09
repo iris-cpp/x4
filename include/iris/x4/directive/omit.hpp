@@ -13,6 +13,8 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser.hpp>
 
+#include <string>
+#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -34,6 +36,14 @@ struct omit_directive : unary_parser<Subject, omit_directive<Subject>>
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
     {
         return this->subject.parse(first, last, ctx, unused);
+    }
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        return std::format(
+            "omit[{}]",
+            get_info<Subject>{}(this->subject)
+        );
     }
 };
 

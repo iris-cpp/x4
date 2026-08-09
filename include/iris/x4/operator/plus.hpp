@@ -16,6 +16,8 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/expectation.hpp>
 
+#include <format>
+#include <string>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -75,6 +77,14 @@ struct plus : unary_parser<Subject, plus<Subject>>
         } else {
             return true;
         }
+    }
+
+    [[nodiscard]] constexpr std::string get_x4_info() const
+    {
+        return std::format(
+            "+{}",
+            get_info<Subject>{}(this->subject)
+        );
     }
 };
 
