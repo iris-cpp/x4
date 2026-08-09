@@ -146,6 +146,20 @@ struct fixed_value_gen
         return fixed_value_parser<std::remove_cvref_t<T>>{std::forward<T>(value)};
     }
 
+    [[nodiscard]] static constexpr fixed_value_parser<std::string, std::string_view>
+    operator()(std::string_view value)
+        noexcept(std::is_nothrow_constructible_v<fixed_value_parser<std::string, std::string_view>, std::string_view>)
+    {
+        return fixed_value_parser<std::string, std::string_view>{value};
+    }
+
+    [[nodiscard]] static constexpr fixed_value_parser<std::u32string, std::u32string_view>
+    operator()(std::u32string_view value)
+        noexcept(std::is_nothrow_constructible_v<fixed_value_parser<std::u32string, std::u32string_view>, std::u32string_view>)
+    {
+        return fixed_value_parser<std::u32string, std::u32string_view>{value};
+    }
+
     template<CharArray CharArrayT>
     [[nodiscard]] static constexpr string_array_attr_parser_t<CharArrayT>
     operator()(CharArrayT&& char_array)

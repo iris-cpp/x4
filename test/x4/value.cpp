@@ -71,7 +71,7 @@ TEST_CASE("attr")
     }
     {
         [[maybe_unused]] constexpr auto attr_p = fixed_value("foo"sv);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string_view<char>>>);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string<char>, std::basic_string_view<char>>>);
     }
 
     {
@@ -84,7 +84,7 @@ TEST_CASE("attr")
     }
     {
         [[maybe_unused]] constexpr auto attr_p = fixed_value(U"foo"sv);
-        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string_view<char32_t>>>);
+        STATIC_CHECK(std::same_as<std::remove_const_t<decltype(attr_p)>, x4::fixed_value_parser<std::basic_string<char32_t>, std::basic_string_view<char32_t>>>);
     }
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(fixed_value(1));
