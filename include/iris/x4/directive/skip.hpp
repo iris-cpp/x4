@@ -27,6 +27,10 @@ namespace iris::x4 {
 template<class Encoding, class Tag>
 struct char_class_parser;
 
+#ifdef IRIS_X4_UNICODE
+template<class Tag>
+struct unicode_char_class;
+#endif
 
 template<class Subject, class Skipper>
 struct skip_directive : proxy_parser<Subject, skip_directive<Subject, Skipper>>
@@ -219,6 +223,30 @@ struct skip_gen
     {
         return skip_gen::operator()(char_class_parser<Encoding, Tag>{});
     }
+
+#ifdef IRIS_X4_UNICODE
+    [[nodiscard]]
+    static constexpr builtin_skip_gen_impl<builtin_skipper_kind::blank>
+    operator()(unicode_char_class<char_classes::blank_tag> const&) noexcept
+    {
+        return {};
+    }
+
+    [[nodiscard]]
+    static constexpr builtin_skip_gen_impl<builtin_skipper_kind::space>
+    operator()(unicode_char_class<char_classes::space_tag> const&) noexcept
+    {
+        return {};
+    }
+
+    template<class Tag>
+    [[nodiscard]] static constexpr auto
+    operator()(no_builtin_t<unicode_char_class<Tag>> const&)
+        noexcept(noexcept(skip_gen::operator()(unicode_char_class<Tag>{})))
+    {
+        return skip_gen::operator()(unicode_char_class<Tag>{});
+    }
+#endif
 
     template<X4Subject Skipper>
     [[nodiscard]]
