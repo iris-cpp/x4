@@ -9,8 +9,8 @@ X4 scales from quick prototypes to production parsers for DSLs, data formats, an
 ### Supported Environments
 
 - C++23 and C++26
-- GCC 14
-- Clang 21
+- GCC 15
+- Clang 22
 - MSVC 2026
 
 ## How to use X4
