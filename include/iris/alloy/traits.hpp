@@ -187,12 +187,30 @@ struct basic_common_reference_impl<TTuple, UTuple, TQual, UQual, std::index_sequ
 
 } // iris::alloy
 
-template<iris::alloy::TupleLike TTuple, iris::alloy::TupleLike UTuple, template<class> class TQual, template<class> class UQual>
-    requires (iris::is_ttp_specialization_of_v<TTuple, iris::alloy::tuple> ||
-              iris::is_ttp_specialization_of_v<UTuple, iris::alloy::tuple>) &&
-             (iris::alloy::tuple_size_v<TTuple> == iris::alloy::tuple_size_v<UTuple>)
+// Note: We can't directly specify the concept `TupleLike` in the
+// declaration of the template parameter because it would invoke
+// the `TupleLike` check for virtually ANY types whenever the
+// *primary* template of `std::basic_common_reference` is instantiated.
+//
+// Doing so would produce some hard errors on completely irrelevant
+// context; for example, calling `std::map<T, U>{}.rbegin()` would
+// inevitably *check* `TupleLike` for `std::pair<T const, U>` thus
+// leads to instantiation of `getter_of`. Then if the instantiation
+// yields hard error for some reason, the error is propagated to the
+// caller in SFINAE-unfriendly context.
+template<class TTuple, class UTuple, template<class> class TQual, template<class> class UQual>
+    requires
+        (
+            iris::is_ttp_specialization_of_v<TTuple, iris::alloy::tuple> ||
+            iris::is_ttp_specialization_of_v<UTuple, iris::alloy::tuple>
+        ) &&
+        iris::alloy::TupleLike<TTuple> && iris::alloy::TupleLike<UTuple> &&
+        (iris::alloy::tuple_size_v<TTuple> == iris::alloy::tuple_size_v<UTuple>)
 struct std::basic_common_reference<TTuple, UTuple, TQual, UQual>
-    : iris::alloy::detail::basic_common_reference_impl<TTuple, UTuple, TQual, UQual,
-                                                                std::make_index_sequence<iris::alloy::tuple_size_v<TTuple>>> {};
+    : iris::alloy::detail::basic_common_reference_impl<
+        TTuple, UTuple, TQual, UQual,
+        std::make_index_sequence<iris::alloy::tuple_size_v<TTuple>>
+    >
+{};
 
 #endif
