@@ -4,11 +4,6 @@
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
-add_library(x4_test_pch OBJECT pch.cpp)
-set_target_properties(x4_test_pch PROPERTIES CXX_EXTENSIONS OFF)
-target_link_libraries(x4_test_pch PRIVATE Iris::X4 iris_cxx_test)
-target_precompile_headers(x4_test_pch PUBLIC pch.hpp)
-
 function(x4_define_test_headers test_name)
     iris_define_test_headers(x4_${test_name} PRIVATE FILE_SET HEADERS FILES ${ARGN})
 endfunction()
@@ -16,7 +11,6 @@ endfunction()
 function(x4_define_test test_name)
     iris_define_test(x4_${test_name} ${ARGN})
     iris_define_test_headers(x4_${test_name} iris_x4_test.hpp)
-    target_precompile_headers(x4_${test_name}_test REUSE_FROM x4_test_pch)
     target_link_libraries(x4_${test_name}_test PRIVATE Iris::X4)
     set_target_properties(x4_${test_name}_test PROPERTIES FOLDER "test/x4")
 
