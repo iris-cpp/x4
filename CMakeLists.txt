@@ -24,9 +24,8 @@ endif()
 
 if(NOT DEFINED IRIS_ROOT)
     set(IRIS_ROOT "${CMAKE_CURRENT_LIST_DIR}/modules/iris")
+    add_subdirectory("${IRIS_ROOT}")
 endif()
-
-add_subdirectory("${IRIS_ROOT}")
 
 
 # -----------------------------------------------------------------
