@@ -5,9 +5,6 @@
 # https://www.boost.org/LICENSE_1_0.txt
 
 if(PROJECT_IS_TOP_LEVEL)
-    if(NOT DEFINED IRIS_CI_COMPONENT OR IRIS_CI_COMPONENT STREQUAL alloy)
-        add_subdirectory(alloy)
-    endif()
     if(NOT DEFINED IRIS_CI_COMPONENT OR IRIS_CI_COMPONENT STREQUAL x4)
         add_subdirectory(x4)
     endif()

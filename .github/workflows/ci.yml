@@ -40,9 +40,6 @@ jobs:
               - 'test/CMakeLists.txt'
               - 'scripts/generate_tuple_members.sh'
               - 'scripts/generate_tuple_members.bat'
-            alloy:
-              - 'include/iris/alloy/**/*'
-              - 'test/alloy/**/*'
             x4:
               - 'include/iris/x4.hpp'
               - 'include/iris/x4/**/*'
@@ -56,8 +53,7 @@ jobs:
             const changes = JSON.parse(process.env.CHANGES);
             console.log('changes: ', changes);
             let result = [];
-            if (changes.includes('general') || changes.includes('alloy')) result.push('alloy');
-            if (changes.includes('general') || changes.includes('alloy') || changes.includes('x4')) result.push('x4');
+            if (changes.includes('general') || changes.includes('x4')) result.push('x4');
             console.log('result: ', result);
             return result;
 
