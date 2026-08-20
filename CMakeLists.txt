@@ -28,64 +28,6 @@ endif()
 
 add_subdirectory("${IRIS_ROOT}")
 
-# -----------------------------------------------------------------
-# Create the alloy target
-
-if(MSVC)
-    # This needs to be `OBJECT` target to set correct `/std:` flags on IDE
-    add_library(iris_alloy OBJECT EXCLUDE_FROM_ALL)
-    set_target_properties(iris_alloy PROPERTIES LINKER_LANGUAGE CXX)
-
-    target_link_libraries(iris_alloy PUBLIC Iris::Iris)
-
-else()
-    add_library(iris_alloy INTERFACE)
-    target_link_libraries(iris_alloy INTERFACE Iris::Iris)
-endif()
-
-add_library(Iris::Alloy ALIAS iris_alloy)
-set_target_properties(iris_alloy PROPERTIES CXX_EXTENSIONS OFF)
-
-# -----------------------------------------------------------------
-# Configure alloy target
-
-if(MSVC)
-    add_custom_command(
-        OUTPUT ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/preprocessed/tuple_impl.hpp
-        COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.bat
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        DEPENDS ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/tuple_impl.hpp
-        VERBATIM
-    )
-else()
-    add_custom_command(
-        OUTPUT ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/preprocessed/tuple_impl.hpp
-        COMMAND ${PROJECT_SOURCE_DIR}/scripts/generate_tuple_members.sh
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        DEPENDS ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/tuple_impl.hpp
-        VERBATIM
-    )
-endif()
-
-file(
-    GLOB_RECURSE IRIS_ALLOY_HEADERS
-    ${PROJECT_SOURCE_DIR}/include/iris/alloy/*.hpp
-    ${PROJECT_SOURCE_DIR}/include/iris/alloy/*.ipp
-)
-
-list(APPEND IRIS_ALLOY_HEADERS ${PROJECT_SOURCE_DIR}/include/iris/alloy/detail/preprocessed/tuple_impl.hpp)
-
-target_sources(
-    iris_alloy
-    PRIVATE FILE_SET HEADERS TYPE HEADERS FILES ${IRIS_ALLOY_HEADERS}
-)
-source_group(
-    TREE ${PROJECT_SOURCE_DIR}/include/iris PREFIX iris FILES ${IRIS_ALLOY_HEADERS}
-)
-target_include_directories(
-    iris_alloy
-    INTERFACE ${PROJECT_SOURCE_DIR}/include
-)
 
 # -----------------------------------------------------------------
 # Create the main X4 target
@@ -102,11 +44,11 @@ if(MSVC)
             "${PROJECT_SOURCE_DIR}/iris_x4.natvis"
     )
 
-    target_link_libraries(iris_x4 PUBLIC Iris::Iris Iris::Alloy)
+    target_link_libraries(iris_x4 PUBLIC Iris::Iris)
 
 else()
     add_library(iris_x4 INTERFACE)
-    target_link_libraries(iris_x4 INTERFACE Iris::Iris Iris::Alloy)
+    target_link_libraries(iris_x4 INTERFACE Iris::Iris)
 endif()
 
 add_library(Iris::X4 ALIAS iris_x4)
