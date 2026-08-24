@@ -27,7 +27,7 @@ namespace iris::alloy {
 template<>
 struct adaptor<A>
 {
-   using getters_list = make_getters_list<
+   using getters_list = iris::constant_list<
        &A::foo,
        &A::bar
    >;
@@ -36,7 +36,7 @@ struct adaptor<A>
 template<>
 struct adaptor<B>
 {
-    using getters_list = make_getters_list<
+    using getters_list = iris::constant_list<
         &B::hoge,
         &B::fuga
     >;

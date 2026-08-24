@@ -37,8 +37,9 @@ struct adata
 };
 
 template<>
-struct alloy::adaptor<adata> {
-    using getters_list = make_getters_list<&adata::a, &adata::b>;
+struct alloy::adaptor<adata>
+{
+    using getters_list = iris::constant_list<&adata::a, &adata::b>;
 };
 
 namespace {

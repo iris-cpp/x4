@@ -86,8 +86,9 @@ struct recursive_tuple
 };
 
 template<>
-struct alloy::adaptor<recursive_tuple> {
-    using getters_list = make_getters_list<&recursive_tuple::value, &recursive_tuple::children>;
+struct alloy::adaptor<recursive_tuple>
+{
+    using getters_list = iris::constant_list<&recursive_tuple::value, &recursive_tuple::children>;
 };
 
 // regression test for #461
