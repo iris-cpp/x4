@@ -22,9 +22,8 @@ if(PROJECT_IS_TOP_LEVEL)
     include(CTest) # sets BUILD_TESTING
 endif()
 
-if(NOT DEFINED IRIS_ROOT)
-    set(IRIS_ROOT "${CMAKE_CURRENT_LIST_DIR}/modules/iris")
-    add_subdirectory("${IRIS_ROOT}")
+if(PROJECT_IS_TOP_LEVEL OR NOT DEFINED IRIS_ROOT)
+    add_subdirectory(modules/iris)
 endif()
 
 
