@@ -20,6 +20,7 @@ Add Iris.X4 to your application:
 ```console
 cd my_app
 git submodule add https://github.com/iris-cpp/x4.git modules/x4
+git submodule update --init --recursive
 ```
 
 Edit your `CMakeLists.txt`:
