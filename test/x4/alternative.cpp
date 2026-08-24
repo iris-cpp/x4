@@ -50,13 +50,15 @@ struct di_include
 };
 
 template<>
-struct alloy::adaptor<di_ignore> {
-    using getters_list = make_getters_list<&di_ignore::text>;
+struct alloy::adaptor<di_ignore>
+{
+    using getters_list = iris::constant_list<&di_ignore::text>;
 };
 
 template<>
-struct alloy::adaptor<di_include> {
-    using getters_list = make_getters_list<&di_include::FileName>;
+struct alloy::adaptor<di_include>
+{
+    using getters_list = iris::constant_list<&di_include::FileName>;
 };
 
 struct undefined {};
