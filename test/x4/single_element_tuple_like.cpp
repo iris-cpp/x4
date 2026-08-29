@@ -1,15 +1,15 @@
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/attr.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+#include <iris/x4/attribute/value.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char/char.hpp>
-#include <iris/x4/directive/as.hpp>
+#include <iris/x4/attribute/as.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/directive/matches.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/sequence.hpp>
@@ -256,7 +256,7 @@ TEST_CASE("SES standalone")
     // plain x identity
     { int a{}; REQUIRE(parse("42", int_, a)); CHECK(a == 42); }
     // plain x SES
-    { int a{}; REQUIRE(parse("", x4::attr(SES<int>{42}), a)); CHECK(a == 42); }
+    { int a{}; REQUIRE(parse("", x4::fixed_value(SES<int>{42}), a)); CHECK(a == 42); }
     // plain x variant
     { int a{}; REQUIRE(parse("42", int_ | char_, a)); CHECK(a == 42); }
     // container x identity
@@ -266,7 +266,7 @@ TEST_CASE("SES standalone")
     // SES x identity
     { SES<int> a{}; REQUIRE(parse("42", int_, a)); CHECK(a.value == 42); }
     // SES x SES
-    { SES<int> a{}; REQUIRE(parse("", x4::attr(SES<int>{42}), a)); CHECK(a.value == 42); }
+    { SES<int> a{}; REQUIRE(parse("", x4::fixed_value(SES<int>{42}), a)); CHECK(a.value == 42); }
     // SES x variant
     { SES<int> a{}; REQUIRE(parse("42", int_ | char_, a)); CHECK(a.value == 42); }
     // MET x identity
@@ -276,13 +276,13 @@ TEST_CASE("SES standalone")
     // variant_attr x identity
     { iris::rvariant<int, char> a; REQUIRE(parse("42", int_, a)); CHECK(iris::get<int>(a) == 42); }
     // variant_attr x SES
-    { iris::rvariant<int, char> a; REQUIRE(parse("", x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a) == 42); }
+    { iris::rvariant<int, char> a; REQUIRE(parse("", x4::fixed_value(SES<int>{42}), a)); CHECK(iris::get<int>(a) == 42); }
     // variant_attr x variant
     { iris::rvariant<int, char> a; REQUIRE(parse("42", int_ | char_, a)); CHECK(iris::get<int>(a) == 42); }
     // SES<variant_attr> x identity
     { SES<iris::rvariant<int, char>> a; REQUIRE(parse("42", int_, a)); CHECK(iris::get<int>(a.value) == 42); }
     // SES<variant_attr> x SES
-    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("", x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a.value) == 42); }
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("", x4::fixed_value(SES<int>{42}), a)); CHECK(iris::get<int>(a.value) == 42); }
     // SES<variant_attr> x variant
     { SES<iris::rvariant<int, char>> a; REQUIRE(parse("42", int_ | char_, a)); CHECK(iris::get<int>(a.value) == 42); }
 }
@@ -302,7 +302,7 @@ TEST_CASE("SES in sequence")
     // plain x identity
     { int a{}; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(a == 42); }
     // plain x SES
-    { int a{}; REQUIRE(parse("+", '+' >> x4::attr(SES<int>{42}), a)); CHECK(a == 42); }
+    { int a{}; REQUIRE(parse("+", '+' >> x4::fixed_value(SES<int>{42}), a)); CHECK(a == 42); }
     // plain x variant
     { int a{}; REQUIRE(parse("+42", '+' >> (int_ | char_), a)); CHECK(a == 42); }
     // container x identity
@@ -312,7 +312,7 @@ TEST_CASE("SES in sequence")
     // SES x identity
     { SES<int> a{}; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(a.value == 42); }
     // SES x SES
-    { SES<int> a{}; REQUIRE(parse("+", '+' >> x4::attr(SES<int>{42}), a)); CHECK(a.value == 42); }
+    { SES<int> a{}; REQUIRE(parse("+", '+' >> x4::fixed_value(SES<int>{42}), a)); CHECK(a.value == 42); }
     // SES x variant
     { SES<int> a{}; REQUIRE(parse("+42", '+' >> (int_ | char_), a)); CHECK(a.value == 42); }
     // MET x identity
@@ -322,13 +322,13 @@ TEST_CASE("SES in sequence")
     // variant_attr x identity
     { iris::rvariant<int, char> a; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(iris::get<int>(a) == 42); }
     // variant_attr x SES
-    { iris::rvariant<int, char> a; REQUIRE(parse("+", '+' >> x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a) == 42); }
+    { iris::rvariant<int, char> a; REQUIRE(parse("+", '+' >> x4::fixed_value(SES<int>{42}), a)); CHECK(iris::get<int>(a) == 42); }
     // variant_attr x variant
     { iris::rvariant<int, char> a; REQUIRE(parse("+42", '+' >> (int_ | char_), a)); CHECK(iris::get<int>(a) == 42); }
     // SES<variant_attr> x identity
     { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+42", '+' >> int_, a)); CHECK(iris::get<int>(a.value) == 42); }
     // SES<variant_attr> x SES
-    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+", '+' >> x4::attr(SES<int>{42}), a)); CHECK(iris::get<int>(a.value) == 42); }
+    { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+", '+' >> x4::fixed_value(SES<int>{42}), a)); CHECK(iris::get<int>(a.value) == 42); }
     // SES<variant_attr> x variant
     { SES<iris::rvariant<int, char>> a; REQUIRE(parse("+42", '+' >> (int_ | char_), a)); CHECK(iris::get<int>(a.value) == 42); }
 }
@@ -371,7 +371,7 @@ TEST_CASE("SES composition: left int_")
     // int_ x int_ → (SES<int>, SES<int>)
     { std::tuple<SES<int>, SES<int>> a; REQUIRE(parse("1,2", int_ >> ',' >> int_, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a).value == 2); }
     // int_ x attr(SES)
-    { std::tuple<int, int> a; REQUIRE(parse("42", int_ >> x4::attr(SES<int>{99}), a)); CHECK(alloy::get<0>(a) == 42); CHECK(alloy::get<1>(a) == 99); }
+    { std::tuple<int, int> a; REQUIRE(parse("42", int_ >> x4::fixed_value(SES<int>{99}), a)); CHECK(alloy::get<0>(a) == 42); CHECK(alloy::get<1>(a) == 99); }
     // int_ x variant
     { std::tuple<int, int> a; REQUIRE(parse("1,2", int_ >> ',' >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // int_ x alpha
@@ -398,21 +398,21 @@ TEST_CASE("SES composition: left attr(SES)")
     using x4::standard::char_;
 
     // attr(SES) x int_
-    { std::tuple<int, int> a; REQUIRE(parse("42", x4::attr(SES<int>{1}) >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 42); }
+    { std::tuple<int, int> a; REQUIRE(parse("42", x4::fixed_value(SES<int>{1}) >> int_, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 42); }
     // attr(SES) x int_ → (SES<int>, int)
-    { std::tuple<SES<int>, int> a; REQUIRE(parse("42", x4::attr(SES<int>{1}) >> int_, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a) == 42); }
+    { std::tuple<SES<int>, int> a; REQUIRE(parse("42", x4::fixed_value(SES<int>{1}) >> int_, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a) == 42); }
     // attr(SES) x attr(SES)
-    { std::tuple<int, int> a; REQUIRE(parse("", x4::attr(SES<int>{1}) >> x4::attr(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
+    { std::tuple<int, int> a; REQUIRE(parse("", x4::fixed_value(SES<int>{1}) >> x4::fixed_value(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // attr(SES) x variant
-    { std::tuple<int, int> a; REQUIRE(parse("2", x4::attr(SES<int>{1}) >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
+    { std::tuple<int, int> a; REQUIRE(parse("2", x4::fixed_value(SES<int>{1}) >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // attr(SES) x alpha
-    { std::tuple<int, char> a; REQUIRE(parse("a", x4::attr(SES<int>{1}) >> alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 'a'); }
+    { std::tuple<int, char> a; REQUIRE(parse("a", x4::fixed_value(SES<int>{1}) >> alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 'a'); }
     // attr(SES) x alpha → (SES<int>, char)
-    { std::tuple<SES<int>, char> a; REQUIRE(parse("a", x4::attr(SES<int>{1}) >> alpha, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a) == 'a'); }
+    { std::tuple<SES<int>, char> a; REQUIRE(parse("a", x4::fixed_value(SES<int>{1}) >> alpha, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a) == 'a'); }
     // attr(SES) x string("abc")
-    { std::tuple<int, std::string> a; REQUIRE(parse("abc", x4::attr(SES<int>{1}) >> string("abc"), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
+    { std::tuple<int, std::string> a; REQUIRE(parse("abc", x4::fixed_value(SES<int>{1}) >> string("abc"), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
     // attr(SES) x +alpha
-    { std::tuple<int, std::string> a; REQUIRE(parse("abc", x4::attr(SES<int>{1}) >> +alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
+    { std::tuple<int, std::string> a; REQUIRE(parse("abc", x4::fixed_value(SES<int>{1}) >> +alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == "abc"); }
 }
 
 TEST_CASE("SES composition: left variant")
@@ -427,7 +427,7 @@ TEST_CASE("SES composition: left variant")
     // variant x int_ → (SES<int>, int)
     { std::tuple<SES<int>, int> a; REQUIRE(parse("1,2", (int_ | char_) >> ',' >> int_, a)); CHECK(alloy::get<0>(a).value == 1); CHECK(alloy::get<1>(a) == 2); }
     // variant x attr(SES)
-    { std::tuple<int, int> a; REQUIRE(parse("1", (int_ | char_) >> x4::attr(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
+    { std::tuple<int, int> a; REQUIRE(parse("1", (int_ | char_) >> x4::fixed_value(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // variant x variant
     { std::tuple<int, int> a; REQUIRE(parse("1,2", (int_ | char_) >> ',' >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); }
     // variant x variant → (int, SES<int>)
@@ -455,7 +455,7 @@ TEST_CASE("SES composition: left alpha")
     // alpha x int_ → (char, SES<int>)
     { std::tuple<char, SES<int>> a; REQUIRE(parse("a42", alpha >> int_, a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a).value == 42); }
     // alpha x attr(SES)
-    { std::tuple<char, int> a; REQUIRE(parse("a", alpha >> x4::attr(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a) == 2); }
+    { std::tuple<char, int> a; REQUIRE(parse("a", alpha >> x4::fixed_value(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a) == 2); }
     // alpha x variant
     { std::tuple<char, int> a; REQUIRE(parse("a1", alpha >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == 'a'); CHECK(alloy::get<1>(a) == 1); }
     // alpha x alpha
@@ -482,7 +482,7 @@ TEST_CASE("SES composition: left string")
     // string("abc") x int_ → (SES<string>, int)
     { std::tuple<SES<std::string>, int> a; REQUIRE(parse("abc42", string("abc") >> int_, a)); CHECK(alloy::get<0>(a).value == "abc"); CHECK(alloy::get<1>(a) == 42); }
     // string("abc") x attr(SES)
-    { std::tuple<std::string, int> a; REQUIRE(parse("abc", string("abc") >> x4::attr(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 2); }
+    { std::tuple<std::string, int> a; REQUIRE(parse("abc", string("abc") >> x4::fixed_value(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 2); }
     // string("abc") x variant
     { std::tuple<std::string, int> a; REQUIRE(parse("abc1", string("abc") >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 1); }
     // string("abc") x alpha
@@ -509,7 +509,7 @@ TEST_CASE("SES composition: left +alpha")
     // +alpha x int_ → (string, SES<int>)
     { std::tuple<std::string, SES<int>> a; REQUIRE(parse("abc42", +alpha >> int_, a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a).value == 42); }
     // +alpha x attr(SES)
-    { std::tuple<std::string, int> a; REQUIRE(parse("abc", +alpha >> x4::attr(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 2); }
+    { std::tuple<std::string, int> a; REQUIRE(parse("abc", +alpha >> x4::fixed_value(SES<int>{2}), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 2); }
     // +alpha x variant
     { std::tuple<std::string, int> a; REQUIRE(parse("abc1", +alpha >> (int_ | char_), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 1); }
     // +alpha x ',' >> alpha
@@ -584,7 +584,7 @@ TEST_CASE("SES composition: MET parsers")
     // MET x +alpha → 3-slot tuple
     { std::tuple<int, int, std::string> a; REQUIRE(parse("1,2abc", (int_ >> ',' >> int_) >> +alpha, a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); CHECK(alloy::get<2>(a) == "abc"); }
     // MET x attr(SES) → 3-slot tuple
-    { std::tuple<int, int, int> a; REQUIRE(parse("1,2", (int_ >> ',' >> int_) >> x4::attr(SES<int>{99}), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); CHECK(alloy::get<2>(a) == 99); }
+    { std::tuple<int, int, int> a; REQUIRE(parse("1,2", (int_ >> ',' >> int_) >> x4::fixed_value(SES<int>{99}), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); CHECK(alloy::get<2>(a) == 99); }
     // int_ x MET → 3-slot tuple
     { std::tuple<int, int, int> a; REQUIRE(parse("1:2,3", int_ >> ':' >> (int_ >> ',' >> int_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); CHECK(alloy::get<2>(a) == 3); }
     // alpha x MET → 3-slot tuple
@@ -592,7 +592,7 @@ TEST_CASE("SES composition: MET parsers")
     // +alpha x MET → 3-slot tuple
     { std::tuple<std::string, int, int> a; REQUIRE(parse("abc1,2", +alpha >> (int_ >> ',' >> int_), a)); CHECK(alloy::get<0>(a) == "abc"); CHECK(alloy::get<1>(a) == 1); CHECK(alloy::get<2>(a) == 2); }
     // attr(SES) x MET → 3-slot tuple
-    { std::tuple<int, int, int> a; REQUIRE(parse("1,2", x4::attr(SES<int>{99}) >> (int_ >> ',' >> int_), a)); CHECK(alloy::get<0>(a) == 99); CHECK(alloy::get<1>(a) == 1); CHECK(alloy::get<2>(a) == 2); }
+    { std::tuple<int, int, int> a; REQUIRE(parse("1,2", x4::fixed_value(SES<int>{99}) >> (int_ >> ',' >> int_), a)); CHECK(alloy::get<0>(a) == 99); CHECK(alloy::get<1>(a) == 1); CHECK(alloy::get<2>(a) == 2); }
     // MET x MET → 4-slot tuple
     { std::tuple<int, int, int, int> a; REQUIRE(parse("1,2:3,4", (int_ >> ',' >> int_) >> ':' >> (int_ >> ',' >> int_), a)); CHECK(alloy::get<0>(a) == 1); CHECK(alloy::get<1>(a) == 2); CHECK(alloy::get<2>(a) == 3); CHECK(alloy::get<3>(a) == 4); }
     // MET_variant x alpha → 2-slot tuple (alternative has sequence_size=1)

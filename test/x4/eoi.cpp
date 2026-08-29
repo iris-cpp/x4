@@ -9,7 +9,7 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/auxiliary/eoi.hpp>
+#include <iris/x4/primitive/eoi.hpp>
 
 TEST_CASE("eoi")
 {

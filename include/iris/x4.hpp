@@ -11,13 +11,18 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
+
 #include <iris/x4/core/action.hpp>
-#include <iris/x4/auxiliary.hpp>
+#include <iris/x4/primitive.hpp>
+#include <iris/x4/attribute.hpp>
 #include <iris/x4/char.hpp>
 #include <iris/x4/directive.hpp>
 #include <iris/x4/rule.hpp>
 #include <iris/x4/numeric.hpp>
 #include <iris/x4/operator.hpp>
 #include <iris/x4/string.hpp>
+
+#include <iris/x4/debug/print_attribute.hpp>
+#include <iris/x4/debug/default_error_handler.hpp>
 
 #endif

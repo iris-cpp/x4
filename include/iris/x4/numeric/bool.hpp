@@ -16,6 +16,9 @@
 #include <iris/x4/core/skip_over.hpp>
 
 #include <iris/x4/string/detail/string_parse.hpp>
+#include <iris/x4/traits/numeric_traits.hpp>
+
+#include <iris/x4/traits/char_encoding_traits.hpp>
 
 #include <concepts>
 #include <string_view>
@@ -34,8 +37,8 @@ struct bool_policies
     parse_true(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
         noexcept(noexcept(x4::move_to(T(true), attr_)))
     {
-        using namespace std::string_view_literals;
-        if (detail::string_parse("true"sv, first, last, unused_container, compare)) {
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        if (detail::string_parse(std::basic_string_view{token_def::true_}, first, last, unused_container, compare)) {
             x4::move_to(T(true), attr_);
             return true;
         }
@@ -47,8 +50,8 @@ struct bool_policies
     parse_false(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
         noexcept(noexcept(x4::move_to(T(false), attr_)))
     {
-        using namespace std::string_view_literals;
-        if (detail::string_parse("false"sv, first, last, unused_container, compare)) {
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        if (detail::string_parse(std::basic_string_view{token_def::false_}, first, last, unused_container, compare)) {
             x4::move_to(T(false), attr_);
             return true;
         }
@@ -56,28 +59,13 @@ struct bool_policies
     }
 };
 
-namespace detail {
-
-template<class Policy, class Encoding>
-concept BoolPolicy = requires(
-    typename Encoding::char_type const*& first, typename Encoding::char_type const* const& last,
-    unused_type const& ctx, case_compare<Encoding> const& compare
-) {
-    { Policy::parse_true(first, last, ctx, compare) } -> std::same_as<bool>;
-    { Policy::parse_false(first, last, ctx, compare) } -> std::same_as<bool>;
-};
-
-} // detail
-
-template<class T, class Encoding, class Policy = bool_policies<T>>
-struct bool_parser : parser<bool_parser<T, Encoding, Policy>>
+template<class T, class Policy = bool_policies<T>>
+struct bool_parser : parser<bool_parser<T, Policy>>
 {
     static_assert(X4Attribute<T>);
     static_assert(std::default_initializable<T>);
-    static_assert(detail::BoolPolicy<Policy, Encoding>);
 
     using attribute_type = T;
-    using encoding = Encoding;
     using policy_type = Policy;
 
     static constexpr bool has_attribute = true;
@@ -86,6 +74,7 @@ struct bool_parser : parser<bool_parser<T, Encoding, Policy>>
 
     constexpr bool_parser(Policy const&) = delete; // Policy should be stateless
 
+    // Attribute is `T` or `unused_type`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class U>
         requires
             std::same_as<std::remove_const_t<U>, T> ||
@@ -93,16 +82,24 @@ struct bool_parser : parser<bool_parser<T, Encoding, Policy>>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, U& attr)
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(Policy::parse_true(first, last, attr, get_case_compare<encoding>(ctx))) &&
-            noexcept(Policy::parse_false(first, last, attr, get_case_compare<encoding>(ctx)))
+            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
+            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx)))
         )
     {
-        x4::skip_over(first, last, ctx);
-        return Policy::parse_true(first, last, attr, get_case_compare<encoding>(ctx))
-            || Policy::parse_false(first, last, attr, get_case_compare<encoding>(ctx));
+        auto it = first;
+        x4::skip_over(it, last, ctx);
+
+        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
+        bool const ok = Policy::parse_true(it, last, attr, compare)
+            || Policy::parse_false(it, last, attr, compare);
+
+        if (ok) first = it;
+        return ok;
     }
 
+    // Attribute is NOT (`T` or `unused_type`)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr)
@@ -115,7 +112,7 @@ struct bool_parser : parser<bool_parser<T, Encoding, Policy>>
         static_assert(X4NonUnusedAttribute<Attr>);
 
         // this case is called when Attribute is not T
-        T attr_;
+        T attr_{};
         if (bool_parser::parse(first, last, ctx, attr_)) {
             x4::move_to(std::move(attr_), attr);
             return true;
@@ -129,15 +126,13 @@ struct bool_parser : parser<bool_parser<T, Encoding, Policy>>
     }
 };
 
-template<class T, class Encoding, class Policy = bool_policies<T>>
-struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, Policy>>
+template<class T, class Policy = bool_policies<T>>
+struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
 {
     static_assert(X4Attribute<T>);
     static_assert(std::default_initializable<T>);
-    static_assert(detail::BoolPolicy<Policy, Encoding>);
 
     using attribute_type = T;
-    using encoding = Encoding;
 
     static constexpr bool has_attribute = true;
 
@@ -153,6 +148,7 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, Policy>>
     template<class U>
     constexpr literal_bool_parser(U&&, Policy const&) = delete; // Policy should be stateless
 
+    // Attribute is `T` or `unused_type`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class U>
         requires
             std::same_as<std::remove_const_t<U>, T> ||
@@ -160,16 +156,25 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, Policy>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, U& attr) const
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<encoding>(ctx))) &&
-            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<encoding>(ctx)))
+            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
+            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx)))
         )
     {
-        x4::skip_over(first, last, ctx);
-        return (expected_bool_ && Policy::parse_true(first, last, attr, x4::get_case_compare<encoding>(ctx)))
-            || (!expected_bool_ && Policy::parse_false(first, last, attr, x4::get_case_compare<encoding>(ctx)));
+        auto it = first;
+        x4::skip_over(it, last, ctx);
+
+        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
+        bool const ok = (expected_bool_ && Policy::parse_true(it, last, attr, compare))
+            || (!expected_bool_ && Policy::parse_false(it, last, attr, compare));
+
+        if (ok) first = it;
+        return ok;
     }
 
+    // Attribute is NOT (`T` or `unused_type`)
+    // Needs temporary instance of `T` and do conversion
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -181,7 +186,6 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Encoding, Policy>>
     {
         static_assert(X4NonUnusedAttribute<Attr>);
 
-        // this case is called when Attribute is not T
         T attr_;
         if (literal_bool_parser::parse(first, last, ctx, attr_)) {
             x4::move_to(std::move(attr_), attr);
@@ -199,53 +203,17 @@ private:
     T expected_bool_; // TODO: remove this runtime param; make this CTP
 };
 
-namespace standard {
-
-[[maybe_unused]] inline constexpr bool_parser<bool, char_encoding::standard> bool_{};
-[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard> true_{true};
-[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard> false_{false};
-
-} // standard
-
-namespace parsers::standard {
-
-using x4::standard::bool_;
-using x4::standard::true_;
-using x4::standard::false_;
-
-} // parsers::standard
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-namespace standard_wide {
-
-[[maybe_unused]] inline constexpr bool_parser<bool, char_encoding::standard_wide> bool_{};
-[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> true_{true};
-[[maybe_unused]] inline constexpr literal_bool_parser<bool, char_encoding::standard_wide> false_{false};
-
-} // standard_wide
-
-namespace parsers::standard_wide {
-
-using x4::standard_wide::bool_;
-using x4::standard_wide::true_;
-using x4::standard_wide::false_;
-
-} // parsers::standard_wide
-#endif
-
-// TODO: unicode bool parser
-
-using standard::bool_;
-using standard::true_;
-using standard::false_;
-
 namespace parsers {
 
-using x4::standard::bool_;
-using x4::standard::true_;
-using x4::standard::false_;
+[[maybe_unused]] inline constexpr bool_parser<bool> bool_{};
+[[maybe_unused]] inline constexpr literal_bool_parser<bool> true_{true};
+[[maybe_unused]] inline constexpr literal_bool_parser<bool> false_{false};
 
 } // parsers
+
+using parsers::bool_;
+using parsers::true_;
+using parsers::false_;
 
 } // iris::x4
 

@@ -11,7 +11,7 @@
 ==============================================================================*/
 
 #include <iris/x4/core/move_to.hpp>
-#include <iris/x4/traits/string_traits.hpp>
+#include <iris/x4/core/char_traits.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
@@ -35,7 +35,8 @@ string_parse(
     } else {
         static_assert(std::same_as<typename traits::attribute_category<Attr>::type, traits::container_attr>);
         using value_type = traits::container_value<Attr>::type;
-        static_assert(!traits::CharLike<value_type> || std::same_as<value_type, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
         It it = first;
         auto stri = str.begin();
@@ -85,7 +86,8 @@ string_parse(
     } else {
         static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
         using value_type = traits::container_value<Attr>::type;
-        static_assert(!traits::CharLike<value_type> || std::same_as<value_type, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
         auto uc_it = ucstr.begin();
         auto uc_last = ucstr.end();

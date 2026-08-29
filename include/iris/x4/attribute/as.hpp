@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_DIRECTIVE_AS_HPP
-#define IRIS_ZZ_X4_DIRECTIVE_AS_HPP
+#ifndef IRIS_ZZ_X4_ATTRIBUTE_AS_HPP
+#define IRIS_ZZ_X4_ATTRIBUTE_AS_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka
@@ -12,9 +12,14 @@
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/context.hpp>
+#include <iris/x4/core/action_context.hpp>
 
+#include <typeinfo>
 #include <concepts>
 #include <iterator>
+#include <string>
+#include <format>
 #include <type_traits>
 #include <utility>
 
@@ -22,27 +27,27 @@ namespace iris::x4 {
 
 namespace detail {
 
-template<bool NeedAsVal, class Context, X4Attribute Attr>
-struct as_directive_ctx_impl // false
+template<bool SubjectHasAction, class Context, X4Attribute OuterAttr>
+struct as_type_parser_ctx_impl // false
 {
     using type = Context;
 };
-template<class Context, X4Attribute Attr>
-struct as_directive_ctx_impl<true, Context, Attr>
+template<class Context, X4Attribute OuterAttr>
+struct as_type_parser_ctx_impl<true, Context, OuterAttr>
 {
     using type = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::as_var>(
         std::declval<Context const&>(),
-        std::declval<Attr&>()
+        std::declval<OuterAttr&>()
     ))>;
 };
 
 } // detail
 
-// `as_directive` forces the attribute of subject parser
+// `as_type_parser` forces the attribute of subject parser
 // to be `T`. When `T` is `unused_type`, this is equivalent to
 // `omit_directive`.
 template<X4Attribute T, class Subject>
-struct as_directive : unary_parser<Subject, as_directive<T, Subject>>
+struct as_type_parser : unary_parser<Subject, as_type_parser<T, Subject>>
 {
     static_assert(!std::is_const_v<T>); // Forbid const `unused_type`
     static_assert(!std::same_as<T, unused_container_type>); // Unknown use case, not supported for now
@@ -53,46 +58,50 @@ struct as_directive : unary_parser<Subject, as_directive<T, Subject>>
 
     static constexpr bool has_attribute = !std::same_as<T, unused_type>;
     static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
+    static constexpr bool requires_exact_attribute_type = true;
 
-    // `as_directive` should NOT inherit underlying parser's `handles_container`
-    // because `as_directive` is an atomic parser. The default implementation of
-    // `parser_traits<as_directive<...>>::handles_container` must transparently
+    // `as_type_parser` should NOT inherit underlying parser's `handles_container`
+    // because `as_type_parser` is an atomic parser. The default implementation of
+    // `parser_traits<as_type_parser<...>>::handles_container` must transparently
     // handle this case.
 
 private:
-    static constexpr bool need_as_var = Subject::has_action;
+    template<X4Attribute Attr>
+    using exposed_attr_for_child_t = std::conditional_t<
+        Subject::has_action, unused_type, Attr
+    >;
 
 public:
-    // `as<T>(as<T>(subject))` forwards the outer `T&` for `subject`
+    // `outer_parser<T>(as<T>(subject))` forwards the outer `T&` (exposed attribute) for the subject
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute OuterAttr>
         requires std::same_as<std::remove_const_t<OuterAttr>, T>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_var, Context, OuterAttr>::type, OuterAttr>)
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, OuterAttr>::type, exposed_attr_for_child_t<OuterAttr>>)
     {
-        if constexpr (need_as_var) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), outer_attr);
+        if constexpr (Subject::has_action) {
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), unused);
         } else {
             return this->subject.parse(first, last, ctx, outer_attr);
         }
     }
 
-    // `as<unused_type>(as<T>(subject))` gives `unused_type` for `subject`
+    // `outer_parser<unused_type>(as<T>(subject))` forwards `unused` for the subject
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute OuterAttr>
         requires
             (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr&) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_var, Context, unused_type>::type, unused_type>)
+        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, unused_type>::type, unused_type>)
     {
-        if constexpr (need_as_var) {
+        if constexpr (Subject::has_action) {
             return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, unused), unused);
         } else {
             return this->subject.parse(first, last, ctx, unused);
         }
     }
 
-    // `as<U>(as<T>(subject))` gives `T` for `subject`, then move `T&&` to `U&`
+    // `outer_parser<U>(as<T>(subject))` forwards temporary `T` local variable for the subject, then move the variable to `U&`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
         requires
             (!std::same_as<std::remove_const_t<OuterAttr>, T>) &&
@@ -100,7 +109,7 @@ public:
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
         noexcept(
-            is_nothrow_parsable_v<Subject, It, Se, typename detail::as_directive_ctx_impl<need_as_var, Context, T>::type, T> &&
+            is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, T>::type, exposed_attr_for_child_t<T>> &&
             noexcept(x4::move_to(std::declval<T>(), outer_attr))
         )
     {
@@ -111,11 +120,10 @@ public:
         // Note that this behavior is our implementation details. The underlying parser should
         // not rely on this behavior; they should never assume the given attribute is defaulted
         // to some arbitrary initial value.
-
         T attr_{}; // value-initialize
 
-        if constexpr (need_as_var) {
-            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), attr_)) return false;
+        if constexpr (Subject::has_action) {
+            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), unused)) return false;
         } else {
             if (!this->subject.parse(first, last, ctx, attr_)) return false;
         }
@@ -124,12 +132,14 @@ public:
         return true;
     }
 
-    //template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
-    //    requires
-    //        (!std::same_as<std::remove_const_t<OuterAttr>, T>) &&
-    //        (!X4Movable<T, OuterAttr>)
-    //constexpr void
-    //parse(It&, Se const&, Context const&, OuterAttr&) const = delete; // `T` is not movable to the exposed attribute
+    [[nodiscard]] /*constexpr*/ std::string get_x4_info() const
+    {
+        return std::format(
+            "as<{}>({})",
+            typeid(T).name(),
+            get_info<Subject>{}(this->subject)
+        );
+    }
 };
 
 namespace detail {
@@ -138,9 +148,9 @@ template<X4Attribute T>
 struct as_fn
 {
     template<X4Subject Subject>
-    [[nodiscard]] static constexpr as_directive<T, as_parser_plain_t<Subject>>
+    [[nodiscard]] static constexpr as_type_parser<T, as_parser_plain_t<Subject>>
     operator()(Subject&& subject)
-        noexcept(is_parser_nothrow_constructible_v<as_directive<T, as_parser_plain_t<Subject>>, Subject>)
+        noexcept(is_parser_nothrow_constructible_v<as_type_parser<T, as_parser_plain_t<Subject>>, Subject>)
     {
         return {std::forward<Subject>(subject)};
     }
@@ -148,14 +158,14 @@ struct as_fn
 
 } // detail
 
-namespace parsers::directive {
+namespace parsers {
 
 template<X4Attribute T>
 [[maybe_unused]] inline constexpr detail::as_fn<T> as{};
 
-} // parsers::directive
+} // parsers
 
-using parsers::directive::as;
+using parsers::as;
 
 } // iris::x4
 

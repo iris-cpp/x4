@@ -23,8 +23,16 @@
 
 #include <iris/string.hpp>
 
+#include <iris/bits/specialization_of.hpp>
+
+#include <concepts>
+#include <ostream>
+#include <format>
+#include <ranges>
 #include <print>
 #include <iterator>
+#include <memory>
+#include <type_traits>
 
 #include <cstdint>
 
@@ -143,8 +151,17 @@ inline void print_chars(std::ostream& os, char32_t const ch)
     iris::unicode::append8(ch, std::ostreambuf_iterator(os));
 }
 
+template<std::ranges::forward_range R>
+    requires std::same_as<std::ranges::range_value_t<R>, char32_t>
+void print_chars(std::ostream& os, R const& chars)
+{
+    for (char32_t ch : chars) {
+        x4::print_chars(os, ch);
+    }
+}
+
 template<std::forward_iterator It, std::sentinel_for<It> Se>
-void print_chars(std::ostream& os, It const it, Se const se, std::size_t const max_code_points)
+void print_chars(std::ostream& os, It it, Se const se, std::size_t const max_code_points)
 {
     iris::unicode::code_point_iterator<It> code_point_it{it, it, se};
     iris::unicode::code_point_iterator<It> const code_point_se{se, it, se};
@@ -219,8 +236,28 @@ struct print_attribute_debug
 
     static void call(std::ostream& out, traits::CategorizedAttr<traits::plain_attr> auto const& val)
     {
-        if constexpr (std::formattable<T, char>) {
-            std::format_to(std::ostreambuf_iterator{out}, "{}", val);
+        if constexpr (
+            std::disjunction_v<
+                std::is_pointer<T>,
+                is_ttp_specialization_of<T, std::unique_ptr>,
+                is_ttp_specialization_of<T, std::shared_ptr>
+            >
+        ) {
+            auto const* ptr = std::to_address(val);
+            if (!ptr) {
+                out << "nullptr";
+            } else {
+                x4::print_attribute(out, *ptr);
+            }
+
+        } else if constexpr (iris::StringLike<T>) {
+            out << "\"";
+            x4::print_chars(out, iris::unicode::transcode_ref<char32_t>(val));
+            out << "\"";
+
+        } else if constexpr (std::formattable<T, char>) {
+            x4::print_chars(out, iris::unicode::transcode<char32_t>(std::format("{}", val)));
+
         } else {
             // TODO: https://github.com/iris-cpp/iris/issues/51
             //static_assert(iris::req::ADL_ostreamable_v<T>);
@@ -231,9 +268,9 @@ struct print_attribute_debug
     // for tuple-likes
     static void call(std::ostream& out, traits::CategorizedAttr<traits::tuple_attr> auto const& val)
     {
-        out << '[';
+        out << '<';
         alloy::for_each(val, detail::print_tuple_like<std::ostream>(out));
-        out << ']';
+        out << '>';
     }
 
     template<traits::CategorizedAttr<traits::container_attr> T_>
@@ -241,7 +278,9 @@ struct print_attribute_debug
     static void call(std::ostream& out, T_ const& val)
     {
         if constexpr (iris::StringLike<T_>) {
-            out << std::basic_string_view{val};
+            out << "\"";
+            x4::print_chars(out, iris::unicode::transcode_ref<char32_t>(val));
+            out << "\"";
 
         } else {
             out << '[';

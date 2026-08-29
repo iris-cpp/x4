@@ -97,6 +97,7 @@ private:
 public:
     using binary_parser<Left, Right, alternative>::binary_parser;
 
+    // unused_type attribute
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
@@ -120,6 +121,7 @@ public:
     //
     // You also should add test to `attribute.cpp`.
 
+    // Non-container attribute
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
         requires (!traits::X4Container<Attr>)
     [[nodiscard]] constexpr bool
@@ -151,6 +153,7 @@ public:
         return false; // `attr` is untouched
     }
 
+    // Container attribute
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container ContainerAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, ContainerAttr& attr) const

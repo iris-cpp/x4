@@ -10,11 +10,13 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/auxiliary/eps.hpp>
+
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/directive/expect.hpp>
+#include <iris/x4/directive/with.hpp>
+
 #include <iris/x4/debug/annotate.hpp>
 #include <iris/x4/debug/error_handler.hpp>
-#include <iris/x4/directive/with.hpp>
 
 #include <iterator>
 #include <string>

@@ -12,7 +12,8 @@
 =============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/type_traits.hpp>
+
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/lossy_conversion.hpp>
@@ -75,7 +76,7 @@ constexpr void move_to(T&, T&) noexcept
     );
 
     static_assert(
-        false,
+        !std::is_lvalue_reference_v<T&>,
         "lvalue reference detected on the `src` argument of `x4::move_to`. "
         "The caller is definitely lacking `std::move` or `std::forward`. If you "
         "intend to *copy* the mutable value, apply `x4::move_to(std::as_const(attr_), attr)`."
@@ -141,6 +142,8 @@ move_to(Source&& src, Dest& dest)
         detail::is_assignable_without_lossy_conversion<Dest&, Source>::value,
         "Lossy conversion detected in move_to (source to plain)"
     );
+    static_assert((!CharLike<Dest> && !CharLike<std::remove_cvref_t<Source>>) || !CharIncompatibleWith<Dest, std::remove_cvref_t<Source>>, "Mixing incompatible char types is not allowed");
+
     dest = std::forward<Source>(src);
 }
 
@@ -220,6 +223,13 @@ move_to(It first, Se last, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
+    static_assert(
+        // If either `It` or `Dest` is relevant to any character type,
+        (!CharLike<std::remove_cvref_t<std::iter_value_t<It>>> && !CharLike<std::remove_cvref_t<typename traits::container_value<Dest>::type>>) ||
+        // ... then do the check below:
+        !CharIncompatibleWith<std::remove_cvref_t<std::iter_value_t<It>>, std::remove_cvref_t<typename traits::container_value<Dest>::type>>,
+        "Mixing incompatible char types is not allowed"
+    );
 
     static_assert(
         detail::is_assignable_without_lossy_conversion<
@@ -243,7 +253,7 @@ move_to(It first, Se last, Dest& dest)
 }
 
 // Move non-container `src` into container `dest`.
-// e.g. Source=std::string_view, Dest=std::string (used in `attr_parser`)
+// e.g. Source=std::string_view, Dest=std::string (used in `fixed_value_parser`)
 template<traits::NonUnusedAttr Source, traits::CategorizedAttr<traits::container_attr> Dest>
     requires
         (!traits::X4Container<Source>) &&

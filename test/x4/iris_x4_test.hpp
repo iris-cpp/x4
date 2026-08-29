@@ -282,7 +282,7 @@ struct single_element_struct
 template<class T>
 struct iris::alloy::adaptor<x4_test::single_element_struct<T>>
 {
-    using getters_list = make_getters_list<&x4_test::single_element_struct<T>::value>;
+    using getters_list = iris::constant_list<&x4_test::single_element_struct<T>::value>;
 };
 
 using x4_test::parse;

@@ -17,8 +17,6 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/move_to.hpp>
 
-#include <iris/x4/traits/string_traits.hpp>
-
 #include <iris/x4/string/tst.hpp>
 #include <iris/x4/string/case_compare.hpp>
 
@@ -242,14 +240,17 @@ struct symbols_parser_impl : parser<Derived>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(x4::move_to(std::declval<value_type const&>(), attr))
         )
     {
-        x4::skip_over(first, last, ctx);
+        auto it = first;
+        x4::skip_over(it, last, ctx);
 
-        if (value_type const* val_ptr = lookup->find(first, last, x4::get_case_compare<Encoding>(ctx))) {
+        if (value_type const* val_ptr = lookup->find(it, last, x4::get_case_compare<Encoding>(ctx))) {
             x4::move_to(*val_ptr, attr);
+            first = it;
             return true;
         }
         return false;
@@ -312,14 +313,14 @@ private:
     [[nodiscard]] constexpr value_type* find_impl(Iterator begin, Iterator end) noexcept
     {
         value_type* r = lookup->find(begin, end, case_compare<Encoding>());
-        return begin == end ? r : 0;
+        return begin == end ? r : nullptr;
     }
 
     template<std::forward_iterator Iterator>
     [[nodiscard]] constexpr value_type const* find_impl(Iterator begin, Iterator end) const noexcept
     {
         value_type const* r = lookup->find(begin, end, case_compare<Encoding>());
-        return begin == end ? r : 0;
+        return begin == end ? r : nullptr;
     }
 
     std::conditional_t<IsShared, std::shared_ptr<Lookup>, std::unique_ptr<Lookup>> lookup;

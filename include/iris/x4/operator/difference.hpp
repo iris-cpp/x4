@@ -32,10 +32,10 @@ struct difference : binary_parser<Left, Right, difference<Left, Right>>
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
         // Try `Right`
-        It const orig_first = first;
-        if (this->right.parse(first, last, ctx, unused)) {
+        auto it = first;
+        if (this->right.parse(it, last, ctx, unused)) {
             // `Right` succeeds, we fail.
-            first = orig_first;
+            // We don't need to advance the iterator on this situation.
             return false;
         }
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
@@ -49,11 +49,12 @@ struct difference : binary_parser<Left, Right, difference<Left, Right>>
         }
         // `Right` failed, now try `Left` ------------------
 
-        // Rollback iterator
-        // This rolls back the iterator position, including the amount skipped by
-        // `Right`'s skipper (`x4::skip_over(...)`).
-        first = orig_first;
-        return this->left.parse(first, last, ctx, attr);
+        // Try `Left` on the original position, effectively reverting the amount
+        // skipped by `Right`'s skipper (`x4::skip_over(...)`).
+        it = first;
+        bool const ok = this->left.parse(it, last, ctx, attr);
+        if (ok) first = it;
+        return ok;
     }
 };
 

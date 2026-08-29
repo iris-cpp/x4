@@ -11,7 +11,6 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/directive/as.hpp>
 #include <iris/x4/directive/expect.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/directive/matches.hpp>
@@ -19,10 +18,8 @@
 #include <iris/x4/directive/no_skip.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/directive/repeat.hpp>
-#include <iris/x4/directive/seek.hpp>
 #include <iris/x4/directive/skip.hpp>
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/directive/with_local.hpp>
-#include <iris/x4/directive/without.hpp>
 
 #endif

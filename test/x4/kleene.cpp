@@ -87,7 +87,7 @@ TEST_CASE("kleene")
         std::string v;
         auto f = [&](auto&& ctx){ v = _attr(ctx); };
 
-        REQUIRE(parse("bbbb", (*char_)[f]));
+        REQUIRE(parse("bbbb", (*char_).on_match(f)));
         REQUIRE(v.size() == 4);
         CHECK(v[0] == 'b');
         CHECK(v[1] == 'b');
@@ -102,7 +102,7 @@ TEST_CASE("kleene")
         std::vector<int> v;
         auto f = [&](auto&& ctx){ v = _attr(ctx); };
 
-        REQUIRE(parse("123 456 789", (*int_)[f], space));
+        REQUIRE(parse("123 456 789", (*int_).on_match(f), space));
         CHECK(v.size() == 3);
         CHECK(v[0] == 123);
         CHECK(v[1] == 456);

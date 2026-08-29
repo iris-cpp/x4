@@ -36,13 +36,16 @@ struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
             >
         )
     {
-        x4::skip_over(first, last, ctx); // pre-skip
+        auto it = first;
+        x4::skip_over(it, last, ctx); // pre-skip
 
-        return this->subject.parse(
-            first, last,
+        bool const ok = this->subject.parse(
+            it, last,
             x4::remove_first_context<contexts::skipper>(ctx), // no skipper
             attr
         );
+        if (ok) first = it;
+        return ok;
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

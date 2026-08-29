@@ -159,21 +159,21 @@ TEST_CASE("symbols1")
         int i = 0;
         auto f = [&](auto&& ctx){ i = _attr(ctx); }; // lambda with capture (important for subsequent checks)
 
-        using Parser = std::remove_cvref_t<decltype(sym[f])>;
+        using Parser = std::remove_cvref_t<decltype(sym.on_match(f))>;
         STATIC_CHECK(x4::X4ExplicitSubject<Parser>);
 
-        CHECK(parse("Joel", sym[f]));
+        CHECK(parse("Joel", sym.on_match(f)));
         CHECK(i == 1);
-        CHECK(parse("Ruby", sym[f]));
+        CHECK(parse("Ruby", sym.on_match(f)));
         CHECK(i == 2);
-        CHECK(parse("Tenji", sym[f]));
+        CHECK(parse("Tenji", sym.on_match(f)));
         CHECK(i == 3);
-        CHECK(parse("Tutit", sym[f]));
+        CHECK(parse("Tutit", sym.on_match(f)));
         CHECK(i == 4);
-        CHECK(parse("Kim", sym[f]));
+        CHECK(parse("Kim", sym.on_match(f)));
         CHECK(i == 5);
-        CHECK(parse("Joey", sym[f]));
+        CHECK(parse("Joey", sym.on_match(f)));
         CHECK(i == 6);
-        CHECK(!parse("XXX", sym[f]));
+        CHECK(!parse("XXX", sym.on_match(f)));
     }
 }

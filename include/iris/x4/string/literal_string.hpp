@@ -58,13 +58,17 @@ struct literal_string : parser<literal_string<String, Encoding, Attr>>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr_& attr) const
         noexcept(
+            std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
             noexcept(detail::string_parse(str_, first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx)))
         )
     {
         static_assert(std::same_as<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
-        x4::skip_over(first, last, ctx);
-        return detail::string_parse(str_, first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx));
+        auto it = first;
+        x4::skip_over(it, last, ctx);
+        bool const ok = detail::string_parse(str_, it, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx));
+        if (ok) first = it;
+        return ok;
     }
 
     [[nodiscard]] std::string get_x4_info() const

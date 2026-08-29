@@ -9,9 +9,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+// This header is intended for inclusion by user-facing, non-parser headers.
+// Do not add includes specific to X4's parser implementation here.
+
 #include <iris/config.hpp>
-#include <iris/x4/core/expectation.hpp>
-#include <iris/x4/traits/string_traits.hpp>
+#include <iris/x4/core/expectation_failure.hpp>
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iterator>
 #include <ranges>
@@ -95,7 +98,7 @@ struct parse_result_for_impl
 };
 
 template<std::ranges::forward_range R>
-    requires traits::CharArray<R>
+    requires CharArray<R>
 struct parse_result_for_impl<R>
 {
     using string_view_type = std::basic_string_view<
@@ -116,7 +119,7 @@ struct range_parse_parser_impl
 };
 
 template<std::ranges::forward_range R>
-    requires traits::CharArray<R>
+    requires CharArray<R>
 struct range_parse_parser_impl<R>
 {
     using string_view_type = std::basic_string_view<

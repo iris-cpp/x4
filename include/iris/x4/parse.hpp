@@ -16,10 +16,9 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/expectation.hpp>
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/x4/char/char_class.hpp> // for builtin skipper
-
-#include <iris/x4/traits/string_traits.hpp>
 
 #include <iris/x4/parse_result.hpp>
 
@@ -159,14 +158,14 @@ concept X4RangeParseSkipper =
     >;
 
 template<std::ranges::forward_range R>
-    requires (!traits::CharArray<R>)
+    requires (!CharArray<R>)
 [[nodiscard]] static constexpr decltype(auto) as_parse_range(R const& range) noexcept
 {
     return range;
 }
 
 template<std::ranges::forward_range R>
-    requires traits::CharArray<R>
+    requires CharArray<R>
 [[nodiscard]] static constexpr auto as_parse_range(R const& str)
     noexcept(noexcept(std::basic_string_view{str}))
 {

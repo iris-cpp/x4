@@ -10,9 +10,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/core/char_traits.hpp>
 #include <iris/x4/char/literal_char.hpp>
 #include <iris/x4/char/char_set.hpp>
-#include <iris/x4/traits/string_traits.hpp>
 
 namespace iris::x4 {
 
@@ -43,7 +43,7 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
         return {ch};
     }
 
-    template<traits::CharIncompatibleWith<char_type> CharT>
+    template<CharIncompatibleWith<char_type> CharT>
     static constexpr void operator()(CharT) = delete; // Mixing incompatible char types is not allowed
 
     [[nodiscard]] static constexpr literal_char<Encoding>
@@ -59,7 +59,7 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
         return char_set<Encoding>{ch};
     }
 
-    template<traits::CharIncompatibleWith<char_type> CharT, std::size_t N>
+    template<CharIncompatibleWith<char_type> CharT, std::size_t N>
     static constexpr void
     operator()(CharT const (&)[N]) = delete; // Mixing incompatible char types is not allowed
 
@@ -71,7 +71,7 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
     }
 
     template<class From, class To>
-        requires traits::CharIncompatibleWith<From, char_type> || traits::CharIncompatibleWith<To, char_type>
+        requires CharIncompatibleWith<From, char_type> || CharIncompatibleWith<To, char_type>
     static constexpr void operator()(From, To) = delete; // Mixing incompatible char types is not allowed
 
     template<class From, std::size_t FromN, class To, std::size_t ToN>

@@ -11,6 +11,7 @@
 ==============================================================================*/
 
 #include <iris/x4/core/skip_over.hpp>
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/char_class_tags.hpp>
@@ -18,7 +19,7 @@
 
 #include <iris/x4/string/case_compare.hpp>
 
-#include <iris/x4/traits/string_traits.hpp>
+#include <iris/x4/traits/char_encoding_traits.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
 
@@ -183,7 +184,7 @@ template<class CharClassTag, std::forward_iterator It, std::sentinel_for<It> Se>
 constexpr void builtin_skip_over(It& first, Se const& last) noexcept
 {
     using CharT = std::remove_cvref_t<std::iter_value_t<It>>;
-    static_assert(traits::CharLike<CharT>);
+    static_assert(CharLike<CharT>);
 
     using Encoding = traits::char_encoding_for<CharT>;
     using Parser = char_class_parser<Encoding, CharClassTag>;

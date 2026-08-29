@@ -31,8 +31,9 @@ struct roman
 };
 
 template<>
-struct alloy::adaptor<roman> {
-    using getters_list = make_getters_list<&roman::a, &roman::b, &roman::c>;
+struct alloy::adaptor<roman>
+{
+    using getters_list = iris::constant_list<&roman::a, &roman::b, &roman::c>;
 };
 
 namespace {

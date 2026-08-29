@@ -46,12 +46,6 @@ TEST_CASE("bool")
     using x4::false_;
     using x4::no_case;
 
-    static_assert(x4::detail::BoolPolicy<x4::bool_policies<>, x4::char_encoding::standard>);
-    static_assert(x4::detail::BoolPolicy<x4::bool_policies<>, x4::char_encoding::standard_wide>);
-    static_assert(x4::detail::BoolPolicy<x4::bool_policies<>, x4::char_encoding::unicode>);
-
-    static_assert(x4::detail::BoolPolicy<backwards_bool_policies, x4::char_encoding::standard>);
-
     {
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(bool_);
 
@@ -91,7 +85,7 @@ TEST_CASE("bool")
     }
 
     {
-        using backwards_bool_type = x4::bool_parser<bool, x4::char_encoding::standard, backwards_bool_policies>;
+        using backwards_bool_type = x4::bool_parser<bool, backwards_bool_policies>;
         constexpr backwards_bool_type backwards_bool{};
 
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(backwards_bool);
@@ -124,7 +118,7 @@ TEST_CASE("bool")
             bool b;
         };
 
-        using bool_test_type = x4::bool_parser<test_bool_type, x4::char_encoding::standard>;
+        using bool_test_type = x4::bool_parser<test_bool_type>;
         constexpr bool_test_type test_bool{};
 
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(test_bool);

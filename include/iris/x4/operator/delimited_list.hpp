@@ -24,7 +24,7 @@
 namespace iris::x4 {
 
 template<class Left, class Right>
-struct list : binary_parser<Left, Right, list<Left, Right>>
+struct delimited_list : binary_parser<Left, Right, delimited_list<Left, Right>>
 {
     using attribute_type = traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
@@ -34,7 +34,7 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
         traits::can_hold<typename parser_traits<Left>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
-    using binary_parser<Left, Right, list>::binary_parser;
+    using binary_parser<Left, Right, delimited_list>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
@@ -108,13 +108,13 @@ struct list : binary_parser<Left, Right, list<Left, Right>>
 };
 
 template<X4Subject Left, X4Subject Right>
-[[nodiscard]] constexpr list<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
+[[nodiscard]] constexpr delimited_list<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
 operator%(Left&& left, Right&& right)
     noexcept(
         is_parser_nothrow_castable_v<Left> &&
         is_parser_nothrow_castable_v<Right> &&
         std::is_nothrow_constructible_v<
-            list<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
+            delimited_list<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
             as_parser_t<Left>,
             as_parser_t<Right>
         >

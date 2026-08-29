@@ -10,9 +10,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/string/literal_string.hpp>
+#include <iris/x4/core/char_traits.hpp>
+#include <iris/x4/core/string_traits.hpp>
+
 #include <iris/x4/char/literal_char.hpp> // required for "c" -> 'c' optimization
-#include <iris/x4/traits/string_traits.hpp>
+#include <iris/x4/string/literal_string.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
 
@@ -35,10 +37,10 @@ namespace standard {
 
 inline namespace helpers {
 
-template<traits::CppStringLike<char> T>
-[[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::standard>
+template<CppStringLike<char> T>
+[[nodiscard]] constexpr literal_string<maybe_owning_string<T>, char_encoding::standard>
 string(T&& string_like)
-    noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::standard>, T>)
+    noexcept(std::is_nothrow_constructible_v<literal_string<maybe_owning_string<T>, char_encoding::standard>, T>)
 {
     return {std::forward<T>(string_like)};
 }
@@ -52,15 +54,15 @@ string(char ch) noexcept
 
 // Optimize `literal_string{"c"}` into `literal_char{'c'}`
 [[nodiscard]] constexpr literal_char<char_encoding::standard, std::basic_string<char>>
-string(traits::X4VagueArrayOf2Chars<char> auto const& ch) noexcept
+string(X4VagueArrayOf2Chars<char> auto const& ch) noexcept
 {
     return {ch[0]};
 }
 
-template<traits::CppStringLike<char> T>
-[[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::standard, unused_type>
+template<CppStringLike<char> T>
+[[nodiscard]] constexpr literal_string<maybe_owning_string<T>, char_encoding::standard, unused_type>
 lit(T&& string_like)
-    noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::standard, unused_type>, T>)
+    noexcept(std::is_nothrow_constructible_v<literal_string<maybe_owning_string<T>, char_encoding::standard, unused_type>, T>)
 {
     return {std::forward<T>(string_like)};
 }
@@ -68,7 +70,7 @@ lit(T&& string_like)
 } // helpers
 
 template<class T>
-    requires traits::CharIncompatibleWith<T, char> || traits::StringLikeIncompatibleWith<T, char>
+    requires CharIncompatibleWith<T, char> || StringLikeIncompatibleWith<T, char>
 constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
 
 } // standard
@@ -81,10 +83,10 @@ namespace standard_wide {
 
 inline namespace helpers {
 
-template<traits::CppStringLike<wchar_t> T>
-[[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::standard_wide>
+template<CppStringLike<wchar_t> T>
+[[nodiscard]] constexpr literal_string<maybe_owning_string<T>, char_encoding::standard_wide>
 string(T&& string_like)
-    noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::standard_wide>, T>)
+    noexcept(std::is_nothrow_constructible_v<literal_string<maybe_owning_string<T>, char_encoding::standard_wide>, T>)
 {
     return {std::forward<T>(string_like)};
 }
@@ -98,15 +100,15 @@ string(wchar_t ch) noexcept
 
 // Optimize `literal_string{L"c"}` into `literal_char{L'c'}`
 [[nodiscard]] constexpr literal_char<char_encoding::standard_wide, std::basic_string<wchar_t>>
-string(traits::X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
+string(X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
 {
     return {ch[0]};
 }
 
-template<traits::CppStringLike<wchar_t> T>
-[[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::standard_wide, unused_type>
+template<CppStringLike<wchar_t> T>
+[[nodiscard]] constexpr literal_string<maybe_owning_string<T>, char_encoding::standard_wide, unused_type>
 lit(T&& string_like)
-    noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::standard_wide, unused_type>, T>)
+    noexcept(std::is_nothrow_constructible_v<literal_string<maybe_owning_string<T>, char_encoding::standard_wide, unused_type>, T>)
 {
     return {std::forward<T>(string_like)};
 }
@@ -114,7 +116,7 @@ lit(T&& string_like)
 } // helpers
 
 template<class T>
-    requires traits::CharIncompatibleWith<T, wchar_t> || traits::StringLikeIncompatibleWith<T, wchar_t>
+    requires CharIncompatibleWith<T, wchar_t> || StringLikeIncompatibleWith<T, wchar_t>
 constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
 
 } // standard_wide
@@ -129,10 +131,10 @@ namespace unicode {
 inline namespace helpers {
 
 // TODO: add `char8_t` and `char16_t` overloads
-template<traits::CppStringLike<char32_t> T>
-[[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::unicode>
+template<CppStringLike<char32_t> T>
+[[nodiscard]] constexpr literal_string<maybe_owning_string<T>, char_encoding::unicode>
 string(T&& string_like)
-    noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::unicode>, T>)
+    noexcept(std::is_nothrow_constructible_v<literal_string<maybe_owning_string<T>, char_encoding::unicode>, T>)
 {
     return {std::forward<T>(string_like)};
 }
@@ -146,15 +148,15 @@ string(char32_t ch) noexcept
 
 // Optimize `literal_string{U"c"}` into `literal_char{U'c'}`
 [[nodiscard]] constexpr literal_char<char_encoding::unicode, std::basic_string<char32_t>>
-string(traits::X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
+string(X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
 {
     return {ch[0]};
 }
 
-template<traits::CppStringLike<char32_t> T>
-[[nodiscard]] constexpr literal_string<traits::maybe_owning_string<T>, char_encoding::unicode, unused_type>
+template<CppStringLike<char32_t> T>
+[[nodiscard]] constexpr literal_string<maybe_owning_string<T>, char_encoding::unicode, unused_type>
 lit(T&& string_like)
-    noexcept(std::is_nothrow_constructible_v<literal_string<traits::maybe_owning_string<T>, char_encoding::unicode, unused_type>, T>)
+    noexcept(std::is_nothrow_constructible_v<literal_string<maybe_owning_string<T>, char_encoding::unicode, unused_type>, T>)
 {
     return {std::forward<T>(string_like)};
 }
@@ -162,7 +164,7 @@ lit(T&& string_like)
 } // helpers
 
 template<class T>
-    requires traits::CharIncompatibleWith<T, char32_t> || traits::StringLikeIncompatibleWith<T, char32_t>
+    requires CharIncompatibleWith<T, char32_t> || StringLikeIncompatibleWith<T, char32_t>
 constexpr void string(T&&) = delete; // Mixing incompatible character types is not allowed
 
 } // unicode
@@ -201,7 +203,7 @@ using x4::lit;
 
 namespace extension {
 
-template<traits::CharLike CharT, std::size_t N>
+template<CharLike CharT, std::size_t N>
 struct as_parser<CharT[N]>
 {
     using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;
@@ -213,10 +215,10 @@ struct as_parser<CharT[N]>
     }
 };
 
-template<traits::CharLike CharT, std::size_t N>
+template<CharLike CharT, std::size_t N>
 struct as_parser<CharT const[N]> : as_parser<CharT[N]> {};
 
-template<traits::CharLike CharT>
+template<CharLike CharT>
 struct as_parser<CharT const*>
 {
     using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;
@@ -228,7 +230,7 @@ struct as_parser<CharT const*>
     }
 };
 
-template<traits::CharLike CharT>
+template<CharLike CharT>
 struct as_parser<std::basic_string<CharT>>
 {
     using type = literal_string<std::basic_string<CharT>, traits::char_encoding_for<CharT>, unused_type>;
@@ -242,7 +244,7 @@ struct as_parser<std::basic_string<CharT>>
     }
 };
 
-template<traits::CharLike CharT>
+template<CharLike CharT>
 struct as_parser<std::basic_string_view<CharT>>
 {
     using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;

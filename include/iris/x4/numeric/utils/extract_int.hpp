@@ -98,21 +98,23 @@ struct digits_traits<T, 10>
 template<unsigned Radix>
 struct radix_traits
 {
-    template<class Char>
-    [[nodiscard]] static constexpr bool is_valid(Char ch) noexcept
+    template<class CharT>
+    [[nodiscard]] static constexpr bool is_valid(CharT ch) noexcept
     {
-        return (ch >= '0' && ch <= (Radix > 10 ? '9' : static_cast<Char>('0' + Radix -1)))
-            || (Radix > 10 && ch >= 'a' && ch <= static_cast<Char>('a' + Radix -10 -1))
-            || (Radix > 10 && ch >= 'A' && ch <= static_cast<Char>('A' + Radix -10 -1));
+        using token_def = traits::numeric_token<CharT>;
+        return (ch >= token_def::_0 && ch <= (Radix > 10 ? token_def::_9 : static_cast<CharT>(token_def::_0 + Radix -1)))
+            || (Radix > 10 && ch >= token_def::a && ch <= static_cast<CharT>(token_def::a + Radix -10 -1))
+            || (Radix > 10 && ch >= token_def::A && ch <= static_cast<CharT>(token_def::A + Radix -10 -1));
     }
 
-    template<class Char>
-    [[nodiscard]] static constexpr unsigned digit(Char ch)
-        noexcept(noexcept(traits::char_encoding_traits<Char>::encoding_type::tolower(ch)))
+    template<class CharT>
+    [[nodiscard]] static constexpr unsigned digit(CharT ch)
+        noexcept(noexcept(traits::char_encoding_traits<CharT>::encoding_type::tolower(ch)))
     {
-        return (Radix <= 10 || (ch >= '0' && ch <= '9'))
-            ? ch - '0'
-            : traits::char_encoding_traits<Char>::encoding_type::tolower(ch) - 'a' + 10;
+        using token_def = traits::numeric_token<CharT>;
+        return (Radix <= 10 || (ch >= token_def::_0 && ch <= token_def::_9))
+            ? ch - token_def::_0
+            : traits::char_encoding_traits<CharT>::encoding_type::tolower(ch) - token_def::a + 10;
     }
 };
 
@@ -120,15 +122,15 @@ struct radix_traits
 template<unsigned Radix>
 struct positive_accumulator
 {
-    template<class T, class Char>
-    static constexpr void unchecked_add(T& n, Char ch)
+    template<class T, class CharT>
+    static constexpr void unchecked_add(T& n, CharT ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
         n = n * T(Radix) + T(radix_traits<Radix>::digit(ch));
     }
 
-    template<class T, class Char>
-    [[nodiscard]] static constexpr bool checked_add(T& n, Char ch)
+    template<class T, class CharT>
+    [[nodiscard]] static constexpr bool checked_add(T& n, CharT ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
         // Ensure n *= Radix will not overflow
@@ -151,15 +153,15 @@ struct positive_accumulator
 template<unsigned Radix>
 struct negative_accumulator
 {
-    template<class T, class Char>
-    static constexpr void unchecked_add(T& n, Char ch)
+    template<class T, class CharT>
+    static constexpr void unchecked_add(T& n, CharT ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
         n = n * T(Radix) - T(radix_traits<Radix>::digit(ch));
     }
 
-    template<class T, class Char>
-    [[nodiscard]] static constexpr bool checked_add(T& n, Char ch)
+    template<class T, class CharT>
+    [[nodiscard]] static constexpr bool checked_add(T& n, CharT ch)
         noexcept(noexcept(radix_traits<Radix>::digit(ch)))
     {
         // Ensure n *= Radix will not underflow
@@ -190,10 +192,10 @@ struct int_extractor
         ) &&
         traits::check_overflow<T>::value;
 
-    template<class Char, class T>
+    template<class CharT, class T>
         requires need_check_overflow<T>
     [[nodiscard]] static constexpr bool
-    call(Char ch, std::size_t count, T& n)
+    call(CharT ch, std::size_t count, T& n)
         noexcept(
             noexcept(Accumulator::unchecked_add(n, ch)) &&
             noexcept(Accumulator::checked_add(n, ch))
@@ -211,19 +213,19 @@ struct int_extractor
         return true;
     }
 
-    template<class Char, class T>
+    template<class CharT, class T>
         requires (!need_check_overflow<T>)
     [[nodiscard]] static constexpr bool
-    call(Char ch, std::size_t /*count*/, T& n)
+    call(CharT ch, std::size_t /*count*/, T& n)
         noexcept(noexcept(Accumulator::unchecked_add(n, ch)))
     {
         Accumulator::unchecked_add(n, ch);
         return true;
     }
 
-    template<class Char>
+    template<class CharT>
     [[nodiscard]] static constexpr bool
-    call(Char /*ch*/, std::size_t /*count*/, unused_type const&) noexcept
+    call(CharT /*ch*/, std::size_t /*count*/, unused_type const&) noexcept
     {
         return true;
     }
@@ -274,11 +276,13 @@ struct extract_int
         using extractor = int_extractor<Radix, Accumulator, MaxDigits>;
         using char_type = std::iter_value_t<It>;
 
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+
         It it = first;
         std::size_t leading_zeros = 0;
         if constexpr (!Accumulate) {
             // skip leading zeros
-            while (it != last && *it == '0' && leading_zeros < static_cast<std::size_t>(MaxDigits)) {
+            while (it != last && *it == token_def::_0 && leading_zeros < static_cast<std::size_t>(MaxDigits)) {
                 ++it;
                 ++leading_zeros;
             }
@@ -359,11 +363,13 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         using extractor = int_extractor<Radix, Accumulator, -1>;
         using char_type = std::iter_value_t<It>;
 
+        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+
         It it = first;
         std::size_t count = 0;
         if constexpr (!Accumulate) {
             // skip leading zeros
-            while (it != last && *it == '0') {
+            while (it != last && *it == token_def::_0) {
                 ++it;
                 ++count;
             }
@@ -443,12 +449,14 @@ extract_sign(It& first, Se const& last)
         noexcept(++first)
     )
 {
+    using token_def = traits::numeric_token<std::iter_value_t<It>>;
+
     (void)last;
     assert(first != last); // precondition
 
     // Extract the sign
-    bool const neg = *first == '-';
-    if (neg || *first == '+') {
+    bool const neg = *first == token_def::minus;
+    if (neg || *first == token_def::plus) {
         ++first;
         return neg;
     }

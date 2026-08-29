@@ -13,7 +13,7 @@
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
-#include <iris/x4/operator/list.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/plus.hpp>
@@ -114,7 +114,7 @@ TEST_CASE("list")
         std::string s;
         auto f = [&](auto&& ctx){ s = std::string(_attr(ctx).begin(), _attr(ctx).end()); };
 
-        REQUIRE(parse("a,b,c,d,e,f,g,h", (char_ % ',')[f]));
+        REQUIRE(parse("a,b,c,d,e,f,g,h", (char_ % ',').on_match(f)));
         CHECK(s == "abcdefgh");
     }
 

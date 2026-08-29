@@ -19,12 +19,12 @@ TEST_CASE("action")
 {
     using x4::int_;
 
-    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::int_[std::true_type{}]);
+    IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::int_.on_match(std::true_type{}));
 
     {
         int x = 0;
         auto const fun_action = [&](auto&& ctx) { x += x4::_attr(ctx); };
-        CHECK(parse("{42}", '{' >> int_[fun_action] >> '}'));
+        CHECK(parse("{42}", '{' >> int_.on_match(fun_action) >> '}'));
     }
     {
         auto const fail = [](auto&&) { return false; };
@@ -35,7 +35,7 @@ TEST_CASE("action")
             next = x4::_attr(ctx);
         };
 
-        REQUIRE(parse(input, x4::int_[fail] | x4::digit[setnext], x4::space).is_partial_match());
+        REQUIRE(parse(input, x4::int_.on_match(fail) | x4::digit.on_match(setnext), x4::space).is_partial_match());
         CHECK(next == '1');
     }
 
@@ -46,7 +46,7 @@ TEST_CASE("action")
         x4_test::stationary st { 0 };
         static_assert(x4::X4Attribute<x4_test::stationary>);
 
-        REQUIRE(parse("{42}", p[([]{})], st));
+        REQUIRE(parse("{42}", p.on_match([]{}), st));
         CHECK(st.val == 42);
     }
 }
