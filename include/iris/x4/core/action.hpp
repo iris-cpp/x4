@@ -94,7 +94,7 @@ struct action : proxy_parser<Subject, action<Subject, ActionF>>
             noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
         )
     {
-        typename base_type::attribute_type attr_temp; // default-initialize
+        typename base_type::attribute_type attr_temp{}; // value-initialize
         return this->parse_main(first, last, ctx, attr_temp);
     }
 
@@ -138,7 +138,7 @@ public:
             noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
         )
     {
-        typename base_type::attribute_type attr_temp; // default-initialize
+        typename base_type::attribute_type attr_temp{}; // value-initialize
         return this->parse_main(first, last, ctx, attr_temp);
     }
 

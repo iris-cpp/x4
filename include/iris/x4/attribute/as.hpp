@@ -104,8 +104,7 @@ public:
     // `outer_parser<U>(as<T>(subject))` forwards temporary `T` local variable for the subject, then move the variable to `U&`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
         requires
-            (!std::same_as<std::remove_const_t<OuterAttr>, T>) &&
-            X4Movable<T, OuterAttr>
+            (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
         noexcept(
