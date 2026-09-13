@@ -233,6 +233,8 @@ using parsers::directive::with;
 template<class Subject, class... IDs>
 struct without_directive : proxy_parser<Subject, without_directive<Subject, IDs...>>
 {
+    static_assert(sizeof...(IDs) > 0);
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -258,9 +260,19 @@ namespace detail {
 template<class... IDs>
 struct without_gen
 {
+    // `without<>(p)` is no-op
     template<class Subject>
-    [[nodiscard]] constexpr without_directive<std::remove_cvref_t<Subject>, IDs...>
-    operator[](Subject&& subject) const // TODO: MSVC 2022 does not properly handle static operator[]
+        requires (sizeof...(IDs) == 0)
+    [[nodiscard]] static constexpr auto&&
+    operator[](Subject&& subject IRIS_LIFETIMEBOUND) noexcept
+    {
+        return static_cast<Subject&&>(subject);
+    }
+
+    template<class Subject>
+        requires (sizeof...(IDs) > 0)
+    [[nodiscard]] static constexpr without_directive<std::remove_cvref_t<Subject>, IDs...>
+    operator[](Subject&& subject)
         noexcept(std::is_nothrow_constructible_v<without_directive<std::remove_cvref_t<Subject>, IDs...>, Subject>)
     {
         return without_directive<std::remove_cvref_t<Subject>, IDs...>{
