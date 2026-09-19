@@ -9,7 +9,7 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/symbols.hpp>
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/operator/sequence.hpp>

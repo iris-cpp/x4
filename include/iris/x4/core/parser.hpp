@@ -11,11 +11,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser_traits.hpp>
+
+#include <iris/string.hpp>
 
 #include <iterator>
 #include <string>
@@ -27,6 +29,8 @@
 #include <typeinfo>
 #endif
 
+#include <cstddef> // IWYU pragma: keep
+
 namespace iris::x4 {
 
 template<class Subject, class Action>
@@ -35,14 +39,57 @@ struct action;
 namespace detail {
 
 struct parser_base {};
-struct parser_id;
+
+template<class T>
+concept ebo_eligible = std::is_empty_v<T> && !std::is_final_v<T>;
 
 template<class Storage>
 struct parser_storage
-    : private parser_base
-    , protected Storage // needs to be non-private because we want to expose static public members
 {
-    // `Storage` is a class type
+    // `Storage` is some non-EBO-eligible type:
+    //   - Non-class type, or
+    //   - Class type that is
+    //     - `final`, or
+    //     - has non-zero size
+
+    template<class StorageT>
+        requires
+            (!std::same_as<StorageT, parser_storage>) &&
+            std::constructible_from<Storage, StorageT>
+    constexpr explicit(!std::convertible_to<StorageT, Storage>)
+    parser_storage(StorageT&& storage)
+        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
+        : storage_(std::forward<StorageT>(storage))
+    {}
+
+protected:
+    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&>(storage_);
+    }
+    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&>(storage_);
+    }
+    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&&>(storage_);
+    }
+    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&&>(storage_);
+    }
+
+private:
+    IRIS_NO_UNIQUE_ADDRESS Storage storage_;
+};
+
+template<class Storage>
+    requires ebo_eligible<Storage>
+struct parser_storage<Storage>
+    : public Storage // needs to be public because we want to expose static public members
+{
+    // `Storage` is a EBO-eligible class type
 
     using Storage::Storage;
 
@@ -76,50 +123,11 @@ protected:
 };
 
 template<class Storage>
-    requires (!std::is_class_v<Storage>)
-struct parser_storage<Storage>
-    : private parser_base
-{
-    // `Storage` is some non-class type (can't inherit from it; no EBO needed)
-
-    template<class StorageT>
-        requires
-            (!std::same_as<StorageT, parser_storage>) &&
-            std::constructible_from<Storage, StorageT>
-    constexpr explicit(!std::convertible_to<StorageT, Storage>)
-    parser_storage(StorageT&& storage)
-        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
-        : storage_(std::forward<StorageT>(storage))
-    {}
-
-protected:
-    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&>(storage_);
-    }
-    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&>(storage_);
-    }
-    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&&>(storage_);
-    }
-    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&&>(storage_);
-    }
-
-private:
-    Storage storage_;
-};
-
-template<class Storage>
     requires
-        (!std::is_void_v<Storage>) &&
-        std::is_base_of_v<parser_base, Storage>
+        ebo_eligible<Storage> &&
+        has_parser_base<Storage>
 struct parser_storage<Storage>
-    : protected Storage // needs to be non-private because we want to expose static public members
+    : public Storage // needs to be public because we want to expose static public members
 {
     // `Storage` is some X4 parser class (possibly a `Subject`)
     // (which means we must not double-inherit from `parser_base`)
@@ -157,7 +165,6 @@ protected:
 
 template<>
 struct parser_storage<void>
-    : private parser_base
 {};
 
 } // detail
@@ -203,6 +210,10 @@ struct parser : detail::parser_storage<Storage>
     {
         return std::forward<Self>(self).on_match(std::forward<Action>(f));
     }
+
+private:
+    template<class> friend struct detail::has_parser_base_impl;
+    using x4_parser_base_type = detail::parser_base;
 };
 
 template<class Subject>
@@ -217,20 +228,23 @@ struct unary_parser : parser<Subject>
 
     [[nodiscard]] constexpr Subject& subject() & noexcept IRIS_LIFETIMEBOUND
     {
-        return static_cast<Subject&>(*this);
+        return static_cast<Subject&>(this->storage());
     }
     [[nodiscard]] constexpr Subject const& subject() const& noexcept IRIS_LIFETIMEBOUND
     {
-        return static_cast<Subject const&>(*this);
+        return static_cast<Subject const&>(this->storage());
     }
     [[nodiscard]] constexpr Subject&& subject() && noexcept IRIS_LIFETIMEBOUND
     {
-        return static_cast<Subject&&>(*this);
+        return static_cast<Subject&&>(this->storage());
     }
     [[nodiscard]] constexpr Subject const&& subject() const&& noexcept IRIS_LIFETIMEBOUND
     {
-        return static_cast<Subject const&&>(*this);
+        return static_cast<Subject const&&>(this->storage());
     }
+
+private:
+    using detail::parser_storage<Subject>::storage;
 };
 
 template<class Subject, class Derived_Unused = void> // TODO
@@ -249,7 +263,7 @@ struct proxy_parser : unary_parser<Subject>
 };
 
 template<class Left, class Right, class Derived_Unused = void> // TODO
-struct binary_parser : parser<>
+struct binary_parser // : parser<>
 {
     using left_type = Left;
     using right_type = Right;
@@ -267,9 +281,30 @@ struct binary_parser : parser<>
         , right(std::forward<RightT>(right))
     {}
 
-    // TODO: EBO
+    static constexpr bool requires_exact_attribute_type = false;
+
+    template<class Self, class Action>
+        requires std::constructible_from<
+            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
+            Self, Action
+        >
+    [[nodiscard]]
+    constexpr action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>
+    on_match(this Self&& self, Action&& f)
+        noexcept(std::is_nothrow_constructible_v<
+            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
+            Self, Action
+        >)
+    {
+        return {std::forward<Self>(self), std::forward<Action>(f)};
+    }
+
     IRIS_NO_UNIQUE_ADDRESS Left left;
     IRIS_NO_UNIQUE_ADDRESS Right right;
+
+private:
+    template<class> friend struct detail::has_parser_base_impl;
+    using x4_parser_base_type = detail::parser_base;
 };
 
 namespace traits {
@@ -287,51 +322,37 @@ struct as_parser<unused_type>
     }
 };
 
-//template<class Derived>
-//    requires std::is_base_of_v<detail::parser_base, std::remove_cvref_t<Derived>>
-//struct as_parser<Derived>
-//{
-//    template<class T>
-//    [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
-//    {
-//        return std::forward<T>(p);
-//    }
-//};
-//
-//template<class Derived>
-//struct as_parser<parser<Derived>>
-//{
-//    template<class T>
-//    [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
-//    {
-//        return std::forward<T>(p).derived();
-//    }
-//};
-
 } // traits
 
 namespace detail {
 
+struct as_parser_char_array_tag {};
+
 template<class T>
-concept has_parser_base = std::is_base_of_v<parser_base, std::remove_cvref_t<T>>;
+struct as_parser_plain_type
+{
+    using type = std::remove_cvref_t<T>;
+};
+template<CharLike CharT, std::size_t N>
+struct as_parser_plain_type<CharT const (&)[N]>
+{
+    using type = as_parser_char_array_tag;
+};
 
 template<class T>
 concept has_custom_as_parser = requires(T&& p) {
-    { x4::traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(p)) } -> has_parser_base;
+    { x4::traits::as_parser<typename as_parser_plain_type<T>::type>{}(std::forward<T>(p)) } -> has_parser_base;
 };
 
 struct as_parser_fn
 {
-    //template<class T>
-    //static void operator()(T&&) = delete; // If you reach here, your specialization of `x4::extension::as_parser` has a wrong signature, or the type is simply incompatible.
-
     template<class T>
         requires has_custom_as_parser<T>
     [[nodiscard]] static constexpr decltype(auto)
-    operator()(T&& x) noexcept(noexcept(traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(x))))
+    operator()(T&& x) noexcept(noexcept(traits::as_parser<typename as_parser_plain_type<T>::type>{}(std::forward<T>(x))))
     {
-        static_assert(has_parser_base<decltype(traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(x)))>);
-        return traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(x));
+        static_assert(has_parser_base<decltype(traits::as_parser<typename as_parser_plain_type<T>::type>{}(std::forward<T>(x)))>);
+        return traits::as_parser<typename as_parser_plain_type<T>::type>{}(std::forward<T>(x));
     }
 
     template<class P>

@@ -20,7 +20,7 @@
 #include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
-#include <iris/rvariant/rvariant.hpp>
+#include <iris/rvariant/rvariant.hpp> // IWYU pragma: keep
 
 #include <format>
 #include <concepts>

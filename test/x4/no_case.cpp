@@ -12,16 +12,17 @@
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 
 TEST_CASE("no_case")
 {
     using x4::no_case;
+    using x4::lit;
+    using x4::char_;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(no_case['x']);
 
     {
-        using namespace x4::standard;
         CHECK(parse("x", no_case[char_]));
         CHECK(parse("X", no_case[char_('x')]));
         CHECK(parse("X", no_case[char_('X')]));
@@ -35,7 +36,6 @@ TEST_CASE("no_case")
         CHECK(!parse("z", no_case[char_('a', 'y')]));
     }
     {
-        using namespace x4::standard;
         CHECK(parse("X", no_case['x']));
         CHECK(parse("X", no_case['X']));
         CHECK(parse("x", no_case['X']));
@@ -45,21 +45,17 @@ TEST_CASE("no_case")
     }
 
     {
-        using namespace x4::standard;
         CHECK(parse("X", no_case[char_("a-z")]));
         CHECK(!parse("1", no_case[char_("a-z")]));
     }
 
     {
-        using namespace x4::standard;
         CHECK(parse("Bochi Bochi", no_case[lit("bochi bochi")]));
         CHECK(parse("BOCHI BOCHI", no_case[lit("bochi bochi")]));
         CHECK(!parse("Vavoo", no_case[lit("bochi bochi")]));
     }
 
     {
-        // should work!
-        using namespace x4::standard;
         CHECK(parse("x", no_case[no_case[char_]]));
         CHECK(parse("x", no_case[no_case[char_('x')]]));
         CHECK(parse("yabadabadoo", no_case[no_case[lit("Yabadabadoo")]]));
@@ -81,21 +77,16 @@ TEST_CASE("no_case")
 
     {
         // chsets
-        namespace standard = x4::standard;
-        namespace standard_wide = x4::standard_wide;
 
-        CHECK(parse("x", no_case[standard::char_("a-z")]));
-        CHECK(parse("X", no_case[standard::char_("a-z")]));
-        CHECK(parse(L"X", no_case[standard_wide::char_(L"a-z")]));
-        CHECK(parse(L"X", no_case[standard_wide::char_(L"X")]));
+        CHECK(parse("x", no_case[x4::standard::char_("a-z")]));
+        CHECK(parse("X", no_case[x4::standard::char_("a-z")]));
+        CHECK(parse(L"X", no_case[x4::standard_wide::char_(L"a-z")]));
+        CHECK(parse(L"X", no_case[x4::standard_wide::char_(L"X")]));
     }
 
     {
-        using namespace x4::standard;
         std::string s("bochi bochi");
-        CHECK(parse("Bochi Bochi", no_case[lit(s.c_str())]));
         CHECK(parse("Bochi Bochi", no_case[lit(s)]));
-        CHECK(parse("Bochi Bochi", no_case[s.c_str()]));
         CHECK(parse("Bochi Bochi", no_case[s]));
     }
 

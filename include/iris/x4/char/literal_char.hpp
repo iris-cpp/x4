@@ -26,8 +26,8 @@ struct literal_char : char_parser<Encoding, literal_char<Encoding, Attr>>
 {
     using encoding_type = Encoding;
     using attribute_type = Attr;
-    using char_type = typename Encoding::char_type;
-    using classify_type = typename Encoding::classify_type;
+    using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 

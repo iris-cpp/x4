@@ -13,6 +13,7 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char/unicode_char_class.hpp>

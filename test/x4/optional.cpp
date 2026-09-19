@@ -10,7 +10,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/char/char.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/optional.hpp>
@@ -42,19 +42,6 @@ struct alloy::adaptor<adata>
     using getters_list = iris::constant_list<&adata::a, &adata::b>;
 };
 
-namespace {
-
-struct test_attribute_type
-{
-    template<class Context>
-    void operator()(Context&& ctx) const
-    {
-        CHECK(typeid(decltype(x4::_attr(ctx))).name() == typeid(std::optional<int>).name());
-    }
-};
-
-} // anonymous
-
 TEST_CASE("optional")
 {
     static_assert(x4::traits::is_optional_v<std::optional<int>>);
@@ -62,7 +49,7 @@ TEST_CASE("optional")
     using x4::int_;
     using x4::omit;
     using x4::lit;
-    using x4::standard::char_;
+    using x4::char_;
     using x4::_attr;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(-int_);
@@ -147,9 +134,10 @@ TEST_CASE("optional")
     }
 
     {
-        // test action
         std::optional<int> n = 0;
-        REQUIRE(parse("1234", (-int_).on_match(test_attribute_type()), n));
+        REQUIRE(parse("1234", (-int_).on_match([](auto&& ctx) {
+            CHECK(typeid(decltype(x4::_attr(ctx))).name() == typeid(std::optional<int>).name());
+        }), n));
         CHECK(*n == 1234);
     }
 
@@ -184,7 +172,6 @@ TEST_CASE("optional")
     }
 
     {
-        // test move only types
         std::optional<x4_test::move_only> o;
         REQUIRE(parse("s", -x4_test::synth_move_only, o));
         CHECK(o.has_value());

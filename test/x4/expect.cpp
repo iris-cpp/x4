@@ -26,7 +26,7 @@
 
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/symbols.hpp>
 
 #include <iris/x4/numeric/int.hpp>
@@ -283,8 +283,8 @@ TEST_CASE("expect")
     using x4::standard::space;
     using x4::standard::blank;
     using x4::standard::char_;
-    using x4::standard::string;
-    using x4::standard::lit;
+    using x4::string;
+    using x4::lit;
 
     // using x4::lit;
     using x4::expect;

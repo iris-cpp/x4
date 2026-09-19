@@ -14,11 +14,11 @@
 #include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/primitive/eps.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/real.hpp>
-#include <iris/x4/string/string.hpp>
 
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/directive/omit.hpp>
@@ -41,11 +41,11 @@ TEST_CASE("sequence")
 {
     namespace traits = x4::traits;
 
-    using x4::standard::char_;
     using x4::standard::space;
-    using x4::standard::string;
-    using x4::standard::lit;
     using x4::standard::alnum;
+    using x4::standard::char_;
+    using x4::string;
+    using x4::lit;
     using x4::fixed_value;
     using x4::omit;
     using x4::unused;

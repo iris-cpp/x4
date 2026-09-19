@@ -35,7 +35,6 @@ struct literal_string : parser<String>
         !std::is_pointer_v<std::decay_t<String>>,
         "`literal_string` for raw character pointer/array is banned; it has an undetectable risk of holding a dangling pointer."
     );
-    static_assert(std::is_convertible_v<String, std::basic_string_view<typename String::value_type>>);
 
     using char_type = Encoding::char_type;
     using encoding = Encoding;
@@ -65,7 +64,7 @@ struct literal_string : parser<String>
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape quotes
-        return std::format("\"{}\"", iris::unicode::transcode<char>(this->storage()));
+        return std::format("\"{}\"", iris::unicode::transcode<char>(std::basic_string_view{this->storage()}));
     }
 };
 

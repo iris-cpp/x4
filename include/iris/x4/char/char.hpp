@@ -10,219 +10,61 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/char_traits.hpp>
-#include <iris/x4/char/any_char.hpp>
-#include <iris/x4/char/literal_char.hpp>
+#include <iris/x4/char_string_literal.hpp> // IWYU pragma: export
+#include <iris/x4/char/any_char.hpp> // IWYU pragma: export
 
-#include <iris/x4/char_encoding/standard.hpp>
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
-#endif
-
-#ifdef IRIS_X4_UNICODE
-# include <iris/x4/char_encoding/unicode.hpp>
-#endif
+#include <iris/x4/traits/char_encoding_traits.hpp>
 
 namespace iris::x4 {
 
-namespace standard {
+namespace detail {
 
-[[maybe_unused]] inline constexpr any_char<char_encoding::standard> char_{};
+template<class CharT>
+struct any_char_fn : any_char<traits::char_encoding_for<CharT>>
+{};
 
-inline namespace helpers {
-
-[[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
-lit(char ch) noexcept
-{
-    return {ch};
-}
-
-[[nodiscard]] constexpr literal_char<char_encoding::standard, unused_type>
-lit(X4VagueArrayOf2Chars<char> auto const& ch) noexcept
-{
-    return {ch[0]};
-}
-
-} // helpers
-
-// If you see "no matching overload" on string literals (e.g. `"foo"`),
-// you may need to include `string/literal_string.hpp`.
-// If you still see errors after the inclusion, that might be due to
-// mixing incompatible string literals. Don't do that.
-
-constexpr void lit(CharIncompatibleWith<char> auto const*) = delete; // Mixing incompatible character types is not allowed
-constexpr void lit(CharIncompatibleWith<char> auto) = delete; // Mixing incompatible character types is not allowed
-
-} // standard
-
-
-[[maybe_unused]] inline constexpr auto const& char_ = standard::char_; // TODO: this can't overload other character types
-
-using standard::helpers::lit;
-
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-namespace standard_wide {
-
-[[maybe_unused]] inline constexpr any_char<char_encoding::standard_wide> char_{};
-
-inline namespace helpers {
-
-[[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
-lit(wchar_t ch) noexcept
-{
-    return {ch};
-}
-
-[[nodiscard]] constexpr literal_char<char_encoding::standard_wide, unused_type>
-lit(X4VagueArrayOf2Chars<wchar_t> auto const& ch) noexcept
-{
-    return {ch[0]};
-}
-
-} // helpers
-
-constexpr void lit(CharIncompatibleWith<wchar_t> auto const*) = delete; // Mixing incompatible character types is not allowed
-constexpr void lit(CharIncompatibleWith<wchar_t> auto) = delete; // Mixing incompatible character types is not allowed
-
-} // standard_wide
-
-using standard_wide::helpers::lit;
-#endif // IRIS_X4_NO_STANDARD_WIDE
-
-
-#ifdef IRIS_X4_UNICODE
-namespace unicode {
-
-[[maybe_unused]] inline constexpr any_char<char_encoding::unicode> char_{};
-
-inline namespace helpers {
-
-// TODO: add `char8_t` and `char16_t` overloads
-
-[[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
-lit(char32_t ch) noexcept
-{
-    return {ch};
-}
-
-[[nodiscard]] constexpr literal_char<char_encoding::unicode, unused_type>
-lit(X4VagueArrayOf2Chars<char32_t> auto const& ch) noexcept
-{
-    return {ch[0]};
-}
-
-} // helpers
-
-constexpr void lit(CharIncompatibleWith<char32_t> auto const*) = delete; // Mixing incompatible character types is not allowed
-constexpr void lit(CharIncompatibleWith<char32_t> auto) = delete; // Mixing incompatible character types is not allowed
-
-} // unicode
-
-using unicode::helpers::lit;
-
-#endif // IRIS_X4_UNICODE
-
+} // detail
 
 namespace parsers {
 
 namespace standard {
-using x4::standard::char_;
-using x4::standard::lit;
+[[maybe_unused]] inline constexpr x4::detail::any_char_fn<char> char_{};
+} // standard
+
+using standard::char_;
+
+#ifndef IRIS_X4_NO_STANDARD_WIDE
+namespace standard_wide {
+[[maybe_unused]] inline constexpr x4::detail::any_char_fn<wchar_t> char_{};
+} // standard_wide
+#endif // IRIS_X4_NO_STANDARD_WIDE
+
+#ifdef IRIS_X4_UNICODE
+namespace unicode {
+[[maybe_unused]] inline constexpr x4::detail::any_char_fn<char32_t> char_{};
+} // unicode
+#endif // IRIS_X4_UNICODE
+
+} // parsers
+
+using parsers::char_;
+
+
+namespace standard {
+using x4::parsers::standard::char_;
 } // standard
 
 #ifndef IRIS_X4_NO_STANDARD_WIDE
 namespace standard_wide {
-using x4::standard_wide::char_;
-using x4::standard_wide::lit;
+using x4::parsers::standard_wide::char_;
 } // standard_wide
-#endif
+#endif // IRIS_X4_NO_STANDARD_WIDE
 
 #ifdef IRIS_X4_UNICODE
 namespace unicode {
-using x4::unicode::char_;
-using x4::unicode::lit;
+using x4::parsers::unicode::char_;
 } // unicode
-#endif
-
-using x4::char_; // TODO: make `any_parser` encoding-agnostic
-using x4::lit;
-
-} // parsers
-
-
-namespace traits {
-
-template<>
-struct as_parser<char>
-{
-    [[nodiscard]] static constexpr literal_char<char_encoding::standard, unused_type>
-    operator()(char ch) noexcept
-    {
-        return {ch};
-    }
-};
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<>
-struct as_parser<wchar_t>
-{
-    [[nodiscard]] static constexpr literal_char<char_encoding::standard_wide, unused_type>
-    operator()(wchar_t ch) noexcept
-    {
-        return {ch};
-    }
-};
-#endif // IRIS_X4_NO_STANDARD_WIDE
-
-#ifdef IRIS_X4_UNICODE
-template<>
-struct as_parser<char32_t>
-{
-    [[nodiscard]] static constexpr literal_char<char_encoding::unicode, unused_type>
-    operator()(char32_t ch) noexcept
-    {
-        return {ch};
-    }
-};
 #endif // IRIS_X4_UNICODE
-
-template<>
-struct as_parser<char[2]>
-{
-    [[nodiscard]] static constexpr literal_char<char_encoding::standard, unused_type>
-    operator()(char const (&ch)[2]) noexcept
-    {
-        return {ch[0]};
-    }
-};
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<>
-struct as_parser<wchar_t[2]>
-{
-    [[nodiscard]] static constexpr literal_char<char_encoding::standard_wide, unused_type>
-    operator()(wchar_t const (&ch)[2]) noexcept
-    {
-        return {ch[0]};
-    }
-};
-#endif // IRIS_X4_NO_STANDARD_WIDE
-
-#ifdef IRIS_X4_UNICODE
-template<>
-struct as_parser<char32_t[2]>
-{
-    [[nodiscard]] static constexpr literal_char<char_encoding::unicode, unused_type>
-    operator()(char32_t const (&ch)[2]) noexcept
-    {
-        return {ch[0]};
-    }
-};
-#endif // IRIS_X4_UNICODE
-
-} // traits
 
 } // iris::x4
 
