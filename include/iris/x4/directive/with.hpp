@@ -106,12 +106,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     using value_type = T;
     using base_type = detail::with_directive_impl<Subject, ID, T>;
 
-    template<class SubjectT, class U>
-        requires std::is_constructible_v<base_type, SubjectT, U>
-    constexpr with_directive(SubjectT&& subject, U&& val)
-        noexcept(std::is_nothrow_constructible_v<base_type, SubjectT, U>)
-        : base_type(std::forward<SubjectT>(subject), std::forward<U>(val))
-    {}
+    using base_type::base_type;
 
     // The internal context type. This can be used to determine the composed
     // context type used in `x4::parse`/`x4::phrase_parse`. It is required for
@@ -124,8 +119,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
-        static_assert(Parsable<Subject, It, Se, context_t<Context>, Attr>);
-        return this->subject.parse(
+        return this->subject().parse(
             first, last,
             x4::make_context<ID>(this->val_, ctx),
             attr
@@ -134,7 +128,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
 
     [[nodiscard]] std::string get_x4_info() const
     {
-        return std::format("with<...>[{}]", get_info<Subject>{}(this->subject));
+        return std::format("with<...>[{}]", get_info<Subject>{}(this->subject()));
     }
 
 private:
@@ -246,12 +240,12 @@ struct without_directive : proxy_parser<Subject, without_directive<Subject, IDs.
             >
         )
     {
-        return this->subject.parse(first, last, x4::remove_all_contexts<IDs...>(ctx), attr);
+        return this->subject().parse(first, last, x4::remove_all_contexts<IDs...>(ctx), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("without<...>[{}]", get_info<Subject>{}(this->subject));
+        return std::format("without<...>[{}]", get_info<Subject>{}(this->subject()));
     }
 };
 

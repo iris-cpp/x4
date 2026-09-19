@@ -21,7 +21,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct not_predicate : unary_parser<Subject, not_predicate<Subject>>
+struct not_predicate : unary_parser<Subject>
 {
     using attribute_type = unused_type;
 
@@ -38,10 +38,10 @@ struct not_predicate : unary_parser<Subject, not_predicate<Subject>>
         It local_first = first;
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !this->subject.parse(local_first, last, ctx, unused) &&
+            return !this->subject().parse(local_first, last, ctx, unused) &&
                 !x4::has_expectation_failure(ctx);
         } else {
-            return !this->subject.parse(local_first, last, ctx, unused);
+            return !this->subject().parse(local_first, last, ctx, unused);
         }
     }
 };

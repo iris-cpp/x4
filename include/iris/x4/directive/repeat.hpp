@@ -114,7 +114,7 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
         It local_it = first;
         typename Bounds::value_type i{};
         for (; !bounds_.got_min(i); ++i) {
-            if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf)) {
+            if (detail::parse_into_container(this->subject(), local_it, last, ctx, chunk_buf)) {
                 // We can't merge here; it will lead to partial status
             } else {
                 return false;
@@ -125,7 +125,7 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
         first = local_it;
         // parse some more up to the maximum specified
         for (; !bounds_.got_max(i); ++i) {
-            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
+            if (detail::parse_into_container(this->subject(), first, last, ctx, chunk_buf)) {
                 list_like_parser::successful_merge_into(chunk_buf, container_attr);
             } else {
                 break;
@@ -143,7 +143,7 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr& unused_attr) const
         noexcept(
-            noexcept(detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))) &&
+            noexcept(detail::parse_into_container(this->subject(), first, last, ctx, x4::assume_container(unused_attr))) &&
             std::is_nothrow_copy_assignable_v<It> &&
             is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
         )
@@ -151,7 +151,7 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
         It local_it = first;
         typename Bounds::value_type i{};
         for (; !bounds_.got_min(i); ++i) {
-            if (!detail::parse_into_container(this->subject, local_it, last, ctx, x4::assume_container(unused_attr))) {
+            if (!detail::parse_into_container(this->subject(), local_it, last, ctx, x4::assume_container(unused_attr))) {
                 return false;
             }
         }
@@ -159,7 +159,7 @@ struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds
         first = local_it;
         // parse some more up to the maximum specified
         for (; !bounds_.got_max(i); ++i) {
-            if (!detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))) {
+            if (!detail::parse_into_container(this->subject(), first, last, ctx, x4::assume_container(unused_attr))) {
                 break;
             }
         }

@@ -28,6 +28,7 @@
 
 #include <string>
 #include <string_view>
+#include <concepts>
 #include <type_traits>
 #include <utility>
 
@@ -201,64 +202,54 @@ using x4::lit;
 } // parsers
 
 
-namespace extension {
+namespace traits {
 
 template<CharLike CharT, std::size_t N>
 struct as_parser<CharT[N]>
 {
-    using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(CharT const* s)
+    [[nodiscard]] static constexpr literal_string<std::basic_string_view<CharT>, char_encoding_for<CharT>, unused_type>
+    operator()(CharT const (&s)[N]) noexcept
     {
-        return type(s);
+        return {s};
     }
 };
-
-template<CharLike CharT, std::size_t N>
-struct as_parser<CharT const[N]> : as_parser<CharT[N]> {};
 
 template<CharLike CharT>
 struct as_parser<CharT const*>
 {
-    using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(CharT const* s)
+    [[nodiscard]] static constexpr literal_string<std::basic_string_view<CharT>, char_encoding_for<CharT>, unused_type>
+    operator()(CharT const* s) noexcept
     {
-        return type(std::basic_string_view<CharT>{s});
+        return {std::basic_string_view{s}};
     }
 };
 
 template<CharLike CharT>
 struct as_parser<std::basic_string<CharT>>
 {
-    using type = literal_string<std::basic_string<CharT>, traits::char_encoding_for<CharT>, unused_type>;
-    using value_type = type;
-
     template<class T>
-    [[nodiscard]] static constexpr type call(T&& str)
-        noexcept(std::is_nothrow_constructible_v<type, T>)
+    [[nodiscard]] static constexpr literal_string<std::basic_string<CharT>, char_encoding_for<CharT>, unused_type>
+    operator()(T&& str)
+        noexcept(std::is_nothrow_constructible_v<literal_string<std::basic_string<CharT>, char_encoding_for<CharT>, unused_type>, T>)
     {
-        return type(std::forward<T>(str));
+        static_assert(std::same_as<std::remove_cvref_t<T>, std::basic_string<CharT>>);
+        return {std::forward<T>(str)};
     }
 };
 
 template<CharLike CharT>
 struct as_parser<std::basic_string_view<CharT>>
 {
-    using type = literal_string<std::basic_string_view<CharT>, traits::char_encoding_for<CharT>, unused_type>;
-    using value_type = type;
-
     template<class T>
-    [[nodiscard]] static constexpr type call(T&& str)
-        noexcept(std::is_nothrow_constructible_v<type, T>)
+    [[nodiscard]] static constexpr literal_string<std::basic_string_view<CharT>, char_encoding_for<CharT>, unused_type>
+    operator()(T&& str) noexcept
     {
-        return type(std::forward<T>(str));
+        static_assert(std::same_as<std::remove_cvref_t<T>, std::basic_string_view<CharT>>);
+        return {std::forward<T>(str)};
     }
 };
 
-} // extension
+} // traits
 
 } // iris::x4
 

@@ -36,11 +36,11 @@ struct expect_directive : proxy_parser<Subject, expect_directive<Subject>>
             "Note that you must also bind the context to your skipper."
         );
 
-        bool const r = this->subject.parse(first, last, ctx, attr);
+        bool const r = this->subject().parse(first, last, ctx, attr);
 
         // only the first failure is needed
         if (!r && !x4::has_expectation_failure(ctx)) {
-            x4::set_expectation_failure(first, this->subject, ctx);
+            x4::set_expectation_failure(first, this->subject(), ctx);
         }
         return r;
     }
@@ -91,11 +91,11 @@ struct parse_into_container_impl<expect_directive<Subject>>
             "Note that you must also bind the context to your skipper."
         );
 
-        bool const r = detail::parse_into_container(parser.subject, first, last, ctx, attr);
+        bool const r = detail::parse_into_container(parser.subject(), first, last, ctx, attr);
 
         // only the first error is needed
         if (!r && !x4::has_expectation_failure(ctx)) {
-            x4::set_expectation_failure(first, parser.subject, ctx);
+            x4::set_expectation_failure(first, parser.subject(), ctx);
         }
         return r;
     }

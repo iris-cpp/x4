@@ -26,7 +26,6 @@
 
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/string/string.hpp>
 #include <iris/x4/symbols.hpp>
 

@@ -302,9 +302,9 @@ public:
 };
 
 template<class RuleID, X4Subject RHS, X4Attribute RuleDefAttr, bool ForceAttr, bool SkipDefinitionInjection = false>
-struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceAttr, SkipDefinitionInjection>>
+struct rule_definition : parser<RHS>
 {
-    static_assert(!std::is_same_v<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
+    static_assert(!std::same_as<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
 
     using this_type = rule_definition;
     using id = RuleID;
@@ -319,7 +319,7 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
         requires std::is_constructible_v<RHS, RHS_T>
     constexpr rule_definition(RHS_T&& rhs, std::string_view name)
         noexcept(std::is_nothrow_constructible_v<RHS, RHS_T>)
-        : rhs(std::forward<RHS_T>(rhs))
+        : parser<RHS>(std::forward<RHS_T>(rhs))
         , name(std::move(name))
     {}
 
@@ -330,11 +330,10 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     {
         return rule_impl<RuleID, attribute_type, SkipDefinitionInjection>
             ::template call_rule_definition<ForceAttr>(
-                rhs, name, first, last, ctx, attr
+                this->storage(), name, first, last, ctx, attr
             );
     }
 
-    RHS rhs;
     std::string_view name = "unnamed_rule";
 };
 
@@ -386,7 +385,7 @@ concept RuleAttrCompatible =
 } // detail
 
 template<class RuleID, class RuleAttr, bool ForceAttr>
-struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
+struct rule : parser<>
 {
     // This type MUST be constructible with incomplete types.
     // Do NOT add `static_assert`s or other constructs that cause eager

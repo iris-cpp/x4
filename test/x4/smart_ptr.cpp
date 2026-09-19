@@ -15,7 +15,7 @@
 #include <memory>
 
 template<class T>
-struct throwing_parser : x4::parser<throwing_parser<T>>
+struct throwing_parser : x4::parser<>
 {
     using attribute_type = T;
 

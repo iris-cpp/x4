@@ -23,42 +23,26 @@ namespace iris::x4 {
 
 namespace detail {
 
-struct semantic_predicate : parser<semantic_predicate>
+struct semantic_predicate : parser<bool>
 {
     using attribute_type = unused_type;
-
-    constexpr explicit semantic_predicate(bool predicate) noexcept
-        : predicate_(predicate)
-    {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr&) const
         noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
-        if (predicate_) {
+        if (this->storage()) {
             x4::skip_over(first, last, ctx);
         }
-        return predicate_;
+        return this->storage();
     }
-
-private:
-    bool predicate_;
 };
 
 template<class F>
-struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
+struct lazy_semantic_predicate : parser<F>
 {
     using attribute_type = unused_type;
-
-    template<class F_>
-        requires
-            (!std::is_same_v<std::remove_cvref_t<F_>, lazy_semantic_predicate>) &&
-            std::is_constructible_v<F, F_>
-    constexpr explicit lazy_semantic_predicate(F_&& f)
-        noexcept(std::is_nothrow_constructible_v<F, F_>)
-        : f_(std::forward<F_>(f))
-    {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -69,26 +53,23 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
 
         if constexpr (std::invocable<F const&, Context const&>) {
             static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
-            bool const ok = f_(ctx);
+            bool const ok = this->storage()(ctx);
             if (ok) first = it;
             return ok;
 
         } else {
             static_assert(std::invocable<F const&>);
             static_assert(std::same_as<std::invoke_result_t<F const&>, bool>);
-            bool const ok = f_();
+            bool const ok = this->storage()();
             if (ok) first = it;
             return ok;
         }
     }
-
-private:
-    F f_;
 };
 
 } // detail
 
-struct eps_parser : parser<eps_parser>
+struct eps_parser : parser<>
 {
     using attribute_type = unused_type;
 

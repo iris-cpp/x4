@@ -15,7 +15,6 @@
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/char/char.hpp>
-#include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/real.hpp>
@@ -313,8 +312,8 @@ TEST_CASE("sequence")
         {
             std::vector<std::string> v;
 
-            auto e = as<std::string>(*~char_(','));
-            auto l = as<std::vector<std::string>>(e >> *(',' >> e));
+            constexpr auto e = as<std::string>(*~char_(','));
+            constexpr auto l = as<std::vector<std::string>>(e >> *(',' >> e));
 
             REQUIRE(parse("abc1,abc2,abc3", l, v));
             REQUIRE(v.size() == 3);

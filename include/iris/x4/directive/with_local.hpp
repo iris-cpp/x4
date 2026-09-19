@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
 #define IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
 
 /*=============================================================================
@@ -77,7 +77,7 @@ struct with_local_directive : proxy_parser<Subject, with_local_directive<Subject
         // `x4::make_context(...)` cannot be used here as it invokes infinite recursive instantiation.
 
         T local_var{}; // value-initialize
-        return this->subject.parse(first, last, x4::replace_first_context<ID>(ctx, local_var), attr);
+        return this->subject().parse(first, last, x4::replace_first_context<ID>(ctx, local_var), attr);
     }
 };
 

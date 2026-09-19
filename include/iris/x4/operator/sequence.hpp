@@ -136,7 +136,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
             return std::format(
                 "{} > {}",
                 get_info<Left>{}(this->left),
-                get_info<typename Right::subject_type>{}(this->right.subject)
+                get_info<typename Right::subject_type>{}(this->right.subject())
             );
         } else {
             return std::format(

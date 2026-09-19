@@ -19,7 +19,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
+struct and_predicate : unary_parser<Subject>
 {
     using attribute_type = unused_type;
 
@@ -34,7 +34,7 @@ struct and_predicate : unary_parser<Subject, and_predicate<Subject>>
         )
     {
         auto it = first;
-        return this->subject.parse(it, last, ctx, unused);
+        return this->subject().parse(it, last, ctx, unused);
     }
 };
 

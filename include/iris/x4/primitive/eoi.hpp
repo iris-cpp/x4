@@ -20,7 +20,7 @@
 
 namespace iris::x4 {
 
-struct eoi_parser : parser<eoi_parser>
+struct eoi_parser : parser<>
 {
     using attribute_type = unused_type;
 

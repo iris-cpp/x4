@@ -37,100 +37,204 @@ namespace detail {
 struct parser_base {};
 struct parser_id;
 
+template<class Storage>
+struct parser_storage
+    : private parser_base
+    , protected Storage // needs to be non-private because we want to expose static public members
+{
+    // `Storage` is a class type
+
+    using Storage::Storage;
+
+    template<class StorageT>
+        requires
+            (!std::same_as<StorageT, parser_storage>) &&
+            std::constructible_from<Storage, StorageT>
+    constexpr explicit(!std::convertible_to<StorageT, Storage>)
+    parser_storage(StorageT&& storage)
+        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
+        : Storage(std::forward<StorageT>(storage))
+    {}
+
+protected:
+    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&>(*this);
+    }
+    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&>(*this);
+    }
+    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&&>(*this);
+    }
+    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&&>(*this);
+    }
+};
+
+template<class Storage>
+    requires (!std::is_class_v<Storage>)
+struct parser_storage<Storage>
+    : private parser_base
+{
+    // `Storage` is some non-class type (can't inherit from it; no EBO needed)
+
+    template<class StorageT>
+        requires
+            (!std::same_as<StorageT, parser_storage>) &&
+            std::constructible_from<Storage, StorageT>
+    constexpr explicit(!std::convertible_to<StorageT, Storage>)
+    parser_storage(StorageT&& storage)
+        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
+        : storage_(std::forward<StorageT>(storage))
+    {}
+
+protected:
+    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&>(storage_);
+    }
+    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&>(storage_);
+    }
+    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&&>(storage_);
+    }
+    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&&>(storage_);
+    }
+
+private:
+    Storage storage_;
+};
+
+template<class Storage>
+    requires
+        (!std::is_void_v<Storage>) &&
+        std::is_base_of_v<parser_base, Storage>
+struct parser_storage<Storage>
+    : protected Storage // needs to be non-private because we want to expose static public members
+{
+    // `Storage` is some X4 parser class (possibly a `Subject`)
+    // (which means we must not double-inherit from `parser_base`)
+
+    using Storage::Storage;
+
+    template<class StorageT>
+        requires
+            (!std::same_as<StorageT, parser_storage>) &&
+            std::constructible_from<Storage, StorageT>
+    constexpr explicit(!std::convertible_to<StorageT, Storage>)
+    parser_storage(StorageT&& storage)
+        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
+        : Storage(std::forward<StorageT>(storage))
+    {}
+
+protected:
+    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&>(*this);
+    }
+    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&>(*this);
+    }
+    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage&&>(*this);
+    }
+    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Storage const&&>(*this);
+    }
+};
+
+template<>
+struct parser_storage<void>
+    : private parser_base
+{};
+
 } // detail
 
 
-template<class Derived>
-struct parser : private detail::parser_base
+template<class Storage = void>
+struct parser : detail::parser_storage<Storage>
 {
-    static_assert(!std::is_reference_v<Derived>);
-    using derived_type = Derived;
-
     static constexpr bool has_action = false;
     static constexpr bool need_rcontext = false;
     static constexpr bool requires_exact_attribute_type = false;
 
-    [[nodiscard]] constexpr Derived& derived() & noexcept
-    {
-        return static_cast<Derived&>(*this);
-    }
-
-    [[nodiscard]] constexpr Derived const& derived() const& noexcept
-    {
-        return static_cast<Derived const&>(*this);
-    }
-
-    [[nodiscard]] constexpr Derived&& derived() && noexcept
-    {
-        return static_cast<Derived&&>(*this);
-    }
-
-    [[nodiscard]] constexpr Derived const&& derived() const&& noexcept
-    {
-        return static_cast<Derived const&&>(*this);
-    }
+    using detail::parser_storage<Storage>::parser_storage;
 
     template<class Self, class Action>
-        requires std::is_constructible_v<
-            action<Derived, std::remove_cvref_t<Action>>,
-            decltype(std::declval<Self>().derived()),
-            Action
+        requires std::constructible_from<
+            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
+            Self, Action
         >
     [[nodiscard]]
-    constexpr action<Derived, std::remove_cvref_t<Action>>
+    constexpr action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>
     on_match(this Self&& self, Action&& f)
         noexcept(std::is_nothrow_constructible_v<
-            action<Derived, std::remove_cvref_t<Action>>,
-            decltype(std::forward<Self>(self).derived()),
-            Action
+            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
+            Self, Action
         >)
     {
-        return {std::forward<Self>(self).derived(), std::forward<Action>(f)};
+        return {std::forward<Self>(self), std::forward<Action>(f)};
     }
 
     template<class Self, class Action>
-        requires std::is_constructible_v<
-            action<Derived, std::remove_cvref_t<Action>>,
-            decltype(std::declval<Self>().derived()),
-            Action
+        requires std::constructible_from<
+            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
+            Self, Action
         >
     [[nodiscard, deprecated("Use `p.on_match(...)` instead. The legacy `operator[]` syntax will be removed because it frequently conflicts with lambda syntax.")]]
-    constexpr action<Derived, std::remove_cvref_t<Action>>
+    constexpr action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>
     operator[](this Self&& self, Action&& f)
         noexcept(std::is_nothrow_constructible_v<
-            action<Derived, std::remove_cvref_t<Action>>,
-            decltype(std::forward<Self>(self).derived()),
-            Action
+            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
+            Self, Action
         >)
     {
         return std::forward<Self>(self).on_match(std::forward<Action>(f));
     }
 };
 
-template<class Subject, class Derived>
-struct unary_parser : parser<Derived>
+template<class Subject>
+struct unary_parser : parser<Subject>
 {
     using subject_type = Subject;
 
     static constexpr bool has_action = Subject::has_action;
     static constexpr bool need_rcontext = Subject::need_rcontext;
 
-    constexpr unary_parser() = default;
+    using parser<Subject>::parser;
 
-    template<class SubjectT>
-        requires
-            (!std::is_same_v<std::remove_cvref_t<SubjectT>, unary_parser>) &&
-            std::is_constructible_v<Subject, SubjectT>
-    constexpr unary_parser(SubjectT&& subject)
-        noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
-        : subject(std::forward<SubjectT>(subject))
-    {}
-
-    Subject subject;
+    [[nodiscard]] constexpr Subject& subject() & noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Subject&>(*this);
+    }
+    [[nodiscard]] constexpr Subject const& subject() const& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Subject const&>(*this);
+    }
+    [[nodiscard]] constexpr Subject&& subject() && noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Subject&&>(*this);
+    }
+    [[nodiscard]] constexpr Subject const&& subject() const&& noexcept IRIS_LIFETIMEBOUND
+    {
+        return static_cast<Subject const&&>(*this);
+    }
 };
 
-template<class Subject, class Derived>
-struct proxy_parser : unary_parser<Subject, Derived>
+template<class Subject, class Derived_Unused = void> // TODO
+struct proxy_parser : unary_parser<Subject>
 {
     using proxy_backend_type = Subject;
     using attribute_type = parser_traits<Subject>::attribute_type;
@@ -141,11 +245,11 @@ struct proxy_parser : unary_parser<Subject, Derived>
     template<class Container>
     static constexpr bool handles_container = parser_traits<Subject>::template handles_container<Container>;
 
-    using unary_parser<Subject, Derived>::unary_parser;
+    using unary_parser<Subject>::unary_parser;
 };
 
-template<class Left, class Right, class Derived>
-struct binary_parser : parser<Derived>
+template<class Left, class Right, class Derived_Unused = void> // TODO
+struct binary_parser : parser<>
 {
     using left_type = Left;
     using right_type = Right;
@@ -163,12 +267,12 @@ struct binary_parser : parser<Derived>
         , right(std::forward<RightT>(right))
     {}
 
-    // TODO: [MSVC 2022 BUG] "overruns" in constexpr, test case in `lit.cpp`
-    /*IRIS_NO_UNIQUE_ADDRESS*/ Left left;
-    /*IRIS_NO_UNIQUE_ADDRESS*/ Right right;
+    // TODO: EBO
+    IRIS_NO_UNIQUE_ADDRESS Left left;
+    IRIS_NO_UNIQUE_ADDRESS Right right;
 };
 
-namespace extension {
+namespace traits {
 
 template<class T>
 struct as_parser; // not defined
@@ -176,88 +280,70 @@ struct as_parser; // not defined
 template<>
 struct as_parser<unused_type>
 {
-    using value_type [[deprecated("Use x4::as_parser_plain_t")]] = unused_type;
-
     template<class T>
-    [[nodiscard]] static constexpr auto&& call(T&& unused_) noexcept
+    [[nodiscard]] static constexpr auto&& operator()(T&& unused_ IRIS_LIFETIMEBOUND) noexcept
     {
-        return std::forward<T>(unused_);
+        return static_cast<T&&>(unused_);
     }
 };
 
-template<class Derived>
-    requires std::is_base_of_v<detail::parser_base, std::remove_cvref_t<Derived>>
-struct as_parser<Derived>
-{
-    using value_type [[deprecated("Use x4::as_parser_plain_t")]] = std::remove_cvref_t<Derived>;
+//template<class Derived>
+//    requires std::is_base_of_v<detail::parser_base, std::remove_cvref_t<Derived>>
+//struct as_parser<Derived>
+//{
+//    template<class T>
+//    [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
+//    {
+//        return std::forward<T>(p);
+//    }
+//};
+//
+//template<class Derived>
+//struct as_parser<parser<Derived>>
+//{
+//    template<class T>
+//    [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
+//    {
+//        return std::forward<T>(p).derived();
+//    }
+//};
 
-    template<class T>
-    [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
-    {
-        return std::forward<T>(p);
-    }
-};
-
-template<class Derived>
-struct as_parser<parser<Derived>>
-{
-    using value_type [[deprecated("Use x4::as_parser_plain_t")]] = Derived;
-
-    template<class T>
-    [[nodiscard]] static constexpr auto&& call(T&& p) noexcept
-    {
-        return std::forward<T>(p).derived();
-    }
-};
-
-} // extension
+} // traits
 
 namespace detail {
 
+template<class T>
+concept has_parser_base = std::is_base_of_v<parser_base, std::remove_cvref_t<T>>;
+
+template<class T>
+concept has_custom_as_parser = requires(T&& p) {
+    { x4::traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(p)) } -> has_parser_base;
+};
+
 struct as_parser_fn
 {
-    template<class T>
-    static void operator()(T&&) = delete; // If you reach here, your specialization of `x4::extension::as_parser` has a wrong signature, or the type is simply incompatible.
+    //template<class T>
+    //static void operator()(T&&) = delete; // If you reach here, your specialization of `x4::extension::as_parser` has a wrong signature, or the type is simply incompatible.
 
-    // catch-all default fallback
     template<class T>
-        requires std::is_base_of_v<
-            parser_base,
-            std::remove_cvref_t<decltype(extension::as_parser<std::remove_cvref_t<T>>::call(std::declval<T>()))>
-        >
+        requires has_custom_as_parser<T>
     [[nodiscard]] static constexpr decltype(auto)
-    operator()(T&& x) noexcept(noexcept(extension::as_parser<std::remove_cvref_t<T>>::call(std::forward<T>(x))))
+    operator()(T&& x) noexcept(noexcept(traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(x))))
     {
-        return extension::as_parser<std::remove_cvref_t<T>>::call(std::forward<T>(x));
+        static_assert(has_parser_base<decltype(traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(x)))>);
+        return traits::as_parser<std::remove_cvref_t<T>>{}(std::forward<T>(x));
     }
 
-    template<class Derived>
+    template<class P>
+        requires
+            (!has_custom_as_parser<P>) &&
+            has_parser_base<P>
     [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived>& p IRIS_LIFETIMEBOUND) noexcept
+    operator()(P&& p) noexcept
     {
-        return p.derived();
+        return static_cast<P&&>(p);
     }
 
-    template<class Derived>
-    [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived> const& p IRIS_LIFETIMEBOUND) noexcept
-    {
-        return p.derived();
-    }
-
-    template<class Derived>
-    [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived>&& p IRIS_LIFETIMEBOUND) noexcept
-    {
-        return std::move(p).derived();
-    }
-
-    template<class Derived>
-    [[nodiscard]] static constexpr auto&&
-    operator()(parser<Derived> const&& p IRIS_LIFETIMEBOUND) noexcept
-    {
-        return std::move(p).derived();
-    }
 }; // as_parser_fn
 
 } // detail
@@ -309,16 +395,15 @@ constexpr bool is_parser_nothrow_castable_v = is_parser_nothrow_castable<T>::val
 
 template<class T>
 concept X4ExplicitSubject =
-    std::is_base_of_v<detail::parser_base, std::remove_cvref_t<T>> &&
+    detail::has_parser_base<T> &&
     std::move_constructible<std::remove_cvref_t<T>>;
     // Note: a lambda with a capture has a deleted move assignment operator,
     // thus requiring move assignable here would make such `x4::action` to
     // not satisfy this trait; we consider it too strict for now.
-    //std::is_move_assignable_v<std::remove_cvref_t<T>>
 
 template<class T>
 concept X4ImplicitSubject =
-    !std::is_base_of_v<detail::parser_base, std::remove_cvref_t<T>> &&
+    !detail::has_parser_base<T> &&
     is_parser_castable_v<T> && // `as_parser(t)` is valid?
     X4ExplicitSubject<as_parser_t<T>>;
 
@@ -372,7 +457,19 @@ constexpr bool is_parser_nothrow_constructible_v = is_parser_nothrow_constructib
 
 
 template<class Parser, class It, class Se, class Context, class Attr>
-struct is_parsable
+concept Parsable = requires(Parser const& p) {
+    {
+        p.parse(
+            std::declval<It&>(), // first
+            std::declval<Se>(), // last
+            std::declval<Context const&>(), // context
+            std::declval<Attr&>() // attr
+        )
+    } -> std::same_as<bool>;
+};
+
+template<class Parser, class It, class Se, class Context, class Attr>
+struct is_parsable : std::bool_constant<Parsable<Parser, It, Se, Context, Attr>>
 {
     static_assert(X4ExplicitSubject<Parser>);
     static_assert(!std::is_reference_v<It>);
@@ -381,37 +478,10 @@ struct is_parsable
     static_assert(!std::is_reference_v<Context>);
     static_assert(!std::is_reference_v<Attr>);
     static_assert(X4Attribute<Attr>);
-
-    static constexpr bool value = requires(Parser const& p) { // mutable parser use case is currently unknown
-        {
-            p.parse(
-                std::declval<It&>(), // first
-                std::declval<Se>(), // last
-                std::declval<Context const&>(), // context
-                std::declval<Attr&>() // attr
-            )
-        } -> std::same_as<bool>;
-    };
-
-    static_assert(!requires(Parser const& p) {
-        {
-            p.parse(
-                std::declval<It&>(), // first
-                std::declval<Se>(), // last
-                std::declval<Context const&>(), // context
-                std::declval<unused_type const&>(), // rcontext
-                std::declval<Attr&>() // attr
-            )
-        } -> std::same_as<bool>;
-    }, "X4 can now determine `RContext` automatically. Remove `RContext` from your parser.");
 };
 
 template<class Parser, class It, class Se, class Context, class Attr>
 constexpr bool is_parsable_v = is_parsable<Parser, It, Se, Context, Attr>::value;
-
-template<class Parser, class It, class Se, class Context, class Attr>
-concept Parsable = is_parsable<Parser, It, Se, Context, Attr>::value;
-// ^^^ this must be concept in order to provide better diagnostics (e.g. on MSVC)
 
 template<class Parser, class It, class Se, class Context, class Attr>
 struct is_nothrow_parsable
@@ -424,7 +494,7 @@ struct is_nothrow_parsable
     static_assert(!std::is_reference_v<Attr>);
     static_assert(X4Attribute<Attr>);
 
-    static constexpr bool value = requires(Parser const& p) { // mutable parser use case is currently unknown
+    static constexpr bool value = requires(Parser const& p) {
         {
             p.parse(
                 std::declval<It&>(), // first
@@ -434,18 +504,6 @@ struct is_nothrow_parsable
             )
         } noexcept -> std::same_as<bool>;
     };
-
-    static_assert(!requires(Parser const& p) {
-        {
-            p.parse(
-                std::declval<It&>(), // first
-                std::declval<Se>(), // last
-                std::declval<Context const&>(), // context
-                std::declval<unused_type const&>(), // rcontext
-                std::declval<Attr&>() // attr
-            )
-        } /*noexcept*/ -> std::same_as<bool>;
-    }, "X4 can now determine `RContext` automatically. Remove `RContext` from your parser.");
 };
 
 template<class Parser, class It, class Se, class Context, class Attr>
@@ -455,12 +513,12 @@ constexpr bool is_nothrow_parsable_v = is_nothrow_parsable<Parser, It, Se, Conte
 template<class Parser, class It, class Se>
 concept X4ExplicitParser =
     X4ExplicitSubject<Parser> &&
-    is_parsable_v<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type>;
+    Parsable<std::remove_cvref_t<Parser>, It, Se, unused_type, unused_type>;
 
 template<class Parser, class It, class Se>
 concept X4ImplicitParser =
     X4ImplicitSubject<Parser> &&
-    is_parsable_v<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type>;
+    Parsable<as_parser_plain_t<Parser>, It, Se, unused_type, unused_type>;
 
 // The primary "parser" concept of X4, applicable in iterator-aware contexts.
 //

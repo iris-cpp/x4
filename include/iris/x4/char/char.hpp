@@ -152,15 +152,13 @@ using x4::lit;
 } // parsers
 
 
-namespace extension {
+namespace traits {
 
 template<>
 struct as_parser<char>
 {
-    using type = literal_char<char_encoding::standard, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(char ch) noexcept
+    [[nodiscard]] static constexpr literal_char<char_encoding::standard, unused_type>
+    operator()(char ch) noexcept
     {
         return {ch};
     }
@@ -170,10 +168,8 @@ struct as_parser<char>
 template<>
 struct as_parser<wchar_t>
 {
-    using type = literal_char<char_encoding::standard_wide, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(wchar_t ch) noexcept
+    [[nodiscard]] static constexpr literal_char<char_encoding::standard_wide, unused_type>
+    operator()(wchar_t ch) noexcept
     {
         return {ch};
     }
@@ -184,10 +180,8 @@ struct as_parser<wchar_t>
 template<>
 struct as_parser<char32_t>
 {
-    using type = literal_char<char_encoding::unicode, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(char32_t ch) noexcept
+    [[nodiscard]] static constexpr literal_char<char_encoding::unicode, unused_type>
+    operator()(char32_t ch) noexcept
     {
         return {ch};
     }
@@ -197,10 +191,8 @@ struct as_parser<char32_t>
 template<>
 struct as_parser<char[2]>
 {
-    using type = literal_char<char_encoding::standard, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(char const ch[]) noexcept
+    [[nodiscard]] static constexpr literal_char<char_encoding::standard, unused_type>
+    operator()(char const (&ch)[2]) noexcept
     {
         return {ch[0]};
     }
@@ -210,10 +202,8 @@ struct as_parser<char[2]>
 template<>
 struct as_parser<wchar_t[2]>
 {
-    using type = literal_char<char_encoding::standard_wide, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(wchar_t const ch[]) noexcept
+    [[nodiscard]] static constexpr literal_char<char_encoding::standard_wide, unused_type>
+    operator()(wchar_t const (&ch)[2]) noexcept
     {
         return {ch[0]};
     }
@@ -224,17 +214,15 @@ struct as_parser<wchar_t[2]>
 template<>
 struct as_parser<char32_t[2]>
 {
-    using type = literal_char<char_encoding::unicode, unused_type>;
-    using value_type = type;
-
-    [[nodiscard]] static constexpr type call(char32_t const ch[]) noexcept
+    [[nodiscard]] static constexpr literal_char<char_encoding::unicode, unused_type>
+    operator()(char32_t const (&ch)[2]) noexcept
     {
         return {ch[0]};
     }
 };
 #endif // IRIS_X4_UNICODE
 
-} // extension
+} // traits
 
 } // iris::x4
 

@@ -234,7 +234,7 @@ struct move_only
 };
 
 template<class T>
-struct synth_parser : x4::parser<synth_parser<T>>
+struct synth_parser : x4::parser<>
 {
     using attribute_type = T;
 

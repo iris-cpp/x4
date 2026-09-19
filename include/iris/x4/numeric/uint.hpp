@@ -15,7 +15,6 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/numeric/utils/extract_int.hpp>
 
-#include <concepts>
 #include <iterator>
 #include <cstdint>
 
@@ -29,7 +28,7 @@ template<
     unsigned MinDigits = 1,
     int MaxDigits = -1
 >
-struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
+struct uint_parser : parser<>
 {
     // check template parameter 'Radix' for validity
     static_assert((Radix >= 2 && Radix <= 36), "Unsupported Radix");

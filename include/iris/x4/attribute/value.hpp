@@ -28,7 +28,7 @@ namespace iris::x4 {
 
 // `fixed_value(...)`
 template<class T, class HeldValueT = T>
-struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
+struct fixed_value_parser : parser<HeldValueT>
 {
     static_assert(X4Attribute<T>);
     static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
@@ -44,37 +44,29 @@ struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
     using attribute_type = T;
     using held_value_type = HeldValueT;
 
-    template<class U>
-        requires
-            (!std::is_same_v<std::remove_cvref_t<U>, fixed_value_parser>) &&
-            std::is_constructible_v<HeldValueT, U>
-    constexpr explicit fixed_value_parser(U&& value)
-        noexcept(std::is_nothrow_constructible_v<HeldValueT, U>)
-        : held_value_(std::forward<U>(value))
-    {}
+    using parser<HeldValueT>::parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attr& attr_) const
-        noexcept(noexcept(x4::move_to(std::as_const(held_value_), attr_)))
+        noexcept(noexcept(x4::move_to(std::declval<HeldValueT const&>(), attr_)))
     {
         // Always copy (need reuse in repetitive invocations)
-        x4::move_to(std::as_const(held_value_), attr_);
+        x4::move_to(this->storage(), attr_);
         return true;
     }
-
-private:
-    HeldValueT held_value_;
 };
 
 // `reset_value<T>`
 template<class T>
-struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
+struct fixed_value_parser<T, void> : parser<>
 {
     static_assert(X4Attribute<T>);
     static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
 
     using attribute_type = T;
+
+    using parser<>::parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] static constexpr bool

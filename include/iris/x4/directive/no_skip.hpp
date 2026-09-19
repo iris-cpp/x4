@@ -38,7 +38,7 @@ struct no_skip_directive : proxy_parser<Subject, no_skip_directive<Subject>>
         // No pre-skip here, in contrast to `lexeme`
         //
 
-        return this->subject.parse(
+        return this->subject().parse(
             first, last,
             x4::remove_first_context<contexts::skipper>(ctx),
             attr

@@ -28,7 +28,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct optional : unary_parser<Subject, optional<Subject>>
+struct optional : unary_parser<Subject>
 {
     using attribute_type = traits::build_optional<typename parser_traits<Subject>::attribute_type>::type;
 
@@ -47,10 +47,8 @@ struct optional : unary_parser<Subject, optional<Subject>>
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
-        static_assert(Parsable<Subject, It, Se, Context, Attr>);
-
         // discard [[nodiscard]]
-        (void)this->subject.parse(first, last, ctx, attr);
+        (void)this->subject().parse(first, last, ctx, attr);
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
@@ -66,10 +64,10 @@ struct optional : unary_parser<Subject, optional<Subject>>
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, ctx, attr)))
+        noexcept(noexcept(detail::parse_into_container(this->subject(), first, last, ctx, attr)))
     {
         // discard [[nodiscard]]
-        (void)detail::parse_into_container(this->subject, first, last, ctx, attr);
+        (void)detail::parse_into_container(this->subject(), first, last, ctx, attr);
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
@@ -93,7 +91,7 @@ struct optional : unary_parser<Subject, optional<Subject>>
     {
         typename traits::optional_value<Attr>::type val{}; // value-initialize
 
-        if (this->subject.parse(first, last, ctx, val)) {
+        if (this->subject().parse(first, last, ctx, val)) {
             // assign the parsed value into our attribute
             x4::move_to(std::move(val), attr);
             return true;

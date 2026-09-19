@@ -24,7 +24,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
+struct matches_directive : unary_parser<Subject>
 {
     using attribute_type = bool;
 
@@ -38,7 +38,7 @@ struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
             noexcept(x4::move_to(std::declval<bool const&>(), attr))
         )
     {
-        bool const matched = this->subject.parse(first, last, ctx, unused);
+        bool const matched = this->subject().parse(first, last, ctx, unused);
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) return false;

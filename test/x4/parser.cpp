@@ -18,7 +18,7 @@
 namespace {
 
 struct minimal_parser
-    : x4::parser<minimal_parser>
+    : x4::parser<>
 {
     constexpr minimal_parser() = default;
 
@@ -37,7 +37,7 @@ struct minimal_parser
 };
 
 struct minimal_unary_parser
-    : x4::unary_parser<minimal_parser, minimal_unary_parser>
+    : x4::unary_parser<minimal_parser>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -59,7 +59,7 @@ struct minimal_binary_parser
 };
 
 struct minimal_unused_parser
-    : x4::parser<minimal_unused_parser>
+    : x4::parser<>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
@@ -70,7 +70,7 @@ struct minimal_unused_parser
 };
 
 struct minimal_unary_unused_parser
-    : x4::unary_parser<minimal_unused_parser, minimal_unary_unused_parser>
+    : x4::unary_parser<minimal_unused_parser>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
