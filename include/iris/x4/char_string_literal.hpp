@@ -134,7 +134,7 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
         requires (N >= 3) && (!x4::detail::is_string_parser_sso_eligible<CharT, N>)
     {
         static_assert(N >= 2);
-        return std::basic_string_view<CharT>(str, N - 1);
+        return {std::basic_string_view<CharT>(str, N - 1)};
     }
 };
 
