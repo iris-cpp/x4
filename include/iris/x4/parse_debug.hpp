@@ -1,7 +1,8 @@
 #ifndef IRIS_X4_PARSE_DEBUG_HPP
 #define IRIS_X4_PARSE_DEBUG_HPP
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <iris/x4/debug/default_error_handler.hpp>
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/parse.hpp>

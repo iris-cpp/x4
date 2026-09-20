@@ -11,7 +11,6 @@
 #include <iris/x4/char/literal_char.hpp>
 #include <iris/x4/string/literal_string.hpp>
 
-#include <iris/x4/core/char_traits.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/traits/char_encoding_traits.hpp>

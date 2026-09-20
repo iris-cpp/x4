@@ -47,7 +47,7 @@ struct as_type_parser_ctx_impl<true, Context, OuterAttr>
 // to be `T`. When `T` is `unused_type`, this is equivalent to
 // `omit_directive`.
 template<X4Attribute T, class Subject>
-struct as_type_parser : unary_parser<Subject>
+struct as_type_parser : unary_parser<as_type_parser<T, Subject>, Subject>
 {
     static_assert(!std::is_const_v<T>); // Forbid const `unused_type`
     static_assert(!std::same_as<T, unused_container_type>); // Unknown use case, not supported for now
@@ -65,7 +65,7 @@ struct as_type_parser : unary_parser<Subject>
     // `parser_traits<as_type_parser<...>>::handles_container` must transparently
     // handle this case.
 
-    using unary_parser<Subject>::unary_parser;
+    using unary_parser<as_type_parser, Subject>::unary_parser;
 
 private:
     template<X4Attribute Attr>
@@ -82,9 +82,9 @@ public:
         noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, OuterAttr>::type, exposed_attr_for_child_t<OuterAttr>>)
     {
         if constexpr (Subject::has_action) {
-            return this->subject().parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), unused);
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), unused);
         } else {
-            return this->subject().parse(first, last, ctx, outer_attr);
+            return this->subject.parse(first, last, ctx, outer_attr);
         }
     }
 
@@ -97,9 +97,9 @@ public:
         noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, unused_type>::type, unused_type>)
     {
         if constexpr (Subject::has_action) {
-            return this->subject().parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, unused), unused);
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, unused), unused);
         } else {
-            return this->subject().parse(first, last, ctx, unused);
+            return this->subject.parse(first, last, ctx, unused);
         }
     }
 
@@ -124,9 +124,9 @@ public:
         T attr_{}; // value-initialize
 
         if constexpr (Subject::has_action) {
-            if (!this->subject().parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), unused)) return false;
+            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), unused)) return false;
         } else {
-            if (!this->subject().parse(first, last, ctx, attr_)) return false;
+            if (!this->subject.parse(first, last, ctx, attr_)) return false;
         }
 
         x4::move_to(std::move(attr_), outer_attr);
@@ -138,7 +138,7 @@ public:
         return std::format(
             "as<{}>({})",
             typeid(T).name(),
-            get_info<Subject>{}(this->subject())
+            get_info<Subject>{}(this->subject)
         );
     }
 };
@@ -153,7 +153,7 @@ struct as_fn
     operator()(Subject&& subject)
         noexcept(is_parser_nothrow_constructible_v<as_type_parser<T, as_parser_plain_t<Subject>>, Subject>)
     {
-        return {std::forward<Subject>(subject)};
+        return as_type_parser<T, as_parser_plain_t<Subject>>{std::forward<Subject>(subject)};
     }
 };
 

@@ -51,7 +51,7 @@ namespace iris::x4 {
 namespace detail {
 
 template<bool IsShared, class Encoding, class T, class Lookup>
-struct symbols_parser_impl : parser<>
+struct symbols_parser_impl : parser<symbols_parser_impl<IsShared, Encoding, T, Lookup>>
 {
     static_assert(!std::is_same_v<T, unused_container_type>, "symbols parser with `unused_container_type` is not supported");
 

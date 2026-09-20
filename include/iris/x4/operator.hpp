@@ -11,14 +11,14 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/operator/alternative.hpp>
-#include <iris/x4/operator/delimited_list.hpp>
-#include <iris/x4/operator/difference.hpp>
-#include <iris/x4/operator/optional.hpp>
-#include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/operator/plus.hpp>
-#include <iris/x4/operator/and_predicate.hpp>
-#include <iris/x4/operator/not_predicate.hpp>
+#include <iris/x4/operator/sequence.hpp> // IWYU pragma: export
+#include <iris/x4/operator/alternative.hpp> // IWYU pragma: export
+#include <iris/x4/operator/delimited_list.hpp> // IWYU pragma: export
+#include <iris/x4/operator/difference.hpp> // IWYU pragma: export
+#include <iris/x4/operator/optional.hpp> // IWYU pragma: export
+#include <iris/x4/operator/kleene.hpp> // IWYU pragma: export
+#include <iris/x4/operator/plus.hpp> // IWYU pragma: export
+#include <iris/x4/operator/and_predicate.hpp> // IWYU pragma: export
+#include <iris/x4/operator/not_predicate.hpp> // IWYU pragma: export
 
 #endif

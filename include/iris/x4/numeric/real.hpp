@@ -207,7 +207,7 @@ struct strict_real_policies : real_policies<T>
 };
 
 template<class T, class Policy = real_policies<T>>
-struct real_parser : parser<>
+struct real_parser : parser<real_parser<T, Policy>>
 {
     static_assert(X4Attribute<T>);
     static_assert(std::default_initializable<T>);

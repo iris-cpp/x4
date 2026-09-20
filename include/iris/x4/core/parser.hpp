@@ -36,148 +36,34 @@ namespace iris::x4 {
 template<class Subject, class Action>
 struct action;
 
-namespace detail {
-
-struct parser_base {};
-
-template<class T>
-concept ebo_eligible = std::is_empty_v<T> && !std::is_final_v<T>;
-
-template<class Storage>
-struct parser_storage
+template<
+    // Although this parameter is largely unnecessary now that C++23 provides explicit object
+    // parameters ("deducing this"), omitting it would cause virtually all parser classes to
+    // inherit from the same empty base type, significantly increasing their size.
+    //
+    // In practice, shared-empty-base design would make a composite parser instance nearly
+    // 3 to 8 times as large as one using the optimized layout. While the increased size would
+    // have virtually no runtime impact (as the access to redundant empty instances would be
+    // optimized-away anyway), it would still affect the compilation time.
+    //
+    // In other words, we currently require this parameter solely for making the base type
+    // `parser<...>` distinct for each derived class.
+    //
+    // Note: The above describes the current design. Future changes may introduce an actual
+    // dependency on `Derived`, regardless of the emptiness of the actual type.
+    //
+    // Caveat: Directly referring to `Derived` inside this base class (without using "deducing
+    // this") is almost always wrong, as it is not guaranteed to point to the *most* derived
+    // type when a class further derives from `Derived`.
+    class Derived
+>
+struct parser
 {
-    // `Storage` is some non-EBO-eligible type:
-    //   - Non-class type, or
-    //   - Class type that is
-    //     - `final`, or
-    //     - has non-zero size
+    using x4_parser_base_type = detail::parser_base;
 
-    template<class StorageT>
-        requires
-            (!std::same_as<StorageT, parser_storage>) &&
-            std::constructible_from<Storage, StorageT>
-    constexpr explicit(!std::convertible_to<StorageT, Storage>)
-    parser_storage(StorageT&& storage)
-        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
-        : storage_(std::forward<StorageT>(storage))
-    {}
-
-protected:
-    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&>(storage_);
-    }
-    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&>(storage_);
-    }
-    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&&>(storage_);
-    }
-    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&&>(storage_);
-    }
-
-private:
-    IRIS_NO_UNIQUE_ADDRESS Storage storage_;
-};
-
-template<class Storage>
-    requires ebo_eligible<Storage>
-struct parser_storage<Storage>
-    : public Storage // needs to be public because we want to expose static public members
-{
-    // `Storage` is a EBO-eligible class type
-
-    using Storage::Storage;
-
-    template<class StorageT>
-        requires
-            (!std::same_as<StorageT, parser_storage>) &&
-            std::constructible_from<Storage, StorageT>
-    constexpr explicit(!std::convertible_to<StorageT, Storage>)
-    parser_storage(StorageT&& storage)
-        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
-        : Storage(std::forward<StorageT>(storage))
-    {}
-
-protected:
-    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&>(*this);
-    }
-    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&>(*this);
-    }
-    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&&>(*this);
-    }
-    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&&>(*this);
-    }
-};
-
-template<class Storage>
-    requires
-        ebo_eligible<Storage> &&
-        has_parser_base<Storage>
-struct parser_storage<Storage>
-    : public Storage // needs to be public because we want to expose static public members
-{
-    // `Storage` is some X4 parser class (possibly a `Subject`)
-    // (which means we must not double-inherit from `parser_base`)
-
-    using Storage::Storage;
-
-    template<class StorageT>
-        requires
-            (!std::same_as<StorageT, parser_storage>) &&
-            std::constructible_from<Storage, StorageT>
-    constexpr explicit(!std::convertible_to<StorageT, Storage>)
-    parser_storage(StorageT&& storage)
-        noexcept(std::is_nothrow_constructible_v<Storage, StorageT>)
-        : Storage(std::forward<StorageT>(storage))
-    {}
-
-protected:
-    [[nodiscard]] constexpr Storage& storage() & noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&>(*this);
-    }
-    [[nodiscard]] constexpr Storage const& storage() const& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&>(*this);
-    }
-    [[nodiscard]] constexpr Storage&& storage() && noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage&&>(*this);
-    }
-    [[nodiscard]] constexpr Storage const&& storage() const&& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Storage const&&>(*this);
-    }
-};
-
-template<>
-struct parser_storage<void>
-{};
-
-} // detail
-
-
-template<class Storage = void>
-struct parser : detail::parser_storage<Storage>
-{
     static constexpr bool has_action = false;
     static constexpr bool need_rcontext = false;
     static constexpr bool requires_exact_attribute_type = false;
-
-    using detail::parser_storage<Storage>::parser_storage;
 
     template<class Self, class Action>
         requires std::constructible_from<
@@ -210,45 +96,46 @@ struct parser : detail::parser_storage<Storage>
     {
         return std::forward<Self>(self).on_match(std::forward<Action>(f));
     }
-
-private:
-    template<class> friend struct detail::has_parser_base_impl;
-    using x4_parser_base_type = detail::parser_base;
 };
 
-template<class Subject>
-struct unary_parser : parser<Subject>
+template<class Derived, class Subject>
+struct unary_parser : parser<Derived>
 {
     using subject_type = Subject;
 
     static constexpr bool has_action = Subject::has_action;
     static constexpr bool need_rcontext = Subject::need_rcontext;
 
-    using parser<Subject>::parser;
+    constexpr unary_parser() = default;
 
-    [[nodiscard]] constexpr Subject& subject() & noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Subject&>(this->storage());
-    }
-    [[nodiscard]] constexpr Subject const& subject() const& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Subject const&>(this->storage());
-    }
-    [[nodiscard]] constexpr Subject&& subject() && noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Subject&&>(this->storage());
-    }
-    [[nodiscard]] constexpr Subject const&& subject() const&& noexcept IRIS_LIFETIMEBOUND
-    {
-        return static_cast<Subject const&&>(this->storage());
-    }
+    template<class SubjectT>
+        requires std::same_as<std::remove_cvref_t<SubjectT>, Subject>
+    constexpr explicit unary_parser(SubjectT&& subject)
+        noexcept(std::is_nothrow_constructible_v<Subject, SubjectT>)
+        : subject(std::forward<SubjectT>(subject))
+    {}
 
-private:
-    using detail::parser_storage<Subject>::storage;
+    // Empty instance elimination technique:
+    //
+    // For the background, please read the comment on the `Derived` parameter of the base
+    // `parser<...>` class first.
+    //
+    // In theory, we could go further and eliminate all empty parser instances, including
+    // those stored in `unary_parser` and `binary_parser`, by omitting member variables
+    // whose types are empty classes. However, doing so would require one of the following:
+    //
+    //   (a) Return a value-initialized instance on access:
+    //       e.g. `binary_p.left() -> Empty`
+    //
+    //   (b) Return a reference to a static const instance:
+    //       e.g. `binary_p.left() -> Empty const&`
+    //
+    // We benchmarked both approaches and found that each *increased* compilation time.
+    IRIS_NO_UNIQUE_ADDRESS Subject subject;
 };
 
-template<class Subject, class Derived_Unused = void> // TODO
-struct proxy_parser : unary_parser<Subject>
+template<class Derived, class Subject>
+struct proxy_parser : unary_parser<Derived, Subject>
 {
     using proxy_backend_type = Subject;
     using attribute_type = parser_traits<Subject>::attribute_type;
@@ -259,52 +146,31 @@ struct proxy_parser : unary_parser<Subject>
     template<class Container>
     static constexpr bool handles_container = parser_traits<Subject>::template handles_container<Container>;
 
-    using unary_parser<Subject>::unary_parser;
+    using unary_parser<Derived, Subject>::unary_parser;
 };
 
-template<class Left, class Right, class Derived_Unused = void> // TODO
-struct binary_parser // : parser<>
+template<class Derived, class Left, class Right>
+struct binary_parser : parser<Derived>
 {
     using left_type = Left;
     using right_type = Right;
 
-    static constexpr bool has_action = left_type::has_action || right_type::has_action;
-    static constexpr bool need_rcontext = left_type::need_rcontext || right_type::need_rcontext;
+    static constexpr bool has_action = Left::has_action || Right::has_action;
+    static constexpr bool need_rcontext = Left::need_rcontext || Right::need_rcontext;
 
     constexpr binary_parser() = default;
 
     template<class LeftT, class RightT>
-        requires std::is_constructible_v<Left, LeftT> && std::is_constructible_v<Right, RightT>
+        requires std::same_as<std::remove_cvref_t<LeftT>, Left> && std::same_as<std::remove_cvref_t<RightT>, Right>
     constexpr binary_parser(LeftT&& left, RightT&& right)
         noexcept(std::is_nothrow_constructible_v<Left, LeftT> && std::is_nothrow_constructible_v<Right, RightT>)
         : left(std::forward<LeftT>(left))
         , right(std::forward<RightT>(right))
     {}
 
-    static constexpr bool requires_exact_attribute_type = false;
-
-    template<class Self, class Action>
-        requires std::constructible_from<
-            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
-            Self, Action
-        >
-    [[nodiscard]]
-    constexpr action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>
-    on_match(this Self&& self, Action&& f)
-        noexcept(std::is_nothrow_constructible_v<
-            action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
-            Self, Action
-        >)
-    {
-        return {std::forward<Self>(self), std::forward<Action>(f)};
-    }
-
+    // Empty instance elimination technique: please read the comment on `unary_parser`.
     IRIS_NO_UNIQUE_ADDRESS Left left;
     IRIS_NO_UNIQUE_ADDRESS Right right;
-
-private:
-    template<class> friend struct detail::has_parser_base_impl;
-    using x4_parser_base_type = detail::parser_base;
 };
 
 namespace traits {
@@ -449,14 +315,14 @@ concept X4Subject = X4ExplicitSubject<T> || X4ImplicitSubject<T>;
 // This interface can only be used to check whether `Parser`'s single-parameter
 // constructor is available. For multi-parameter construction, manually combine
 // `is_parser_castable` with `std::is_constructible`.
-template<X4Subject Parser, X4Subject T>
+template<class Parser, class T>
 struct is_parser_constructible : std::false_type {};
 
 template<X4Subject Parser, X4Subject T>
     requires std::is_constructible_v<Parser, as_parser_t<T>>
 struct is_parser_constructible<Parser, T> : std::true_type {};
 
-template<X4Subject Parser, X4Subject T>
+template<class Parser, class T>
 constexpr bool is_parser_constructible_v = is_parser_constructible<Parser, T>::value;
 
 // Checks whether `Parser(as_parser(t))` is noexcept.
@@ -464,7 +330,7 @@ constexpr bool is_parser_constructible_v = is_parser_constructible<Parser, T>::v
 // This interface can only be used to check whether `Parser`'s single-parameter
 // constructor is available. For multi-parameter construction, manually combine
 // `is_parser_nothrow_castable` with `std::is_nothrow_constructible`.
-template<X4Subject Parser, X4Subject T>
+template<class Parser, class T>
 struct is_parser_nothrow_constructible : std::false_type {};
 
 template<X4Subject Parser, X4Subject T>
@@ -473,7 +339,7 @@ template<X4Subject Parser, X4Subject T>
         std::is_nothrow_constructible_v<Parser, as_parser_t<T>>
 struct is_parser_nothrow_constructible<Parser, T> : std::true_type {};
 
-template<X4Subject Parser, X4Subject T>
+template<class Parser, class T>
 constexpr bool is_parser_nothrow_constructible_v = is_parser_nothrow_constructible<Parser, T>::value;
 
 
@@ -587,9 +453,6 @@ struct get_info
 
 namespace detail {
 
-// "what" is an extremely common identifier that can be defined in many user-specific
-// namespaces. We should avoid ADL usage for such generic names in the first place.
-// (Note: CPO inhibits ADL in general.)
 struct what_fn
 {
     template<X4Subject Subject>
@@ -603,7 +466,7 @@ struct what_fn
 
 inline namespace cpos {
 
-[[maybe_unused]] inline constexpr detail::what_fn what{}; // no ADL
+[[maybe_unused]] inline constexpr detail::what_fn what{};
 
 } // cpos
 

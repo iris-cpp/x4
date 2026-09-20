@@ -12,7 +12,6 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <concepts>
-#include <iterator>
 #include <type_traits>
 
 namespace iris::x4 {
@@ -25,15 +24,7 @@ namespace detail {
 struct parser_base;
 
 template<class T>
-struct has_parser_base_impl
-{
-    static constexpr bool value = requires {
-        requires std::same_as<typename T::x4_parser_base_type, parser_base>;
-    };
-};
-
-template<class T>
-concept has_parser_base = has_parser_base_impl<std::remove_cvref_t<T>>::value;
+concept has_parser_base = std::is_same_v<typename std::remove_cvref_t<T>::x4_parser_base_type, parser_base>;
 
 } // detail
 

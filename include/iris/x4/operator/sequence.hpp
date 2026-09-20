@@ -77,7 +77,7 @@ struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
 } // detail
 
 template<class Left, class Right>
-struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
+struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
 {
     using attribute_type = traits::detail::attribute_of_sequence<Left, Right>::type;
 
@@ -92,7 +92,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
         ) ||
         detail::container_can_hold_sequence<Container, attribute_type>::value;
 
-    using binary_parser<Left, Right, sequence>::binary_parser;
+    using binary_parser<sequence, Left, Right>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
@@ -136,7 +136,7 @@ struct sequence : binary_parser<Left, Right, sequence<Left, Right>>
             return std::format(
                 "{} > {}",
                 get_info<Left>{}(this->left),
-                get_info<typename Right::subject_type>{}(this->right.subject())
+                get_info<typename Right::subject_type>{}(this->right.subject)
             );
         } else {
             return std::format(

@@ -22,7 +22,7 @@
 namespace iris::x4 {
 
 template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
-struct literal_char : char_parser<Encoding, literal_char<Encoding, Attr>>
+struct literal_char : char_parser<literal_char<Encoding, Attr>, Encoding>
 {
     using encoding_type = Encoding;
     using attribute_type = Attr;
@@ -35,7 +35,7 @@ struct literal_char : char_parser<Encoding, literal_char<Encoding, Attr>>
         requires
             (!std::is_same_v<std::remove_cvref_t<Char>, literal_char>) &&
             std::convertible_to<Char, classify_type>
-    constexpr literal_char(Char ch) noexcept
+    constexpr /*explicit*/ literal_char(Char ch) noexcept
         : classify_ch_(static_cast<classify_type>(ch))
     {
         static_assert(std::same_as<Char, char_type>, "Mixing incompatible character types is not allowed");

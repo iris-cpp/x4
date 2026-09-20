@@ -194,16 +194,16 @@ parse_alternative(
 }
 
 template<class Subject>
-struct alternative_helper : proxy_parser<Subject, alternative_helper<Subject>>
+struct alternative_helper : proxy_parser<alternative_helper<Subject>, Subject>
 {
-    using proxy_parser<Subject, alternative_helper>::proxy_parser;
+    using proxy_parser<alternative_helper, Subject>::proxy_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(detail::parse_alternative(this->subject(), first, last, ctx, attr)))
+        noexcept(noexcept(detail::parse_alternative(this->subject, first, last, ctx, attr)))
     {
-        return detail::parse_alternative(this->subject(), first, last, ctx, attr);
+        return detail::parse_alternative(this->subject, first, last, ctx, attr);
     }
 };
 

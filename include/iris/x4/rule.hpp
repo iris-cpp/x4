@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
@@ -302,7 +302,7 @@ public:
 };
 
 template<class RuleID, X4Subject RHS, X4Attribute RuleDefAttr, bool ForceAttr, bool SkipDefinitionInjection = false>
-struct rule_definition : parser<RHS>
+struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceAttr, SkipDefinitionInjection>>
 {
     static_assert(!std::same_as<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
 
@@ -319,7 +319,7 @@ struct rule_definition : parser<RHS>
         requires std::is_constructible_v<RHS, RHS_T>
     constexpr rule_definition(RHS_T&& rhs, std::string_view name)
         noexcept(std::is_nothrow_constructible_v<RHS, RHS_T>)
-        : parser<RHS>(std::forward<RHS_T>(rhs))
+        : rhs_(std::forward<RHS_T>(rhs))
         , name(std::move(name))
     {}
 
@@ -330,10 +330,14 @@ struct rule_definition : parser<RHS>
     {
         return rule_impl<RuleID, attribute_type, SkipDefinitionInjection>
             ::template call_rule_definition<ForceAttr>(
-                this->storage(), name, first, last, ctx, attr
+                this->rhs_, this->name, first, last, ctx, attr
             );
     }
 
+private:
+    RHS rhs_;
+
+public:
     std::string_view name = "unnamed_rule";
 };
 
@@ -385,7 +389,7 @@ concept RuleAttrCompatible =
 } // detail
 
 template<class RuleID, class RuleAttr, bool ForceAttr>
-struct rule : parser<>
+struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 {
     // This type MUST be constructible with incomplete types.
     // Do NOT add `static_assert`s or other constructs that cause eager

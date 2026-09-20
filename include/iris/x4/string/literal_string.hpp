@@ -28,11 +28,11 @@
 
 namespace iris::x4 {
 
-template<class String, class Encoding, X4Attribute Attr = std::basic_string<typename Encoding::char_type>>
-struct literal_string : parser<String>
+template<class StoredStringT, class Encoding, X4Attribute Attr = std::basic_string<typename Encoding::char_type>>
+struct literal_string : parser<literal_string<StoredStringT, Encoding, Attr>>
 {
     static_assert(
-        !std::is_pointer_v<std::decay_t<String>>,
+        !std::is_pointer_v<std::decay_t<StoredStringT>>,
         "`literal_string` for raw character pointer/array is banned; it has an undetectable risk of holding a dangling pointer."
     );
 
@@ -44,19 +44,28 @@ struct literal_string : parser<String>
 
     static constexpr bool has_attribute = !std::is_same_v<Attr, unused_type>;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr_>
+    constexpr literal_string() = default;
+
+    template<class... Args>
+        requires std::is_constructible_v<StoredStringT, Args...>
+    constexpr /*explicit*/ literal_string(Args&&... args)
+        noexcept(std::is_nothrow_constructible_v<StoredStringT, Args...>)
+        : str_(std::forward<Args>(args)...)
+    {}
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute ExposedAttr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr_& attr) const
+    parse(It& first, Se const& last, Context const& ctx, ExposedAttr& exposed_attr) const
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(detail::string_parse(this->storage(), first, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx)))
+            noexcept(detail::string_parse(this->str_, first, last, x4::assume_container(exposed_attr), x4::get_case_compare<encoding>(ctx)))
         )
     {
         static_assert(std::same_as<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
         auto it = first;
         x4::skip_over(it, last, ctx);
-        bool const ok = detail::string_parse(this->storage(), it, last, x4::assume_container(attr), x4::get_case_compare<encoding>(ctx));
+        bool const ok = detail::string_parse(this->str_, it, last, x4::assume_container(exposed_attr), x4::get_case_compare<encoding>(ctx));
         if (ok) first = it;
         return ok;
     }
@@ -64,8 +73,11 @@ struct literal_string : parser<String>
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape quotes
-        return std::format("\"{}\"", iris::unicode::transcode<char>(std::basic_string_view{this->storage()}));
+        return std::format("\"{}\"", iris::unicode::transcode<char>(std::basic_string_view{this->str_}));
     }
+
+private:
+    StoredStringT str_{};
 };
 
 } // iris::x4

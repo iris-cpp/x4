@@ -16,7 +16,7 @@
 namespace iris::x4 {
 
 template<class Encoding>
-struct any_char : char_parser<Encoding, any_char<Encoding>>
+struct any_char : char_parser<any_char<Encoding>, Encoding>
 {
     using encoding_type = Encoding;
     using attribute_type = Encoding::char_type;

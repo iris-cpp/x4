@@ -59,14 +59,14 @@ struct action_context<Context, Attr>
 // holds exact specific type provided to the entry point (`x4::parse`).
 
 template<class Subject, class ActionF>
-struct action : proxy_parser<Subject, action<Subject, ActionF>>
+struct action : proxy_parser<action<Subject, ActionF>, Subject>
 {
     static_assert(
         !std::is_reference_v<ActionF>,
         "Reference type is disallowed for semantic action functor to prevent dangling reference"
     );
 
-    using base_type = proxy_parser<Subject, action>;
+    using base_type = proxy_parser<action, Subject>;
 
     static constexpr bool has_action = true;
     static constexpr bool need_rcontext = true;
@@ -75,7 +75,7 @@ struct action : proxy_parser<Subject, action<Subject, ActionF>>
     ActionF f;
 
     template<class SubjectT, class ActionT>
-        requires /*std::is_constructible_v<base_type, SubjectT> &&*/ std::is_constructible_v<ActionF, ActionT>
+        requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<ActionF, ActionT>
     constexpr action(SubjectT&& subject, ActionT&& f)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<ActionF, ActionT>)
         : base_type(std::forward<SubjectT>(subject))
@@ -146,7 +146,7 @@ public:
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("{}[f]", get_info<Subject>{}(this->subject()));
+        return std::format("{}[f]", get_info<Subject>{}(this->subject));
     }
 
 private:
@@ -237,7 +237,7 @@ private:
         )
     {
         It const saved_first = first;
-        if (!this->subject().parse(first, last, ctx, attr)) return false;
+        if (!this->subject.parse(first, last, ctx, attr)) return false;
 
         if (this->call_action(ctx, attr)) {
             return true;

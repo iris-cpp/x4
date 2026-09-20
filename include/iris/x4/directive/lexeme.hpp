@@ -22,8 +22,10 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
+struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
 {
+    using proxy_parser<lexeme_directive, Subject>::proxy_parser;
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -39,7 +41,7 @@ struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
         auto it = first;
         x4::skip_over(it, last, ctx); // pre-skip
 
-        bool const ok = this->subject().parse(
+        bool const ok = this->subject.parse(
             it, last,
             x4::remove_first_context<contexts::skipper>(ctx), // no skipper
             attr
@@ -50,7 +52,7 @@ struct lexeme_directive : proxy_parser<Subject, lexeme_directive<Subject>>
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("lexeme[{}]", get_info<Subject>{}(this->subject()));
+        return std::format("lexeme[{}]", get_info<Subject>{}(this->subject));
     }
 };
 
@@ -63,7 +65,7 @@ struct lexeme_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<lexeme_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return {as_parser(std::forward<Subject>(subject))};
+        return lexeme_directive<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
     }
 };
 

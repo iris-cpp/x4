@@ -11,9 +11,9 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/numeric/bool.hpp>
-#include <iris/x4/numeric/int.hpp>
-#include <iris/x4/numeric/uint.hpp>
-#include <iris/x4/numeric/real.hpp>
+#include <iris/x4/numeric/bool.hpp> // IWYU pragma: export
+#include <iris/x4/numeric/int.hpp> // IWYU pragma: export
+#include <iris/x4/numeric/uint.hpp> // IWYU pragma: export
+#include <iris/x4/numeric/real.hpp> // IWYU pragma: export
 
 #endif

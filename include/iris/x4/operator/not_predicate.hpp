@@ -21,11 +21,13 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct not_predicate : unary_parser<Subject>
+struct not_predicate : unary_parser<not_predicate<Subject>, Subject>
 {
     using attribute_type = unused_type;
 
     static constexpr bool has_attribute = false;
+
+    using unary_parser<not_predicate, Subject>::unary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -38,10 +40,10 @@ struct not_predicate : unary_parser<Subject>
         It local_first = first;
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !this->subject().parse(local_first, last, ctx, unused) &&
+            return !this->subject.parse(local_first, last, ctx, unused) &&
                 !x4::has_expectation_failure(ctx);
         } else {
-            return !this->subject().parse(local_first, last, ctx, unused);
+            return !this->subject.parse(local_first, last, ctx, unused);
         }
     }
 };
@@ -51,7 +53,7 @@ template<X4Subject Subject>
 operator!(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<not_predicate<as_parser_plain_t<Subject>>, Subject>)
 {
-    return {as_parser(std::forward<Subject>(subject))};
+    return not_predicate<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
 }
 
 } // iris::x4

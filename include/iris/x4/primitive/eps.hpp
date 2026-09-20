@@ -23,26 +23,44 @@ namespace iris::x4 {
 
 namespace detail {
 
-struct semantic_predicate : parser<bool>
+struct semantic_predicate : parser<semantic_predicate>
 {
     using attribute_type = unused_type;
+
+    constexpr explicit semantic_predicate(bool cond) noexcept
+        : cond_(cond)
+    {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr&) const
         noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
-        if (this->storage()) {
+        if (this->cond_) {
             x4::skip_over(first, last, ctx);
         }
-        return this->storage();
+        return this->cond_;
     }
+
+private:
+    bool cond_{};
 };
 
 template<class F>
-struct lazy_semantic_predicate : parser<F>
+struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
 {
     using attribute_type = unused_type;
+
+    constexpr lazy_semantic_predicate() = default;
+
+    template<class T>
+        requires
+            (!std::same_as<std::remove_cvref_t<T>, lazy_semantic_predicate>) &&
+            std::is_constructible_v<F, T>
+    constexpr explicit lazy_semantic_predicate(T&& f)
+        noexcept(std::is_nothrow_constructible_v<F, T>)
+        : f_(std::forward<T>(f))
+    {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -51,25 +69,27 @@ struct lazy_semantic_predicate : parser<F>
         auto it = first;
         x4::skip_over(it, last, ctx);
 
-        if constexpr (std::invocable<F const&, Context const&>) {
-            static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
-            bool const ok = this->storage()(ctx);
+        if constexpr (requires { this->f_(ctx); }) {
+            static_assert(std::same_as<decltype(this->f_(ctx)), bool>);
+            bool const ok = this->f_(ctx);
             if (ok) first = it;
             return ok;
 
         } else {
-            static_assert(std::invocable<F const&>);
-            static_assert(std::same_as<std::invoke_result_t<F const&>, bool>);
-            bool const ok = this->storage()();
+            static_assert(std::same_as<decltype(this->f_()), bool>);
+            bool const ok = this->f_();
             if (ok) first = it;
             return ok;
         }
     }
+
+private:
+    F f_{};
 };
 
 } // detail
 
-struct eps_parser : parser<>
+struct eps_parser : parser<eps_parser>
 {
     using attribute_type = unused_type;
 
@@ -83,9 +103,9 @@ struct eps_parser : parser<>
     }
 
     [[nodiscard]] static constexpr detail::semantic_predicate
-    operator()(bool predicate) noexcept
+    operator()(bool cond) noexcept
     {
-        return detail::semantic_predicate{predicate};
+        return detail::semantic_predicate{cond};
     }
 
     template<class F>

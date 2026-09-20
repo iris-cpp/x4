@@ -10,7 +10,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/action.hpp> // for user-defined semantic action QoL
 #include <iris/x4/core/skip_over.hpp>

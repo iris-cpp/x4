@@ -23,50 +23,68 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <initializer_list>
 
 namespace iris::x4 {
 
 // `fixed_value(...)`
 template<class T, class HeldValueT = T>
-struct fixed_value_parser : parser<HeldValueT>
+struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
 {
     static_assert(X4Attribute<T>);
     static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
+    static_assert(X4Movable<HeldValueT const&, T>);
 
     // `HeldValueT` is almost always equal to `T`.
     //
     // The most notable situation where they differ is when `fixed_value_parser` is initialized
     // by `char const (&)[N]`. In such case, `fixed_value_parser` must hold the value by
     // `std::string_view`, instead of `std::string`, to be constexpr.
-
-    static_assert(X4Movable<HeldValueT const&, T>);
-
     using attribute_type = T;
     using held_value_type = HeldValueT;
 
-    using parser<HeldValueT>::parser;
+    constexpr fixed_value_parser() = default;
+
+    template<class U, class... Rest>
+        requires
+            // This exclusion is mandatory because `HeldValueT` can be a weakly constrained
+            // type such as `std::any`
+            (!std::is_base_of_v<fixed_value_parser, std::remove_cvref_t<U>>) &&
+            std::is_constructible_v<HeldValueT, U, Rest...>
+    constexpr explicit fixed_value_parser(U&& arg, Rest&&... rest)
+        noexcept(std::is_nothrow_constructible_v<HeldValueT, U, Rest...>)
+        : held_value_(std::forward<U>(arg), std::forward<Rest>(rest)...)
+    {}
+
+    template<class U, class... Args>
+        requires std::is_constructible_v<HeldValueT, std::initializer_list<U>&, Args...>
+    constexpr explicit fixed_value_parser(std::initializer_list<U> il, Args&&... args)
+        noexcept(std::is_nothrow_constructible_v<HeldValueT, std::initializer_list<U>&, Args...>)
+        : held_value_(il, std::forward<Args>(args)...)
+    {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, Attr& attr_) const
-        noexcept(noexcept(x4::move_to(std::declval<HeldValueT const&>(), attr_)))
+    parse(It&, Se const&, Context const&, Attr& exposed_attr) const
+        noexcept(noexcept(x4::move_to(std::declval<HeldValueT const&>(), exposed_attr)))
     {
         // Always copy (need reuse in repetitive invocations)
-        x4::move_to(this->storage(), attr_);
+        x4::move_to(this->held_value_, exposed_attr);
         return true;
     }
+
+private:
+    IRIS_NO_UNIQUE_ADDRESS HeldValueT held_value_{};
 };
 
-// `reset_value<T>`
+// aka `reset_value<T>`
 template<class T>
-struct fixed_value_parser<T, void> : parser<>
+struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
 {
     static_assert(X4Attribute<T>);
     static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
 
     using attribute_type = T;
-
-    using parser<>::parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] static constexpr bool
@@ -78,19 +96,19 @@ struct fixed_value_parser<T, void> : parser<>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ContainerAttr>
         requires traits::CategorizedAttr<ContainerAttr, traits::container_attr>
     [[nodiscard]] static constexpr bool
-    parse(It&, Se const&, Context const&, ContainerAttr& container_attr) noexcept
+    parse(It&, Se const&, Context const&, ContainerAttr& exposed_attr) noexcept
     {
-        traits::clear(container_attr);
+        traits::clear(exposed_attr);
         return true;
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
         requires (!traits::CategorizedAttr<Attr, traits::container_attr>)
     [[nodiscard]] static constexpr bool
-    parse(It&, Se const&, Context const&, Attr& attr_)
-        noexcept(noexcept(attr_ = Attr{}))
+    parse(It&, Se const&, Context const&, Attr& exposed_attr)
+        noexcept(noexcept(exposed_attr = Attr{}))
     {
-        attr_ = Attr{};
+        exposed_attr = Attr{};
         return true;
     }
 };

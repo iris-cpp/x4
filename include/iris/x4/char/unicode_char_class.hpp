@@ -537,11 +537,11 @@ struct unicode_char_class_base
 } // detail
 
 template<class Tag>
-struct unicode_char_class : char_parser<char_encoding::unicode, unicode_char_class<Tag>>
+struct unicode_char_class : char_parser<unicode_char_class<Tag>, char_encoding::unicode>
 {
     using encoding_type = char_encoding::unicode;
     using tag = Tag;
-    using char_type = typename encoding_type::char_type;
+    using char_type = encoding_type::char_type;
     using attribute_type = char_type;
 
     static constexpr bool has_attribute = true;

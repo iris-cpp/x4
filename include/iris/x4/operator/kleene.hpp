@@ -25,7 +25,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct kleene : unary_parser<Subject>
+struct kleene : unary_parser<kleene<Subject>, Subject>
 {
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
@@ -35,6 +35,8 @@ struct kleene : unary_parser<Subject>
         traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
+    using unary_parser<kleene, Subject>::unary_parser;
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -43,7 +45,7 @@ struct kleene : unary_parser<Subject>
         auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
         list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
 
-        while (detail::parse_into_container(this->subject(), first, last, ctx, chunk_buf)) {
+        while (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
             list_like_parser::successful_merge_into(chunk_buf, container_attr);
         }
 
@@ -57,9 +59,9 @@ struct kleene : unary_parser<Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr& unused_attr) const
-        noexcept(noexcept(detail::parse_into_container(this->subject(), first, last, ctx, x4::assume_container(unused_attr))))
+        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))))
     {
-        while (detail::parse_into_container(this->subject(), first, last, ctx, x4::assume_container(unused_attr)))
+        while (detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr)))
             /* loop */;
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
@@ -73,7 +75,7 @@ struct kleene : unary_parser<Subject>
     {
         return std::format(
             "*{}",
-            get_info<Subject>{}(this->subject())
+            get_info<Subject>{}(this->subject)
         );
     }
 };
@@ -83,7 +85,7 @@ template<X4Subject Subject>
 operator*(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<kleene<as_parser_plain_t<Subject>>, Subject>)
 {
-    return {as_parser(std::forward<Subject>(subject))};
+    return kleene<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
 }
 
 } // iris::x4

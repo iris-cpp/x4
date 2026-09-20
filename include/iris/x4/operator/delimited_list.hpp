@@ -24,7 +24,7 @@
 namespace iris::x4 {
 
 template<class Left, class Right>
-struct delimited_list : binary_parser<Left, Right, delimited_list<Left, Right>>
+struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
 {
     using attribute_type = traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
@@ -34,7 +34,7 @@ struct delimited_list : binary_parser<Left, Right, delimited_list<Left, Right>>
         traits::can_hold<typename parser_traits<Left>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
-    using binary_parser<Left, Right, delimited_list>::binary_parser;
+    using binary_parser<delimited_list, Left, Right>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool

@@ -45,9 +45,9 @@ struct [[nodiscard]] smart_ptr_rollback_guard
 
 template<class Derived, class Subject, class T, class DeleterT>
 struct unique_ptr_parser_base
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
+    using base_type = proxy_parser<Derived, Subject>;
 
     // https://eel.is/c++draft/unique.ptr.single.ctor
 
@@ -105,19 +105,19 @@ struct unique_ptr_parser_base
         smart_ptr_rollback_guard<std::unique_ptr<T, DeleterT>>
         guard{parse_ok, old_ptr, ptr};
 
-        parse_ok = this->subject().parse(it, se, ctx, *ptr);
+        parse_ok = this->subject.parse(it, se, ctx, *ptr);
         return parse_ok;
     }
 
 private:
-    DeleterT deleter_{};
+    IRIS_NO_UNIQUE_ADDRESS DeleterT deleter_{};
 };
 
 template<class Derived, class Subject, class T>
 struct unique_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using proxy_parser<Subject, Derived>::proxy_parser;
+    using proxy_parser<Derived, Subject>::proxy_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -132,7 +132,7 @@ struct unique_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
         smart_ptr_rollback_guard<std::unique_ptr<T, std::default_delete<T>>>
         guard{parse_ok, old_ptr, ptr};
 
-        parse_ok = this->subject().parse(it, se, ctx, *ptr);
+        parse_ok = this->subject.parse(it, se, ctx, *ptr);
         return parse_ok;
     }
 };
@@ -158,7 +158,7 @@ struct unique_ptr_parser : detail::unique_ptr_parser_base<
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("unique_ptr({})", get_info<Subject>{}(this->subject()));
+        return std::format("unique_ptr({})", get_info<Subject>{}(this->subject));
     }
 };
 
@@ -210,9 +210,9 @@ namespace detail {
 
 template<class Derived, class Subject, class T, class DeleterT>
 struct shared_ptr_parser_base
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
+    using base_type = proxy_parser<Derived, Subject>;
 
     // https://eel.is/c++draft/util.smartptr.shared.const
 
@@ -268,7 +268,7 @@ struct shared_ptr_parser_base
         smart_ptr_rollback_guard<std::shared_ptr<T>>
         guard{parse_ok, old_ptr, ptr};
 
-        parse_ok = this->subject().parse(it, se, ctx, *ptr);
+        parse_ok = this->subject.parse(it, se, ctx, *ptr);
         return parse_ok;
     }
 
@@ -278,9 +278,9 @@ private:
 
 template<class Derived, class Subject, class T>
 struct shared_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
+    using base_type = proxy_parser<Derived, Subject>;
 
     template<class SubjectT>
         requires
@@ -302,7 +302,7 @@ struct shared_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
         smart_ptr_rollback_guard<std::shared_ptr<T>>
         guard{parse_ok, old_ptr, ptr};
 
-        parse_ok = this->subject().parse(it, se, ctx, *ptr);
+        parse_ok = this->subject.parse(it, se, ctx, *ptr);
         return parse_ok;
     }
 };
@@ -328,7 +328,7 @@ struct shared_ptr_parser : detail::shared_ptr_parser_base<
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("shared_ptr({})", get_info<Subject>{}(this->subject()));
+        return std::format("shared_ptr({})", get_info<Subject>{}(this->subject));
     }
 };
 

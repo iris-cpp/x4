@@ -24,25 +24,27 @@ namespace iris::x4 {
 // `omit_directive` forces the attribute of subject parser
 // to be `unused_type`
 template<class Subject>
-struct omit_directive : unary_parser<Subject>
+struct omit_directive : unary_parser<omit_directive<Subject>, Subject>
 {
     using attribute_type = unused_type;
 
     static constexpr bool has_attribute = false;
+
+    using unary_parser<omit_directive, Subject>::unary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr const&) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>)
     {
-        return this->subject().parse(first, last, ctx, unused);
+        return this->subject.parse(first, last, ctx, unused);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
         return std::format(
             "omit[{}]",
-            get_info<Subject>{}(this->subject())
+            get_info<Subject>{}(this->subject)
         );
     }
 };
@@ -56,7 +58,7 @@ struct omit_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<omit_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return {as_parser(std::forward<Subject>(subject))};
+        return omit_directive<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
     }
 };
 

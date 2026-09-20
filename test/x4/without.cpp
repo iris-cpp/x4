@@ -15,7 +15,7 @@
 #include <iterator>
 
 template<class ExpectedContext>
-struct context_checker : x4::parser<>
+struct context_checker : x4::parser<context_checker<ExpectedContext>>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
     [[nodiscard]] static constexpr bool parse(It&, Se const&, Context const&, Attr const&)

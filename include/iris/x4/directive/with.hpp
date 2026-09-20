@@ -26,9 +26,9 @@ namespace detail {
 
 template<class Subject, class ID, class T>
 struct with_directive_impl
-    : proxy_parser<Subject, with_directive<Subject, ID, T>>
+    : proxy_parser<with_directive<Subject, ID, T>, Subject>
 {
-    using base_type = proxy_parser<Subject, with_directive<Subject, ID, T>>;
+    using base_type = proxy_parser<with_directive<Subject, ID, T>, Subject>;
     mutable T val_;
 
     template<class SubjectT, class U>
@@ -47,9 +47,9 @@ struct with_directive_impl
 
 template<class Subject, class ID, class T>
 struct with_directive_impl<Subject, ID, T const>
-    : proxy_parser<Subject, with_directive<Subject, ID, T const>>
+    : proxy_parser<with_directive<Subject, ID, T const>, Subject>
 {
-    using base_type = proxy_parser<Subject, with_directive<Subject, ID, T const>>;
+    using base_type = proxy_parser<with_directive<Subject, ID, T const>, Subject>;
     /* not mutable */ T const val_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
     template<class SubjectT, class U>
@@ -68,9 +68,9 @@ struct with_directive_impl<Subject, ID, T const>
 
 template<class Subject, class ID, class T>
 struct with_directive_impl<Subject, ID, T&>
-    : proxy_parser<Subject, with_directive<Subject, ID, T&>>
+    : proxy_parser<with_directive<Subject, ID, T&>, Subject>
 {
-    using base_type = proxy_parser<Subject, with_directive<Subject, ID, T&>>;
+    using base_type = proxy_parser<with_directive<Subject, ID, T&>, Subject>;
     T& val_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
     template<class SubjectT, class U>
@@ -119,7 +119,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
-        return this->subject().parse(
+        return this->subject.parse(
             first, last,
             x4::make_context<ID>(this->val_, ctx),
             attr
@@ -128,7 +128,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
 
     [[nodiscard]] std::string get_x4_info() const
     {
-        return std::format("with<...>[{}]", get_info<Subject>{}(this->subject()));
+        return std::format("with<...>[{}]", get_info<Subject>{}(this->subject));
     }
 
 private:
@@ -225,9 +225,11 @@ using parsers::directive::with;
 
 
 template<class Subject, class... IDs>
-struct without_directive : proxy_parser<Subject, without_directive<Subject, IDs...>>
+struct without_directive : proxy_parser<without_directive<Subject, IDs...>, Subject>
 {
     static_assert(sizeof...(IDs) > 0);
+
+    using proxy_parser<without_directive, Subject>::proxy_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -240,12 +242,12 @@ struct without_directive : proxy_parser<Subject, without_directive<Subject, IDs.
             >
         )
     {
-        return this->subject().parse(first, last, x4::remove_all_contexts<IDs...>(ctx), attr);
+        return this->subject.parse(first, last, x4::remove_all_contexts<IDs...>(ctx), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("without<...>[{}]", get_info<Subject>{}(this->subject()));
+        return std::format("without<...>[{}]", get_info<Subject>{}(this->subject));
     }
 };
 

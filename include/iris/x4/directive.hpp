@@ -11,15 +11,15 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/directive/expect.hpp>
-#include <iris/x4/directive/lexeme.hpp>
-#include <iris/x4/directive/matches.hpp>
-#include <iris/x4/directive/no_case.hpp>
-#include <iris/x4/directive/no_skip.hpp>
-#include <iris/x4/directive/omit.hpp>
-#include <iris/x4/directive/repeat.hpp>
-#include <iris/x4/directive/skip.hpp>
-#include <iris/x4/directive/with.hpp>
-#include <iris/x4/directive/with_local.hpp>
+#include <iris/x4/directive/expect.hpp> // IWYU pragma: export
+#include <iris/x4/directive/lexeme.hpp> // IWYU pragma: export
+#include <iris/x4/directive/matches.hpp> // IWYU pragma: export
+#include <iris/x4/directive/no_case.hpp> // IWYU pragma: export
+#include <iris/x4/directive/no_skip.hpp> // IWYU pragma: export
+#include <iris/x4/directive/omit.hpp> // IWYU pragma: export
+#include <iris/x4/directive/repeat.hpp> // IWYU pragma: export
+#include <iris/x4/directive/skip.hpp> // IWYU pragma: export
+#include <iris/x4/directive/with.hpp> // IWYU pragma: export
+#include <iris/x4/directive/with_local.hpp> // IWYU pragma: export
 
 #endif

@@ -22,12 +22,12 @@
 
 namespace iris::x4 {
 
-template<class Encoding, class Derived>
+template<class Derived, class Encoding>
 struct char_parser;
 
 // `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
 template<class Positive>
-struct negated_char_parser : char_parser<typename Positive::encoding_type, negated_char_parser<Positive>>
+struct negated_char_parser : char_parser<negated_char_parser<Positive>, typename Positive::encoding_type>
 {
     static_assert(X4ExplicitSubject<Positive>);
 
@@ -62,8 +62,8 @@ private:
     Positive positive_; // TODO: EBO
 };
 
-template<class Encoding, class Derived>
-struct char_parser : parser<>
+template<class Derived, class Encoding>
+struct char_parser : parser<char_parser<Derived, Encoding>>
 {
     using encoding_type = Encoding;
     using char_type = Encoding::char_type;

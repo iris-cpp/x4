@@ -28,7 +28,7 @@ template<
     unsigned MinDigits = 1,
     int MaxDigits = -1
 >
-struct uint_parser : parser<>
+struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 {
     // check template parameter 'Radix' for validity
     static_assert((Radix >= 2 && Radix <= 36), "Unsupported Radix");

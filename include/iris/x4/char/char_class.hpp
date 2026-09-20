@@ -39,7 +39,7 @@ namespace detail {
 template<class Encoding>
 struct char_class_base
 {
-    using classify_type = typename Encoding::classify_type;
+    using classify_type = Encoding::classify_type;
 
 #define IRIS_X4_CLASSIFY(name) \
     template<class Char> \
@@ -70,11 +70,11 @@ struct char_class_base
 } // detail
 
 template<class Encoding, class Tag>
-struct char_class_parser : char_parser<Encoding, char_class_parser<Encoding, Tag>>
+struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encoding>
 {
     using encoding_type = Encoding;
     using tag = Tag;
-    using char_type = typename Encoding::char_type;
+    using char_type = Encoding::char_type;
     using attribute_type = char_type;
     static constexpr bool has_attribute = true;
 

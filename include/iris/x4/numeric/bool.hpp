@@ -20,8 +20,6 @@
 
 #include <iris/x4/traits/char_encoding_traits.hpp>
 
-#include <iris/requirements.hpp>
-
 #include <concepts>
 #include <string_view>
 #include <iterator>
@@ -30,7 +28,6 @@
 
 namespace iris::x4 {
 
-//  Default boolean policies
 template<class T = bool>
 struct bool_policies
 {
@@ -62,7 +59,7 @@ struct bool_policies
 };
 
 template<class T, class Policy = bool_policies<T>>
-struct bool_parser : parser<>
+struct bool_parser : parser<bool_parser<T, Policy>>
 {
     static_assert(X4Attribute<T>);
     static_assert(std::default_initializable<T>);
@@ -109,7 +106,6 @@ struct bool_parser : parser<>
     {
         static_assert(X4NonUnusedAttribute<Attr>);
 
-        // this case is called when Attribute is not T
         T attr_{};
         if (bool_parser::parse(first, last, ctx, attr_)) {
             x4::move_to(std::move(attr_), attr);
@@ -125,7 +121,7 @@ struct bool_parser : parser<>
 };
 
 template<auto ExpectedValue, class Policy = bool_policies<decltype(ExpectedValue)>>
-struct literal_bool_parser : parser<>
+struct literal_bool_parser : parser<literal_bool_parser<ExpectedValue, Policy>>
 {
     using T = decltype(ExpectedValue);
     static_assert(requires { static_cast<bool>(ExpectedValue); });
