@@ -22,8 +22,10 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct expect_directive : proxy_parser<Subject, expect_directive<Subject>>
+struct expect_directive : proxy_parser<expect_directive<Subject>, Subject>
 {
+    using proxy_parser<expect_directive, Subject>::proxy_parser;
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -55,7 +57,7 @@ struct expect_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<expect_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return {as_parser(std::forward<Subject>(subject))};
+        return expect_directive<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
     }
 };
 

@@ -11,7 +11,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/unused.hpp>
@@ -49,8 +50,8 @@ namespace iris::x4 {
 
 namespace detail {
 
-template<class Derived, bool IsShared, class Encoding, class T, class Lookup>
-struct symbols_parser_impl : parser<Derived>
+template<bool IsShared, class Encoding, class T, class Lookup>
+struct symbols_parser_impl : parser<symbols_parser_impl<IsShared, Encoding, T, Lookup>>
 {
     static_assert(!std::is_same_v<T, unused_container_type>, "symbols parser with `unused_container_type` is not supported");
 
@@ -331,9 +332,9 @@ private:
 
 template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct shared_symbols_parser
-    : detail::symbols_parser_impl<shared_symbols_parser<Encoding, T, Lookup>, true, Encoding, T, Lookup>
+    : detail::symbols_parser_impl<true, Encoding, T, Lookup>
 {
-    using base_type = detail::symbols_parser_impl<shared_symbols_parser<Encoding, T, Lookup>, true, Encoding, T, Lookup>;
+    using base_type = detail::symbols_parser_impl<true, Encoding, T, Lookup>;
     using base_type::base_type;
     using base_type::operator=;
 };
@@ -349,9 +350,9 @@ symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
 
 template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
 struct unique_symbols_parser
-    : detail::symbols_parser_impl<unique_symbols_parser<Encoding, T, Lookup>, false, Encoding, T, Lookup>
+    : detail::symbols_parser_impl<false, Encoding, T, Lookup>
 {
-    using base_type = detail::symbols_parser_impl<unique_symbols_parser<Encoding, T, Lookup>, false, Encoding, T, Lookup>;
+    using base_type = detail::symbols_parser_impl<false, Encoding, T, Lookup>;
     using base_type::base_type;
     using base_type::operator=;
 };

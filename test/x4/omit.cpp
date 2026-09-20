@@ -14,7 +14,7 @@
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
 #include <iris/alloy/tuple.hpp>

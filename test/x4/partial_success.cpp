@@ -11,7 +11,7 @@
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/directive/omit.hpp>
@@ -243,8 +243,8 @@ TEST_CASE("partial success (list-like)")
     using x4::char_encoding::standard;
 
     using x4::standard::char_;
-    using x4::standard::string;
-    using x4::standard::lit;
+    using x4::lit;
+    using x4::string;
     using x4::repeat;
 
     constexpr auto a = char_('a');
@@ -354,7 +354,7 @@ TEST_CASE("partial success (list-like)")
         using Subject = x4::sequence<
             x4::sequence<
                 x4::literal_char<standard>,
-                x4::literal_string<std::string_view, standard>
+                x4::literal_string<std::array<char, 2>, standard>
             >,
             x4::literal_char<standard>
         >;

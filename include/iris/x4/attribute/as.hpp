@@ -47,7 +47,7 @@ struct as_type_parser_ctx_impl<true, Context, OuterAttr>
 // to be `T`. When `T` is `unused_type`, this is equivalent to
 // `omit_directive`.
 template<X4Attribute T, class Subject>
-struct as_type_parser : unary_parser<Subject, as_type_parser<T, Subject>>
+struct as_type_parser : unary_parser<as_type_parser<T, Subject>, Subject>
 {
     static_assert(!std::is_const_v<T>); // Forbid const `unused_type`
     static_assert(!std::same_as<T, unused_container_type>); // Unknown use case, not supported for now
@@ -64,6 +64,8 @@ struct as_type_parser : unary_parser<Subject, as_type_parser<T, Subject>>
     // because `as_type_parser` is an atomic parser. The default implementation of
     // `parser_traits<as_type_parser<...>>::handles_container` must transparently
     // handle this case.
+
+    using unary_parser<as_type_parser, Subject>::unary_parser;
 
 private:
     template<X4Attribute Attr>
@@ -151,7 +153,7 @@ struct as_fn
     operator()(Subject&& subject)
         noexcept(is_parser_nothrow_constructible_v<as_type_parser<T, as_parser_plain_t<Subject>>, Subject>)
     {
-        return {std::forward<Subject>(subject)};
+        return as_type_parser<T, as_parser_plain_t<Subject>>{std::forward<Subject>(subject)};
     }
 };
 

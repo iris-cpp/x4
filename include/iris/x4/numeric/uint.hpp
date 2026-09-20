@@ -15,7 +15,6 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/numeric/utils/extract_int.hpp>
 
-#include <concepts>
 #include <iterator>
 #include <cstdint>
 

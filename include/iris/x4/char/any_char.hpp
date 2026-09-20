@@ -10,19 +10,18 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/char_traits.hpp>
 #include <iris/x4/char/literal_char.hpp>
 #include <iris/x4/char/char_set.hpp>
 
 namespace iris::x4 {
 
 template<class Encoding>
-struct any_char : char_parser<Encoding, any_char<Encoding>>
+struct any_char : char_parser<any_char<Encoding>, Encoding>
 {
     using encoding_type = Encoding;
-    using attribute_type = typename Encoding::char_type;
-    using char_type = typename Encoding::char_type;
-    using classify_type = typename Encoding::classify_type;
+    using attribute_type = Encoding::char_type;
+    using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
 
     static constexpr bool has_attribute = true;
 
@@ -33,9 +32,6 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
         return encoding_type::ischar(classify_ch);
     }
 
-    static constexpr void
-    test(auto, auto const& /* ctx */) = delete; // Mixing incompatible char types is not allowed
-
     template<std::same_as<char_type> CharT>
     [[nodiscard]] static constexpr literal_char<Encoding>
     operator()(CharT ch) noexcept
@@ -43,25 +39,20 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
         return {ch};
     }
 
-    template<CharIncompatibleWith<char_type> CharT>
-    static constexpr void operator()(CharT) = delete; // Mixing incompatible char types is not allowed
-
+    template<std::same_as<char_type> CharT>
     [[nodiscard]] static constexpr literal_char<Encoding>
-    operator()(char_type const (&ch)[2]) noexcept
+    operator()(CharT const (&ch)[2]) noexcept
     {
         return {ch[0]};
     }
 
-    template<std::size_t N>
+    template<std::same_as<char_type> CharT, std::size_t N>
     [[nodiscard]] static constexpr char_set<Encoding>
-    operator()(char_type const (&ch)[N])
+    operator()(CharT const (&ch)[N])
     {
+        static_assert(N >= 3);
         return char_set<Encoding>{ch};
     }
-
-    template<CharIncompatibleWith<char_type> CharT, std::size_t N>
-    static constexpr void
-    operator()(CharT const (&)[N]) = delete; // Mixing incompatible char types is not allowed
 
     template<std::same_as<char_type> CharT>
     [[nodiscard]] static constexpr char_range<Encoding>
@@ -69,10 +60,6 @@ struct any_char : char_parser<Encoding, any_char<Encoding>>
     {
         return {from, to};
     }
-
-    template<class From, class To>
-        requires CharIncompatibleWith<From, char_type> || CharIncompatibleWith<To, char_type>
-    static constexpr void operator()(From, To) = delete; // Mixing incompatible char types is not allowed
 
     template<class From, std::size_t FromN, class To, std::size_t ToN>
     static constexpr void

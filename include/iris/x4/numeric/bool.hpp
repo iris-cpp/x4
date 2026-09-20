@@ -28,7 +28,6 @@
 
 namespace iris::x4 {
 
-//  Default boolean policies
 template<class T = bool>
 struct bool_policies
 {
@@ -70,10 +69,6 @@ struct bool_parser : parser<bool_parser<T, Policy>>
 
     static constexpr bool has_attribute = true;
 
-    constexpr bool_parser() = default;
-
-    constexpr bool_parser(Policy const&) = delete; // Policy should be stateless
-
     // Attribute is `T` or `unused_type`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class U>
         requires
@@ -111,7 +106,6 @@ struct bool_parser : parser<bool_parser<T, Policy>>
     {
         static_assert(X4NonUnusedAttribute<Attr>);
 
-        // this case is called when Attribute is not T
         T attr_{};
         if (bool_parser::parse(first, last, ctx, attr_)) {
             x4::move_to(std::move(attr_), attr);
@@ -126,27 +120,17 @@ struct bool_parser : parser<bool_parser<T, Policy>>
     }
 };
 
-template<class T, class Policy = bool_policies<T>>
-struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
+template<auto ExpectedValue, class Policy = bool_policies<decltype(ExpectedValue)>>
+struct literal_bool_parser : parser<literal_bool_parser<ExpectedValue, Policy>>
 {
+    using T = decltype(ExpectedValue);
+    static_assert(requires { static_cast<bool>(ExpectedValue); });
     static_assert(X4Attribute<T>);
     static_assert(std::default_initializable<T>);
 
     using attribute_type = T;
 
     static constexpr bool has_attribute = true;
-
-    template<class U>
-        requires
-            (!std::is_same_v<std::remove_cvref_t<U>, literal_bool_parser>) &&
-            std::is_constructible_v<T, U>
-    constexpr explicit literal_bool_parser(U&& expected_bool)
-        noexcept(std::is_nothrow_constructible_v<T, U>)
-        : expected_bool_(std::forward<U>(expected_bool))
-    {}
-
-    template<class U>
-    constexpr literal_bool_parser(U&&, Policy const&) = delete; // Policy should be stateless
 
     // Attribute is `T` or `unused_type`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class U>
@@ -166,8 +150,8 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
         x4::skip_over(it, last, ctx);
 
         auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
-        bool const ok = (expected_bool_ && Policy::parse_true(it, last, attr, compare))
-            || (!expected_bool_ && Policy::parse_false(it, last, attr, compare));
+        bool const ok = (static_cast<bool>(ExpectedValue) && Policy::parse_true(it, last, attr, compare))
+            || (!static_cast<bool>(ExpectedValue) && Policy::parse_false(it, last, attr, compare));
 
         if (ok) first = it;
         return ok;
@@ -196,18 +180,15 @@ struct literal_bool_parser : parser<literal_bool_parser<T, Policy>>
 
     [[nodiscard]] std::string get_x4_info() const
     {
-        return expected_bool_ ? "`true`" : "`false`";
+        return static_cast<bool>(ExpectedValue) ? "`true`" : "`false`";
     }
-
-private:
-    T expected_bool_; // TODO: remove this runtime param; make this CTP
 };
 
 namespace parsers {
 
 [[maybe_unused]] inline constexpr bool_parser<bool> bool_{};
-[[maybe_unused]] inline constexpr literal_bool_parser<bool> true_{true};
-[[maybe_unused]] inline constexpr literal_bool_parser<bool> false_{false};
+[[maybe_unused]] inline constexpr literal_bool_parser<true> true_{};
+[[maybe_unused]] inline constexpr literal_bool_parser<false> false_{};
 
 } // parsers
 

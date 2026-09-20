@@ -20,7 +20,7 @@
 #include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
-#include <iris/rvariant/rvariant.hpp>
+#include <iris/rvariant/rvariant.hpp> // IWYU pragma: keep
 
 #include <format>
 #include <concepts>
@@ -52,7 +52,7 @@ struct alternative_attribute_impl<false, Left, Right>
 } // detail
 
 template<class Left, class Right>
-struct alternative : binary_parser<Left, Right, alternative<Left, Right>>
+struct alternative : binary_parser<alternative<Left, Right>, Left, Right>
 {
 private:
     static constexpr bool is_both_same_attribute = std::is_same_v<
@@ -95,7 +95,7 @@ private:
     >;
 
 public:
-    using binary_parser<Left, Right, alternative>::binary_parser;
+    using binary_parser<alternative, Left, Right>::binary_parser;
 
     // unused_type attribute
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>

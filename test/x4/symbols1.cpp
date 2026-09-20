@@ -9,26 +9,10 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/symbols.hpp>
 #include <iris/x4/directive/no_case.hpp>
 #include <iris/x4/operator/sequence.hpp>
-
-namespace {
-
-// Custom string type with a C-style string conversion.
-struct custom_string_c
-{
-    custom_string_c(char c) { str[0] = c; str[1] = '\0'; }
-
-    operator char*() { return str; }
-    operator char const*() const { return str; }
-
-private:
-    char str[2];
-};
-
-} // anonymous
 
 TEST_CASE("symbols1")
 {

@@ -9,13 +9,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/traits/can_hold.hpp>
 
+#include <concepts>
 #include <type_traits>
 
-#include <cstddef>
+#include <cstddef> // IWYU pragma: keep
 
 // If a user-provided program declares an explicit or partial
 // specialization of any entity defined in this header, the
@@ -65,8 +66,8 @@ struct get_handles_container<Parser, Container>
 
 template<class Parser>
 struct has_attribute : std::bool_constant<
-    !std::is_same_v<typename detail::get_attribute_type<Parser>::type, unused_type> &&
-    !std::is_same_v<typename detail::get_attribute_type<Parser>::type, unused_container_type>
+    !std::same_as<typename detail::get_attribute_type<Parser>::type, unused_type> &&
+    !std::same_as<typename detail::get_attribute_type<Parser>::type, unused_container_type>
 >
 {};
 

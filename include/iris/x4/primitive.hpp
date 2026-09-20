@@ -12,8 +12,9 @@
 ==============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/x4/primitive/eoi.hpp>
-#include <iris/x4/primitive/eol.hpp>
-#include <iris/x4/primitive/eps.hpp>
+
+#include <iris/x4/primitive/eoi.hpp> // IWYU pragma: export
+#include <iris/x4/primitive/eol.hpp> // IWYU pragma: export
+#include <iris/x4/primitive/eps.hpp> // IWYU pragma: export
 
 #endif

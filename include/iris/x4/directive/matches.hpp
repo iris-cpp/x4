@@ -24,11 +24,13 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct matches_directive : unary_parser<Subject, matches_directive<Subject>>
+struct matches_directive : unary_parser<matches_directive<Subject>, Subject>
 {
     using attribute_type = bool;
 
     static constexpr bool has_attribute = true;
+
+    using unary_parser<matches_directive, Subject>::unary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -58,7 +60,7 @@ struct matches_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<matches_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return {as_parser(std::forward<Subject>(subject))};
+        return matches_directive<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
     }
 };
 
