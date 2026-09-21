@@ -289,7 +289,7 @@ struct parse_into_container_impl<sequence<Left, Right>>
     {
         if constexpr (traits::is_container_v<Attr>) {
             constexpr bool sequence_attribute_can_directly_hold_value_type = traits::can_hold<
-                typename sequence<Left, Right>::attribute_type,
+                typename parser_traits<sequence<Left, Right>>::attribute_type,
                 typename traits::container_value<Attr>::type
             >::value;
             if constexpr (sequence_attribute_can_directly_hold_value_type) {

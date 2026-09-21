@@ -265,7 +265,7 @@ TEST_CASE("partial success (list-like)")
             x4::literal_char<standard>
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
-        STATIC_CHECK(std::same_as<Subject::attribute_type, alloy::tuple<char, char, char>>);
+        STATIC_CHECK(std::same_as<x4::parser_traits<Subject>::attribute_type, alloy::tuple<char, char, char>>);
         STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, char, char>>::value);
 
         using Container = std::string;
@@ -359,7 +359,7 @@ TEST_CASE("partial success (list-like)")
             x4::literal_char<standard>
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(aOOc)>, Subject>);
-        STATIC_CHECK(std::same_as<Subject::attribute_type, alloy::tuple<char, std::string, char>>);
+        STATIC_CHECK(std::same_as<x4::parser_traits<Subject>::attribute_type, alloy::tuple<char, std::string, char>>);
         STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, std::string, char>>::value);
 
         using Container = std::string;

@@ -32,6 +32,9 @@
 
 namespace iris::x4 {
 
+template<class Left, class Right>
+struct sequence;
+
 namespace detail {
 
 template<traits::X4Container Container, class Elem>
@@ -42,7 +45,7 @@ template<traits::X4Container Container, class Elem>
     requires
         (!std::same_as<Container, Elem>) &&
         (!traits::X4Container<Elem>) &&
-        requires (Container& c, Elem&& elem) {
+        requires(Container& c, Elem&& elem) {
             traits::push_back(c, std::move(elem));
         }
 struct container_can_hold_element<Container, Elem>
@@ -53,7 +56,7 @@ template<traits::X4Container Container, class ContainerElem>
     requires
         (!std::same_as<Container, ContainerElem>) &&
         traits::X4Container<ContainerElem> &&
-        requires (Container& c, ContainerElem&& container_elem) {
+        requires(Container& c, ContainerElem&& container_elem) {
             x4::move_to(
                 std::make_move_iterator(traits::begin(container_elem)),
                 std::make_move_iterator(traits::end(container_elem)),
@@ -74,24 +77,37 @@ struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
     : std::conjunction<container_can_hold_element<Container, Ts>...>
 {};
 
+template<class Left, class Right>
+struct get_attribute_type<sequence<Left, Right>>
+{
+    using type = traits::detail::attribute_of_sequence<Left, Right>::type;
+};
+
+template<class Left, class Right>
+struct get_sequence_size<sequence<Left, Right>>
+{
+    static constexpr std::size_t value = parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
+};
+
+template<class Left, class Right, class Container>
+struct get_handles_container<sequence<Left, Right>, Container>
+{
+    static constexpr bool value =
+        (
+            parser_traits<Left>::template handles_container<Container> &&
+            parser_traits<Right>::template handles_container<Container>
+        ) ||
+        container_can_hold_sequence<
+            Container,
+            typename parser_traits<sequence<Left, Right>>::attribute_type
+        >::value;
+};
+
 } // detail
 
 template<class Left, class Right>
 struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
 {
-    using attribute_type = traits::detail::attribute_of_sequence<Left, Right>::type;
-
-    static constexpr std::size_t sequence_size =
-        parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
-
-    template<traits::X4Container Container>
-    static constexpr bool handles_container =
-        (
-            parser_traits<Left>::template handles_container<Container> &&
-            parser_traits<Right>::template handles_container<Container>
-        ) ||
-        detail::container_can_hold_sequence<Container, attribute_type>::value;
-
     using binary_parser<sequence, Left, Right>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
