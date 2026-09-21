@@ -66,7 +66,7 @@ struct parse_into_container_impl_default
     static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr)
         // never noexcept (requires container insertion)
     {
-        using unwrapped_attribute_type = iris::unwrap_recursive_type<Attr>;
+        using unwrapped_attribute_type = iris::unwrap_recursive_t<Attr>;
         auto& unwrapped_attr = iris::unwrap_recursive(attr);
 
         if constexpr (traits::is_container_v<unwrapped_attribute_type>) { // Attr is a container

@@ -13,6 +13,7 @@ endif()
 
 project(iris_x4 VERSION 1.0.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 # -----------------------------------------------------------------
 # Load Iris
