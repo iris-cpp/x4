@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/char_traits.hpp>
 
@@ -19,7 +19,7 @@
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/variant_traits.hpp>
 
-#include <iris/alloy/tuple.hpp>
+#include <iris/alloy/tuple.hpp> // IWYU pragma: keep
 #include <iris/alloy/utility.hpp>
 
 #include <iterator>
@@ -265,7 +265,7 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::constructible_from<typename traits::container_value<Dest>::type, Source>) {
+    if constexpr (std::is_constructible_v<typename traits::container_value<Dest>::type, Source>) {
         traits::push_back(dest, std::forward<Source>(src));
     } else {
         if constexpr (std::is_rvalue_reference_v<Source&&>) {
@@ -287,11 +287,6 @@ move_to(Source&& src, Dest& dest)
 
     x4::move_to(std::forward<Source>(src), alloy::get<0>(dest));
 }
-
-template<class Source, class Dest>
-concept X4Movable = requires {
-    x4::move_to(std::declval<Source>(), std::declval<Dest&>());
-};
 
 } // iris::x4
 

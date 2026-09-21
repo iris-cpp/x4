@@ -33,7 +33,6 @@ struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
 {
     static_assert(X4Attribute<T>);
     static_assert(!X4UnusedAttribute<T>, "fixed_value_parser with `unused_type` is meaningless");
-    static_assert(X4Movable<HeldValueT const&, T>);
 
     // `HeldValueT` is almost always equal to `T`.
     //

@@ -66,7 +66,7 @@ struct parser
     static constexpr bool requires_exact_attribute_type = false;
 
     template<class Self, class Action>
-        requires std::constructible_from<
+        requires std::is_constructible_v<
             action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
             Self, Action
         >
@@ -82,7 +82,7 @@ struct parser
     }
 
     template<class Self, class Action>
-        requires std::constructible_from<
+        requires std::is_constructible_v<
             action<std::remove_cvref_t<Self>, std::remove_cvref_t<Action>>,
             Self, Action
         >

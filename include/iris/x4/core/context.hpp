@@ -117,7 +117,7 @@ concept ContextNextType =
             !std::is_lvalue_reference_v<Next> &&
             !std::is_rvalue_reference_v<Next> &&
             !std::is_const_v<Next> &&
-            std::move_constructible<Next>
+            std::is_move_constructible_v<Next>
         )
     );
 
