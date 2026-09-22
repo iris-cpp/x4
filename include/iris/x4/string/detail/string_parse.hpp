@@ -35,25 +35,28 @@ string_parse(
     static_assert(!std::is_array_v<StrR>);
     using CharT = std::ranges::range_value_t<StrR>;
 
-    using synthesized_value_type = traits::synthesized_value_t<Attr>;
-    static_assert(std::same_as<traits::attribute_category_t<synthesized_value_type>, traits::container_attr>);
-    using value_type = traits::container_value<synthesized_value_type>::type;
-    static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
-    static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
+    if constexpr (traits::is_single_element_tuple_like<Attr>::value) {
+        return detail::string_parse(str, first, last, traits::do_unwrap_if_single_element_tuple_like(attr), compare);
+    } else {
+        static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
+        using value_type = traits::container_value<Attr>::type;
+        static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
-    It it = first;
-    auto stri = std::ranges::begin(str);
-    auto str_last = std::ranges::end(str);
+        It it = first;
+        auto stri = std::ranges::begin(str);
+        auto str_last = std::ranges::end(str);
 
-    for (; stri != str_last; ++stri, ++it) {
-        if (it == last || compare(*stri, *it) != 0) {
-            return false;
+        for (; stri != str_last; ++stri, ++it) {
+            if (it == last || compare(*stri, *it) != 0) {
+                return false;
+            }
         }
-    }
 
-    x4::move_to(first, it, attr);
-    first = it;
-    return true;
+        x4::move_to(first, it, attr);
+        first = it;
+        return true;
+    }
 }
 
 template<std::ranges::forward_range StrR, std::forward_iterator It, std::sentinel_for<It> Se, class CaseCompareFunc>
@@ -83,25 +86,28 @@ string_parse(
     It& first, Se const& last, Attr& attr
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
-    using synthesized_value_type = traits::synthesized_value_t<Attr>;
-    static_assert(std::same_as<traits::attribute_category_t<synthesized_value_type>, traits::container_attr>);
-    using value_type = traits::container_value<synthesized_value_type>::type;
-    static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
-    static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
+    if constexpr (traits::is_single_element_tuple_like<Attr>::value) {
+        return detail::string_parse(ucstr, lcstr, first, last, traits::do_unwrap_if_single_element_tuple_like(attr));
+    } else {
+        static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
+        using value_type = traits::container_value<Attr>::type;
+        static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
-    auto uc_it = ucstr.begin();
-    auto uc_last = ucstr.end();
-    auto lc_it = lcstr.begin();
-    It it = first;
+        auto uc_it = ucstr.begin();
+        auto uc_last = ucstr.end();
+        auto lc_it = lcstr.begin();
+        It it = first;
 
-    for (; uc_it != uc_last; ++uc_it, ++lc_it, ++it) {
-        if (it == last || (*uc_it != *it && *lc_it != *it)) {
-            return false;
+        for (; uc_it != uc_last; ++uc_it, ++lc_it, ++it) {
+            if (it == last || (*uc_it != *it && *lc_it != *it)) {
+                return false;
+            }
         }
+        x4::move_to(first, it, attr);
+        first = it;
+        return true;
     }
-    x4::move_to(first, it, attr);
-    first = it;
-    return true;
 }
 
 template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>

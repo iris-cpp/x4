@@ -14,9 +14,11 @@
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/numeric/int.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <string_view>
+#include <tuple>
 
 #include <climits>
 #include <cstdint>
@@ -233,7 +235,7 @@ TEST_CASE("int")
 
     // single-element tuple tests
     {
-        alloy::tuple<int> i{};
+        std::tuple<int> i{};
 
         REQUIRE(parse("-123456", int_, i));
         CHECK(alloy::get<0>(i) == -123456);

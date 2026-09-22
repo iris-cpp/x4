@@ -21,9 +21,9 @@
 
 #include <iris/alloy/tuple.hpp>
 
+#include <iostream>
 #include <iterator>
 #include <string>
-#include <iostream>
 
 namespace {
 
@@ -170,9 +170,10 @@ TEST_CASE("rule4")
 
     // test handling of single element tuple
     {
-        auto r = rule<class r_id, alloy::tuple<int>>{} = int_;
+        using attr_type = x4_test::single_element_struct<int>;
+        auto r = rule<class r_id, attr_type>{} = int_;
 
-        alloy::tuple<int> v(0);
+        attr_type v(0);
         REQUIRE(parse("1", r, v));
         CHECK(alloy::get<0>(v) == 1);
     }

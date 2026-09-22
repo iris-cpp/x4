@@ -16,9 +16,11 @@
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <string>
+#include <tuple>
 
 TEST_CASE("lit")
 {
@@ -133,7 +135,7 @@ TEST_CASE("lit")
 
     {
         // single-element tuple tests
-        alloy::tuple<std::string> s;
+        std::tuple<std::string> s;
         REQUIRE(parse("kimpo", x4::string("kimpo"), s));
         CHECK(alloy::get<0>(s) == "kimpo");
     }

@@ -18,9 +18,11 @@
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/plus.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 TEST_CASE("plus")
@@ -114,7 +116,7 @@ TEST_CASE("plus")
 
     // single-element tuple tests
     {
-        alloy::tuple<std::string> fs;
+        std::tuple<std::string> fs;
         REQUIRE(parse("12345", +char_, fs));
         CHECK(alloy::get<0>(fs) == "12345");
     }

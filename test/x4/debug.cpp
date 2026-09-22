@@ -20,13 +20,16 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 
+#include <iris/alloy/adapted/std_tuple.hpp>
 #include <iris/alloy/tuple.hpp>
 
-#include <iterator>
-#include <vector>
-#include <string>
-#include <cstring>
 #include <iostream>
+#include <iterator>
+#include <string>
+#include <tuple>
+#include <vector>
+
+#include <cstring>
 
 namespace {
 
@@ -112,7 +115,7 @@ TEST_CASE("debug")
     {
         // std::container attributes
 
-        using tpl = alloy::tuple<int, char>;
+        using tpl = std::tuple<int, char>;
         rule<class start, std::vector<tpl>> start("start");
         auto start_def = start = *(int_ >> alpha);
 
