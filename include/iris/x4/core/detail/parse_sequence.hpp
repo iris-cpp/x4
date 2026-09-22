@@ -208,9 +208,9 @@ parse_sequence(Parser const& parser, It& first, Se const& last, Context const& c
 // parser produces. When it is NOT, each sub-parser must decide individually
 // whether to append (e.g. an optional sub-parser skips appending on no-match).
 //
-// e.g. sequence_attr = char,            container_value = char            → false (same type, direct path OK)
-// e.g. sequence_attr = optional<char>,  container_value = char            → true  (optional may be empty; needs appender)
-// e.g. sequence_attr = optional<char>,  container_value = optional<char>  → false (same type, direct path OK)
+// e.g. sequence attribute = char,            container value = char            -> false (direct path)
+// e.g. sequence attribute = optional<char>,  container value = char            -> true  (needs appender)
+// e.g. sequence attribute = optional<char>,  container value = optional<char>  -> false (direct path)
 template<class Sequence, class Attr>
 struct sequence_needs_appender : std::false_type {};
 
