@@ -338,7 +338,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> expect[','] >> int_).parse(first, input.end(), ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because attribute is a container
+        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
 
     {
@@ -361,7 +361,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE(lexeme[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because attribute is a container
+        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
 
     {
@@ -415,7 +415,7 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE(no_case[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because attribute is a container
+        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
 
     {
@@ -596,7 +596,7 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> eps(false) >> int_).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{}); // sequence parser has NO side effect because LHS is `sequence<int_, eps(false)>`, which does not move the result until `eps(false)` is evaluated
+        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
     {
         constexpr auto input = " 42,43"sv;

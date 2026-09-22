@@ -21,14 +21,19 @@ namespace iris::x4::traits {
 
 namespace detail {
 
-template<class TTypeList, class UTypeList>
+template<class... Lists>
 struct concat_type_list;
 
-template<class... Ts, class... Us>
-struct concat_type_list<type_list<Ts...>, type_list<Us...>>
+template<class... Ts>
+struct concat_type_list<type_list<Ts...>>
 {
-    using type = type_list<Ts..., Us...>;
+    using type = type_list<Ts...>;
 };
+
+template<class... Ts, class... Us, class... Rest>
+struct concat_type_list<type_list<Ts...>, type_list<Us...>, Rest...>
+    : concat_type_list<type_list<Ts..., Us...>, Rest...>
+{};
 
 #if 0
 #define IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(postfix, tmpl) \
@@ -66,12 +71,11 @@ struct concat_type_list<type_list<Ts...>, type_list<Us...>>
         using type = tmpl<T0, T1, Ts...>; \
     }; \
     \
-    template<class LeftParser, class RightParser> \
+    template<class... Ps> \
     struct attribute_of_##postfix { \
         using type = detail::from_type_list_##postfix< \
             typename detail::concat_type_list< \
-                typename detail::to_type_list_##postfix<typename parser_traits<LeftParser>::attribute_type>::type, \
-                typename detail::to_type_list_##postfix<typename parser_traits<RightParser>::attribute_type>::type \
+                typename detail::to_type_list_##postfix<typename parser_traits<Ps>::attribute_type>::type... \
             >::type \
         >::type; \
     };
@@ -83,24 +87,26 @@ struct concat_type_list<type_list<Ts...>, type_list<Us...>>
 // Code style is kept as-is.
 //
 
-// IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(sequence, alloy::tuple)
+//IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(sequence, alloy::tuple)
 template<class T> struct to_type_list_sequence {
     using type = type_list<T>;
 }; template<> struct to_type_list_sequence<unused_type> {
     using type = type_list<>;
 }; template<class... Ts> struct to_type_list_sequence<alloy::tuple<Ts...>> {
     using type = type_list<Ts...>;
-}; template<class TypeList> struct from_type_list_sequence {}; template<> struct from_type_list_sequence<type_list<>> {
+}; template<class TypeList> struct from_type_list_sequence {
+}; template<> struct from_type_list_sequence<type_list<>> {
     using type = unused_type;
 }; template<class T> struct from_type_list_sequence<type_list<T>> {
     using type = T;
 }; template<class T0, class T1, class... Ts> struct from_type_list_sequence<type_list<T0, T1, Ts...>> {
     using type = alloy::tuple<T0, T1, Ts...>;
-}; template<class LeftParser, class RightParser> struct attribute_of_sequence {
-    using type = detail::from_type_list_sequence< typename detail::concat_type_list< typename detail::to_type_list_sequence<typename parser_traits<LeftParser>::attribute_type>::type, typename detail::to_type_list_sequence<typename parser_traits<RightParser>::attribute_type>::type >::type >::type;
+}; template<class... Ps> struct attribute_of_sequence {
+    using type = detail::from_type_list_sequence< typename detail::concat_type_list< typename detail::to_type_list_sequence<typename parser_traits<Ps>::attribute_type>::type... >::type >::type;
 };
 
-// IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(alternative, rvariant)
+
+//IRIS_X4_TRAITS_DETAIL_DEFINE_TYPE_LIST_CONV(alternative, rvariant)
 template<class T> struct to_type_list_alternative {
     using type = type_list<T>;
 }; template<> struct to_type_list_alternative<unused_type> {

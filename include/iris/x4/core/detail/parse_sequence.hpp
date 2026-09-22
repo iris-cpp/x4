@@ -13,6 +13,8 @@
 #include <iris/config.hpp>
 
 #include <iris/x4/core/parser_traits.hpp>
+#include <iris/x4/core/multi_parser.hpp>
+#include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/x4/traits/attribute_category.hpp>
@@ -21,277 +23,207 @@
 #include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/alloy/tuple.hpp>
-#include <iris/alloy/utility.hpp>
 
+#include <array>
 #include <iterator>
 #include <type_traits>
-#include <concepts>
 #include <utility>
+
+#include <cstddef>
 
 namespace iris::x4 {
 
-template<class Left, class Right>
+template<class... Ps>
 struct sequence;
 
 } // iris::x4
 
 namespace iris::x4::detail {
 
-struct pass_sequence_attribute_unused
+template<class... Ps>
+struct sequence_layout
 {
-    using type = unused_type;
+    static constexpr std::size_t parser_count = sizeof...(Ps);
 
-    template<class T>
-    [[nodiscard]] static constexpr unused_type
-    call(T&) noexcept
+    static constexpr std::array<std::size_t, parser_count> elem_sequence_sizes{parser_traits<Ps>::sequence_size...};
+    static constexpr std::size_t total_sequence_size = (std::size_t{0} + ... + parser_traits<Ps>::sequence_size);
+
+    static constexpr std::array<std::size_t, parser_count> elem_offsets = [] {
+        std::array<std::size_t, parser_count> result{};
+        std::size_t offset = 0;
+        for (std::size_t i = 0; i < parser_count; ++i) {
+            result[i] = offset;
+            offset += elem_sequence_sizes[i];
+        }
+        return result;
+    }();
+
+    static constexpr std::size_t attributed_count = (std::size_t{0} + ... + std::size_t{has_attribute_v<Ps>});
+
+    static constexpr std::size_t single_attributed_index = [] {
+        std::array<bool, parser_count> const is_attributed{has_attribute_v<Ps>...};
+        for (std::size_t i = 0; i < parser_count; ++i) {
+            if (is_attributed[i]) return i;
+        }
+        return parser_count;
+    }();
+};
+
+template<class P>
+struct sequence_passes_view : std::false_type {};
+
+template<class... Ps>
+struct sequence_passes_view<sequence<Ps...>> : std::true_type {};
+
+template<class P>
+    requires requires { typename P::proxy_backend_type; }
+struct sequence_passes_view<P> : sequence_passes_view<typename P::proxy_backend_type> {};
+
+
+template<class Attr, class... Ps>
+struct parse_sequence_tuple
+{
+    using layout = sequence_layout<Ps...>;
+
+    template<std::size_t I, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    [[nodiscard]] static constexpr bool
+    parse_element(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
     {
-        return unused_type{};
+        using parser_type = multi_parser_t<I, Ps...>;
+        auto const& elem = x4::get_parser<I>(seq.elems);
+        constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
+        constexpr std::size_t offset = layout::elem_offsets[I];
+
+        if constexpr (layout::attributed_count == 1) {
+            if constexpr (I != layout::single_attributed_index) {
+                return elem.parse(first, last, ctx, unused);
+
+            } else if constexpr (traits::is_size_one_view_v<Attr> && !sequence_passes_view<parser_type>::value) {
+                auto&& elem_attr = x4::make_container_appender(alloy::get<0>(attr));
+                return elem.parse(first, last, ctx, elem_attr);
+
+            } else {
+                auto&& elem_attr = x4::make_container_appender(attr);
+                return elem.parse(first, last, ctx, elem_attr);
+            }
+
+        } else {
+            if constexpr (sequence_size == 0) {
+                return elem.parse(first, last, ctx, unused);
+
+            } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
+                auto&& elem_attr = x4::make_container_appender(alloy::get<offset>(attr));
+                return elem.parse(first, last, ctx, elem_attr);
+
+            } else {
+                auto slice = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+                    return alloy::tuple<alloy::tuple_element_t<offset + Is, Attr>&...>(
+                        alloy::get<offset + Is>(attr)...
+                    );
+                }(std::make_index_sequence<sequence_size>{});
+                return elem.parse(first, last, ctx, slice);
+            }
+        }
+    }
+
+    template<std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+    [[nodiscard]] static constexpr bool
+    parse_all(std::index_sequence<Is...>, sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
+    {
+        return (parse_sequence_tuple::parse_element<Is>(seq, first, last, ctx, attr) && ...);
     }
 };
 
-template<class Attr>
-struct pass_sequence_attribute_size_one_view
-{
-    using type = alloy::tuple_element_t<0, Attr>;
 
-    [[nodiscard]] static constexpr type
-    call(Attr& attribute)
-        noexcept(noexcept(alloy::get<0>(attribute)))
-    {
-        return alloy::get<0>(attribute);
-    }
-};
-
-template<class Attr>
-struct pass_through_sequence_attribute
-{
-    using type = Attr&;
-
-    template<class Attr_>
-    [[nodiscard]] static constexpr Attr_&
-    call(Attr_& attribute) noexcept
-    {
-        return attribute;
-    }
-};
-
-template<class Parser, class Attr>
-struct pass_sequence_attribute : std::conditional_t<
-    traits::is_size_one_view_v<Attr>,
-    pass_sequence_attribute_size_one_view<Attr>,
-    pass_through_sequence_attribute<Attr>
->
-{};
-
-template<class LParser, class RParser, class Attr>
-struct pass_sequence_attribute<sequence<LParser, RParser>, Attr>
-    : pass_through_sequence_attribute<Attr>
-{};
-
-template<class Parser, class Attr>
-    requires requires {
-        typename Parser::proxy_backend_type;
-    }
-struct pass_sequence_attribute<Parser, Attr>
-    : pass_sequence_attribute<typename Parser::proxy_backend_type, Attr>
-{};
-
-template<class LParser, class RParser, class Attr>
-struct partition_attribute {};
-
-template<class LParser, class RParser, traits::CategorizedAttr<traits::tuple_attr> Attr>
-    requires
-        has_attribute_v<LParser> &&
-        has_attribute_v<RParser>
-struct partition_attribute<LParser, RParser, Attr>
-{
-    static constexpr std::size_t l_size = parser_traits<LParser>::sequence_size;
-    static constexpr std::size_t r_size = parser_traits<RParser>::sequence_size;
-
-    static constexpr std::size_t actual_size = alloy::tuple_size_v<Attr>;
-    static constexpr std::size_t expected_size = l_size + r_size;
-
-    // If you got an error here, then you are trying to pass
-    // a tuple-like with the wrong number of elements
-    // as that expected by the (sequence) parser.
-    static_assert(
-        actual_size >= expected_size,
-        "Sequence size of the passed attribute is less than expected."
-    );
-    static_assert(
-        actual_size <= expected_size,
-        "Sequence size of the passed attribute is greater than expected."
-    );
-
-    using view = alloy::tuple_ref_t<Attr>;
-    using splitted = alloy::tuple_split_t<view, l_size, r_size>;
-    using l_part = alloy::tuple_element_t<0, splitted>;
-    using r_part = alloy::tuple_element_t<1, splitted>;
-    using l_pass = pass_sequence_attribute<LParser, l_part>;
-    using r_pass = pass_sequence_attribute<RParser, r_part>;
-
-    [[nodiscard]] static constexpr l_part left(Attr& s)
-        // TODO: noexcept
-    {
-        return alloy::get<0>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
-    }
-
-    [[nodiscard]] static constexpr r_part right(Attr& s)
-        // TODO: noexcept
-    {
-        return alloy::get<1>(alloy::tuple_split<l_size, r_size>(alloy::tuple_ref(s)));
-    }
-};
-
-template<class LParser, class RParser, class Attr>
-    requires
-        (!has_attribute_v<LParser>) &&
-        has_attribute_v<RParser>
-struct partition_attribute<LParser, RParser, Attr>
-{
-    using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute<RParser, Attr>;
-
-    [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
-    {
-        return unused;
-    }
-
-    [[nodiscard]] static constexpr Attr& right(Attr& s) noexcept
-    {
-        return s;
-    }
-};
-
-template<class LParser, class RParser, class Attr>
-    requires
-        has_attribute_v<LParser> &&
-        (!has_attribute_v<RParser>)
-struct partition_attribute<LParser, RParser, Attr>
-{
-    using l_pass = pass_sequence_attribute<LParser, Attr>;
-    using r_pass = pass_sequence_attribute_unused;
-
-    [[nodiscard]] static constexpr Attr& left(Attr& s) noexcept
-    {
-        return s;
-    }
-
-    [[nodiscard]] static constexpr unused_type right(Attr&) noexcept
-    {
-        return unused;
-    }
-};
-
-template<class LParser, class RParser, class Attr>
-    requires
-        (!has_attribute_v<LParser>) &&
-        (!has_attribute_v<RParser>)
-struct partition_attribute<LParser, RParser, Attr>
-{
-    using l_pass = pass_sequence_attribute_unused;
-    using r_pass = pass_sequence_attribute_unused;
-
-    [[nodiscard]] static constexpr unused_type left(Attr&) noexcept
-    {
-        return unused;
-    }
-
-    [[nodiscard]] static constexpr unused_type right(Attr&) noexcept
-    {
-        return unused;
-    }
-};
-
-// Default overload, no constraints on attribute category
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
+// Default overload; attribute is NOT a container
+template<class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
-parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
     static_assert(X4Attribute<Attr>);
+    static_assert(!traits::CategorizedAttr<Attr, traits::container_attr>);
 
-    using partition = partition_attribute<
-        typename Parser::left_type,
-        typename Parser::right_type,
-        Attr
-    >;
+    using layout = sequence_layout<Ps...>;
 
-    auto&& l_part = partition::left(attr);
-    auto&& r_part = partition::right(attr);
-    auto&& l_attr = partition::l_pass::call(l_part);
-    auto&& r_attr = partition::r_pass::call(r_part);
-
-    auto&& l_attr_appender = x4::make_container_appender(l_attr);
-    auto&& r_attr_appender = x4::make_container_appender(r_attr);
+    if constexpr (layout::attributed_count >= 2) {
+        static_assert(
+            traits::CategorizedAttr<Attr, traits::tuple_attr>,
+            "The attribute of a sequence with >=2 attributed elements must be tuple-like."
+        );
+        static_assert(
+            alloy::tuple_size_v<Attr> >= layout::total_sequence_size,
+            "Sequence size of the passed attribute is less than expected."
+        );
+        static_assert(
+            alloy::tuple_size_v<Attr> <= layout::total_sequence_size,
+            "Sequence size of the passed attribute is greater than expected."
+        );
+    }
 
     It local_it = first;
-    if (parser.left.parse(local_it, last, ctx, l_attr_appender) &&
-        parser.right.parse(local_it, last, ctx, r_attr_appender)
-    ) {
+    if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
         first = std::move(local_it);
         return true;
     }
-
     return false;
 }
 
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires (parser_traits<Parser>::sequence_size > 1)
-[[nodiscard]] constexpr bool
-parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-{
-    return parser.parse(first, last, ctx, attr);
-}
-
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires (parser_traits<Parser>::sequence_size <= 1)
-[[nodiscard]] constexpr bool
-parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-{
-    return detail::parse_into_container(parser, first, last, ctx, attr);
-}
-
+// Attribute is a container
 template<
-    class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
+    class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
     traits::CategorizedAttr<traits::container_attr> ContainerAttr
 >
 [[nodiscard]] constexpr bool
-parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
+parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
 {
     It local_it = first;
-    if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, container_attr) &&
-        detail::parse_sequence_impl(parser.right, local_it, last, ctx, container_attr)
-    ) {
+    bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) -> bool {
+        auto parse_sequence_impl = [&]<class P>(P const& parser) -> bool {
+            if constexpr (parser_traits<P>::sequence_size > 1) {
+                // Exposed attribute = container, Parser expects sequence attribute
+                return parser.parse(local_it, last, ctx, container_attr);
+
+            } else {
+                // Exposed attribute = container, Parser expects non-sequence attribute
+                return detail::parse_into_container(parser, local_it, last, ctx, container_attr);
+            }
+        };
+        return (parse_sequence_impl(x4::get_parser<Is>(seq.elems)) && ...);
+    }(std::index_sequence_for<Ps...>{});
+
+    if (ok) {
         first = std::move(local_it);
         return true;
     }
     return false;
 }
 
-template<class Left, class Right>
-struct parse_into_container_impl<sequence<Left, Right>>
+template<class... Ps>
+struct parse_into_container_impl<sequence<Ps...>>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] static constexpr bool
     call(
-        sequence<Left, Right> const& parser, It& first, Se const& last,
+        sequence<Ps...> const& seq, It& first, Se const& last,
         Context const& ctx, Attr& attr
     )
     {
         if constexpr (traits::is_container_v<Attr>) {
             constexpr bool sequence_attribute_can_directly_hold_value_type = traits::can_hold<
-                typename parser_traits<sequence<Left, Right>>::attribute_type,
+                typename parser_traits<sequence<Ps...>>::attribute_type,
                 typename traits::container_value<Attr>::type
             >::value;
+
             if constexpr (sequence_attribute_can_directly_hold_value_type) {
-                return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);
+                return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
 
             } else {
                 auto&& appender = x4::make_container_appender(x4::assume_container(attr));
-                return detail::parse_sequence(parser, first, last, ctx, appender);
+                return detail::parse_sequence(seq, first, last, ctx, appender);
             }
+
         } else {
-            return parse_into_container_impl_default<sequence<Left, Right>>::call(parser, first, last, ctx, attr);
+            return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
         }
     }
 };

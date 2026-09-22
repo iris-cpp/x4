@@ -13,7 +13,7 @@
 
 #include <iris/x4/core/detail/parse_sequence.hpp>
 #include <iris/x4/core/expectation.hpp>
-#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/multi_parser.hpp>
 #include <iris/x4/core/move_to.hpp>
 
 #include <iris/x4/traits/attribute_of_binary.hpp>
@@ -22,16 +22,20 @@
 #include <iris/x4/directive/expect.hpp>
 
 #include <iris/alloy/tuple.hpp>
-#include <iris/type_traits.hpp>
+
+#include <iris/bits/specialization_of.hpp>
 
 #include <concepts>
 #include <iterator>
+#include <string>
 #include <type_traits>
 #include <utility>
 
+#include <cstddef>
+
 namespace iris::x4 {
 
-template<class Left, class Right>
+template<class... Ps>
 struct sequence;
 
 namespace detail {
@@ -72,52 +76,48 @@ struct container_can_hold_sequence : container_can_hold_element<Container, Seque
 
 template<traits::X4Container Container, class... Ts>
 struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
-    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion here.
+    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion
     : std::conjunction<container_can_hold_element<Container, Ts>...>
 {};
 
-template<class Left, class Right>
-struct get_attribute_type<sequence<Left, Right>>
+template<class... Ps>
+struct get_attribute_type<sequence<Ps...>>
 {
-    using type = traits::detail::attribute_of_sequence<Left, Right>::type;
+    using type = traits::detail::attribute_of_sequence<Ps...>::type;
 };
 
-template<class Left, class Right>
-struct get_sequence_size<sequence<Left, Right>>
+template<class... Ps>
+struct get_sequence_size<sequence<Ps...>>
 {
-    static constexpr std::size_t value = parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
+    static constexpr std::size_t value = sequence_layout<Ps...>::total_sequence_size;
 };
 
-template<class Left, class Right, class Container>
-struct get_handles_container<sequence<Left, Right>, Container>
+template<class... Ps, class Container>
+struct get_handles_container<sequence<Ps...>, Container>
 {
     static constexpr bool value =
-        (
-            parser_traits<Left>::template handles_container<Container> &&
-            parser_traits<Right>::template handles_container<Container>
-        ) ||
+        (parser_traits<Ps>::template handles_container<Container> && ...) ||
         container_can_hold_sequence<
             Container,
-            typename parser_traits<sequence<Left, Right>>::attribute_type
+            typename parser_traits<sequence<Ps...>>::attribute_type
         >::value;
 };
 
 } // detail
 
-template<class Left, class Right>
-struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
+template<class... Ps>
+struct sequence : multi_parser<sequence<Ps...>, Ps...>
 {
-    using binary_parser<sequence, Left, Right>::binary_parser;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
     {
         It const first_saved = first;
 
-        if (this->left.parse(first, last, ctx, unused)
-            && this->right.parse(first, last, ctx, unused)
-        ) {
+        bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (x4::get_parser<Is>(this->elems).parse(first, last, ctx, unused) && ...);
+        }(std::index_sequence_for<Ps...>{});
+        if (ok) {
             return true;
         }
 
@@ -127,7 +127,6 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
                 return false;
             }
         }
-
         first = first_saved;
         return false;
     }
@@ -141,53 +140,93 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        if constexpr (iris::is_ttp_specialization_of_v<Right, expect_directive>) {
-            return get_info<Left>{}(this->left) + " > "
-                + get_info<typename Right::subject_type>{}(this->right.subject);
+        return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            std::string info;
+            ((info += this->template get_x4_element_info<Is>()), ...);
+            return info;
+        }(std::index_sequence_for<Ps...>{});
+    }
+
+private:
+    template<std::size_t I>
+    [[nodiscard]] constexpr std::string get_x4_element_info() const
+    {
+        using element_type = multi_parser_t<I, Ps...>;
+        auto const& elem = x4::get_parser<I>(this->elems);
+
+        if constexpr (I == 0) {
+            return get_info<element_type>{}(elem);
+
+        } else if constexpr (is_ttp_specialization_of_v<element_type, expect_directive>) {
+            return " > " + get_info<typename element_type::subject_type>{}(elem.subject);
+
         } else {
-            return get_info<Left>{}(this->left) + " >> "
-                + get_info<Right>{}(this->right);
+            return " >> " + get_info<element_type>{}(elem);
         }
     }
 };
 
+namespace detail {
+
+template<class... Ps, std::size_t... Is, class Right>
+[[nodiscard]] constexpr sequence<Ps..., Right>
+sequence_append_impl(std::index_sequence<Is...>, sequence<Ps...> const& left, Right right)
+{
+    return {{ {}, { {x4::get_parser<Is>(left.elems)}..., {std::move(right)} } }};
+}
+
+template<class... Ps, std::size_t... Is, class Right>
+[[nodiscard]] constexpr sequence<Ps..., Right>
+sequence_append_impl(std::index_sequence<Is...>, sequence<Ps...>&& left, Right right)
+{
+    return {{ {}, { {x4::get_parser<Is>(std::move(left).elems)}..., {std::move(right)} } }};
+}
+
+} // detail
+
 template<X4Subject Left, X4Subject Right>
+    requires (!is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>)
 [[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
 operator>>(Left&& left, Right&& right)
-    noexcept(
-        is_parser_nothrow_castable_v<Left> &&
-        is_parser_nothrow_castable_v<Right> &&
-        std::is_nothrow_constructible_v<
-            sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
-            as_parser_t<Left>,
-            as_parser_t<Right>
-        >
-    )
 {
-    return {as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right))};
+    return {{ {}, { {as_parser(std::forward<Left>(left))}, {as_parser(std::forward<Right>(right))} } }};
+}
+
+template<class Left, X4Subject Right>
+    requires is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>
+[[nodiscard]] constexpr auto
+operator>>(Left&& left, Right&& right)
+{
+    return detail::sequence_append_impl(
+        std::make_index_sequence<std::remove_cvref_t<Left>::element_count>{},
+        std::forward<Left>(left), as_parser(std::forward<Right>(right))
+    );
 }
 
 template<X4Subject Left, X4Subject Right>
+    requires (!is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>)
 [[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>
 operator>(Left&& left, Right&& right)
-    noexcept(
-        is_parser_nothrow_castable_v<Left> &&
-        is_parser_nothrow_castable_v<Right> &&
-        std::is_nothrow_constructible_v<
-            expect_directive<as_parser_plain_t<Right>>,
-            as_parser_t<Right>
-        > &&
-        std::is_nothrow_constructible_v<
-            sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>,
-            as_parser_t<Left>,
-            expect_directive<as_parser_plain_t<Right>>
-        >
-    )
 {
-    return {
-        as_parser(std::forward<Left>(left)),
+    return {{
+        {},
+        {
+            {as_parser(std::forward<Left>(left))},
+            {expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))}
+        }
+    }};
+}
+
+template<class Left, X4Subject Right>
+    requires is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>
+[[nodiscard]] constexpr auto
+operator>(Left&& left, Right&& right)
+{
+    return detail::sequence_append_impl(
+        std::make_index_sequence<std::remove_cvref_t<Left>::element_count>{},
+        std::forward<Left>(left),
         expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))
-    };
+    );
 }
 
 } // iris::x4

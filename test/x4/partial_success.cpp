@@ -258,10 +258,8 @@ TEST_CASE("partial success (list-like)")
     // abc ----------------------------------------------
     {
         using Subject = x4::sequence<
-            x4::sequence<
-                x4::literal_char<standard>,
-                x4::literal_char<standard>
-            >,
+            x4::literal_char<standard>,
+            x4::literal_char<standard>,
             x4::literal_char<standard>
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
@@ -352,10 +350,8 @@ TEST_CASE("partial success (list-like)")
     // aXXc ----------------------------------------------
     {
         using Subject = x4::sequence<
-            x4::sequence<
-                x4::literal_char<standard>,
-                x4::literal_string<std::array<char, 2>, standard>
-            >,
+            x4::literal_char<standard>,
+            x4::literal_string<std::array<char, 2>, standard>,
             x4::literal_char<standard>
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(aOOc)>, Subject>);

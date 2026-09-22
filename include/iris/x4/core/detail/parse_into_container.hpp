@@ -10,9 +10,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
@@ -87,7 +87,6 @@ struct parse_into_container_impl_default
                 // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {
-                //attr = nullptr;
                 static_assert(false, "[BUG] parse_into_container accepts a container, a variant of container or a single element tuple-like of container");
                 return false;
             }
