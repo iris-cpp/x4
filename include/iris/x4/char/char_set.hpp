@@ -11,12 +11,13 @@
 ==============================================================================*/
 
 #include <iris/x4/char/char_parser.hpp>
-#include <iris/x4/char/detail/cast_char.hpp>
 #include <iris/x4/char/detail/basic_chset.hpp>
 #include <iris/x4/string/case_compare.hpp>
+#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/unicode/string.hpp>
 
+#include <string_view>
 #include <format>
 #include <ranges>
 #include <type_traits>
@@ -25,9 +26,9 @@ namespace iris::x4 {
 
 // Parser for a character range
 template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
-struct char_range : char_parser<Encoding, char_range<Encoding, Attr>>
+struct char_range : char_parser<char_range<Encoding, Attr>, Encoding>
 {
-    using char_type = typename Encoding::char_type;
+    using char_type = Encoding::char_type;
     using encoding_type = Encoding;
     using attribute_type = Attr;
 
@@ -64,44 +65,37 @@ struct char_range : char_parser<Encoding, char_range<Encoding, Attr>>
 
 // Parser for a character set
 template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
-struct char_set : char_parser<Encoding, char_set<Encoding, Attr>>
+struct char_set : char_parser<char_set<Encoding, Attr>, Encoding>
 {
-    using char_type = typename Encoding::char_type;
+    using char_type = Encoding::char_type;
     using encoding_type = Encoding;
     using attribute_type = Attr;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
-    template<std::ranges::forward_range R>
-    constexpr explicit char_set(R const& str)
-        noexcept(detail::cast_char_noexcept<std::ranges::range_value_t<R>, char_type>)
+    constexpr explicit char_set(std::basic_string_view<char_type> const str)
+        // never noexcept; requires vector insertion
     {
-        static_assert(detail::cast_char_viable<std::ranges::range_value_t<R>, char_type>);
-
-        using detail::cast_char; // ADL introduction
-
         for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);) {
             auto const ch = *definition;
             auto next_definition = std::next(definition);
             if (next_definition == std::ranges::end(str)) {
-                chset.set(cast_char<char_type>(ch));
+                chset_.set(ch);
                 break;
             }
 
             auto next_ch = *next_definition;
-            if (next_ch == '-') {
+            if (next_ch == detail::char_tokens<char_type>::hyphen) {
                 next_definition = std::next(next_definition);
                 if (next_definition == std::ranges::end(str)) {
-                    chset.set(cast_char<char_type>(ch));
-                    chset.set('-');
+                    chset_.set(ch);
+                    chset_.set(detail::char_tokens<char_type>::hyphen);
                     break;
                 }
-                chset.set(
-                    cast_char<char_type>(ch),
-                    cast_char<char_type>(*next_definition)
-                );
+                chset_.set(ch, *next_definition);
+
             } else {
-                chset.set(cast_char<char_type>(ch));
+                chset_.set(ch);
             }
 
             definition = next_definition;
@@ -111,17 +105,18 @@ struct char_set : char_parser<Encoding, char_set<Encoding, Attr>>
     template<class Char, class Context>
     [[nodiscard]] constexpr bool test(Char ch_, Context const& ctx) const noexcept
     {
-        static_assert(noexcept(x4::get_case_compare<encoding_type>(ctx).in_set(ch_, chset)));
-        return x4::get_case_compare<encoding_type>(ctx).in_set(ch_, chset);
+        static_assert(noexcept(x4::get_case_compare<encoding_type>(ctx).in_set(ch_, chset_)));
+        return x4::get_case_compare<encoding_type>(ctx).in_set(ch_, chset_);
     }
-
-    detail::basic_chset<char_type> chset;
 
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape
         return "char-set"; // TODO: make more user-friendly
     }
+
+private:
+    detail::basic_chset<char_type> chset_;
 };
 
 } // iris::x4

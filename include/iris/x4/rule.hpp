@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
@@ -39,7 +39,7 @@
 
 namespace iris::x4 {
 
-template<class RuleID, X4Attribute Attr = unused_type, bool ForceAttribute = false>
+template<class RuleID, class RuleAttr = unused_type, bool ForceAttribute = false>
 struct rule;
 
 namespace detail {
@@ -322,7 +322,7 @@ public:
 template<class RuleID, X4Subject RHS, X4Attribute RuleDefAttr, bool ForceAttr, bool SkipDefinitionInjection = false>
 struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceAttr, SkipDefinitionInjection>>
 {
-    static_assert(!std::is_same_v<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
+    static_assert(!std::same_as<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
 
     using this_type = rule_definition;
     using id = RuleID;
@@ -337,7 +337,7 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
         requires std::is_constructible_v<RHS, RHS_T>
     constexpr rule_definition(RHS_T&& rhs, std::string_view name)
         noexcept(std::is_nothrow_constructible_v<RHS, RHS_T>)
-        : rhs(std::forward<RHS_T>(rhs))
+        : rhs_(std::forward<RHS_T>(rhs))
         , name(std::move(name))
     {}
 
@@ -348,11 +348,14 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     {
         return rule_impl<RuleID, attribute_type, SkipDefinitionInjection>
             ::template call_rule_definition<ForceAttr>(
-                rhs, name, first, last, ctx, attr
+                this->rhs_, this->name, first, last, ctx, attr
             );
     }
 
-    RHS rhs;
+private:
+    RHS rhs_;
+
+public:
     std::string_view name = "unnamed_rule";
 };
 
@@ -390,13 +393,12 @@ concept RuleAttrCompatible =
 
 } // detail
 
-template<class RuleID, X4Attribute RuleAttr, bool ForceAttr>
+template<class RuleID, class RuleAttr, bool ForceAttr>
 struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 {
-    static_assert(X4Attribute<RuleAttr>);
-    static_assert(X4UnusedAttribute<RuleAttr> || !std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
-    static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
-    static_assert(!is_ttp_specialization_of<RuleAttr, alloy::tuple>::value, "alloy::tuple is intended for internal use only");
+    // This type MUST be constructible with incomplete types.
+    // Do NOT add `static_assert`s or other constructs that cause eager
+    // instantiation of `RuleAttr` within this class body.
 
     using id = RuleID;
     using attribute_type = RuleAttr;
@@ -425,6 +427,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
         // never noexcept; requires very complex implementation details
     {
+        check_invariants();
         static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
 
         // Remove the `_rule_var` context. This makes the actual `context` type passed to
@@ -481,6 +484,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     parse(It& first, Se const& last, Context const& ctx, unused_type const&) const
         // never noexcept; requires very complex implementation details
     {
+        check_invariants();
         // make sure we pass exactly the rule attribute type
         attribute_type no_attr; // default-initialize
 
@@ -502,6 +506,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             >
         )
     {
+        check_invariants();
         return {as_parser(std::forward<RHS>(rhs)), name};
     }
 
@@ -516,6 +521,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             >
         )
     {
+        check_invariants();
         return {as_parser(std::forward<RHS>(rhs)), name};
     }
 
@@ -535,6 +541,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             >
         )
     {
+        check_invariants();
         return {as_parser(std::forward<RHS>(rhs)), name};
     }
 
@@ -549,7 +556,16 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             >
         )
     {
+        check_invariants();
         return {as_parser(std::forward<RHS>(rhs)), name};
+    }
+
+private:
+    static constexpr void check_invariants() noexcept
+    {
+        static_assert(X4Attribute<RuleAttr>);
+        static_assert(X4UnusedAttribute<RuleAttr> || !std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
+        static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
     }
 };
 

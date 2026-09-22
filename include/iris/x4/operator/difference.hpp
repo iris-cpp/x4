@@ -21,11 +21,11 @@
 namespace iris::x4 {
 
 template<class Left, class Right>
-struct difference : binary_parser<Left, Right, difference<Left, Right>>
+struct difference : binary_parser<difference<Left, Right>, Left, Right>
 {
     using attribute_type = parser_traits<Left>::attribute_type;
 
-    using binary_parser<Left, Right, difference>::binary_parser;
+    using binary_parser<difference, Left, Right>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool

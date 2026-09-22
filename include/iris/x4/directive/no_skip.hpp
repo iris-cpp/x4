@@ -23,8 +23,10 @@ namespace iris::x4 {
 
 // Same as `lexeme[...]`, but does not pre-skip
 template<class Subject>
-struct no_skip_directive : proxy_parser<Subject, no_skip_directive<Subject>>
+struct no_skip_directive : proxy_parser<no_skip_directive<Subject>, Subject>
 {
+    using proxy_parser<no_skip_directive, Subject>::proxy_parser;
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -55,7 +57,7 @@ struct no_skip_gen
     operator[](Subject&& subject) const // TODO: MSVC can't handle static operator[]
         noexcept(is_parser_nothrow_constructible_v<no_skip_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return {as_parser(std::forward<Subject>(subject))};
+        return no_skip_directive<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
     }
 };
 

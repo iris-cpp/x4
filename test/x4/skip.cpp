@@ -18,8 +18,8 @@
 TEST_CASE("skip")
 {
     using x4::standard::space;
-    using x4::standard::char_;
     using x4::standard::alpha;
+    using x4::char_;
     using x4::skip;
     using x4::lit;
 

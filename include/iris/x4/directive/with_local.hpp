@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
+#ifndef IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
 #define IRIS_ZZ_X4_DIRECTIVE_WITH_LOCAL_HPP
 
 /*=============================================================================
@@ -55,12 +55,14 @@ inline namespace cpos {
 
 
 template<class Subject, class ID, class T>
-struct with_local_directive : proxy_parser<Subject, with_local_directive<Subject, ID, T>>
+struct with_local_directive : proxy_parser<with_local_directive<Subject, ID, T>, Subject>
 {
     static_assert(std::default_initializable<T>);
 
     using id_type = ID;
     using value_type = T;
+
+    using proxy_parser<with_local_directive, Subject>::proxy_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool

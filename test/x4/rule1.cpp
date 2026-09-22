@@ -17,6 +17,13 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 
+TEST_CASE("rule: constructible with incomplete type")
+{
+    struct incomplete_type;
+    [[maybe_unused]] constexpr x4::rule<struct incomplete_type_id, incomplete_type, false> incomplete_type_rule_a{};
+    [[maybe_unused]] constexpr x4::rule<struct incomplete_type_id, incomplete_type, true> incomplete_type_rule_b{};
+}
+
 TEST_CASE("rule1")
 {
     using namespace x4::standard;

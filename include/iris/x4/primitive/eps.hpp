@@ -27,8 +27,8 @@ struct semantic_predicate : parser<semantic_predicate>
 {
     using attribute_type = unused_type;
 
-    constexpr explicit semantic_predicate(bool predicate) noexcept
-        : predicate_(predicate)
+    constexpr explicit semantic_predicate(bool cond) noexcept
+        : cond_(cond)
     {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -36,14 +36,14 @@ struct semantic_predicate : parser<semantic_predicate>
     parse(It& first, Se const& last, Context const& ctx, Attr&) const
         noexcept(noexcept(x4::skip_over(first, last, ctx)))
     {
-        if (predicate_) {
+        if (this->cond_) {
             x4::skip_over(first, last, ctx);
         }
-        return predicate_;
+        return this->cond_;
     }
 
 private:
-    bool predicate_;
+    bool cond_{};
 };
 
 template<class F>
@@ -51,13 +51,15 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
 {
     using attribute_type = unused_type;
 
-    template<class F_>
+    constexpr lazy_semantic_predicate() = default;
+
+    template<class T>
         requires
-            (!std::is_same_v<std::remove_cvref_t<F_>, lazy_semantic_predicate>) &&
-            std::is_constructible_v<F, F_>
-    constexpr explicit lazy_semantic_predicate(F_&& f)
-        noexcept(std::is_nothrow_constructible_v<F, F_>)
-        : f_(std::forward<F_>(f))
+            (!std::same_as<std::remove_cvref_t<T>, lazy_semantic_predicate>) &&
+            std::is_constructible_v<F, T>
+    constexpr explicit lazy_semantic_predicate(T&& f)
+        noexcept(std::is_nothrow_constructible_v<F, T>)
+        : f_(std::forward<T>(f))
     {}
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -67,23 +69,22 @@ struct lazy_semantic_predicate : parser<lazy_semantic_predicate<F>>
         auto it = first;
         x4::skip_over(it, last, ctx);
 
-        if constexpr (std::invocable<F const&, Context const&>) {
-            static_assert(std::same_as<std::invoke_result_t<F const&, Context const&>, bool>);
-            bool const ok = f_(ctx);
+        if constexpr (requires { this->f_(ctx); }) {
+            static_assert(std::same_as<decltype(this->f_(ctx)), bool>);
+            bool const ok = this->f_(ctx);
             if (ok) first = it;
             return ok;
 
         } else {
-            static_assert(std::invocable<F const&>);
-            static_assert(std::same_as<std::invoke_result_t<F const&>, bool>);
-            bool const ok = f_();
+            static_assert(std::same_as<decltype(this->f_()), bool>);
+            bool const ok = this->f_();
             if (ok) first = it;
             return ok;
         }
     }
 
 private:
-    F f_;
+    F f_{};
 };
 
 } // detail
@@ -102,9 +103,9 @@ struct eps_parser : parser<eps_parser>
     }
 
     [[nodiscard]] static constexpr detail::semantic_predicate
-    operator()(bool predicate) noexcept
+    operator()(bool cond) noexcept
     {
-        return detail::semantic_predicate{predicate};
+        return detail::semantic_predicate{cond};
     }
 
     template<class F>

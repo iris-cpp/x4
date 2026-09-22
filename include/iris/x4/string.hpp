@@ -10,8 +10,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
-#include <iris/x4/string/literal_string.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
+
+#include <iris/x4/char_string_literal.hpp> // IWYU pragma: export
+
+#include <iris/x4/string/literal_string.hpp> // IWYU pragma: export
 
 #endif

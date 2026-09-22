@@ -15,11 +15,12 @@
 
 #include <iris/x4/debug/error_handler.hpp>
 
-#include <iris/enum_bitops.hpp>
+#include <iris/enum/enum.hpp>
 
 #include <iterator>
-#include <type_traits>
 #include <string_view>
+
+#include <cstdint>
 
 namespace iris::x4 {
 
@@ -27,22 +28,21 @@ namespace contexts {
 struct error_handler;
 } // contexts
 
-enum struct annotated_rule_kind : unsigned
+enum struct annotated_rule_kind : std::uint8_t
 {
     annotate_none                = 0,
-    annotate_success             = 1 << 0, // suitable for any child parsers
-    annotate_expectation_failure = 1 << 1, // suitable for root parser
-    annotate_trace               = 1 << 2, // suitable for any child parsers (except for the primitive ones)
+    annotate_success             = 1u << 0, // suitable for any child parsers
+    annotate_expectation_failure = 1u << 1, // suitable for root parser
+    annotate_trace               = 1u << 2, // suitable for any child parsers (except for the primitive ones)
 };
 
 } // iris::x4
 
-namespace iris {
-
 template<>
-struct bitops_enabled<x4::annotated_rule_kind> : std::true_type {};
-
-} // iris
+struct iris::enum_traits<iris::x4::annotated_rule_kind>
+{
+    static constexpr int max_bit = 2;
+};
 
 namespace iris::x4 {
 

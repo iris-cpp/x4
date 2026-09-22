@@ -10,12 +10,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
+
+#include <iris/type_traits.hpp>
 
 #include <iterator>
 #include <concepts>
@@ -49,9 +51,9 @@ struct action_context<Context, Attr>
 // Ideally we should have a context-agnostic concept that can be used
 // like `X4ActionFunctor<F>`, but we technically can't.
 //
-// In order to check `std::invocable`, we need to know the actual context
-// type passed to the `.parse(...)` function but it is unknown until
-// runtime.
+// In order to check whether it is invocable, we need to know the actual
+// context type passed to the `.parse(...)` function, but it is unknown
+// until runtime.
 //
 // Even if we make up the most trivial context type (i.e. `unused_type`),
 // such concept will be useless because a user-provided functor always
@@ -59,14 +61,14 @@ struct action_context<Context, Attr>
 // holds exact specific type provided to the entry point (`x4::parse`).
 
 template<class Subject, class ActionF>
-struct action : proxy_parser<Subject, action<Subject, ActionF>>
+struct action : proxy_parser<action<Subject, ActionF>, Subject>
 {
     static_assert(
         !std::is_reference_v<ActionF>,
         "Reference type is disallowed for semantic action functor to prevent dangling reference"
     );
 
-    using base_type = proxy_parser<Subject, action>;
+    using base_type = proxy_parser<action, Subject>;
 
     static constexpr bool has_action = true;
     static constexpr bool need_rcontext = true;
@@ -94,7 +96,7 @@ struct action : proxy_parser<Subject, action<Subject, ActionF>>
             noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
         )
     {
-        typename base_type::attribute_type attr_temp; // default-initialize
+        typename base_type::attribute_type attr_temp{}; // value-initialize
         return this->parse_main(first, last, ctx, attr_temp);
     }
 
@@ -138,7 +140,7 @@ public:
             noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
         )
     {
-        typename base_type::attribute_type attr_temp; // default-initialize
+        typename base_type::attribute_type attr_temp{}; // value-initialize
         return this->parse_main(first, last, ctx, attr_temp);
     }
 
@@ -154,18 +156,18 @@ private:
     template<class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     call_action(Context const&, Attr&) const
-        noexcept(std::is_nothrow_invocable_v<ActionF const&>)
+        noexcept(is_nothrow_directly_invocable_v<ActionF const&>)
     {
         // Explicitly make this hard error instead of emitting "no matching overload".
         // This provides much more human-friendly errors.
         static_assert(
-            std::invocable<ActionF const&>,
+            directly_invocable<ActionF const&>,
             "Neither `f(ctx)` nor `f()` is well-formed for your semantic action. "
             "Check your function signature. Note that some functors might need "
             "`const` qualifier to satisfy the constraints."
         );
 
-        using action_return_type = std::invoke_result_t<ActionF const&>;
+        using action_return_type = directly_invoke_result_t<ActionF const&>;
         constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
         static_assert(
             action_returns_bool || std::same_as<action_return_type, void>,
@@ -182,12 +184,12 @@ private:
 
     // Semantic action with parameter: `p[([](auto&& ctx) { /* ... */ })]`
     template<class Context, X4Attribute Attr>
-        requires std::invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>
+        requires directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>
     [[nodiscard]] constexpr bool
     call_action(Context const& ctx, Attr& attr) const
-        noexcept(std::is_nothrow_invocable_v<ActionF const&, typename detail::action_context<Context, Attr>::type>)
+        noexcept(is_nothrow_directly_invocable_v<ActionF const&, typename detail::action_context<Context, Attr>::type>)
     {
-        using action_return_type = std::invoke_result_t<ActionF const&, typename detail::action_context<Context, Attr>::type>;
+        using action_return_type = directly_invoke_result_t<ActionF const&, typename detail::action_context<Context, Attr>::type>;
         constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
         static_assert(
             action_returns_bool || std::same_as<action_return_type, void>,
@@ -215,13 +217,13 @@ private:
 
     template<class Context, X4Attribute Attr>
         requires
-            (!std::invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>) &&
-            std::invocable<ActionF const&, typename detail::action_context<Context, Attr>::type const&>
+            (!directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>) &&
+            directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type const&>
     static constexpr bool
     call_action(Context const&, Attr&)
     {
         static_assert(
-            std::invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>,
+            directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>,
             "Semantic action expecting non-const lvalue reference context is obsolete. Use `auto&& ctx` and avoid using `auto& ctx`."
         );
         return false; // dummy

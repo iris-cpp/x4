@@ -23,18 +23,18 @@ namespace iris::x4 {
 
 // propagate no_case information through the context
 template<class Subject>
-struct no_case_directive : proxy_parser<Subject, no_case_directive<Subject>>
+struct no_case_directive : proxy_parser<no_case_directive<Subject>, Subject>
 {
+    using proxy_parser<no_case_directive, Subject>::proxy_parser;
+
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(
-            this->subject.parse(
-                first, last,
-                x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx),
-                attr
-            )
-        ))
+        noexcept(is_nothrow_parsable_v<
+            Subject, It, Se,
+            decltype(x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx)),
+            Attr
+        >)
     {
         return this->subject.parse(
             first, last,
@@ -53,7 +53,7 @@ struct no_case_gen
     operator[](Subject&& subject) const
         noexcept(is_parser_nothrow_constructible_v<no_case_directive<as_parser_plain_t<Subject>>, Subject>)
     {
-        return {as_parser(std::forward<Subject>(subject))};
+        return no_case_directive<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
     }
 };
 

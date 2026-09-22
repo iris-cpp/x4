@@ -149,7 +149,7 @@ The descriptions below focus on recognition behavior and omit many details conce
 | `a > b`  | `tuple<A, B>` | Parse `a`, followed by an expected `b`. Failure of `b` records an expectation failure and prevents ordinary backtracking.<br>Equivalent to `a >> expect[b]`. |
 | `*p`     | `vector<P>` | Parse zero or more occurrences of `p`.                                                                                                                    |
 | `+p`     | `vector<P>` | Parse one or more occurrences of `p`.                                                                                                                     |
-| `a % b`  | `vector<A>` | Parse one or more occurrences of `a`, delimited by `b`.                                                                                                   |
+| `a % b`  | `vector<A>` | Parse one or more occurrences of `a`, delimited by `b`.<br>Equivalent to `a >> *(omit[b] >> a)`.<br>*Note:* If you don't want to omit the attribute of `b`, write `a >> *(b >> a)` directly.                                                                                                   |
 | `a - b`  | `A` | Parse `a` only when `b` does not match at the same input position. The test of `b` does not consume input.<br>Equivalent to `!b >> a`.                                                |
 | `-p`     | `optional<P>` | Parse zero or one occurrence of `p`.                                                                                                                      |
 | `&p`     | `unused_type` | Succeed when `p` matches, without consuming input or producing its attribute.                                                                             |

@@ -11,7 +11,6 @@
 
 #include <iris/x4/rule.hpp>
 #include <iris/x4/char/char.hpp>
-#include <iris/x4/char/negated_char.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/not_predicate.hpp>
@@ -25,8 +24,6 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-
-#include <cstring>
 
 namespace {
 
@@ -69,10 +66,10 @@ struct on_success_gets_preskipped_iterator
 
 TEST_CASE("rule4")
 {
-    using namespace x4::standard;
     using x4::rule;
     using x4::int_;
     using x4::lit;
+    using x4::char_;
 
     // show that ra = rb and ra %= rb works as expected
     {
@@ -137,7 +134,7 @@ TEST_CASE("rule4")
     // error handling
     {
         auto r = rule<my_rule_class, char const*>{}
-            = '(' > int_ > ',' > int_ > ')';
+            = '(' > int_ > ',' > int_ > ')';  // NOLINT(bugprone-chained-comparison)
 
         CHECK(parse("(123,456)", r));
         CHECK(!parse("(abc,def)", r));

@@ -16,7 +16,7 @@
 #include <iris/x4/primitive/eps.hpp>
 
 #include <iris/x4/char/char.hpp>
-#include <iris/x4/string/string.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/bool.hpp>
 #include <iris/x4/numeric/int.hpp>
 
@@ -68,7 +68,7 @@ struct undefined {};
 TEST_CASE("alternative")
 {
     using x4::standard::char_;
-    using x4::standard::lit;
+    using x4::lit;
     using x4::fixed_value;
     using x4::int_;
     using x4::unused;

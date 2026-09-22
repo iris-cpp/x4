@@ -15,32 +15,37 @@
 #include <iris/x4/traits/tuple_traits.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
+#include <ranges>
 #include <concepts>
+#include <string>
 #include <string_view>
 #include <iterator>
 #include <type_traits>
 
 namespace iris::x4::detail {
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
+template<std::ranges::forward_range StrR, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
 string_parse(
-    std::basic_string_view<CharT, CharTraitsT> const str,
+    StrR const& str,
     It& first, Se const& last,
     Attr& attr, CaseCompareFunc const& compare
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
+    static_assert(!std::is_array_v<StrR>);
+    using CharT = std::ranges::range_value_t<StrR>;
+
     if constexpr (traits::is_single_element_tuple_like<Attr>::value) {
         return detail::string_parse(str, first, last, traits::do_unwrap_if_single_element_tuple_like(attr), compare);
     } else {
-        static_assert(std::same_as<typename traits::attribute_category<Attr>::type, traits::container_attr>);
+        static_assert(std::same_as<traits::attribute_category_t<Attr>, traits::container_attr>);
         using value_type = traits::container_value<Attr>::type;
         static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
         static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
         It it = first;
-        auto stri = str.begin();
-        auto str_last = str.end();
+        auto stri = std::ranges::begin(str);
+        auto str_last = std::ranges::end(str);
 
         for (; stri != str_last; ++stri, ++it) {
             if (it == last || compare(*stri, *it) != 0) {
@@ -54,23 +59,23 @@ string_parse(
     }
 }
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, class CaseCompareFunc>
+template<std::ranges::forward_range StrR, std::forward_iterator It, std::sentinel_for<It> Se, class CaseCompareFunc>
 constexpr void
 string_parse(
-    std::basic_string_view<CharT, CharTraitsT> const,
+    StrR const&,
     It&, Se const&,
     unused_type const&, CaseCompareFunc const&
 ) = delete; // The call site is lacking `x4::assume_container(attr)`
 
-template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
+template<CharLike CharT, std::size_t N, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompareFunc>
 [[nodiscard]] constexpr bool
 string_parse(
-    std::basic_string<CharT, CharTraitsT> const& str,
+    CharT const (&str)[N],
     It& first, Se const& last,
     Attr& attr, CaseCompareFunc const& compare
-) noexcept(noexcept(detail::string_parse(std::basic_string_view{str}, first, last, attr, compare)))
+) noexcept(noexcept(detail::string_parse(std::basic_string_view{str, N - 1}, first, last, attr, compare)))
 {
-    return detail::string_parse(std::basic_string_view{str}, first, last, attr, compare);
+    return detail::string_parse(std::basic_string_view{str, N - 1}, first, last, attr, compare);
 }
 
 template<class CharT, class CharTraitsT, std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr>

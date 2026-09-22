@@ -84,9 +84,9 @@ inline constexpr detail::repeat_inf_type inf{};
 } // cpos
 
 template<class Subject, detail::RepeatBounds Bounds>
-struct repeat_directive : proxy_parser<Subject, repeat_directive<Subject, Bounds>>
+struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subject>
 {
-    using base_type = proxy_parser<Subject, repeat_directive>;
+    using base_type = proxy_parser<repeat_directive, Subject>;
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>

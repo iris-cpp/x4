@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_CORE_ATTRIBUTE_HPP
+#ifndef IRIS_ZZ_X4_CORE_ATTRIBUTE_HPP
 #define IRIS_ZZ_X4_CORE_ATTRIBUTE_HPP
 
 /*=============================================================================
@@ -9,10 +9,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <concepts>
-#include <iterator>
 #include <type_traits>
 
 namespace iris::x4 {
@@ -23,6 +22,9 @@ struct unused_container_type;
 namespace detail {
 
 struct parser_base;
+
+template<class T>
+concept has_parser_base = std::is_same_v<typename std::remove_cvref_t<T>::x4_parser_base_type, parser_base>;
 
 } // detail
 
@@ -35,7 +37,7 @@ template<class T>
 concept X4NonUnusedAttribute =
     !X4UnusedAttribute<T> &&
     std::is_object_v<T> && // implies not reference
-    !std::is_base_of_v<detail::parser_base, std::remove_const_t<T>> &&
+    !detail::has_parser_base<T> &&
     std::move_constructible<std::remove_const_t<T>>;
     // TODO: `fusion::iterator_range` does not satisfy these due to `fusion::vector`'s iterator being a reference type
     //std::default_initializable<std::remove_const_t<T>> &&
@@ -45,26 +47,5 @@ template<class T>
 concept X4Attribute = X4UnusedAttribute<T> || X4NonUnusedAttribute<T>;
 
 } // iris::x4
-
-namespace iris::x4::traits {
-
-// Pseudo attribute is a parser attribute whose actual type can only be determined at
-// parse time. Such attribute is dependent on at least one of It/Se/Context.
-template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class AttrRef>
-struct pseudo_attribute
-{
-    static_assert(X4Attribute<std::remove_reference_t<AttrRef>>);
-    static_assert(!std::is_rvalue_reference_v<AttrRef>);
-
-    using actual_type = AttrRef;
-
-    [[nodiscard]] static constexpr actual_type
-    make_actual_type(It&, Se const&, Context const&, AttrRef&& attr_) noexcept  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
-    {
-        return static_cast<AttrRef&&>(attr_);
-    }
-};
-
-} // iris::x4::traits
 
 #endif

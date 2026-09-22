@@ -45,9 +45,9 @@ struct [[nodiscard]] smart_ptr_rollback_guard
 
 template<class Derived, class Subject, class T, class DeleterT>
 struct unique_ptr_parser_base
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
+    using base_type = proxy_parser<Derived, Subject>;
 
     // https://eel.is/c++draft/unique.ptr.single.ctor
 
@@ -115,18 +115,9 @@ private:
 
 template<class Derived, class Subject, class T>
 struct unique_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
-
-    template<class SubjectT>
-        requires
-            (!std::same_as<std::remove_cvref_t<SubjectT>, Derived>) &&
-            std::is_constructible_v<base_type, SubjectT>
-    constexpr explicit unique_ptr_parser_base(SubjectT&& subject)
-        noexcept(std::is_nothrow_constructible_v<base_type, SubjectT>)
-        : base_type(std::forward<SubjectT>(subject))
-    {}
+    using proxy_parser<Derived, Subject>::proxy_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -219,9 +210,9 @@ namespace detail {
 
 template<class Derived, class Subject, class T, class DeleterT>
 struct shared_ptr_parser_base
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
+    using base_type = proxy_parser<Derived, Subject>;
 
     // https://eel.is/c++draft/util.smartptr.shared.const
 
@@ -287,9 +278,9 @@ private:
 
 template<class Derived, class Subject, class T>
 struct shared_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
-    : proxy_parser<Subject, Derived>
+    : proxy_parser<Derived, Subject>
 {
-    using base_type = proxy_parser<Subject, Derived>;
+    using base_type = proxy_parser<Derived, Subject>;
 
     template<class SubjectT>
         requires

@@ -25,7 +25,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct plus : unary_parser<Subject, plus<Subject>>
+struct plus : unary_parser<plus<Subject>, Subject>
 {
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
@@ -34,6 +34,8 @@ struct plus : unary_parser<Subject, plus<Subject>>
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
         traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
+
+    using unary_parser<plus, Subject>::unary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
@@ -93,7 +95,7 @@ template<X4Subject Subject>
 operator+(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<plus<as_parser_plain_t<Subject>>, Subject>)
 {
-    return {as_parser(std::forward<Subject>(subject))};
+    return plus<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
 }
 
 } // iris::x4

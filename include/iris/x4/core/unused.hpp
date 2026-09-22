@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <type_traits>
 
@@ -64,6 +64,23 @@ assume_container(unused_type const&) noexcept
 {
     return unused_container;
 }
+
+
+namespace detail {
+
+template<class T>
+struct attribute_unused_switcher
+{
+    using type = unused_type;
+};
+
+template<class T>
+struct attribute_identity_switcher
+{
+    using type = T;
+};
+
+} // detail
 
 } // iris::x4
 

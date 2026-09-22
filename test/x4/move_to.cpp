@@ -35,7 +35,6 @@ TEST_CASE("move_to")
         //XYZ xyz;
         //xyz = std::vector<X>{};
         static_assert(!std::is_assignable_v<XYZ&, std::vector<X>>);
-        STATIC_CHECK(!x4::X4Movable<std::vector<X>, XYZ>);
     }
 
     // tuple contains reference

@@ -28,7 +28,7 @@
 namespace iris::x4 {
 
 template<class Subject>
-struct optional : unary_parser<Subject, optional<Subject>>
+struct optional : unary_parser<optional<Subject>, Subject>
 {
     using attribute_type = traits::build_optional<typename parser_traits<Subject>::attribute_type>::type;
 
@@ -37,6 +37,8 @@ struct optional : unary_parser<Subject, optional<Subject>>
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
         traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
+
+    using unary_parser<optional, Subject>::unary_parser;
 
     // catch-all overload
     template<
@@ -47,8 +49,6 @@ struct optional : unary_parser<Subject, optional<Subject>>
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
         noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
-        static_assert(Parsable<Subject, It, Se, Context, Attr>);
-
         // discard [[nodiscard]]
         (void)this->subject.parse(first, last, ctx, attr);
 
@@ -112,7 +112,7 @@ template<X4Subject Subject>
 operator-(Subject&& subject)
     noexcept(is_parser_nothrow_constructible_v<optional<as_parser_plain_t<Subject>>, Subject>)
 {
-    return {as_parser(std::forward<Subject>(subject))};
+    return optional<as_parser_plain_t<Subject>>{as_parser(std::forward<Subject>(subject))};
 }
 
 } // iris::x4
