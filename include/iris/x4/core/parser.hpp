@@ -20,6 +20,7 @@
 #include <iris/string.hpp>
 
 #include <iterator>
+#include <ranges>
 #include <string>
 #include <type_traits>
 #include <concepts>
@@ -344,57 +345,16 @@ constexpr bool is_parser_nothrow_constructible_v = is_parser_nothrow_constructib
 
 
 template<class Parser, class It, class Se, class Context, class Attr>
-concept Parsable = requires(Parser const& p) {
-    {
-        p.parse(
-            std::declval<It&>(), // first
-            std::declval<Se>(), // last
-            std::declval<Context const&>(), // context
-            std::declval<Attr&>() // attr
-        )
-    } -> std::same_as<bool>;
+concept Parsable = requires(Parser const& p, It& first, Se last, Context const& ctx, Attr& attr) {
+    { p.parse(first, last, ctx, attr) } -> std::same_as<bool>;
 };
 
 template<class Parser, class It, class Se, class Context, class Attr>
 struct is_parsable : std::bool_constant<Parsable<Parser, It, Se, Context, Attr>>
-{
-    static_assert(X4ExplicitSubject<Parser>);
-    static_assert(!std::is_reference_v<It>);
-    static_assert(std::forward_iterator<It>);
-    static_assert(std::sentinel_for<Se, It>);
-    static_assert(!std::is_reference_v<Context>);
-    static_assert(!std::is_reference_v<Attr>);
-    static_assert(X4Attribute<Attr>);
-};
+{};
 
 template<class Parser, class It, class Se, class Context, class Attr>
 constexpr bool is_parsable_v = is_parsable<Parser, It, Se, Context, Attr>::value;
-
-template<class Parser, class It, class Se, class Context, class Attr>
-struct is_nothrow_parsable
-{
-    static_assert(X4ExplicitSubject<Parser>);
-    static_assert(!std::is_reference_v<It>);
-    static_assert(std::forward_iterator<It>);
-    static_assert(std::sentinel_for<Se, It>);
-    static_assert(!std::is_reference_v<Context>);
-    static_assert(!std::is_reference_v<Attr>);
-    static_assert(X4Attribute<Attr>);
-
-    static constexpr bool value = requires(Parser const& p) {
-        {
-            p.parse(
-                std::declval<It&>(), // first
-                std::declval<Se>(), // last
-                std::declval<Context const&>(), // context
-                std::declval<Attr&>() // attr
-            )
-        } noexcept -> std::same_as<bool>;
-    };
-};
-
-template<class Parser, class It, class Se, class Context, class Attr>
-constexpr bool is_nothrow_parsable_v = is_nothrow_parsable<Parser, It, Se, Context, Attr>::value;
 
 
 template<class Parser, class It, class Se>
@@ -428,6 +388,8 @@ concept X4Parser = X4ExplicitParser<Parser, It, Se> || X4ImplicitParser<Parser, 
 
 
 // The runtime type info that can be obtained via `x4::what(p)`.
+// Note: X4's builtin parsers must NOT use `std::format` for implementing this.
+//       (It has been confirmed that it would cause significant compilation time bloat)
 template<class Subject>
 struct get_info
 {

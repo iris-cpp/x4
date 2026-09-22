@@ -24,7 +24,6 @@
 #include <iris/alloy/tuple.hpp>
 #include <iris/type_traits.hpp>
 
-#include <format>
 #include <concepts>
 #include <iterator>
 #include <type_traits>
@@ -113,11 +112,6 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
-        noexcept(
-            std::is_nothrow_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Left, It, Se, Context, unused_type> &&
-            is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
-        )
     {
         It const first_saved = first;
 
@@ -141,7 +135,6 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(detail::parse_sequence(*this, first, last, ctx, attr)))
     {
         return detail::parse_sequence(*this, first, last, ctx, attr);
     }
@@ -149,17 +142,11 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
         if constexpr (iris::is_ttp_specialization_of_v<Right, expect_directive>) {
-            return std::format(
-                "{} > {}",
-                get_info<Left>{}(this->left),
-                get_info<typename Right::subject_type>{}(this->right.subject)
-            );
+            return get_info<Left>{}(this->left) + " > "
+                + get_info<typename Right::subject_type>{}(this->right.subject);
         } else {
-            return std::format(
-                "{} >> {}",
-                get_info<Left>{}(this->left),
-                get_info<Right>{}(this->right)
-            );
+            return get_info<Left>{}(this->left) + " >> "
+                + get_info<Right>{}(this->right);
         }
     }
 };

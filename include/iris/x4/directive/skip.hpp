@@ -16,7 +16,6 @@
 
 #include <iris/x4/char/char_class_tags.hpp>
 
-#include <format>
 #include <concepts>
 #include <iterator>
 #include <type_traits>
@@ -48,18 +47,14 @@ struct skip_directive : proxy_parser<skip_directive<Subject, Skipper>, Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
         return this->subject.parse(first, last, x4::replace_first_context<contexts::skipper>(ctx, skipper_), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format(
-            "skip({})[{}]",
-            get_info<Skipper>{}(this->skipper_),
-            get_info<Subject>{}(this->subject)
-        );
+        return "skip(" + get_info<Skipper>{}(this->skipper_) + ")["
+            + get_info<Subject>{}(this->subject) + ']';
     }
 
 private:
@@ -82,7 +77,6 @@ struct builtin_skip_directive : proxy_parser<builtin_skip_directive<Kind, Subjec
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
         builtin_skipper_kind& skipper_kind = x4::get<contexts::skipper>(ctx);
         auto const old_skipper_kind = skipper_kind;
@@ -101,11 +95,6 @@ struct builtin_skip_directive : proxy_parser<builtin_skip_directive<Kind, Subjec
             (!std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<
-            Subject, It, Se,
-            std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, std::declval<builtin_skipper_kind&>()))>,
-            Attr
-        >)
     {
         // This value could be reset by some nested parsers, so it can't be const
         /* constexpr */ builtin_skipper_kind skipper_kind = Kind;
@@ -114,11 +103,9 @@ struct builtin_skip_directive : proxy_parser<builtin_skip_directive<Kind, Subjec
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format(
-            "skip({})[{}]",
-            detail::builtin_skipper_traits<Kind>::name,
-            get_info<Subject>{}(this->subject)
-        );
+        return std::string("skip(")
+            + detail::builtin_skipper_traits<Kind>::name + ")["
+            + get_info<Subject>{}(this->subject) + ']';
     }
 };
 

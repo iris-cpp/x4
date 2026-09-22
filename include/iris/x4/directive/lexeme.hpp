@@ -14,7 +14,6 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 
-#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -29,14 +28,6 @@ struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            noexcept(x4::skip_over(first, last, ctx)) &&
-            is_nothrow_parsable_v<
-                Subject, It, Se,
-                std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>,
-                Attr
-            >
-        )
     {
         auto it = first;
         x4::skip_over(it, last, ctx); // pre-skip
@@ -52,7 +43,7 @@ struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("lexeme[{}]", get_info<Subject>{}(this->subject));
+        return "lexeme[" + get_info<Subject>{}(this->subject) + ']';
     }
 };
 

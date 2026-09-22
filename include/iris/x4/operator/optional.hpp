@@ -47,7 +47,6 @@ struct optional : unary_parser<optional<Subject>, Subject>
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
         // discard [[nodiscard]]
         (void)this->subject.parse(first, last, ctx, attr);
@@ -66,7 +65,6 @@ struct optional : unary_parser<optional<Subject>, Subject>
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, ctx, attr)))
     {
         // discard [[nodiscard]]
         (void)detail::parse_into_container(this->subject, first, last, ctx, attr);
@@ -85,11 +83,6 @@ struct optional : unary_parser<optional<Subject>, Subject>
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            std::is_nothrow_default_constructible_v<typename traits::optional_value<Attr>::type> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, typename traits::optional_value<Attr>::type> &&
-            noexcept(x4::move_to(std::declval<typename traits::optional_value<Attr>::type&&>(), attr))
-        )
     {
         typename traits::optional_value<Attr>::type val{}; // value-initialize
 

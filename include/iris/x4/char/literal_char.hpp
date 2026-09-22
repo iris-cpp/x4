@@ -15,7 +15,6 @@
 
 #include <iris/unicode/string.hpp>
 
-#include <format>
 #include <type_traits>
 #include <concepts>
 
@@ -56,10 +55,7 @@ struct literal_char : char_parser<literal_char<Encoding, Attr>, Encoding>
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape quote
-        return std::format(
-            "'{}'",
-            iris::unicode::transcode<char>(typename Encoding::string_type(1, this->classify_ch_))
-        );
+        return '\'' + iris::unicode::transcode<char>(typename Encoding::string_type(1, this->classify_ch_)) + '\'';
     }
 
 private:

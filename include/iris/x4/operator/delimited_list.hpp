@@ -16,7 +16,6 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/expectation.hpp>
 
-#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -39,7 +38,6 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        // never noexcept; requires container insertion
     {
         auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
         list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
@@ -70,11 +68,6 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr& unused_attr) const
-        noexcept(
-            noexcept(detail::parse_into_container(this->left, first, last, ctx, x4::assume_container(unused_attr))) &&
-            std::is_nothrow_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
-        )
     {
         // In order to succeed we need to match at least one element
         if (!detail::parse_into_container(this->left, first, last, ctx, x4::assume_container(unused_attr))) {
@@ -99,11 +92,7 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format(
-            "({} % {})",
-            get_info<Left>{}(this->left),
-            get_info<Right>{}(this->right)
-        );
+        return '(' + get_info<Left>{}(this->left) + " % " + get_info<Right>{}(this->right);
     }
 };
 

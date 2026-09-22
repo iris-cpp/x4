@@ -17,7 +17,6 @@
 #include <type_traits>
 #include <utility>
 #include <memory>
-#include <format>
 
 namespace iris::x4 {
 
@@ -95,7 +94,6 @@ struct unique_ptr_parser_base
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& it, Se const& se, Context const& ctx, Attr& ptr) const
-        noexcept(false) // never noexcept; requires dynamic memory allocation
     {
         static_assert(std::same_as<typename Attr::deleter_type, DeleterT>, "Incompatible deleter type provided for unique_ptr_parser");
 
@@ -122,7 +120,6 @@ struct unique_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& it, Se const& se, Context const& ctx, Attr& ptr) const
-        noexcept(false) // never noexcept; requires dynamic memory allocation
     {
         static_assert(std::same_as<typename Attr::deleter_type, std::default_delete<T>>, "Incompatible deleter type provided for unique_ptr_parser");
 
@@ -158,7 +155,7 @@ struct unique_ptr_parser : detail::unique_ptr_parser_base<
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("unique_ptr({})", get_info<Subject>{}(this->subject));
+        return "unique_ptr(" + get_info<Subject>{}(this->subject) + ')';
     }
 };
 
@@ -260,7 +257,6 @@ struct shared_ptr_parser_base
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& it, Se const& se, Context const& ctx, Attr& ptr) const
-        noexcept(false) // never noexcept; requires dynamic memory allocation
     {
         bool parse_ok = false;
         auto old_ptr = std::exchange(ptr, std::shared_ptr<T>(new T(), deleter_));
@@ -294,7 +290,6 @@ struct shared_ptr_parser_base<Derived, Subject, T, std::default_delete<T>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& it, Se const& se, Context const& ctx, Attr& ptr) const
-        noexcept(false) // never noexcept; requires dynamic memory allocation
     {
         bool parse_ok = false;
         auto old_ptr = std::exchange(ptr, std::make_shared<T>());
@@ -328,7 +323,7 @@ struct shared_ptr_parser : detail::shared_ptr_parser_base<
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("shared_ptr({})", get_info<Subject>{}(this->subject));
+        return "shared_ptr(" + get_info<Subject>{}(this->subject) + ')';
     }
 };
 

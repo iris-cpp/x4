@@ -161,13 +161,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 parse_alternative(
     Parser const& p, It& first, Se const& last,
     Context const& ctx, Attr& attribute
-) noexcept(
-    is_nothrow_parsable_v<
-        Parser, It, Se, Context,
-        std::remove_reference_t<typename pass_variant_attribute<Parser, Attr>::type>
-    >
-)
-{
+) {
     return p.parse(first, last, ctx, pass_variant_attribute<Parser, Attr>::call(attribute));
 }
 
@@ -177,16 +171,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 parse_alternative(
     Parser const& p, It& first, Se const& last,
     Context const& ctx, Attr& attribute
-) noexcept(
-    is_nothrow_parsable_v<
-        Parser, It, Se, Context, std::remove_reference_t<typename pass_variant_attribute<Parser, Attr>::type>
-    > &&
-    noexcept(x4::move_to(
-        std::declval<typename pass_variant_attribute<Parser, Attr>::type>(),
-        attribute
-    ))
-)
-{
+) {
     auto&& actual_attr = pass_variant_attribute<Parser, Attr>::call(attribute);
     if (!p.parse(first, last, ctx, actual_attr)) return false;
     x4::move_to(std::move(actual_attr), attribute);

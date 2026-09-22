@@ -18,7 +18,6 @@
 #include <iris/unicode/string.hpp>
 
 #include <string_view>
-#include <format>
 #include <ranges>
 #include <type_traits>
 
@@ -53,13 +52,11 @@ struct char_range : char_parser<char_range<Encoding, Attr>, Encoding>
 
     [[nodiscard]] std::string get_x4_info() const
     {
-        // TODO: make more user-friendly && make the format consistent with above
         // TODO: escape
-        return std::format(
-            "char_range \"{}-{}\"",
-            iris::unicode::transcode<char>(typename Encoding::string_type(1, this->from)),
-            iris::unicode::transcode<char>(typename Encoding::string_type(1, this->to))
-        );
+        return std::string("char_(\"")
+            + iris::unicode::transcode<char>(typename Encoding::string_type(1, this->from))
+            + '-' + iris::unicode::transcode<char>(typename Encoding::string_type(1, this->to))
+            + "\")";
     }
 };
 
@@ -74,7 +71,6 @@ struct char_set : char_parser<char_set<Encoding, Attr>, Encoding>
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
     constexpr explicit char_set(std::basic_string_view<char_type> const str)
-        // never noexcept; requires vector insertion
     {
         for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);) {
             auto const ch = *definition;

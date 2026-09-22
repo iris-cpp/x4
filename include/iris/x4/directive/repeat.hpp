@@ -106,7 +106,6 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        // never noexcept; requires container insertion
     {
         auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
         list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
@@ -142,11 +141,6 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr& unused_attr) const
-        noexcept(
-            noexcept(detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))) &&
-            std::is_nothrow_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, unused_type>
-        )
     {
         It local_it = first;
         typename Bounds::value_type i{};

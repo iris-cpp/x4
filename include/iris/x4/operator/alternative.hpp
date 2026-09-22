@@ -22,7 +22,6 @@
 
 #include <iris/rvariant/rvariant.hpp> // IWYU pragma: keep
 
-#include <format>
 #include <concepts>
 #include <iterator>
 #include <type_traits>
@@ -101,10 +100,6 @@ public:
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
-        noexcept(
-            is_nothrow_parsable_v<Left, It, Se, Context, unused_type> &&
-            is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
-        )
     {
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             return this->left.parse(first, last, ctx, unused) ||
@@ -126,12 +121,6 @@ public:
         requires (!traits::X4Container<Attr>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            noexcept(detail::parse_alternative(this->left, first, last, ctx, attr)) &&
-            noexcept(detail::parse_alternative(this->right, first, last, ctx, attr)) &&
-            std::is_nothrow_default_constructible_v<temp_attr_t<Attr>> &&
-            noexcept(x4::move_to(std::declval<temp_attr_t<Attr>>(), attr))
-        )
     {
         static_assert(
             std::default_initializable<temp_attr_t<Attr>>,
@@ -157,13 +146,6 @@ public:
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container ContainerAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, ContainerAttr& attr) const
-        noexcept(
-            noexcept(detail::parse_alternative(this->left, first, last, ctx, attr)) &&
-            noexcept(detail::parse_alternative(this->right, first, last, ctx, attr)) &&
-            noexcept(x4::move_to(std::declval<ContainerAttr>(), attr)) &&
-            std::is_nothrow_default_constructible_v<ContainerAttr> &&
-            noexcept(traits::clear(attr))
-        )
     {
         static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_type>);
         static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_container_type>);
@@ -218,11 +200,7 @@ public:
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format(
-            "{} | {}",
-            get_info<Left>{}(this->left),
-            get_info<Right>{}(this->right)
-        );
+        return get_info<Left>{}(this->left) + " | " + get_info<Right>{}(this->right);
     }
 };
 

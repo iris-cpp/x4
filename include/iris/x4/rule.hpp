@@ -38,7 +38,7 @@
 
 namespace iris::x4 {
 
-template<class RuleID, class RuleAttr = unused_type, bool ForceAttribute = false>
+template<class RuleID, class RuleAttr, bool ForceAttr>
 struct rule;
 
 namespace detail {
@@ -165,7 +165,7 @@ private:
     parse_rhs(
         RHS const& rhs, It& first, Se const& last,
         RContext const& rcontext, RHSAttr& rhs_attr
-    ) // never noexcept; requires complex handling
+    )
     {
         // See if the user has `IRIS_X4_DEFINE` for this rule
         constexpr bool is_default_parse_rule = std::same_as<
@@ -249,7 +249,7 @@ public:
     {
         // Do down-stream transformation, provide attribute for `rhs` parser
         using transform = traits::transform_attribute<Attr, Exposed>;
-        using transform_attr = typename transform::type;
+        using transform_attr = transform::type;
         transform_attr rhs_attr = transform::pre(exposed_attr);
 
         // Creates a place to hold the result of parse_rhs
@@ -301,11 +301,9 @@ public:
     }
 };
 
-template<class RuleID, X4Subject RHS, X4Attribute RuleDefAttr, bool ForceAttr, bool SkipDefinitionInjection = false>
+template<class RuleID, class RHS, class RuleDefAttr, bool ForceAttr, bool SkipDefinitionInjection = false>
 struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceAttr, SkipDefinitionInjection>>
 {
-    static_assert(!std::same_as<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
-
     using this_type = rule_definition;
     using id = RuleID;
     using lhs_type = rule<RuleID, RuleDefAttr, ForceAttr>;
@@ -321,12 +319,15 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
         noexcept(std::is_nothrow_constructible_v<RHS, RHS_T>)
         : rhs_(std::forward<RHS_T>(rhs))
         , name(std::move(name))
-    {}
+    {
+        static_assert(X4Subject<RHS>);
+        static_assert(X4Attribute<RuleDefAttr>);
+        static_assert(!std::same_as<std::remove_const_t<RuleDefAttr>, unused_container_type>, "`rule_definition` with `unused_container_type` is not supported");
+    }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        // never noexcept; requires very complex implementation details
     {
         return rule_impl<RuleID, attribute_type, SkipDefinitionInjection>
             ::template call_rule_definition<ForceAttr>(
@@ -388,7 +389,7 @@ concept RuleAttrCompatible =
 
 } // detail
 
-template<class RuleID, class RuleAttr, bool ForceAttr>
+template<class RuleID, class RuleAttr = unused_type, bool ForceAttr = false>
 struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 {
     // This type MUST be constructible with incomplete types.
@@ -420,7 +421,6 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             detail::RuleAttrCompatible<Exposed, RuleAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
-        // never noexcept; requires very complex implementation details
     {
         check_invariants();
         static_assert(has_attribute, "A rule must have an attribute. Check your rule definition.");
@@ -478,7 +478,6 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, unused_type const&) const
-        // never noexcept; requires very complex implementation details
     {
         check_invariants();
         // make sure we pass exactly the rule attribute type

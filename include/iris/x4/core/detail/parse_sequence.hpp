@@ -207,7 +207,6 @@ struct partition_attribute<LParser, RParser, Attr>
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
 parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-    // TODO: noexcept
 {
     static_assert(X4Attribute<Attr>);
 
@@ -240,9 +239,7 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
     requires (parser_traits<Parser>::sequence_size > 1)
 [[nodiscard]] constexpr bool
 parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-    noexcept(is_nothrow_parsable_v<Parser, It, Se, Context, Attr>)
 {
-    // static_assert(Parsable<Parser, It, Se, Context, Attr>);
     return parser.parse(first, last, ctx, attr);
 }
 
@@ -250,7 +247,6 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
     requires (parser_traits<Parser>::sequence_size <= 1)
 [[nodiscard]] constexpr bool
 parse_sequence_impl(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
-    noexcept(noexcept(detail::parse_into_container(parser, first, last, ctx, attr)))
 {
     return detail::parse_into_container(parser, first, last, ctx, attr);
 }
@@ -261,11 +257,6 @@ template<
 >
 [[nodiscard]] constexpr bool
 parse_sequence(Parser const& parser, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
-    noexcept(
-        std::is_nothrow_copy_assignable_v<It> &&
-        noexcept(detail::parse_sequence_impl(parser.left, first, last, ctx, container_attr)) &&
-        noexcept(detail::parse_sequence_impl(parser.right, first, last, ctx, container_attr))
-    )
 {
     It local_it = first;
     if (detail::parse_sequence_impl(parser.left, local_it, last, ctx, container_attr) &&
@@ -285,7 +276,7 @@ struct parse_into_container_impl<sequence<Left, Right>>
     call(
         sequence<Left, Right> const& parser, It& first, Se const& last,
         Context const& ctx, Attr& attr
-    ) // never noexcept (requires container insertion)
+    )
     {
         if constexpr (traits::is_container_v<Attr>) {
             constexpr bool sequence_attribute_can_directly_hold_value_type = traits::can_hold<

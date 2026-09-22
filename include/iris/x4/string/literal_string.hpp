@@ -20,7 +20,6 @@
 
 #include <iris/unicode/string.hpp>
 
-#include <format>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -73,7 +72,7 @@ struct literal_string : parser<literal_string<StoredStringT, Encoding, Attr>>
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape quotes
-        return std::format("\"{}\"", iris::unicode::transcode<char>(std::basic_string_view{this->str_}));
+        return '"' + iris::unicode::transcode<char>(std::basic_string_view{this->str_}) + '"';
     }
 
 private:

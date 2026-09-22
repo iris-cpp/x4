@@ -106,7 +106,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_parser, It, Se>);
 
@@ -142,7 +141,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_unary_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_unary_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_unary_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_unary_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_unary_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_unary_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_unary_parser{}, unused));
@@ -151,7 +149,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_binary_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_binary_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_binary_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_binary_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_binary_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_binary_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_binary_parser{}, unused));
@@ -161,7 +158,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_unused_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_unused_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_unused_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_unused_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_unused_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_unused_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_unused_parser{}, unused));
@@ -170,7 +166,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_unary_unused_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_unary_unused_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_unary_unused_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_unary_unused_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_unary_unused_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_unary_unused_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_unary_unused_parser{}, unused));
@@ -179,7 +174,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_binary_unused_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_binary_unused_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_binary_unused_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_binary_unused_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_binary_unused_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_binary_unused_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_binary_unused_parser{}, unused));
@@ -195,7 +189,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_parser{}, unused));
@@ -204,7 +197,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_unary_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_unary_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_unary_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_unary_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_unary_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_unary_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_unary_parser{}, unused));
@@ -213,7 +205,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_binary_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_binary_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_binary_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_binary_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_binary_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_binary_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_binary_parser{}, unused));
@@ -223,7 +214,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_unused_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_unused_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_unused_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_unused_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_unused_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_unused_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_unused_parser{}, unused));
@@ -232,7 +222,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_unary_unused_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_unary_unused_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_unary_unused_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_unary_unused_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_unary_unused_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_unary_unused_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_unary_unused_parser{}, unused));
@@ -241,7 +230,6 @@ TEST_CASE("parser")
         STATIC_CHECK(x4::X4Subject<minimal_binary_unused_parser>);
         STATIC_CHECK(x4::X4ExplicitSubject<minimal_binary_unused_parser>);
         STATIC_CHECK(x4::is_parsable_v<minimal_binary_unused_parser, It, Se, unused_type, unused_type>);
-        STATIC_CHECK(!x4::is_nothrow_parsable_v<minimal_binary_unused_parser, It, Se, unused_type, unused_type>);
         STATIC_CHECK(x4::X4Parser<minimal_binary_unused_parser, It, Se>);
         STATIC_CHECK(x4::X4ExplicitParser<minimal_binary_unused_parser, It, Se>);
         STATIC_CHECK(x4::parse("", minimal_binary_unused_parser{}, unused));
