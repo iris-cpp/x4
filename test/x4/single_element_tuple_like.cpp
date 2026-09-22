@@ -192,6 +192,18 @@ TEST_CASE("single_element_tuple_like")
         constexpr auto func_call = identifier >> '(' >> int_ >> ')';
         REQUIRE(parse("abc(42)", func_call));
     }
+
+    // rule attribute wrapping the attribute of the rule's parser
+    {
+        SES<std::string> attr;
+        REQUIRE(parse("abc", x4::rule<struct ses_string_tag, SES<std::string>>{} = +alpha, attr));
+        CHECK(attr.value == "abc");
+    }
+    {
+        SES<iris::rvariant<std::string, int>> attr;
+        REQUIRE(parse("abc", x4::rule<struct ses_variant_tag, SES<iris::rvariant<std::string, int>>>{} = +alpha, attr));
+        CHECK(iris::get<std::string>(attr.value) == "abc");
+    }
 }
 
 

@@ -20,10 +20,14 @@
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/container_appender.hpp>
 
+#include <iris/x4/traits/can_hold.hpp>
 #include <iris/x4/traits/lossy_conversion.hpp>
 #include <iris/x4/traits/transform_attribute.hpp>
+#include <iris/x4/traits/tuple_traits.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
+
+#include <iris/alloy/traits.hpp>
 
 #include <iris/pp/cat.hpp>
 
@@ -44,13 +48,13 @@ struct rule;
 
 namespace detail {
 
-template<class ParserAttr, class ExposedAttr>
+template<class RuleAttr, class ParserAttr>
 struct rule_should_unwrap : std::false_type {};
 
-template<class ParserAttr, class ExposedAttr>
-    requires traits::is_single_element_tuple_like<ExposedAttr>::value
-struct rule_should_unwrap<ParserAttr, ExposedAttr>
-    : traits::can_hold<ParserAttr, alloy::tuple_element_t<0, ExposedAttr>>
+template<class RuleAttr, class ParserAttr>
+    requires traits::is_single_element_tuple_like<RuleAttr>::value
+struct rule_should_unwrap<RuleAttr, ParserAttr>
+    : traits::can_hold<std::remove_reference_t<alloy::tuple_element_t<0, RuleAttr>>, ParserAttr>
 {};
 
 template<class RuleID>
@@ -190,7 +194,7 @@ private:
         It start = first; // backup
 
         auto&& unwrapped_attr = [&]() -> decltype(auto) {
-            if constexpr (rule_should_unwrap<typename parser_traits<RHS>::attribute_type, RHSAttr>::value) {
+            if constexpr (rule_should_unwrap<RHSAttr, typename parser_traits<RHS>::attribute_type>::value) {
                 return alloy::get<0>(rhs_attr);
             } else {
                 return rhs_attr;
