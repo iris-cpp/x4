@@ -59,6 +59,10 @@ TEST_CASE("sequence")
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ >> char_);
 
+    STATIC_CHECK(std::same_as<decltype(int_ >> int_), x4::sequence<x4::int_parser<int>, x4::int_parser<int>>>);
+    STATIC_CHECK(std::same_as<decltype(int_ >> int_ >> int_), x4::sequence<x4::int_parser<int>, x4::int_parser<int>, x4::int_parser<int>>>);
+    STATIC_CHECK(std::same_as<decltype((int_ >> int_) >> int_), decltype(int_ >> (int_ >> int_))>);
+
     CHECK(parse("aa", char_ >> char_));
     CHECK(parse("aa", char_ >> 'a'));
     CHECK(parse("aaa", char_ >> char_ >> char_('a')));

@@ -80,6 +80,19 @@ template<class P>
 struct sequence_passes_view<P> : sequence_passes_view<typename P::proxy_backend_type> {};
 
 
+// A helper to isolate the actual logic inside a single struct.
+//
+// Theoretically, this can be written directly inside a lambda in `parse_sequence`.
+// However, MSVC historically fails to optimize the compilation time of this kind
+// of logic when it is written directly inside a large function.
+//
+// MSVC has a bad behavior where it always reparses the entire tokens of large
+// function body when it needs to be "reinspected" for some arbitrary reason, like
+// different types of specialization, etc. This is NOT the matter of the template
+// instantiation cost; it is due to the function parsing and tokenization behavior.
+//
+// The result is about 50-80ms reduced compilation time (in realistic code) when
+// this is isolated in a struct like below.
 template<class Attr, class... Ps>
 struct parse_sequence_tuple
 {
@@ -145,27 +158,37 @@ parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context co
 
     using layout = sequence_layout<Ps...>;
 
-    if constexpr (layout::attributed_count >= 2) {
-        static_assert(
-            traits::CategorizedAttr<Attr, traits::tuple_attr>,
-            "The attribute of a sequence with >=2 attributed elements must be tuple-like."
-        );
-        static_assert(
-            alloy::tuple_size_v<Attr> >= layout::total_sequence_size,
-            "Sequence size of the passed attribute is less than expected."
-        );
-        static_assert(
-            alloy::tuple_size_v<Attr> <= layout::total_sequence_size,
-            "Sequence size of the passed attribute is greater than expected."
-        );
-    }
+    // Intentionally verbose branches for avoiding instantiation of erroneous grammar stem,
+    // significantly reducing the amount of compilation error.
 
-    It local_it = first;
-    if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
-        first = std::move(local_it);
-        return true;
+    if constexpr (layout::attributed_count < 2) {
+        It local_it = first;
+        if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
+            first = std::move(local_it);
+            return true;
+        }
+        return false;
+
+    } else if constexpr (!traits::CategorizedAttr<Attr, traits::tuple_attr>) {
+        static_assert(false, "The attribute of a sequence with >=2 attributed elements must be tuple-like.");
+        return false;
+
+    } else if constexpr (alloy::tuple_size_v<Attr> < layout::total_sequence_size) {
+        static_assert(false, "Sequence size of the passed attribute is less than expected.");
+        return false;
+
+    } else if constexpr (alloy::tuple_size_v<Attr> > layout::total_sequence_size) {
+        static_assert(false, "Sequence size of the passed attribute is greater than expected.");
+        return false;
+
+    } else {
+        It local_it = first;
+        if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
+            first = std::move(local_it);
+            return true;
+        }
+        return false;
     }
-    return false;
 }
 
 // Attribute is a container

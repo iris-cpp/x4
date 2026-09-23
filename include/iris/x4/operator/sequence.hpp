@@ -168,63 +168,70 @@ private:
 
 namespace detail {
 
-template<class... Ps, std::size_t... Is, class Right>
-[[nodiscard]] constexpr sequence<Ps..., Right>
-sequence_append_impl(std::index_sequence<Is...>, sequence<Ps...> const& left, Right right)
+template<std::size_t I, class T>
+[[nodiscard]] constexpr decltype(auto)
+sequence_element_at(T&& parser) noexcept
 {
-    return {{ {}, { {x4::get_parser<Is>(left.elems)}..., {std::move(right)} } }};
+    if constexpr (is_ttp_specialization_of_v<std::remove_cvref_t<T>, sequence>) {
+        return x4::get_parser<I>(std::forward<T>(parser).elems);
+
+    } else {
+        static_assert(I == 0);
+        return std::forward<T>(parser);
+    }
 }
 
-template<class... Ps, std::size_t... Is, class Right>
-[[nodiscard]] constexpr sequence<Ps..., Right>
-sequence_append_impl(std::index_sequence<Is...>, sequence<Ps...>&& left, Right right)
+template<class... Ps>
+[[nodiscard]] constexpr sequence<std::remove_cvref_t<Ps>...>
+make_sequence(Ps&&... ps)
 {
-    return {{ {}, { {x4::get_parser<Is>(std::move(left).elems)}..., {std::move(right)} } }};
+    return {{ {}, { {std::forward<Ps>(ps)}... } }};
+}
+
+template<std::size_t... Ls, std::size_t... Rs, class Left, class Right>
+[[nodiscard]] constexpr auto
+sequence_concat_impl(std::index_sequence<Ls...>, std::index_sequence<Rs...>, Left&& left, Right&& right)
+{
+    return detail::make_sequence(
+        detail::sequence_element_at<Ls>(std::forward<Left>(left))...,
+        detail::sequence_element_at<Rs>(std::forward<Right>(right))...
+    );
+}
+
+// This is NOT the same as `parser_traits<P>::sequence_size` because we need the
+// element count here, not the count of non-unused attributes
+template<class T>
+inline constexpr std::size_t sequence_parser_count = 1;
+
+template<class... Ps>
+inline constexpr std::size_t sequence_parser_count<sequence<Ps...>> = sizeof...(Ps);
+
+template<class Left, class Right>
+[[nodiscard]] constexpr auto
+sequence_concat(Left&& left, Right&& right)
+{
+    return detail::sequence_concat_impl(
+        std::make_index_sequence<sequence_parser_count<std::remove_cvref_t<Left>>>{},
+        std::make_index_sequence<sequence_parser_count<std::remove_cvref_t<Right>>>{},
+        std::forward<Left>(left), std::forward<Right>(right)
+    );
 }
 
 } // detail
 
 template<X4Subject Left, X4Subject Right>
-    requires (!is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>)
-[[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
-operator>>(Left&& left, Right&& right)
-{
-    return {{ {}, { {as_parser(std::forward<Left>(left))}, {as_parser(std::forward<Right>(right))} } }};
-}
-
-template<class Left, X4Subject Right>
-    requires is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>
 [[nodiscard]] constexpr auto
 operator>>(Left&& left, Right&& right)
 {
-    return detail::sequence_append_impl(
-        std::make_index_sequence<std::remove_cvref_t<Left>::element_count>{},
-        std::forward<Left>(left), as_parser(std::forward<Right>(right))
-    );
+    return detail::sequence_concat(as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)));
 }
 
 template<X4Subject Left, X4Subject Right>
-    requires (!is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>)
-[[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>
-operator>(Left&& left, Right&& right)
-{
-    return {{
-        {},
-        {
-            {as_parser(std::forward<Left>(left))},
-            {expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))}
-        }
-    }};
-}
-
-template<class Left, X4Subject Right>
-    requires is_ttp_specialization_of_v<std::remove_cvref_t<Left>, sequence>
 [[nodiscard]] constexpr auto
 operator>(Left&& left, Right&& right)
 {
-    return detail::sequence_append_impl(
-        std::make_index_sequence<std::remove_cvref_t<Left>::element_count>{},
-        std::forward<Left>(left),
+    return detail::sequence_concat(
+        as_parser(std::forward<Left>(left)),
         expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))
     );
 }
