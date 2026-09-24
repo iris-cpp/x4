@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_CORE_CONTAINER_APPENDER_HPP
+#ifndef IRIS_ZZ_X4_CORE_CONTAINER_APPENDER_HPP
 #define IRIS_ZZ_X4_CORE_CONTAINER_APPENDER_HPP
 
 /*=============================================================================
@@ -9,11 +9,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
-#include <iris/type_traits.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/transform_attribute.hpp>
+#include <iris/x4/core/traits/transform_attribute.hpp>
+
+#include <iris/type_traits.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -141,19 +142,6 @@ make_container_appender(ContainerAttr& appender) noexcept
     return appender;
 }
 
-namespace traits {
-
-template<class ContainerAttr>
-struct append_container<container_appender<ContainerAttr>>
-{
-    template<std::forward_iterator It, std::sentinel_for<It> Se>
-    static constexpr void call(container_appender<ContainerAttr>& appender, It first, Se last)
-        noexcept(noexcept(traits::append(appender.container, std::move(first), std::move(last))))
-    {
-        traits::append(appender.container, std::move(first), std::move(last));
-    }
-};
-
 template<class Transformed>
 struct transform_attribute<Transformed, container_appender<Transformed>>
 {
@@ -167,6 +155,19 @@ struct transform_attribute<Transformed, container_appender<Transformed>>
     template<class TransformedT>
     static constexpr void post(container_appender<Transformed>&, TransformedT&&) noexcept
     {
+    }
+};
+
+namespace traits {
+
+template<class ContainerAttr>
+struct append_container<container_appender<ContainerAttr>>
+{
+    template<std::forward_iterator It, std::sentinel_for<It> Se>
+    static constexpr void call(container_appender<ContainerAttr>& appender, It first, Se last)
+        noexcept(noexcept(traits::append(appender.container, std::move(first), std::move(last))))
+    {
+        traits::append(appender.container, std::move(first), std::move(last));
     }
 };
 

@@ -1,14 +1,14 @@
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/traits/can_hold.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
 
-#include <iris/x4/traits/can_hold.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
+#include <iris/x4/core/move_to.hpp>
 
 #include <iris/rvariant.hpp>
 
 template<class T, class U>
-inline constexpr bool can_hold_v = x4::traits::can_hold<T, U>::value;
+inline constexpr bool can_hold_v = x4::can_hold<T, U>::value;
 
 TEST_CASE("can_hold")
 {

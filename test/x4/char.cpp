@@ -28,11 +28,11 @@ TEST_CASE("char")
 {
     static_assert(x4::traits::is_container_v<std::string>);
     static_assert(x4::traits::X4Container<std::string>);
-    static_assert(x4::traits::CategorizedAttr<std::string, x4::traits::container_attr>);
+    static_assert(x4::CategorizedAttr<std::string, x4::container_tag>);
 
     static_assert(!x4::traits::is_container_v<std::string_view>);
     static_assert(!x4::traits::X4Container<std::string_view>);
-    static_assert(x4::traits::CategorizedAttr<std::string_view, x4::traits::plain_attr>);
+    static_assert(x4::CategorizedAttr<std::string_view, x4::plain_tag>);
 
     namespace standard = x4::standard;
     namespace standard_wide = x4::standard_wide;

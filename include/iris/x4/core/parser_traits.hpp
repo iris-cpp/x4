@@ -11,7 +11,7 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/traits/can_hold.hpp>
+#include <iris/x4/core/traits/can_hold.hpp>
 
 #include <concepts>
 #include <type_traits>
@@ -47,7 +47,7 @@ struct get_attribute_type<Parser>
 template<class Parser, class Container>
 struct get_handles_container
 {
-    static constexpr bool value = traits::can_hold<
+    static constexpr bool value = can_hold<
         typename get_attribute_type<Parser>::type,
         Container
     >::value;

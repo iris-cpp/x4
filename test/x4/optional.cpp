@@ -46,7 +46,7 @@ struct alloy::adaptor<adata>
 
 TEST_CASE("optional")
 {
-    static_assert(x4::traits::is_optional_v<std::optional<int>>);
+    static_assert(x4::is_optional_v<std::optional<int>>);
 
     using x4::int_;
     using x4::omit;

@@ -16,7 +16,7 @@
 #include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
@@ -44,10 +44,10 @@ struct parser_accepts_container
 };
 
 template<class Parser, traits::X4Container Container>
-    requires traits::is_variant_v<typename parser_traits<Parser>::attribute_type>
+    requires is_variant_v<typename parser_traits<Parser>::attribute_type>
 struct parser_accepts_container<Parser, Container>
 {
-    using alternative_type = traits::variant_find_holdable_type<
+    using alternative_type = variant_find_holdable_type<
         typename parser_traits<Parser>::attribute_type,
         Container
     >::type;
@@ -83,7 +83,7 @@ struct parse_into_container_impl_default
             }
 
         } else {
-            if constexpr (traits::is_size_one_sequence_v<unwrapped_attribute_type>) {
+            if constexpr (tuple_is_size_one_sequence_v<unwrapped_attribute_type>) {
                 // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {
@@ -110,16 +110,16 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
     } else if constexpr (is_recursive_wrapper_v<Attr>) {
         return detail::parse_into_container(parser, first, last, ctx, *attr);
 
-    } else if constexpr (traits::is_size_one_sequence_v<Attr>) {
+    } else if constexpr (tuple_is_size_one_sequence_v<Attr>) {
         // A tuple-like holding a single container; parse into that container
         return detail::parse_into_container(parser, first, last, ctx, alloy::get<0>(attr));
 
-    } else if constexpr (traits::is_variant_v<Attr>) {
+    } else if constexpr (is_variant_v<Attr>) {
          // e.g. `char` when the caller is `+char_`
         using attribute_type = parser_traits<Parser>::attribute_type;
 
         // e.g. `std::string` when the attribute_type is `char`
-        using substitute_type = traits::variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
+        using substitute_type = variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
 
         // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
         auto& variant_alt = attr.template emplace<substitute_type>();

@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
-#define IRIS_ZZ_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_TRANSFORM_ATTRIBUTE_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_TRANSFORM_ATTRIBUTE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -11,6 +11,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
 
@@ -18,7 +20,7 @@
 #include <concepts>
 #include <utility>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 template<class Transformed, class Exposed>
 struct transform_attribute
@@ -114,6 +116,6 @@ struct transform_attribute<Transformed, unused_container_type const>
     static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
 };
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

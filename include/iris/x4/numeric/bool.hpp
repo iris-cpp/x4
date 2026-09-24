@@ -11,14 +11,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/core/traits/numeric_traits.hpp>
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
+
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 
 #include <iris/x4/string/detail/string_parse.hpp>
-#include <iris/x4/traits/numeric_traits.hpp>
-
-#include <iris/x4/traits/char_encoding_traits.hpp>
 
 #include <concepts>
 #include <string_view>
@@ -36,7 +36,7 @@ struct bool_policies
     parse_true(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
         noexcept(noexcept(x4::move_to(T(true), attr_)))
     {
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
         if (detail::string_parse(std::basic_string_view{token_def::true_}, first, last, unused_container, compare)) {
             x4::move_to(T(true), attr_);
             return true;
@@ -49,7 +49,7 @@ struct bool_policies
     parse_false(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
         noexcept(noexcept(x4::move_to(T(false), attr_)))
     {
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
         if (detail::string_parse(std::basic_string_view{token_def::false_}, first, last, unused_container, compare)) {
             x4::move_to(T(false), attr_);
             return true;
@@ -79,14 +79,14 @@ struct bool_parser : parser<bool_parser<T, Policy>>
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
-            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx)))
+            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
+            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<char_encoding_for<std::iter_value_t<It>>>(ctx)))
         )
     {
         auto it = first;
         x4::skip_over(it, last, ctx);
 
-        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
+        auto const& compare = x4::get_case_compare<char_encoding_for<std::iter_value_t<It>>>(ctx);
         bool const ok = Policy::parse_true(it, last, attr, compare)
             || Policy::parse_false(it, last, attr, compare);
 
@@ -142,14 +142,14 @@ struct literal_bool_parser : parser<literal_bool_parser<ExpectedValue, Policy>>
         noexcept(
             std::is_nothrow_copy_assignable_v<It> &&
             noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
-            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx)))
+            noexcept(Policy::parse_true(first, last, attr, x4::get_case_compare<char_encoding_for<std::iter_value_t<It>>>(ctx))) &&
+            noexcept(Policy::parse_false(first, last, attr, x4::get_case_compare<char_encoding_for<std::iter_value_t<It>>>(ctx)))
         )
     {
         auto it = first;
         x4::skip_over(it, last, ctx);
 
-        auto const& compare = x4::get_case_compare<traits::char_encoding_for<std::iter_value_t<It>>>(ctx);
+        auto const& compare = x4::get_case_compare<char_encoding_for<std::iter_value_t<It>>>(ctx);
         bool const ok = (static_cast<bool>(ExpectedValue) && Policy::parse_true(it, last, attr, compare))
             || (!static_cast<bool>(ExpectedValue) && Policy::parse_false(it, last, attr, compare));
 

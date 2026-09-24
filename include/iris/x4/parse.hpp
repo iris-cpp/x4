@@ -17,9 +17,9 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/expectation.hpp>
-#include <iris/x4/core/char_traits.hpp>
 
 #include <iris/x4/traits/attribute_traits.hpp>
+#include <iris/x4/core/traits/char_traits.hpp>
 
 #include <iris/x4/char/char_class.hpp> // for builtin skipper
 

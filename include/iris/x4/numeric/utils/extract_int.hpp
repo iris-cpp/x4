@@ -14,11 +14,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/core/traits/numeric_traits.hpp>
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
+
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/move_to.hpp>
-
-#include <iris/x4/traits/numeric_traits.hpp>
-#include <iris/x4/traits/char_encoding_traits.hpp>
 
 #include <concepts>
 #include <limits>
@@ -101,7 +101,7 @@ struct radix_traits
     template<class CharT>
     [[nodiscard]] static constexpr bool is_valid(CharT ch) noexcept
     {
-        using token_def = traits::numeric_token<CharT>;
+        using token_def = numeric_token<CharT>;
         return (ch >= token_def::_0 && ch <= (Radix > 10 ? token_def::_9 : static_cast<CharT>(token_def::_0 + Radix -1)))
             || (Radix > 10 && ch >= token_def::a && ch <= static_cast<CharT>(token_def::a + Radix -10 -1))
             || (Radix > 10 && ch >= token_def::A && ch <= static_cast<CharT>(token_def::A + Radix -10 -1));
@@ -109,12 +109,12 @@ struct radix_traits
 
     template<class CharT>
     [[nodiscard]] static constexpr unsigned digit(CharT ch)
-        noexcept(noexcept(traits::char_encoding_traits<CharT>::encoding_type::tolower(ch)))
+        noexcept(noexcept(char_encoding_traits<CharT>::encoding_type::tolower(ch)))
     {
-        using token_def = traits::numeric_token<CharT>;
+        using token_def = numeric_token<CharT>;
         return (Radix <= 10 || (ch >= token_def::_0 && ch <= token_def::_9))
             ? ch - token_def::_0
-            : traits::char_encoding_traits<CharT>::encoding_type::tolower(ch) - token_def::a + 10;
+            : char_encoding_traits<CharT>::encoding_type::tolower(ch) - token_def::a + 10;
     }
 };
 
@@ -190,7 +190,7 @@ struct int_extractor
             MaxDigits < 0 ||
             MaxDigits > digits_traits<T, Radix>::value
         ) &&
-        traits::check_overflow<T>::value;
+        check_overflow<T>::value;
 
     template<class CharT, class T>
         requires need_check_overflow<T>
@@ -276,7 +276,7 @@ struct extract_int
         using extractor = int_extractor<Radix, Accumulator, MaxDigits>;
         using char_type = std::iter_value_t<It>;
 
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
 
         It it = first;
         std::size_t leading_zeros = 0;
@@ -363,7 +363,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         using extractor = int_extractor<Radix, Accumulator, -1>;
         using char_type = std::iter_value_t<It>;
 
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
 
         It it = first;
         std::size_t count = 0;
@@ -449,7 +449,7 @@ extract_sign(It& first, Se const& last)
         noexcept(++first)
     )
 {
-    using token_def = traits::numeric_token<std::iter_value_t<It>>;
+    using token_def = numeric_token<std::iter_value_t<It>>;
 
     (void)last;
     assert(first != last); // precondition

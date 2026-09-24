@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_OPTIONAL_TRAITS_HPP
-#define IRIS_ZZ_X4_TRAITS_OPTIONAL_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_OPTIONAL_TRAITS_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_OPTIONAL_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <optional>
 #include <type_traits>
@@ -20,11 +20,6 @@ namespace iris::x4 {
 
 struct unused_type;
 struct unused_container_type;
-
-} // iris::x4
-
-
-namespace iris::x4::traits {
 
 template<class T>
 struct is_optional : std::false_type {};
@@ -78,6 +73,6 @@ struct optional_value<unused_type const>
     using type = unused_type;
 };
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

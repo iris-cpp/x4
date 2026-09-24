@@ -12,15 +12,15 @@
 
 #include <iris/config.hpp>
 
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/can_hold.hpp>
+
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
-
-#include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
@@ -111,7 +111,7 @@ struct parse_sequence_tuple
             if constexpr (I != layout::single_attributed_index) {
                 return elem.parse(first, last, ctx, unused);
 
-            } else if constexpr (traits::is_size_one_view_v<Attr> && !sequence_passes_view<parser_type>::value) {
+            } else if constexpr (tuple_is_size_one_view_v<Attr> && !sequence_passes_view<parser_type>::value) {
                 auto&& elem_attr = x4::make_container_appender(alloy::get<0>(attr));
                 return elem.parse(first, last, ctx, elem_attr);
 
@@ -154,7 +154,7 @@ template<class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class 
 parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
     static_assert(X4Attribute<Attr>);
-    static_assert(!traits::CategorizedAttr<Attr, traits::container_attr>);
+    static_assert(!CategorizedAttr<Attr, container_tag>);
 
     using layout = sequence_layout<Ps...>;
 
@@ -169,7 +169,7 @@ parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context co
         }
         return false;
 
-    } else if constexpr (!traits::CategorizedAttr<Attr, traits::tuple_attr>) {
+    } else if constexpr (!CategorizedAttr<Attr, tuple_tag>) {
         static_assert(false, "The attribute of a sequence with >=2 attributed elements must be tuple-like.");
         return false;
 
@@ -194,7 +194,7 @@ parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context co
 // Attribute is a container
 template<
     class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-    traits::CategorizedAttr<traits::container_attr> ContainerAttr
+    CategorizedAttr<container_tag> ContainerAttr
 >
 [[nodiscard]] constexpr bool
 parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
@@ -232,7 +232,7 @@ struct parse_into_container_impl<sequence<Ps...>>
     )
     {
         if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = traits::can_hold<
+            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold<
                 typename parser_traits<sequence<Ps...>>::attribute_type,
                 typename traits::container_value<Attr>::type
             >::value;

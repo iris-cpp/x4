@@ -12,19 +12,18 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/traits/attribute_traits.hpp>
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
+
+#include <iris/x4/core/detail/parse_into_container.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/unused.hpp>
-
-#include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
-#include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/attribute_traits.hpp>
-
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep
 
@@ -72,7 +71,7 @@ template<class Parser, X4Attribute Attr>
 struct pass_parser_attribute
 {
     using attribute_type = parser_traits<Parser>::attribute_type;
-    using substitute_type = traits::variant_find_holdable_type<Attr, attribute_type>::type;
+    using substitute_type = variant_find_holdable_type<Attr, attribute_type>::type;
 
     using type = std::conditional_t<
         std::same_as<Attr, substitute_type>,
@@ -113,7 +112,7 @@ struct pass_non_variant_attribute
 
 // Unwrap single element sequences
 template<class Parser, X4Attribute Attr>
-    requires traits::is_size_one_sequence_v<Attr>
+    requires tuple_is_size_one_sequence_v<Attr>
 struct pass_non_variant_attribute<Parser, Attr>
 {
     using attr_type = std::remove_reference_t<
@@ -132,7 +131,7 @@ struct pass_non_variant_attribute<Parser, Attr>
 };
 
 template<class Parser, X4Attribute Attr>
-    requires (!traits::is_variant_v<Attr>)
+    requires (!is_variant_v<Attr>)
 struct pass_parser_attribute<Parser, Attr>
     : pass_non_variant_attribute<Parser, Attr>
 {};
@@ -342,7 +341,7 @@ struct parse_into_container_impl<alternative<Ps...>>
         return parse_alternative_all<Ps...>::call(
             std::index_sequence_for<Ps...>{},
             [&]<std::size_t I>(auto& container_attr) {
-                if constexpr (traits::is_variant_v<typename traits::container_value<ExposedAttr>::type>) {
+                if constexpr (is_variant_v<typename traits::container_value<ExposedAttr>::type>) {
                     return detail::parse_into_container(alternative_helper{nary::get<I>(parser.elems)}, first, last, ctx, container_attr);
                 } else {
                     return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, container_attr);

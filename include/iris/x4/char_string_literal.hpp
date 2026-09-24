@@ -11,9 +11,9 @@
 #include <iris/x4/char/literal_char.hpp>
 #include <iris/x4/string/literal_string.hpp>
 
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/traits/char_encoding_traits.hpp>
 
 #include <iris/bits/specialization_of.hpp>
 
@@ -41,7 +41,7 @@ struct char_parser_fn
 {
     template<CharLike CharT>
     [[nodiscard]] static constexpr literal_char<
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         typename AttrSelectorTT<CharT>::type
     >
     operator()(CharT ch) noexcept
@@ -55,7 +55,7 @@ struct char_array_parser_fn
 {
     template<CharLike CharT>
     [[nodiscard]] static constexpr literal_char<
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         typename AttrSelectorTT<CharT>::type
     >
     operator()(CharT const (&str)[2]) noexcept
@@ -66,7 +66,7 @@ struct char_array_parser_fn
     template<CharLike CharT, std::size_t N>
     [[nodiscard]] static constexpr literal_string<
         std::array<CharT, N - 1>,
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         typename AttrSelectorTT<std::basic_string<CharT>>::type
     >
     operator()(CharT const (&str)[N]) noexcept
@@ -80,7 +80,7 @@ struct char_array_parser_fn
     template<CharLike CharT, std::size_t N>
     [[nodiscard]] static constexpr literal_string<
         std::basic_string_view<CharT>,
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         typename AttrSelectorTT<std::basic_string<CharT>>::type
     >
     operator()(CharT const (&str)[N]) noexcept
@@ -97,14 +97,14 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
     template<CharLike CharT>
     [[nodiscard]] static constexpr literal_string<
         std::array<CharT, 1>,
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         std::basic_string<CharT>
     >
     operator()(CharT const (&str)[2]) noexcept
     {
         return literal_string<
             std::array<CharT, 1>,
-            traits::char_encoding_for<CharT>,
+            char_encoding_for<CharT>,
             std::basic_string<CharT>
         >{std::array{str[0]}};
     }
@@ -112,7 +112,7 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
     template<CharLike CharT, std::size_t N>
     [[nodiscard]] static constexpr literal_string<
         std::array<CharT, N - 1>,
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         std::basic_string<CharT>
     >
     operator()(CharT const (&str)[N]) noexcept
@@ -126,7 +126,7 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
     template<CharLike CharT, std::size_t N>
     [[nodiscard]] static constexpr literal_string<
         std::basic_string_view<CharT>,
-        traits::char_encoding_for<CharT>,
+        char_encoding_for<CharT>,
         std::basic_string<CharT>
     >
     operator()(CharT const (&str)[N]) noexcept
@@ -143,7 +143,7 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
 //    template<CharLike CharT>
 //    [[nodiscard]] static constexpr literal_string<
 //        std::basic_string_view<CharT>,
-//        traits::char_encoding_for<CharT>,
+//        char_encoding_for<CharT>,
 //        typename AttrSelectorTT<std::basic_string<CharT>>::type
 //    >
 //    operator()(CharT const* s) noexcept
@@ -159,14 +159,14 @@ struct string_parser_fn
         requires is_ttp_specialization_of_v<std::remove_cvref_t<StringLikeT>, std::basic_string>
     [[nodiscard]] static constexpr literal_string<
         std::basic_string<char_type_for<StringLikeT>>,
-        traits::char_encoding_for<char_type_for<StringLikeT>>,
+        char_encoding_for<char_type_for<StringLikeT>>,
         typename AttrSelectorTT<std::basic_string<char_type_for<StringLikeT>>>::type
     >
     operator()(StringLikeT&& str)
         noexcept(std::is_nothrow_constructible_v<
             literal_string<
                 std::basic_string<char_type_for<StringLikeT>>,
-                traits::char_encoding_for<char_type_for<StringLikeT>>,
+                char_encoding_for<char_type_for<StringLikeT>>,
                 typename AttrSelectorTT<std::basic_string<char_type_for<StringLikeT>>>::type
             >,
             StringLikeT
@@ -183,14 +183,14 @@ struct string_view_parser_fn
         requires is_ttp_specialization_of_v<std::remove_cvref_t<StringLikeT>, std::basic_string_view>
     [[nodiscard]] static constexpr literal_string<
         std::basic_string_view<char_type_for<StringLikeT>>,
-        traits::char_encoding_for<char_type_for<StringLikeT>>,
+        char_encoding_for<char_type_for<StringLikeT>>,
         typename AttrSelectorTT<std::basic_string<char_type_for<StringLikeT>>>::type
     >
     operator()(StringLikeT&& str)
         noexcept(std::is_nothrow_constructible_v<
             literal_string<
                 std::basic_string_view<char_type_for<StringLikeT>>,
-                traits::char_encoding_for<char_type_for<StringLikeT>>,
+                char_encoding_for<char_type_for<StringLikeT>>,
                 typename AttrSelectorTT<std::basic_string<char_type_for<StringLikeT>>>::type
             >,
             StringLikeT

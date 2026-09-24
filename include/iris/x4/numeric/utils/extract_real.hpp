@@ -46,11 +46,11 @@ scale(int exp, T& n)
                 return false;
             }
         }
-        n *= traits::pow10<T>(exp);
+        n *= x4::pow10<T>(exp);
 
     } else {
         if (exp < min_exp) {
-            n /= traits::pow10<T>(-min_exp);
+            n /= x4::pow10<T>(-min_exp);
 
             // return false if exp still exceeds the min_exp
             // do this check only for primitive types!
@@ -62,10 +62,10 @@ scale(int exp, T& n)
                 }
             }
 
-            n /= traits::pow10<T>(-exp);
+            n /= x4::pow10<T>(-exp);
 
         } else {
-            n /= traits::pow10<T>(-exp);
+            n /= x4::pow10<T>(-exp);
         }
     }
     return true;

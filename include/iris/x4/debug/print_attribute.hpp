@@ -11,11 +11,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
 
-#include <iris/x4/core/attribute.hpp>
-
 #include <iris/x4/char_encoding/unicode/classify_category.hpp>
 
-#include <iris/x4/traits/attribute_category.hpp>
+#include <iris/x4/core/attribute.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
 
 #include <iris/unicode/string.hpp>
 #include <iris/rvariant/rvariant_io.hpp>
@@ -234,7 +233,7 @@ struct print_attribute_debug
         out << "unused_container";
     }
 
-    static void call(std::ostream& out, traits::CategorizedAttr<traits::plain_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<plain_tag> auto const& val)
     {
         if constexpr (
             std::disjunction_v<
@@ -266,14 +265,14 @@ struct print_attribute_debug
     }
 
     // for tuple-likes
-    static void call(std::ostream& out, traits::CategorizedAttr<traits::tuple_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<tuple_tag> auto const& val)
     {
         out << '<';
         alloy::for_each(val, detail::print_tuple_like<std::ostream>(out));
         out << '>';
     }
 
-    template<traits::CategorizedAttr<traits::container_attr> T_>
+    template<CategorizedAttr<container_tag> T_>
         requires (!std::is_same_v<T_, unused_container_type>)
     static void call(std::ostream& out, T_ const& val)
     {
@@ -299,12 +298,12 @@ struct print_attribute_debug
     }
 
     // for variant types
-    static void call(std::ostream& out, traits::CategorizedAttr<traits::variant_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<variant_tag> auto const& val)
     {
         iris::visit(detail::print_visitor{out}, val);
     }
 
-    static void call(std::ostream& out, traits::CategorizedAttr<traits::optional_attr> auto const& val)
+    static void call(std::ostream& out, CategorizedAttr<optional_tag> auto const& val)
     {
         if (val) {
             x4::print_attribute(out, *val);

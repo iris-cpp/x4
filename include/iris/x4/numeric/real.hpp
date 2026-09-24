@@ -11,12 +11,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/skip_over.hpp>
-
 #include <iris/x4/numeric/utils/extract_int.hpp>
 #include <iris/x4/numeric/utils/extract_real.hpp>
-#include <iris/x4/traits/numeric_traits.hpp>
+
+#include <iris/x4/core/traits/numeric_traits.hpp>
+#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/skip_over.hpp>
 
 #include <iris/x4/string/detail/string_parse.hpp>
 
@@ -59,7 +59,7 @@ struct ureal_policies
         noexcept(noexcept(*first) && noexcept(++first))
     {
         using CharT = std::iter_value_t<It>;
-        if (first == last || *first != traits::numeric_token<CharT>::dot) {
+        if (first == last || *first != numeric_token<CharT>::dot) {
             return false;
         }
         ++first;
@@ -79,7 +79,7 @@ struct ureal_policies
     parse_exp(It& first, Se const& last)
         noexcept(noexcept(*first) && noexcept(++first))
     {
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
         if (first == last || (*first != token_def::e && *first != token_def::E)) {
             return false;
         }
@@ -111,7 +111,7 @@ struct ureal_policies
     [[nodiscard]] static constexpr bool
     parse_nan(It& first, Se const& last, Attr& attr_)
     {
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
 
         if (first == last) return false; // end of input reached
         if (*first != token_def::n && *first != token_def::N) {
@@ -141,7 +141,7 @@ struct ureal_policies
     [[nodiscard]] static constexpr bool
     parse_inf(It& first, Se const& last, Attr& attr_)
     {
-        using token_def = traits::numeric_token<std::iter_value_t<It>>;
+        using token_def = numeric_token<std::iter_value_t<It>>;
 
         if (first == last) return false;   // end of input reached
         if (*first != token_def::i && *first != token_def::I) return false; // not "inf"

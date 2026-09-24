@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_NUMERIC_TRAITS_HPP
-#define IRIS_ZZ_X4_TRAITS_NUMERIC_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_NUMERIC_TRAITS_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_NUMERIC_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2011 Hartmut Kaiser
@@ -10,11 +10,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <string_view>
 #include <limits>
 #include <type_traits>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 // Customization points for numeric operations
 
@@ -74,6 +76,6 @@ template<class T>
 struct check_overflow : std::bool_constant<std::numeric_limits<T>::is_bounded>
 {};
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

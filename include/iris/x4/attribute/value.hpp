@@ -12,11 +12,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/char_traits.hpp>
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
-#include <iris/x4/core/char_traits.hpp>
-
-#include <iris/x4/traits/container_traits.hpp>
 
 #include <string>
 #include <string_view>
@@ -93,7 +93,7 @@ struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ContainerAttr>
-        requires traits::CategorizedAttr<ContainerAttr, traits::container_attr>
+        requires CategorizedAttr<ContainerAttr, container_tag>
     [[nodiscard]] static constexpr bool
     parse(It&, Se const&, Context const&, ContainerAttr& exposed_attr) noexcept
     {
@@ -102,7 +102,7 @@ struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-        requires (!traits::CategorizedAttr<Attr, traits::container_attr>)
+        requires (!CategorizedAttr<Attr, container_tag>)
     [[nodiscard]] static constexpr bool
     parse(It&, Se const&, Context const&, Attr& exposed_attr)
         noexcept(noexcept(exposed_attr = Attr{}))

@@ -1,5 +1,5 @@
-#ifndef IRIS_X4_TRAITS_CAN_HOLD_HPP
-#define IRIS_X4_TRAITS_CAN_HOLD_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_CAN_HOLD_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_CAN_HOLD_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -10,8 +10,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
 
 #include <iris/x4/core/attribute.hpp>
 
@@ -20,7 +22,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 template<class T, class U>
 struct can_hold;
@@ -41,12 +43,12 @@ template<class TTuple, class UTuple>
 struct is_all_substitute_for_tuple : std::false_type {};
 
 template<class TTuple, class UTuple>
-    requires is_same_size_sequence_v<TTuple, UTuple>
+    requires tuple_is_same_size_sequence_v<TTuple, UTuple>
 struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
 
 template<class T, class U>
 struct value_type_can_hold
-    : can_hold<typename container_value<T>::type, typename container_value<U>::type>
+    : can_hold<typename traits::container_value<T>::type, typename traits::container_value<U>::type>
 {};
 
 // This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations
@@ -63,8 +65,8 @@ struct can_hold_impl<T, U>
 
 template<class T, class U>
     requires
-        is_container_v<T> &&
-        is_container_v<U>
+        traits::is_container_v<T> &&
+        traits::is_container_v<U>
 struct can_hold_impl<T, U>
     : detail::value_type_can_hold<T, U>
 {};
@@ -109,6 +111,6 @@ struct can_hold<T, T>
     static_assert(X4Attribute<T>);
 };
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

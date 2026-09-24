@@ -31,7 +31,7 @@ struct kleene : unary_parser<kleene<Subject>, Subject>
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
+        can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     using unary_parser<kleene, Subject>::unary_parser;

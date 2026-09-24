@@ -13,14 +13,14 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/core/traits/transform_attribute.hpp>
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/container_appender.hpp>
-
-#include <iris/x4/traits/transform_attribute.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
 
@@ -96,7 +96,7 @@ private:
     using rcontext_t = std::remove_cvref_t<
         decltype(x4::replace_first_context<contexts::rule_var>(
             std::declval<Context const&>(),
-            std::declval<typename traits::transform_attribute<Attr, RHSAttr>::type&>()
+            std::declval<typename transform_attribute<Attr, RHSAttr>::type&>()
         ))
     >;
 
@@ -248,7 +248,7 @@ public:
     )
     {
         // Do down-stream transformation, provide attribute for `rhs` parser
-        using transform = traits::transform_attribute<Attr, Exposed>;
+        using transform = transform_attribute<Attr, Exposed>;
         using transform_attr = transform::type;
         transform_attr rhs_attr = transform::pre(exposed_attr);
 

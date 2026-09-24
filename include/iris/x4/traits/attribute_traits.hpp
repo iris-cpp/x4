@@ -8,12 +8,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
+
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/unused.hpp>
-
-#include <iris/x4/traits/variant_traits.hpp>
-#include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/attribute_category.hpp>
 
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep
@@ -56,7 +56,7 @@ concept proper_attribute_for =
 template<class ExposedAttr>
 struct attribute_traits
 {
-    static_assert(CategorizedAttr<ExposedAttr, plain_attr>);
+    static_assert(CategorizedAttr<ExposedAttr, plain_tag>);
 
     static constexpr void reset(ExposedAttr& attr)
         noexcept(noexcept(attr = ExposedAttr{}))
@@ -92,7 +92,7 @@ struct attribute_traits
 template<class ExposedAttr>
 inline constexpr bool is_nothrow_resettable_v = noexcept(attribute_traits<ExposedAttr>::reset(std::declval<ExposedAttr&>()));
 
-template<CategorizedAttr<unused_attr> UnusedTypeT>
+template<CategorizedAttr<unused_tag> UnusedTypeT>
 struct attribute_traits<UnusedTypeT>
 {
     static constexpr void reset(UnusedTypeT const&) noexcept
@@ -105,7 +105,7 @@ struct attribute_traits<UnusedTypeT>
     }
 };
 
-template<CategorizedAttr<optional_attr> OptionalT>
+template<CategorizedAttr<optional_tag> OptionalT>
 struct attribute_traits<OptionalT>
 {
     using value_type = OptionalT::value_type;
@@ -118,7 +118,7 @@ struct attribute_traits<OptionalT>
     // The branch writes the optional as a whole (a nested optional parser, or
     // a rule with an optional attribute): hand it over disengaged.
     template<class ParserAttr>
-        requires std::same_as<ParserAttr, OptionalT> || CategorizedAttr<ParserAttr, optional_attr>
+        requires std::same_as<ParserAttr, OptionalT> || CategorizedAttr<ParserAttr, optional_tag>
     static constexpr OptionalT& clear(OptionalT& opt) noexcept
     {
         opt.reset();
@@ -129,7 +129,7 @@ struct attribute_traits<OptionalT>
     // contained object if already engaged, and prepare that value for `ParserAttr`.
     template<class ParserAttr>
         requires
-            (!CategorizedAttr<ParserAttr, optional_attr>) &&
+            (!CategorizedAttr<ParserAttr, optional_tag>) &&
             detail::clearable_for<value_type, ParserAttr>
     static constexpr decltype(auto) clear(OptionalT& opt)
     {
@@ -165,7 +165,7 @@ inline constexpr bool is_variant_nothrow_resettable = []<std::size_t... Is>(std:
 
 } // detail
 
-template<CategorizedAttr<variant_attr> VariantT>
+template<CategorizedAttr<variant_tag> VariantT>
 struct attribute_traits<VariantT>
 {
     static constexpr void reset(VariantT& var)
@@ -220,7 +220,7 @@ struct attribute_traits<VariantT>
     }
 };
 
-template<CategorizedAttr<container_attr> ContainerT>
+template<CategorizedAttr<container_tag> ContainerT>
 struct attribute_traits<ContainerT>
 {
     static constexpr void reset(ContainerT& container)
@@ -249,7 +249,7 @@ inline constexpr bool is_tuple_nothrow_resettable = []<std::size_t... Is>(std::i
 
 } // detail
 
-template<CategorizedAttr<tuple_attr> TupleLikeT>
+template<CategorizedAttr<tuple_tag> TupleLikeT>
 struct attribute_traits<TupleLikeT>
 {
     static constexpr void reset(TupleLikeT& tup)
