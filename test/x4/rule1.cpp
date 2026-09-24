@@ -17,6 +17,11 @@
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 
+#include <iris/rvariant.hpp>
+
+#include <string>
+#include <vector>
+
 TEST_CASE("rule: constructible with incomplete type")
 {
     struct incomplete_type;
@@ -44,6 +49,13 @@ TEST_CASE("rule1")
     static_assert(!x4::has_attribute_v<rule<class r_     >>);
     static_assert( x4::has_attribute_v<decltype(rule<class r_, int>{} = int_)>);
     static_assert(!x4::has_attribute_v<decltype(rule<class r_     >{} = int_)>);
+
+    STATIC_CHECK( x4::parser_traits<rule<class r_, std::string>>::handles_container<std::string>);
+    STATIC_CHECK( x4::parser_traits<rule<class r_, std::vector<int>>>::handles_container<std::vector<int>>);
+    //STATIC_CHECK( x4::parser_traits<rule<class r_, std::vector<int>>>::handles_container<std::vector<iris::rvariant<int, std::string>>>);
+    STATIC_CHECK(!x4::parser_traits<rule<class r_, int>>::handles_container<std::vector<int>>); // yields an element, not the container
+    //STATIC_CHECK(!x4::parser_traits<rule<class r_, iris::rvariant<int, std::string>>>::handles_container<std::string>); // yields a variant, cannot write into `std::string`
+    STATIC_CHECK(!x4::parser_traits<rule<class r_, iris::rvariant<int, std::string>>>::handles_container<std::vector<iris::rvariant<int, std::string>>>);
 
     {
         // basic tests
