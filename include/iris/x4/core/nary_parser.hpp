@@ -21,7 +21,7 @@ namespace iris::x4::nary {
 namespace detail {
 
 template<std::size_t I, class P>
-struct nary_parser_element : P
+struct parser_element : P
 {};
 
 template<class Indices, class... Ps>
@@ -29,7 +29,7 @@ struct parser_storage;
 
 template<std::size_t... Is, class... Ps>
 struct parser_storage<std::index_sequence<Is...>, Ps...>
-    : nary_parser_element<Is, Ps>...
+    : parser_element<Is, Ps>...
 {};
 
 } // detail
@@ -42,7 +42,7 @@ using parser_storage_t = detail::parser_storage<std::index_sequence_for<Ps...>, 
 namespace detail {
 
 template<std::size_t I, class P>
-[[nodiscard]] P deduce_nary_parser_element(nary_parser_element<I, P> const&) noexcept;
+[[nodiscard]] P deduce_nary_parser_element(parser_element<I, P> const&) noexcept;
 
 } // detail
 
@@ -54,15 +54,71 @@ using parser_t = decltype(detail::deduce_nary_parser_element<I>(
 
 template<std::size_t I, class P>
 [[nodiscard]] constexpr P const&
-get(detail::nary_parser_element<I, P> const& elems IRIS_LIFETIMEBOUND) noexcept
+get(detail::parser_element<I, P> const& elems IRIS_LIFETIMEBOUND) noexcept
 {
     return elems;
 }
 template<std::size_t I, class P>
 [[nodiscard]] constexpr P&&
-get(detail::nary_parser_element<I, P>&& elems IRIS_LIFETIMEBOUND) noexcept
+get(detail::parser_element<I, P>&& elems IRIS_LIFETIMEBOUND) noexcept
 {
     return static_cast<P&&>(elems);
+}
+
+// -------------------------------------------------------
+
+template<template<class...> class ParserTT, X4ExplicitSubject... Ps>
+[[nodiscard]] constexpr ParserTT<std::remove_cvref_t<Ps>...>
+make_parser(Ps&&... ps)
+{
+    return {{ {}, { {static_cast<Ps&&>(ps)}... } }};
+}
+
+
+namespace detail {
+
+template<template<class...> class ParserTT, std::size_t I, X4ExplicitSubject P>
+[[nodiscard]] constexpr decltype(auto)
+parser_at(P&& parser) noexcept
+{
+    if constexpr (is_ttp_specialization_of_v<std::remove_cvref_t<P>, ParserTT>) {
+        return nary::get<I>(static_cast<P&&>(parser).elems);
+
+    } else {
+        static_assert(I == 0);
+        return static_cast<P&&>(parser);
+    }
+}
+
+template<template<class...> class ParserTT, std::size_t... LeftIs, std::size_t... RightIs, X4ExplicitSubject Left, X4ExplicitSubject Right>
+[[nodiscard]] constexpr auto
+concat_impl(std::index_sequence<LeftIs...>, std::index_sequence<RightIs...>, Left&& left, Right&& right)
+{
+    return nary::make_parser<ParserTT>(
+        detail::parser_at<ParserTT, LeftIs>(std::forward<Left>(left))...,
+        detail::parser_at<ParserTT, RightIs>(std::forward<Right>(right))...
+    );
+}
+
+// This is NOT the same as `parser_traits<P>::sequence_size` because we need the
+// element count here, not the count of non-unused attributes
+template<template<class...> class ParserTT, class P>
+inline constexpr std::size_t nary_parser_count = 1;
+
+template<template<class...> class ParserTT, class... Ps>
+inline constexpr std::size_t nary_parser_count<ParserTT, ParserTT<Ps...>> = sizeof...(Ps);
+
+} // detail
+
+template<template<class...> class ParserTT, X4ExplicitSubject Left, X4ExplicitSubject Right>
+[[nodiscard]] constexpr auto
+concat(Left&& left, Right&& right)
+{
+    return detail::concat_impl<ParserTT>(
+        std::make_index_sequence<detail::nary_parser_count<ParserTT, std::remove_cvref_t<Left>>>{},
+        std::make_index_sequence<detail::nary_parser_count<ParserTT, std::remove_cvref_t<Right>>>{},
+        std::forward<Left>(left), std::forward<Right>(right)
+    );
 }
 
 } // iris::x4::nary

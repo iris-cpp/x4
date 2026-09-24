@@ -218,73 +218,20 @@ private:
     }
 };
 
-namespace detail {
-
-template<std::size_t I, class T>
-[[nodiscard]] constexpr decltype(auto)
-sequence_element_at(T&& parser) noexcept
-{
-    if constexpr (is_ttp_specialization_of_v<std::remove_cvref_t<T>, sequence>) {
-        return nary::get<I>(std::forward<T>(parser).elems);
-
-    } else {
-        static_assert(I == 0);
-        return std::forward<T>(parser);
-    }
-}
-
-template<class... Ps>
-[[nodiscard]] constexpr sequence<std::remove_cvref_t<Ps>...>
-make_sequence(Ps&&... ps)
-{
-    return {{ {}, { {std::forward<Ps>(ps)}... } }};
-}
-
-template<std::size_t... Ls, std::size_t... Rs, class Left, class Right>
-[[nodiscard]] constexpr auto
-sequence_concat_impl(std::index_sequence<Ls...>, std::index_sequence<Rs...>, Left&& left, Right&& right)
-{
-    return detail::make_sequence(
-        detail::sequence_element_at<Ls>(std::forward<Left>(left))...,
-        detail::sequence_element_at<Rs>(std::forward<Right>(right))...
-    );
-}
-
-// This is NOT the same as `parser_traits<P>::sequence_size` because we need the
-// element count here, not the count of non-unused attributes
-template<class T>
-inline constexpr std::size_t sequence_parser_count = 1;
-
-template<class... Ps>
-inline constexpr std::size_t sequence_parser_count<sequence<Ps...>> = sizeof...(Ps);
-
-template<class Left, class Right>
-[[nodiscard]] constexpr auto
-sequence_concat(Left&& left, Right&& right)
-{
-    return detail::sequence_concat_impl(
-        std::make_index_sequence<sequence_parser_count<std::remove_cvref_t<Left>>>{},
-        std::make_index_sequence<sequence_parser_count<std::remove_cvref_t<Right>>>{},
-        std::forward<Left>(left), std::forward<Right>(right)
-    );
-}
-
-} // detail
-
 template<X4Subject Left, X4Subject Right>
 [[nodiscard]] constexpr auto
 operator>>(Left&& left, Right&& right)
 {
-    return detail::sequence_concat(as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right)));
+    return nary::concat<sequence>(as_parser(static_cast<Left&&>(left)), as_parser(static_cast<Right&&>(right)));
 }
 
 template<X4Subject Left, X4Subject Right>
 [[nodiscard]] constexpr auto
 operator>(Left&& left, Right&& right)
 {
-    return detail::sequence_concat(
-        as_parser(std::forward<Left>(left)),
-        expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))
+    return nary::concat<sequence>(
+        as_parser(static_cast<Left&&>(left)),
+        expect_directive<as_parser_plain_t<Right>>(as_parser(static_cast<Right&&>(right)))
     );
 }
 

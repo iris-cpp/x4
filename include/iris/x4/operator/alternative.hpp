@@ -19,15 +19,13 @@
 #include <iris/rvariant/rvariant.hpp>
 
 #include <iris/type_list.hpp>
-#include <iris/bits/specialization_of.hpp>
 
 #include <concepts>
 #include <iterator>
 #include <string>
-#include <type_traits>
 #include <utility>
 
-#include <cstddef>
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4 {
 
@@ -143,54 +141,11 @@ struct alternative : nary_parser<alternative<Ps...>, Ps...>
     }
 };
 
-namespace detail {
-
-template<class... Ps, std::size_t... Is, class Right>
-[[nodiscard]] constexpr alternative<Ps..., Right>
-alternative_append_impl(std::index_sequence<Is...>, alternative<Ps...> const& left, Right right)
-    noexcept(std::is_nothrow_copy_constructible_v<alternative<Ps...>> && std::is_nothrow_move_constructible_v<Right>)
-{
-    return {{ {}, { {nary::get<Is>(left.elems)}..., {std::move(right)} } }};
-}
-
-template<class... Ps, std::size_t... Is, class Right>
-[[nodiscard]] constexpr alternative<Ps..., Right>
-alternative_append_impl(std::index_sequence<Is...>, alternative<Ps...>&& left, Right right)
-    noexcept(std::is_nothrow_move_constructible_v<alternative<Ps...>> && std::is_nothrow_move_constructible_v<Right>)
-{
-    return {{ {}, { {nary::get<Is>(std::move(left).elems)}..., {std::move(right)} } }};
-}
-
-} // detail
-
 template<X4Subject Left, X4Subject Right>
-    requires (!iris::is_ttp_specialization_of_v<std::remove_cvref_t<Left>, alternative>)
-[[nodiscard]] constexpr alternative<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
-operator|(Left&& left, Right&& right)
-    noexcept(
-        is_parser_nothrow_castable_v<Left> &&
-        is_parser_nothrow_castable_v<Right> &&
-        std::is_nothrow_constructible_v<as_parser_plain_t<Left>, as_parser_t<Left>> &&
-        std::is_nothrow_constructible_v<as_parser_plain_t<Right>, as_parser_t<Right>>
-    )
-{
-    return {{ {}, { {as_parser(std::forward<Left>(left))}, {as_parser(std::forward<Right>(right))} } }};
-}
-
-template<class Left, X4Subject Right>
-    requires iris::is_ttp_specialization_of_v<std::remove_cvref_t<Left>, alternative>
 [[nodiscard]] constexpr auto
 operator|(Left&& left, Right&& right)
-    noexcept(
-        std::is_nothrow_constructible_v<std::remove_cvref_t<Left>, Left> &&
-        is_parser_nothrow_castable_v<Right> &&
-        std::is_nothrow_constructible_v<as_parser_plain_t<Right>, as_parser_t<Right>>
-    )
 {
-    return detail::alternative_append_impl(
-        std::make_index_sequence<std::remove_cvref_t<Left>::element_count>{},
-        std::forward<Left>(left), as_parser(std::forward<Right>(right))
-    );
+    return nary::concat<alternative>(as_parser(static_cast<Left&&>(left)), as_parser(static_cast<Right&&>(right)));
 }
 
 } // iris::x4

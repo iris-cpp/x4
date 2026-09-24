@@ -74,6 +74,10 @@ TEST_CASE("alternative")
     using x4::eps;
     using x4::true_;
 
+    STATIC_CHECK(std::same_as<decltype(int_ | int_), x4::alternative<x4::int_parser<int>, x4::int_parser<int>>>);
+    STATIC_CHECK(std::same_as<decltype(int_ | int_ | int_), x4::alternative<x4::int_parser<int>, x4::int_parser<int>, x4::int_parser<int>>>);
+    STATIC_CHECK(std::same_as<decltype((int_ | int_) | int_), decltype(int_ | (int_ | int_))>);
+
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
     {
