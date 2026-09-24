@@ -265,4 +265,12 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", *stmt, std::vector<stmt_t>({stmt_t{"12ab"s}}));
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab,1!", (expr >> lit('!') | +alnum) % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}, stmt_t{expr_t{1}}}));
     }
+
+    // The successful branch / subject appends to the elements which were already there
+    X4_TEST_SUCCESS("poison"s, "xab", alpha >> (alpha >> digit | alpha) >> lit('b'), "xa"s);
+    X4_TEST_SUCCESS("poison"s, "xa1", alpha >> (alpha >> digit | alpha), "xa1"s);
+    X4_TEST_SUCCESS("poison"s, "xa1", alpha >> -(alpha >> digit), "xa1"s);
+    X4_TEST_SUCCESS("poison"s, "x", alpha >> -(alpha >> digit), "x"s);
+    X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1,2!", +(int_ >> lit(',')) >> -(int_ >> lit('!')), std::vector<int>({1, 2}));
+    X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1,2!", +(int_ >> lit(',')) >> (int_ >> lit('?') | int_ >> lit('!')), std::vector<int>({1, 2}));
 }

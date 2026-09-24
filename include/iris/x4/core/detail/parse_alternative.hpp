@@ -309,7 +309,11 @@ struct parse_alternative_all
         unwrap_container_appender_t<ContainerAttr> buffer;
         auto parse_branch = [&]<std::size_t I>() -> bool {
             if (try_branch.template operator()<I>(buffer)) {
-                x4::move_to(std::move(buffer), container_attr);
+                traits::append(
+                    container_attr,
+                    std::make_move_iterator(traits::begin(buffer)),
+                    std::make_move_iterator(traits::end(buffer))
+                );
                 return true;
             }
             traits::clear(buffer);

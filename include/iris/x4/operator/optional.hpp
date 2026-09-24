@@ -103,7 +103,11 @@ struct optional : unary_parser<optional<Subject>, Subject>
         } else {
             unwrap_container_appender_t<Attr> buffer;
             if (detail::parse_into_container(this->subject, first, last, ctx, buffer)) {
-                x4::move_to(std::move(buffer), attr);
+                traits::append(
+                    attr,
+                    std::make_move_iterator(traits::begin(buffer)),
+                    std::make_move_iterator(traits::end(buffer))
+                );
                 return true;
             }
         }
