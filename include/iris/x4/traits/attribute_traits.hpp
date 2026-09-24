@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include <cstddef>
+#include <cassert>
 
 namespace iris::x4::traits {
 
@@ -44,6 +45,14 @@ concept proper_attribute_for =
 
 } // detail
 
+// Note: We don't need to place conditional `noexcept` specifiers to
+//       `attribute_traits<T>::clear`. It has been confirmed that it
+//       does not affect the generated binary code in any ways, and
+//       it does increase the compilation time by few hundred msec.
+//
+// We do need to place them in `reset`, as it affects the semantics of
+// `attribute_reset_guard`.
+
 template<class ExposedAttr>
 struct attribute_traits
 {
@@ -60,7 +69,6 @@ struct attribute_traits
             std::default_initializable<ParserAttr> &&
             weakly_assignable_from<ExposedAttr&, ParserAttr>
     static constexpr ExposedAttr& clear(ExposedAttr& attr)
-        noexcept(noexcept(attr = ParserAttr{}))
     {
         static_assert(detail::proper_attribute_for<ExposedAttr, ParserAttr>);
         attr = ParserAttr{};
@@ -73,7 +81,6 @@ struct attribute_traits
             (!weakly_assignable_from<ExposedAttr&, ParserAttr>) &&
             std::constructible_from<ExposedAttr, ParserAttr>
     static constexpr ExposedAttr& clear(ExposedAttr& attr)
-        noexcept(noexcept(attr = ExposedAttr{ParserAttr{}}))
     {
         static_assert(std::default_initializable<ParserAttr>);
         static_assert(detail::proper_attribute_for<ExposedAttr, ExposedAttr>);
@@ -84,10 +91,6 @@ struct attribute_traits
 
 template<class ExposedAttr>
 inline constexpr bool is_nothrow_resettable_v = noexcept(attribute_traits<ExposedAttr>::reset(std::declval<ExposedAttr&>()));
-
-template<class ExposedAttr, class ParserAttr>
-inline constexpr bool is_nothrow_clearable_v = noexcept(attribute_traits<ExposedAttr>::template clear<ParserAttr>(std::declval<ExposedAttr&>()));
-
 
 template<CategorizedAttr<unused_attr> UnusedTypeT>
 struct attribute_traits<UnusedTypeT>
@@ -129,7 +132,6 @@ struct attribute_traits<OptionalT>
             (!std::same_as<ParserAttr, OptionalT>) &&
             detail::clearable_for<value_type, ParserAttr>
     static constexpr decltype(auto) clear(OptionalT& opt)
-        noexcept(noexcept(opt.emplace()) && is_nothrow_clearable_v<value_type, ParserAttr>)
     {
         if (!opt) opt.emplace();
         return attribute_traits<value_type>::template clear<ParserAttr>(*opt);
@@ -148,7 +150,6 @@ struct attribute_traits<RecursiveWrapperT>
 
     template<class ParserAttr>
     static constexpr decltype(auto) clear(RecursiveWrapperT& rec_wrapper)
-        noexcept(is_nothrow_clearable_v<unwrap_recursive_t<RecursiveWrapperT>, unwrap_recursive_t<ParserAttr>>)
     {
         return attribute_traits<unwrap_recursive_t<RecursiveWrapperT>>::template
             clear<unwrap_recursive_t<ParserAttr>>(*rec_wrapper);
@@ -157,19 +158,10 @@ struct attribute_traits<RecursiveWrapperT>
 
 namespace detail {
 
-template<class VariantT, class AltT>
-concept variant_emplaceable = requires(VariantT& var) {
-    var.template emplace<AltT>();
-};
-
-struct clear_alternative_visitor
-{
-    template<class AltT>
-    static constexpr void operator()(AltT& alt) noexcept(is_nothrow_clearable_v<AltT, AltT>)
-    {
-        attribute_traits<AltT>::template clear<AltT>(alt);
-    }
-};
+template<class VariantT>
+inline constexpr bool is_variant_nothrow_resettable = []<std::size_t... Is>(std::index_sequence<Is...>) {
+    return (is_nothrow_resettable_v<variant_alternative_t<Is, VariantT>> && ...);
+}(std::make_index_sequence<variant_size_v<VariantT>>{});
 
 } // detail
 
@@ -195,12 +187,8 @@ struct attribute_traits<VariantT>
     template<class ParserAttr>
         requires
             (!std::same_as<ParserAttr, VariantT>) &&
-            detail::variant_emplaceable<VariantT, tag_type<ParserAttr>>
+            requires(VariantT& var) { var.template emplace<tag_type<ParserAttr>>(); }
     static constexpr tag_type<ParserAttr>& clear(VariantT& var)
-        noexcept(
-            is_nothrow_clearable_v<tag_type<ParserAttr>, tag_type<ParserAttr>> &&
-            noexcept(var.template emplace<tag_type<ParserAttr>>())
-        )
     {
         if (auto* existing_alt = iris::get_if<tag_type<ParserAttr>>(&var)) {
             attribute_traits<tag_type<ParserAttr>>::template clear<tag_type<ParserAttr>>(*existing_alt);
@@ -214,9 +202,20 @@ struct attribute_traits<VariantT>
     template<class ParserAttr>
         requires std::same_as<ParserAttr, VariantT>
     static constexpr VariantT& clear(VariantT& var)
-        noexcept(noexcept(var.visit(detail::clear_alternative_visitor{})))
     {
-        var.visit(detail::clear_alternative_visitor{});
+        assert(!var.valueless_by_exception());
+
+        // Reuse the existing alternative instance.
+        // We don't call `visit(...)` here, since it increases the compilation time by few hundred msec
+        [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            (void)(
+                (
+                    var.index() == Is
+                    ? (attribute_traits<variant_alternative_t<Is, VariantT>>::reset(*iris::get_if<Is>(&var)), true)
+                    : false
+                ) || ...
+            );
+        }(std::make_index_sequence<variant_size_v<VariantT>>{});
         return var;
     }
 };
@@ -232,28 +231,32 @@ struct attribute_traits<ContainerT>
 
     template<class ParserAttr>
     static constexpr ContainerT& clear(ContainerT& container)
-        noexcept(noexcept(traits::clear(container)))
     {
         traits::clear(container);
         return container;
     }
 };
 
+namespace detail {
+
+template<std::size_t I, class TupleLikeT>
+using tuple_slot_t = std::remove_reference_t<alloy::tuple_element_t<I, TupleLikeT>>;
+
+template<class TupleLikeT>
+inline constexpr bool is_tuple_nothrow_resettable = []<std::size_t... Is>(std::index_sequence<Is...>) {
+    return (is_nothrow_resettable_v<tuple_slot_t<Is, TupleLikeT>> && ...);
+}(std::make_index_sequence<alloy::tuple_size_v<TupleLikeT>>{});
+
+} // detail
+
 template<CategorizedAttr<tuple_attr> TupleLikeT>
 struct attribute_traits<TupleLikeT>
 {
-    template<std::size_t I>
-    using tuple_slot_t = std::remove_reference_t<alloy::tuple_element_t<I, TupleLikeT>>;
-
-    static constexpr bool is_all_nothrow_resettable = []<std::size_t... Is>(std::index_sequence<Is...>) {
-        return (is_nothrow_resettable_v<tuple_slot_t<Is>> && ...);
-    }(std::make_index_sequence<alloy::tuple_size_v<TupleLikeT>>{});
-
     static constexpr void reset(TupleLikeT& tup)
-        noexcept(is_all_nothrow_resettable)
+        noexcept(detail::is_tuple_nothrow_resettable<TupleLikeT>)
     {
         [&]<std::size_t... Is>(std::index_sequence<Is...>) {(
-            attribute_traits<tuple_slot_t<Is>>::reset(
+            attribute_traits<detail::tuple_slot_t<Is, TupleLikeT>>::reset(
                 alloy::get<Is>(tup)
             ), ...
         );
@@ -262,7 +265,6 @@ struct attribute_traits<TupleLikeT>
 
     template<class ParserAttr>
     static constexpr TupleLikeT& clear(TupleLikeT& tup)
-        noexcept(noexcept(attribute_traits::reset(tup)))
     {
         attribute_traits::reset(tup);
         return tup;
@@ -272,13 +274,12 @@ struct attribute_traits<TupleLikeT>
         requires
             (!std::same_as<ParserAttr, TupleLikeT>) &&
             (alloy::tuple_size_v<TupleLikeT> == 1) &&
-            detail::clearable_for<tuple_slot_t<0>, ParserAttr>
+            detail::clearable_for<detail::tuple_slot_t<0, TupleLikeT>, ParserAttr>
     static constexpr decltype(auto) clear(TupleLikeT& tup)
-        noexcept(is_nothrow_clearable_v<tuple_slot_t<0>, ParserAttr>)
     {
         // A single-element tuple-like is transparent, as in `move_to`: the
         // branch parses into the element.
-        return attribute_traits<tuple_slot_t<0>>::template clear<ParserAttr>(
+        return attribute_traits<detail::tuple_slot_t<0, TupleLikeT>>::template clear<ParserAttr>(
             alloy::get<0>(tup)
         );
     }
@@ -290,7 +291,6 @@ namespace iris::x4::detail {
 
 template<X4UnusedAttribute ParserAttr, class ExposedAttr>
 [[nodiscard]] constexpr unused_type const& prepare_attribute(ExposedAttr& exposed_attr)
-    noexcept(noexcept(traits::attribute_traits<ExposedAttr>::reset(exposed_attr)))
 {
     traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
     return unused;
@@ -299,7 +299,6 @@ template<X4UnusedAttribute ParserAttr, class ExposedAttr>
 template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
     requires traits::detail::clearable_for<ExposedAttr, ParserAttr>
 [[nodiscard]] constexpr decltype(auto) prepare_attribute(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
-    noexcept(noexcept(traits::attribute_traits<ExposedAttr>::template clear<ParserAttr>(exposed_attr)))
 {
     return traits::attribute_traits<ExposedAttr>::template clear<ParserAttr>(exposed_attr);
 }
@@ -307,7 +306,6 @@ template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
 template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
     requires (!traits::detail::clearable_for<ExposedAttr, ParserAttr>)
 [[nodiscard]] constexpr ExposedAttr& prepare_attribute(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
-    noexcept(noexcept(traits::attribute_traits<ExposedAttr>::reset(exposed_attr)))
 {
     traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
     return exposed_attr;

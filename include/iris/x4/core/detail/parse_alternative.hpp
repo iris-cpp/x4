@@ -208,6 +208,34 @@ template<class Context>
     }
 }
 
+// This must be an independent struct to reduce compilation time.
+// For details, see notes on `parse_sequence_tuple`.
+template<class... Ps>
+struct parse_alternative_all_impl
+{
+    template<std::size_t I, class Try, X4NonUnusedAttribute ExposedAttr>
+    [[nodiscard]] static constexpr bool parse_branch(Try&& try_branch, ExposedAttr& exposed_attr)
+    {
+        using branch_attr = parser_traits<nary::parser_t<I, Ps...>>::attribute_type;
+        if constexpr (X4UnusedAttribute<branch_attr> || traits::detail::clearable_for<ExposedAttr, branch_attr>) {
+            auto&& alt_attr = detail::prepare_attribute<branch_attr>(exposed_attr);
+            return try_branch.template operator()<I>(alt_attr);
+
+        } else {
+            static_assert(
+                requires(branch_attr&& value) { x4::move_to(std::move(value), exposed_attr); },
+                "The attribute of this branch cannot be converted into the attribute of the alternative."
+            );
+            // The branch yields a whole value of an unrelated shape (e.g. a narrower variant);
+            // parse it into a temporary and convert on success.
+            branch_attr temp{};
+            if (!try_branch.template operator()<I>(temp)) return false;
+            x4::move_to(std::move(temp), exposed_attr);
+            return true;
+        }
+    }
+};
+
 // Tries the branches in order; stops at the first match, or at an expectation
 // failure raised inside a branch.
 template<class... Ps>
@@ -241,28 +269,8 @@ struct parse_alternative_all
     call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, ExposedAttr& exposed_attr)
     {
         static_assert(!std::is_const_v<ExposedAttr>);
-
-        auto parse_branch = [&]<std::size_t I>() -> bool {
-            using branch_attr = parser_traits<nary::parser_t<I, Ps...>>::attribute_type;
-            if constexpr (X4UnusedAttribute<branch_attr> || traits::detail::clearable_for<ExposedAttr, branch_attr>) {
-                auto&& alt_attr = detail::prepare_attribute<branch_attr>(exposed_attr);
-                return try_branch.template operator()<I>(alt_attr);
-
-            } else {
-                static_assert(
-                    requires(branch_attr&& value) { x4::move_to(std::move(value), exposed_attr); },
-                    "The attribute of this branch cannot be converted into the attribute of the alternative."
-                );
-                // The branch yields a whole value of an unrelated shape (e.g. a narrower variant);
-                // parse it into a temporary and convert on success.
-                branch_attr temp{};
-                if (!try_branch.template operator()<I>(temp)) return false;
-                x4::move_to(std::move(temp), exposed_attr);
-                return true;
-            }
-        };
         bool matched = false;
-        (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
+        (void)((((matched = parse_alternative_all_impl<Ps...>::template parse_branch<Is>(try_branch, exposed_attr))) || detail::alternative_should_stop(ctx)) || ...);
         return matched;
     }
 

@@ -12,6 +12,8 @@
 
 #include <iris/x4/core/parser.hpp>
 
+#include <iris/bits/specialization_of.hpp>
+
 #include <utility>
 
 #include <cstddef> // IWYU pragma: keep
@@ -95,8 +97,8 @@ template<template<class...> class ParserTT, std::size_t... LeftIs, std::size_t..
 concat_impl(std::index_sequence<LeftIs...>, std::index_sequence<RightIs...>, Left&& left, Right&& right)
 {
     return nary::make_parser<ParserTT>(
-        detail::parser_at<ParserTT, LeftIs>(std::forward<Left>(left))...,
-        detail::parser_at<ParserTT, RightIs>(std::forward<Right>(right))...
+        detail::parser_at<ParserTT, LeftIs>(static_cast<Left&&>(left))...,
+        detail::parser_at<ParserTT, RightIs>(static_cast<Right&&>(right))...
     );
 }
 
@@ -117,8 +119,21 @@ concat(Left&& left, Right&& right)
     return detail::concat_impl<ParserTT>(
         std::make_index_sequence<detail::nary_parser_count<ParserTT, std::remove_cvref_t<Left>>>{},
         std::make_index_sequence<detail::nary_parser_count<ParserTT, std::remove_cvref_t<Right>>>{},
-        std::forward<Left>(left), std::forward<Right>(right)
+        static_cast<Left&&>(left), static_cast<Right&&>(right)
     );
+}
+
+// Not strictly needed, but significantly improves compilation time by short-circuiting relevant helpers
+template<template<class...> class ParserTT, X4ExplicitSubject Left, X4ExplicitSubject Right>
+    requires
+        (!is_ttp_specialization_of_v<std::remove_cvref_t<Left>, ParserTT>) &&
+        (!is_ttp_specialization_of_v<std::remove_cvref_t<Right>, ParserTT>)
+[[nodiscard]] constexpr ParserTT<std::remove_cvref_t<Left>, std::remove_cvref_t<Right>>
+concat(Left&& left, Right&& right)
+{
+    return {{
+        {}, { {static_cast<Left&&>(left)}, {static_cast<Right&&>(right)} }
+    }};
 }
 
 } // iris::x4::nary
