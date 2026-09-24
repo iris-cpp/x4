@@ -13,7 +13,7 @@
 
 #include <iris/x4/core/detail/parse_sequence.hpp>
 #include <iris/x4/core/expectation.hpp>
-#include <iris/x4/core/multi_parser.hpp>
+#include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser_traits.hpp>
@@ -158,7 +158,7 @@ struct get_attribute_type<sequence<Ps...>>
 
 
 template<class... Ps>
-struct sequence : multi_parser<sequence<Ps...>, Ps...>
+struct sequence : nary_parser<sequence<Ps...>, Ps...>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
@@ -167,7 +167,7 @@ struct sequence : multi_parser<sequence<Ps...>, Ps...>
         It const first_saved = first;
 
         bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return (x4::get_parser<Is>(this->elems).parse(first, last, ctx, unused) && ...);
+            return (nary::get<Is>(this->elems).parse(first, last, ctx, unused) && ...);
         }(std::index_sequence_for<Ps...>{});
         if (ok) {
             return true;
@@ -203,8 +203,8 @@ private:
     template<std::size_t I>
     [[nodiscard]] constexpr std::string get_x4_element_info() const
     {
-        using element_type = multi_parser_t<I, Ps...>;
-        auto const& elem = x4::get_parser<I>(this->elems);
+        using element_type = nary::parser_t<I, Ps...>;
+        auto const& elem = nary::get<I>(this->elems);
 
         if constexpr (I == 0) {
             return get_info<element_type>{}(elem);
@@ -225,7 +225,7 @@ template<std::size_t I, class T>
 sequence_element_at(T&& parser) noexcept
 {
     if constexpr (is_ttp_specialization_of_v<std::remove_cvref_t<T>, sequence>) {
-        return x4::get_parser<I>(std::forward<T>(parser).elems);
+        return nary::get<I>(std::forward<T>(parser).elems);
 
     } else {
         static_assert(I == 0);

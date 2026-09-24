@@ -14,7 +14,7 @@
 
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/move_to.hpp>
-#include <iris/x4/core/multi_parser.hpp>
+#include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/unused.hpp>
 
@@ -243,7 +243,7 @@ struct parse_alternative_all
         static_assert(!std::is_const_v<ExposedAttr>);
 
         auto parse_branch = [&]<std::size_t I>() -> bool {
-            using branch_attr = parser_traits<multi_parser_t<I, Ps...>>::attribute_type;
+            using branch_attr = parser_traits<nary::parser_t<I, Ps...>>::attribute_type;
             if constexpr (X4UnusedAttribute<branch_attr> || traits::detail::clearable_for<ExposedAttr, branch_attr>) {
                 auto&& alt_attr = detail::prepare_attribute<branch_attr>(exposed_attr);
                 return try_branch.template operator()<I>(alt_attr);
@@ -329,9 +329,9 @@ struct parse_into_container_impl<alternative<Ps...>>
             std::index_sequence_for<Ps...>{},
             [&]<std::size_t I>() {
                 if constexpr (traits::is_variant_v<typename traits::container_value<Attr>::type>) {
-                    return detail::parse_into_container(alternative_helper{x4::get_parser<I>(parser.elems)}, first, last, ctx, attr);
+                    return detail::parse_into_container(alternative_helper{nary::get<I>(parser.elems)}, first, last, ctx, attr);
                 } else {
-                    return detail::parse_into_container(x4::get_parser<I>(parser.elems), first, last, ctx, attr);
+                    return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, attr);
                 }
             },
             ctx

@@ -13,7 +13,7 @@
 #include <iris/config.hpp>
 
 #include <iris/x4/core/parser_traits.hpp>
-#include <iris/x4/core/multi_parser.hpp>
+#include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
@@ -102,8 +102,8 @@ struct parse_sequence_tuple
     [[nodiscard]] static constexpr bool
     parse_element(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
     {
-        using parser_type = multi_parser_t<I, Ps...>;
-        auto const& elem = x4::get_parser<I>(seq.elems);
+        using parser_type = nary::parser_t<I, Ps...>;
+        auto const& elem = nary::get<I>(seq.elems);
         constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
         constexpr std::size_t offset = layout::elem_offsets[I];
 
@@ -211,7 +211,7 @@ parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context co
                 return detail::parse_into_container(parser, local_it, last, ctx, container_attr);
             }
         };
-        return (parse_sequence_impl(x4::get_parser<Is>(seq.elems)) && ...);
+        return (parse_sequence_impl(nary::get<Is>(seq.elems)) && ...);
     }(std::index_sequence_for<Ps...>{});
 
     if (ok) {

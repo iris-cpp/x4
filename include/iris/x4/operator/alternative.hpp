@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/core/multi_parser.hpp>
+#include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/detail/parse_alternative.hpp>
@@ -117,7 +117,7 @@ struct get_sequence_size<alternative<Ps...>>
 } // detail
 
 template<class... Ps>
-struct alternative : multi_parser<alternative<Ps...>, Ps...>
+struct alternative : nary_parser<alternative<Ps...>, Ps...>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -126,7 +126,7 @@ struct alternative : multi_parser<alternative<Ps...>, Ps...>
         return detail::parse_alternative_all<Ps...>::call(
             std::index_sequence_for<Ps...>{},
             [&]<std::size_t I>(auto&& alt_attr) {
-                return x4::get_parser<I>(this->elems).parse(first, last, ctx, alt_attr);
+                return nary::get<I>(this->elems).parse(first, last, ctx, alt_attr);
             },
             ctx,
             exposed_attr
@@ -137,7 +137,7 @@ struct alternative : multi_parser<alternative<Ps...>, Ps...>
     {
         return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
             std::string info;
-            ((info += (Is == 0 ? "" : " | ") + get_info<multi_parser_t<Is, Ps...>>{}(x4::get_parser<Is>(this->elems))), ...);
+            ((info += (Is == 0 ? "" : " | ") + get_info<nary::parser_t<Is, Ps...>>{}(nary::get<Is>(this->elems))), ...);
             return info;
         }(std::index_sequence_for<Ps...>{});
     }
@@ -150,7 +150,7 @@ template<class... Ps, std::size_t... Is, class Right>
 alternative_append_impl(std::index_sequence<Is...>, alternative<Ps...> const& left, Right right)
     noexcept(std::is_nothrow_copy_constructible_v<alternative<Ps...>> && std::is_nothrow_move_constructible_v<Right>)
 {
-    return {{ {}, { {x4::get_parser<Is>(left.elems)}..., {std::move(right)} } }};
+    return {{ {}, { {nary::get<Is>(left.elems)}..., {std::move(right)} } }};
 }
 
 template<class... Ps, std::size_t... Is, class Right>
@@ -158,7 +158,7 @@ template<class... Ps, std::size_t... Is, class Right>
 alternative_append_impl(std::index_sequence<Is...>, alternative<Ps...>&& left, Right right)
     noexcept(std::is_nothrow_move_constructible_v<alternative<Ps...>> && std::is_nothrow_move_constructible_v<Right>)
 {
-    return {{ {}, { {x4::get_parser<Is>(std::move(left).elems)}..., {std::move(right)} } }};
+    return {{ {}, { {nary::get<Is>(std::move(left).elems)}..., {std::move(right)} } }};
 }
 
 } // detail
