@@ -34,6 +34,7 @@
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/int.hpp>
+#include <iris/x4/numeric/real.hpp>
 #include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/kleene.hpp>
@@ -41,6 +42,7 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/delimited_list.hpp>
+#include <iris/x4/operator/and_predicate.hpp>
 
 #include <iris/x4/traits/attribute_traits.hpp>
 
@@ -113,10 +115,12 @@ using namespace std::string_literals;
 using namespace std::string_view_literals;
 
 using x4::int_;
+using x4::double_;
 using x4::lit;
 using x4::eps;
 using x4::fixed_value;
 using x4::standard::alpha;
+using x4::standard::alnum;
 using x4::standard::digit;
 
 // Contract 1 + 2
@@ -243,4 +247,22 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
     X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1,2,3", +(int_ >> lit(',')) >> -(int_ >> lit('!')) >> lit('3'), std::vector<int>({1, 2}));
 
     X4_TEST_SUCCESS("poison"s, "ab12", +alpha >> -(+digit >> lit('!')) >> lit("12"), "ab"s);
+
+    // Alternative entered through `parse_into_container`; the appends of a
+    // failed branch must not survive into the next branch
+    X4_TEST_SUCCESS("poison"s, "ab", *(alpha >> digit | alpha), "ab"s);
+    X4_TEST_SUCCESS("poison"s, "ab", +(alpha >> digit | alpha), "ab"s);
+    X4_TEST_SUCCESS("poison"s, "a,b", (alpha >> digit | alpha) % lit(','), "ab"s);
+    X4_TEST_SUCCESS("poison"s, "xab", x4::as<std::string>(alpha >> (alpha >> digit | alpha)) >> lit('b'), "xa"s);
+
+    // Same as above, where the branch attribute is a variant and the element type is a wider variant
+    {
+        using expr_t = iris::rvariant<int, double>;
+        using stmt_t = iris::rvariant<expr_t, std::string>;
+        constexpr auto expr = x4::as<expr_t>(int_ | double_);
+        constexpr auto stmt = expr >> &lit('!') | +alnum;
+        X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", stmt % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}}));
+        X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", *stmt, std::vector<stmt_t>({stmt_t{"12ab"s}}));
+        X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab,1!", (expr >> lit('!') | +alnum) % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}, stmt_t{expr_t{1}}}));
+    }
 }

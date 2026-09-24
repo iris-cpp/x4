@@ -326,25 +326,26 @@ struct parse_into_container_impl<alternative<Ps...>>
 {
     using parser_type = alternative<Ps...>;
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute ExposedAttr>
     [[nodiscard]] static constexpr bool
     call(
         parser_type const& parser,
-        It& first, Se const& last, Context const& ctx, Attr& attr
+        It& first, Se const& last, Context const& ctx, ExposedAttr& exposed_attr
     )
     {
-        static_assert(traits::is_container_v<Attr>);
+        static_assert(traits::is_container_v<ExposedAttr>);
 
         return parse_alternative_all<Ps...>::call(
             std::index_sequence_for<Ps...>{},
-            [&]<std::size_t I>() {
-                if constexpr (traits::is_variant_v<typename traits::container_value<Attr>::type>) {
-                    return detail::parse_into_container(alternative_helper{nary::get<I>(parser.elems)}, first, last, ctx, attr);
+            [&]<std::size_t I>(auto& container_attr) {
+                if constexpr (traits::is_variant_v<typename traits::container_value<ExposedAttr>::type>) {
+                    return detail::parse_into_container(alternative_helper{nary::get<I>(parser.elems)}, first, last, ctx, container_attr);
                 } else {
-                    return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, attr);
+                    return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, container_attr);
                 }
             },
-            ctx
+            ctx,
+            exposed_attr
         );
     }
 };
