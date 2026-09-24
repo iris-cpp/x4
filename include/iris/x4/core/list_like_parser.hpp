@@ -1,13 +1,13 @@
 #ifndef IRIS_X4_CORE_LIST_LIKE_PARSER_HPP
 #define IRIS_X4_CORE_LIST_LIKE_PARSER_HPP
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
 
 #include <iris/x4/core/detail/parse_into_container.hpp> // export
-#include <iris/x4/core/parser.hpp> // export
+#include <iris/x4/core/parser.hpp> // IWYU pragma: export
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/container_appender.hpp>
 

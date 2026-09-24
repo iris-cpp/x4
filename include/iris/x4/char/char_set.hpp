@@ -13,7 +13,8 @@
 #include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/detail/basic_chset.hpp>
 #include <iris/x4/string/case_compare.hpp>
-#include <iris/x4/core/char_traits.hpp>
+
+#include <iris/x4/core/traits/char_traits.hpp>
 
 #include <iris/unicode/string.hpp>
 

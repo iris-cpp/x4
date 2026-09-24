@@ -13,7 +13,7 @@
 #include <iris/x4/char_string_literal.hpp> // IWYU pragma: export
 #include <iris/x4/char/any_char.hpp> // IWYU pragma: export
 
-#include <iris/x4/traits/char_encoding_traits.hpp>
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
 
 namespace iris::x4 {
 

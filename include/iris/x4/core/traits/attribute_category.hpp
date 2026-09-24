@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_ATTRIBUTE_CATEGORY_HPP
-#define IRIS_ZZ_X4_TRAITS_ATTRIBUTE_CATEGORY_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_ATTRIBUTE_CATEGORY_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_ATTRIBUTE_CATEGORY_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -10,9 +10,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/traits/variant_traits.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/optional_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
+#include <iris/x4/core/traits/optional_traits.hpp>
 
 #include <iris/alloy/traits.hpp>
 

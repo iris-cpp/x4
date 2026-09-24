@@ -11,7 +11,7 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/traits/can_hold.hpp>
+#include <iris/x4/core/traits/can_hold.hpp>
 
 #include <concepts>
 #include <type_traits>

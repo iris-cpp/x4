@@ -12,15 +12,15 @@
 
 #include <iris/config.hpp>
 
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/can_hold.hpp>
+
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
-
-#include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/can_hold.hpp>
 
 #include <iris/alloy/tuple.hpp>
 

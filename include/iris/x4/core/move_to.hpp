@@ -13,10 +13,9 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/char_traits.hpp>
-
-#include <iris/x4/traits/attribute_category.hpp>
-#include <iris/x4/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
+#include <iris/x4/core/traits/char_traits.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
 
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep
 #include <iris/alloy/utility.hpp>

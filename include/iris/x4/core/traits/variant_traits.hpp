@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_VARIANT_TRAITS_HPP
-#define IRIS_ZZ_X4_TRAITS_VARIANT_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_VARIANT_TRAITS_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_VARIANT_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -12,14 +12,12 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/traits/can_hold.hpp>
+#include <iris/x4/core/traits/can_hold.hpp>
 
 #include <iris/rvariant/variant_helper.hpp>
 
 #include <concepts>
 #include <type_traits>
-
-// TODO: move this entire header to core (we should not support customizing variant traits)
 
 namespace iris::x4::traits {
 

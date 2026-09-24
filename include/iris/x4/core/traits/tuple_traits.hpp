@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_TUPLE_TRAITS_HPP
-#define IRIS_ZZ_X4_TRAITS_TUPLE_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_TUPLE_TRAITS_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_TUPLE_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -9,6 +9,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
+
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/alloy/traits.hpp>
 

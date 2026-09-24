@@ -13,14 +13,14 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/core/traits/transform_attribute.hpp>
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/container_appender.hpp>
-
-#include <iris/x4/traits/transform_attribute.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
 

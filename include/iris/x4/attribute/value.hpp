@@ -12,11 +12,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/char_traits.hpp>
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
-#include <iris/x4/core/char_traits.hpp>
-
-#include <iris/x4/traits/container_traits.hpp>
 
 #include <string>
 #include <string_view>

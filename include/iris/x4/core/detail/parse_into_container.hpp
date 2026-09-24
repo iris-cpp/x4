@@ -16,7 +16,7 @@
 #include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
 
 #include <iris/alloy/tuple.hpp>
 

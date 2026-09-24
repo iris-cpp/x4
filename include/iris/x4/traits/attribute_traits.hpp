@@ -8,12 +8,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/x4/traits/container_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
+
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/unused.hpp>
-
-#include <iris/x4/traits/variant_traits.hpp>
-#include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/attribute_category.hpp>
 
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep

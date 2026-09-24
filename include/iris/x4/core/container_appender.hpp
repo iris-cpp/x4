@@ -1,4 +1,4 @@
-﻿#ifndef IRIS_ZZ_X4_CORE_CONTAINER_APPENDER_HPP
+#ifndef IRIS_ZZ_X4_CORE_CONTAINER_APPENDER_HPP
 #define IRIS_ZZ_X4_CORE_CONTAINER_APPENDER_HPP
 
 /*=============================================================================
@@ -9,11 +9,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
-#include <iris/type_traits.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/traits/transform_attribute.hpp>
+#include <iris/x4/core/traits/transform_attribute.hpp>
+
+#include <iris/type_traits.hpp>
 
 #include <iterator>
 #include <type_traits>

@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
-#define IRIS_ZZ_X4_TRAITS_TRANSFORM_ATTRIBUTE_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_TRANSFORM_ATTRIBUTE_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_TRANSFORM_ATTRIBUTE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -10,6 +10,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
+
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>

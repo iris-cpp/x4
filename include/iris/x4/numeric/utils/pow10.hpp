@@ -11,8 +11,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/x4/core/traits/numeric_traits.hpp>
 #include <iris/x4/core/unused.hpp>
-#include <iris/x4/traits/numeric_traits.hpp>
 
 #include <concepts>
 

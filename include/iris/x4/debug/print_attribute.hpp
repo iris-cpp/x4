@@ -11,11 +11,10 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ================================================_==============================*/
 
-#include <iris/x4/core/attribute.hpp>
-
 #include <iris/x4/char_encoding/unicode/classify_category.hpp>
 
-#include <iris/x4/traits/attribute_category.hpp>
+#include <iris/x4/core/attribute.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
 
 #include <iris/unicode/string.hpp>
 #include <iris/rvariant/rvariant_io.hpp>

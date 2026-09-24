@@ -14,8 +14,8 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/core/traits/char_traits.hpp>
 #include <iris/x4/core/expectation_failure.hpp>
-#include <iris/x4/core/char_traits.hpp>
 
 #include <iterator>
 #include <ranges>

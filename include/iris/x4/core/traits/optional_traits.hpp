@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_OPTIONAL_TRAITS_HPP
-#define IRIS_ZZ_X4_TRAITS_OPTIONAL_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_OPTIONAL_TRAITS_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_OPTIONAL_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -11,7 +11,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <optional>
 #include <type_traits>

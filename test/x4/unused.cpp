@@ -9,10 +9,11 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/core/unused.hpp>
-#include <iris/x4/traits/transform_attribute.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/rule.hpp>
+
+#include <iris/x4/core/traits/transform_attribute.hpp>
+#include <iris/x4/core/unused.hpp>
 
 #include <type_traits>
 #include <concepts>

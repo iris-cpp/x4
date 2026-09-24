@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_TRAITS_CHAR_ENCODING_TRAITS_HPP
-#define IRIS_ZZ_X4_TRAITS_CHAR_ENCODING_TRAITS_HPP
+#ifndef IRIS_ZZ_X4_CORE_TRAITS_CHAR_ENCODING_TRAITS_HPP
+#define IRIS_ZZ_X4_CORE_TRAITS_CHAR_ENCODING_TRAITS_HPP
 
 /*=============================================================================
     Copyright (c) 2025 Nana Sakisaka
@@ -8,6 +8,8 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
+
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/char_encoding/standard.hpp>
 
