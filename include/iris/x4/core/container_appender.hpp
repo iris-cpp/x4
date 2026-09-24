@@ -142,19 +142,6 @@ make_container_appender(ContainerAttr& appender) noexcept
     return appender;
 }
 
-namespace traits {
-
-template<class ContainerAttr>
-struct append_container<container_appender<ContainerAttr>>
-{
-    template<std::forward_iterator It, std::sentinel_for<It> Se>
-    static constexpr void call(container_appender<ContainerAttr>& appender, It first, Se last)
-        noexcept(noexcept(traits::append(appender.container, std::move(first), std::move(last))))
-    {
-        traits::append(appender.container, std::move(first), std::move(last));
-    }
-};
-
 template<class Transformed>
 struct transform_attribute<Transformed, container_appender<Transformed>>
 {
@@ -168,6 +155,19 @@ struct transform_attribute<Transformed, container_appender<Transformed>>
     template<class TransformedT>
     static constexpr void post(container_appender<Transformed>&, TransformedT&&) noexcept
     {
+    }
+};
+
+namespace traits {
+
+template<class ContainerAttr>
+struct append_container<container_appender<ContainerAttr>>
+{
+    template<std::forward_iterator It, std::sentinel_for<It> Se>
+    static constexpr void call(container_appender<ContainerAttr>& appender, It first, Se last)
+        noexcept(noexcept(traits::append(appender.container, std::move(first), std::move(last))))
+    {
+        traits::append(appender.container, std::move(first), std::move(last));
     }
 };
 

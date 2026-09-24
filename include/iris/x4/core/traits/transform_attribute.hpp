@@ -20,7 +20,7 @@
 #include <concepts>
 #include <utility>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 template<class Transformed, class Exposed>
 struct transform_attribute
@@ -116,6 +116,6 @@ struct transform_attribute<Transformed, unused_container_type const>
     static_assert(!std::is_reference_v<Transformed>, "Transformed cannot be a reference type");
 };
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

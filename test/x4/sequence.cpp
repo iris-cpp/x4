@@ -536,7 +536,7 @@ TEST_CASE("sequence")
         });
 
         STATIC_CHECK(traits::is_container_v<std::vector<x4_test::move_only>>);
-        STATIC_CHECK(traits::CategorizedAttr<std::vector<x4_test::move_only>, x4::traits::container_attr>);
+        STATIC_CHECK(x4::CategorizedAttr<std::vector<x4_test::move_only>, x4::container_tag>);
 
         std::vector<x4_test::move_only> v;
         REQUIRE(parse("ssszs", *x4_test::synth_move_only >> 'z' >> x4_test::synth_move_only, v));

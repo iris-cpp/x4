@@ -21,7 +21,7 @@
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -82,6 +82,6 @@ template<>
 struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
 #endif
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

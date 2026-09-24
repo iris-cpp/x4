@@ -31,12 +31,12 @@ namespace iris::x4 {
 template<class Subject>
 struct optional : unary_parser<optional<Subject>, Subject>
 {
-    using attribute_type = traits::build_optional<typename parser_traits<Subject>::attribute_type>::type;
+    using attribute_type = build_optional<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
         std::bool_constant<parser_traits<Subject>::template handles_container<Container>>,
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
+        can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     using unary_parser<optional, Subject>::unary_parser;
@@ -64,7 +64,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
     // optional attribute
     template<
         std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-        traits::CategorizedAttr<traits::optional_attr> Attr
+        CategorizedAttr<optional_tag> Attr
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
@@ -87,7 +87,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
     // container attribute
     template<
         std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-        traits::CategorizedAttr<traits::container_attr> Attr
+        CategorizedAttr<container_tag> Attr
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const

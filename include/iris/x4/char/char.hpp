@@ -20,7 +20,7 @@ namespace iris::x4 {
 namespace detail {
 
 template<class CharT>
-struct any_char_fn : any_char<traits::char_encoding_for<CharT>>
+struct any_char_fn : any_char<char_encoding_for<CharT>>
 {};
 
 } // detail

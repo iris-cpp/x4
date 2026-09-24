@@ -184,7 +184,7 @@ constexpr void builtin_skip_over(It& first, Se const& last) noexcept
     using CharT = std::remove_cvref_t<std::iter_value_t<It>>;
     static_assert(CharLike<CharT>);
 
-    using Encoding = traits::char_encoding_for<CharT>;
+    using Encoding = char_encoding_for<CharT>;
     using Parser = char_class_parser<Encoding, CharClassTag>;
 
     while (first != last && Parser::test(static_cast<Encoding::classify_type>(*first))) {

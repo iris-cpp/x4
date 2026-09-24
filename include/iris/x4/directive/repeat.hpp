@@ -91,8 +91,8 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
 
     template<class Container>
     static constexpr bool handles_container = std::disjunction_v<
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, Container>,
-        traits::can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
+        can_hold<typename parser_traits<Subject>::attribute_type, Container>,
+        can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>
     >;
 
     template<class SubjectT, detail::RepeatBounds BoundsT>

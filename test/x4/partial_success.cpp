@@ -95,7 +95,7 @@ TEST_CASE("partial success (alternative)")
     // Non-string container attribute
     // Related to: https://github.com/boostorg/spirit/issues/378
     {
-        static_assert(x4::traits::CategorizedAttr<std::vector<int>, x4::traits::container_attr>);
+        static_assert(x4::CategorizedAttr<std::vector<int>, x4::container_tag>);
         static_assert(x4::traits::X4Container<std::vector<int>>);
         static_assert(x4::traits::is_container_v<std::vector<int>>);
 
@@ -129,7 +129,7 @@ TEST_CASE("partial success (alternative)")
     // String container attribute
     // Intended for testing `detail::string_parse`
     {
-        static_assert(x4::traits::CategorizedAttr<std::string, x4::traits::container_attr>);
+        static_assert(x4::CategorizedAttr<std::string, x4::container_tag>);
         static_assert(x4::traits::X4Container<std::string>);
         static_assert(x4::traits::is_container_v<std::string>);
 
@@ -179,7 +179,7 @@ TEST_CASE("partial success (alternative)")
 
     // Plain attribute
     {
-        static_assert(x4::traits::CategorizedAttr<strong_int, x4::traits::plain_attr>);
+        static_assert(x4::CategorizedAttr<strong_int, x4::plain_tag>);
         static_assert(!x4::traits::X4Container<strong_int>);
         static_assert(!x4::traits::is_container_v<strong_int>);
 
@@ -199,7 +199,7 @@ TEST_CASE("partial success (alternative)")
     {
         using pair_int = std::pair<int, int>;
 
-        static_assert(x4::traits::CategorizedAttr<pair_int, x4::traits::tuple_attr>);
+        static_assert(x4::CategorizedAttr<pair_int, x4::tuple_tag>);
         static_assert(!x4::traits::X4Container<pair_int>);
         static_assert(!x4::traits::is_container_v<pair_int>);
 

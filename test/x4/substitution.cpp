@@ -8,7 +8,7 @@
 #include <iris/rvariant.hpp>
 
 template<class T, class U>
-inline constexpr bool can_hold_v = x4::traits::can_hold<T, U>::value;
+inline constexpr bool can_hold_v = x4::can_hold<T, U>::value;
 
 TEST_CASE("can_hold")
 {

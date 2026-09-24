@@ -96,7 +96,7 @@ private:
     using rcontext_t = std::remove_cvref_t<
         decltype(x4::replace_first_context<contexts::rule_var>(
             std::declval<Context const&>(),
-            std::declval<typename traits::transform_attribute<Attr, RHSAttr>::type&>()
+            std::declval<typename transform_attribute<Attr, RHSAttr>::type&>()
         ))
     >;
 
@@ -248,7 +248,7 @@ public:
     )
     {
         // Do down-stream transformation, provide attribute for `rhs` parser
-        using transform = traits::transform_attribute<Attr, Exposed>;
+        using transform = transform_attribute<Attr, Exposed>;
         using transform_attr = transform::type;
         transform_attr rhs_attr = transform::pre(exposed_attr);
 

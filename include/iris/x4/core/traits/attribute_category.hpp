@@ -18,6 +18,7 @@
 
 #include <iris/alloy/traits.hpp>
 
+#include <concepts>
 #include <type_traits>
 
 namespace iris::x4 {
@@ -25,22 +26,20 @@ namespace iris::x4 {
 struct unused_type;
 struct unused_container_type;
 
-} // iris::x4
+struct unused_tag {};
+struct plain_tag {};
+struct container_tag {};
+struct tuple_tag {};
+struct variant_tag {};
+struct optional_tag {};
 
-namespace iris::x4::traits {
-
-struct unused_attr {};
-struct plain_attr {};
-struct container_attr {};
-struct tuple_attr {};
-struct variant_attr {};
-struct optional_attr {};
+namespace detail {
 
 template<class T>
 struct attribute_category
 {
     static_assert(X4NonUnusedAttribute<T>);
-    using type = plain_attr;
+    using type = plain_tag;
 };
 
 template<class T>
@@ -58,63 +57,65 @@ struct attribute_category<T&&> : attribute_category<T> {};
 template<class T>
 struct attribute_category<T const&&> : attribute_category<T> {};
 
-template<class T>
-using attribute_category_t = typename attribute_category<T>::type;
-
 template<>
 struct attribute_category<unused_type>
 {
-    using type = unused_attr;
+    using type = unused_tag;
 };
 
 template<>
 struct attribute_category<unused_container_type>
 {
-    using type = container_attr;
+    using type = container_tag;
 
     // The attribute category type for `unused_container_type` is
     // `container_attribute`, but it does not satisfy `is_container`.
 };
 
-template<class T, typename AttrCategoryTag>
-concept CategorizedAttr =
-    X4Attribute<std::remove_reference_t<T>> &&
-    // Don't use `std::same_as` here, it bloats the compilation error.
-    std::is_same_v<typename attribute_category<std::remove_cvref_t<T>>::type, AttrCategoryTag>;
-
-template<class T>
-concept NonUnusedAttr =
-    X4Attribute<std::remove_reference_t<T>> &&
-    !std::is_same_v<typename attribute_category<std::remove_cvref_t<T>>::type, unused_attr>;
-
 template<class T>
     requires alloy::is_tuple_like_v<T>
 struct attribute_category<T>
 {
-    using type = tuple_attr;
+    using type = tuple_tag;
 };
 
 template<class T>
     requires is_variant_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = variant_attr;
+    using type = variant_tag;
 };
 
 template<class T>
     requires is_optional_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = optional_attr;
+    using type = optional_tag;
 };
 
 template<class T>
     requires traits::is_container_v<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
-    using type = container_attr;
+    using type = container_tag;
 };
 
-} // iris::x4::traits
+} // detail
+
+template<class T>
+using attribute_category_t = detail::attribute_category<T>::type;
+
+template<class T, typename AttrCategoryTag>
+concept CategorizedAttr =
+    X4Attribute<std::remove_reference_t<T>> &&
+    // Don't use `std::same_as` here, it bloats the compilation error.
+    std::same_as<attribute_category_t<T>, AttrCategoryTag>;
+
+template<class T>
+concept NonUnusedCategorizedAttr =
+    X4Attribute<std::remove_reference_t<T>> &&
+    !std::same_as<attribute_category_t<T>, unused_tag>;
+
+} // iris::x4
 
 #endif

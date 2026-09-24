@@ -19,7 +19,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 template<class T>
 struct is_variant : std::false_type {};
@@ -28,7 +28,7 @@ template<class T>
 constexpr bool is_variant_v = is_variant<T>::value;
 
 template<class... Ts>
-struct is_variant<iris::rvariant<Ts...>> : std::true_type {};
+struct is_variant<rvariant<Ts...>> : std::true_type {};
 
 
 namespace detail {
@@ -42,13 +42,13 @@ struct any_of_unwrapped_exactly_same<T>
 {};
 
 template<class T, class First, class... Rest>
-    requires std::same_as<T, iris::unwrap_recursive_t<First>>
+    requires std::same_as<T, unwrap_recursive_t<First>>
 struct any_of_unwrapped_exactly_same<T, First, Rest...>
     : std::true_type
 {};
 
 template<class T, class First, class... Rest>
-    requires (!std::same_as<T, iris::unwrap_recursive_t<First>>)
+    requires (!std::same_as<T, unwrap_recursive_t<First>>)
 struct any_of_unwrapped_exactly_same<T, First, Rest...>
     : any_of_unwrapped_exactly_same<T, Rest...>
 {};
@@ -66,7 +66,7 @@ template<class T, class First, class... Rest>
 struct variant_find_holdable_type_impl<T, First, Rest...>
 {
     using type = std::conditional_t<
-        can_hold<iris::unwrap_recursive_t<First>, T>::value,
+        can_hold<unwrap_recursive_t<First>, T>::value,
 
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter
@@ -110,6 +110,6 @@ struct variant_find_holdable_type<iris::rvariant<Ts...>, T>
     using type = detail::variant_find_holdable_type_impl<T, Ts...>::type;
 };
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif

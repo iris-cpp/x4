@@ -29,7 +29,7 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     // non-variant `ExposedAttr`
 struct unwrap_container_candidate
 {
-    using type = traits::synthesized_value<
+    using type = synthesized_value<
         unwrap_recursive_t<
             typename unwrap_container_appender<ExposedAttr>::type
         >
@@ -37,10 +37,10 @@ struct unwrap_container_candidate
 };
 
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedVariant>
-    requires traits::is_variant_v<unwrap_recursive_t<ExposedVariant>>
+    requires is_variant_v<unwrap_recursive_t<ExposedVariant>>
 struct unwrap_container_candidate<ParserAttr, ExposedVariant>
 {
-    using type = traits::variant_find_holdable_type<
+    using type = variant_find_holdable_type<
         unwrap_recursive_t<ExposedVariant>, ParserAttr
     >::type;
 };
@@ -59,7 +59,7 @@ template<class T>
 }
 
 template<class T>
-    requires traits::is_size_one_sequence_v<std::remove_cvref_t<T>>
+    requires tuple_is_size_one_sequence_v<std::remove_cvref_t<T>>
 [[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
 {
     return std::forward_like<T>(alloy::get<0>(std::forward<T>(value)));
@@ -72,7 +72,7 @@ struct unwrap_single_element_plain
 };
 
 template<class T>
-    requires traits::is_size_one_sequence_v<std::remove_cvref_t<T>>
+    requires tuple_is_size_one_sequence_v<std::remove_cvref_t<T>>
 struct unwrap_single_element_plain<T>
 {
     using type = std::remove_cvref_t<alloy::tuple_element_t<0, T>>;
@@ -93,8 +93,8 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     >::type;
     auto& unwrapped_attr = detail::unwrap_single_element(iris::unwrap_recursive(attr));
 
-    if constexpr (traits::is_variant_v<unwrapped_attr_type>) {
-        using container_alternative = traits::variant_find_holdable_type<
+    if constexpr (is_variant_v<unwrapped_attr_type>) {
+        using container_alternative = variant_find_holdable_type<
             unwrapped_attr_type, ParserAttr
         >::type;
 

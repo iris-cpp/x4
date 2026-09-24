@@ -20,7 +20,7 @@
 #include <cfloat>
 #include <cmath>
 
-namespace iris::x4::traits {
+namespace iris::x4 {
 
 namespace detail {
 
@@ -119,6 +119,6 @@ template<class T>
     return pow10_helper<T>::call(dim);
 }
 
-} // iris::x4::traits
+} // iris::x4
 
 #endif
