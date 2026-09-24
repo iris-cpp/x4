@@ -15,14 +15,16 @@
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/multi_parser.hpp>
 #include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/parser_traits.hpp>
 
-#include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/directive/expect.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
+#include <iris/type_list.hpp>
 #include <iris/bits/specialization_of.hpp>
 
 #include <concepts>
@@ -81,12 +83,6 @@ struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
 {};
 
 template<class... Ps>
-struct get_attribute_type<sequence<Ps...>>
-{
-    using type = traits::detail::attribute_of_sequence<Ps...>::type;
-};
-
-template<class... Ps>
 struct get_sequence_size<sequence<Ps...>>
 {
     static constexpr std::size_t value = sequence_layout<Ps...>::total_sequence_size;
@@ -103,7 +99,63 @@ struct get_handles_container<sequence<Ps...>, Container>
         >::value;
 };
 
+// -------------------------------------------------------------
+
+template<class T>
+struct to_sequence_attribute_list
+{
+    using type = type_list<T>;
+};
+
+template<>
+struct to_sequence_attribute_list<unused_type>
+{
+    using type = type_list<>;
+};
+
+template<class... Ts>
+struct to_sequence_attribute_list<alloy::tuple<Ts...>>
+{
+    using type = type_list<Ts...>;
+};
+
+// -------------------------------------------------------------
+
+template<class TypeList>
+struct canonicalize_sequence_attribute;
+
+template<>
+struct canonicalize_sequence_attribute<type_list<>>
+{
+    using type = unused_type;
+};
+
+template<class T>
+struct canonicalize_sequence_attribute<type_list<T>>
+{
+    using type = T;
+};
+
+template<class T0, class T1, class... Ts>
+struct canonicalize_sequence_attribute<type_list<T0, T1, Ts...>>
+{
+    using type = alloy::tuple<T0, T1, Ts...>;
+};
+
+// -------------------------------------------------------------
+
+template<class... Ps>
+struct get_attribute_type<sequence<Ps...>>
+{
+    using type = canonicalize_sequence_attribute<
+        typename concat_type_list<
+            typename to_sequence_attribute_list<typename parser_traits<Ps>::attribute_type>::type...
+        >::type
+    >::type;
+};
+
 } // detail
+
 
 template<class... Ps>
 struct sequence : multi_parser<sequence<Ps...>, Ps...>

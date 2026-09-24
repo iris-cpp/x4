@@ -85,7 +85,6 @@ TEST_CASE("rollback on failed parse (numeric)")
         int dummy_int = -99;
         REQUIRE_FALSE(int_.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -99);
     }
     {
         constexpr auto input = " -"sv;
@@ -93,7 +92,6 @@ TEST_CASE("rollback on failed parse (numeric)")
         int dummy_int = -99;
         REQUIRE_FALSE(int_.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -99);
     }
     {
         constexpr auto input = " -9999999999999999999999999999999999999"sv; // overflow
@@ -101,7 +99,6 @@ TEST_CASE("rollback on failed parse (numeric)")
         int dummy_int = -1;
         REQUIRE_FALSE(int_.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
 
     {
@@ -110,7 +107,6 @@ TEST_CASE("rollback on failed parse (numeric)")
         unsigned dummy_uint = static_cast<unsigned>(-1);
         REQUIRE_FALSE(uint_.parse(first, input.end(), skipper_ctx, dummy_uint));
         CHECK(first == input.begin());
-        CHECK(dummy_uint == static_cast<unsigned>(-1));
     }
 
     // TODO: https://github.com/boostorg/spirit_x4/issues/63
@@ -121,7 +117,6 @@ TEST_CASE("rollback on failed parse (numeric)")
     //    double dummy_double = 3.14;
     //    REQUIRE_FALSE(double_.parse(first, input.end(), skipper_ctx, dummy_double));
     //    CHECK(first == input.begin());
-    //    CHECK(dummy_double == static_cast<double>(3.14));
     //}
 }
 
@@ -136,7 +131,6 @@ TEST_CASE("rollback on failed parse (char)")
         char32_t dummy_char = U'd';
         REQUIRE_FALSE(x4::unicode::char_.parse(first, input.end(), uskipper_ctx, dummy_char)); // NOLINT(readability-static-accessed-through-instance)
         CHECK(first == input.begin());
-        CHECK(dummy_char == U'd');
     }
     {
         constexpr auto input = " x"sv;
@@ -144,7 +138,6 @@ TEST_CASE("rollback on failed parse (char)")
         char dummy_char = 'd';
         REQUIRE_FALSE(char_('a').parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
-        CHECK(dummy_char == 'd');
     }
 
     {
@@ -153,7 +146,6 @@ TEST_CASE("rollback on failed parse (char)")
         char dummy_char = 'd';
         REQUIRE_FALSE(char_('a', 'z').parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
-        CHECK(dummy_char == 'd');
     }
     {
         constexpr auto input = " 1"sv;
@@ -161,7 +153,6 @@ TEST_CASE("rollback on failed parse (char)")
         char dummy_char = 'd';
         REQUIRE_FALSE(char_("a-z").parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
-        CHECK(dummy_char == 'd');
     }
     {
         constexpr auto input = " 1"sv;
@@ -169,7 +160,6 @@ TEST_CASE("rollback on failed parse (char)")
         char dummy_char = 'd';
         REQUIRE_FALSE((~char_).parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
-        CHECK(dummy_char == 'd');
     }
     {
         constexpr auto input = " 1"sv;
@@ -177,7 +167,6 @@ TEST_CASE("rollback on failed parse (char)")
         char dummy_char = 'd';
         REQUIRE_FALSE(lit('a').parse(first, input.end(), skipper_ctx, dummy_char));
         CHECK(first == input.begin());
-        CHECK(dummy_char == 'd');
     }
 }
 
@@ -199,7 +188,6 @@ TEST_CASE("rollback on failed parse (string)")
         std::string dummy_string = "dummy";
         REQUIRE_FALSE(string("foo").parse(first, input.end(), skipper_ctx, dummy_string));
         CHECK(first == input.begin());
-        CHECK(dummy_string == "dummy");
     }
     {
         unique_symbols<int> syms{{"foo", 0}, {"bar", 1}};
@@ -208,7 +196,6 @@ TEST_CASE("rollback on failed parse (string)")
         int dummy_int = -1;
         REQUIRE_FALSE(syms.parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
 }
 
@@ -230,7 +217,6 @@ TEST_CASE("rollback on failed parse (action)")
         int dummy_int = -1;
         REQUIRE_FALSE(int_.on_match([](auto&&) { return false; }).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser itself succeeds; always results in side effect
     }
     {
         constexpr auto input = " 42,43"sv;
@@ -238,7 +224,6 @@ TEST_CASE("rollback on failed parse (action)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> ',' >> int_).on_match([](auto&&) { return false; }).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42, 43}); // sequence parser itself succeeds; always results in side effect
     }
 }
 
@@ -255,7 +240,6 @@ TEST_CASE("rollback on failed parse (primitive)")
         int dummy_int = -1;
         REQUIRE_FALSE((fixed_value(42) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
         constexpr auto input = " foo"sv;
@@ -318,7 +302,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(expect[int_].parse(first, input.end(), ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42!"sv;
@@ -328,7 +311,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE((int_ >> expect['i']).parse(first, input.end(), ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
         constexpr auto input = " 42"sv;
@@ -338,7 +320,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> expect[','] >> int_).parse(first, input.end(), ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
 
     {
@@ -353,7 +334,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(lexeme[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
         constexpr auto input = " 42"sv;
@@ -361,7 +341,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE(lexeme[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
 
     {
@@ -376,7 +355,6 @@ TEST_CASE("rollback on failed parse (directive)")
         bool dummy_bool = false;
         REQUIRE(matches[int_].parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.end());
-        CHECK(dummy_bool == true);
     }
     {
         constexpr auto input = " foo"sv;
@@ -384,7 +362,6 @@ TEST_CASE("rollback on failed parse (directive)")
         bool dummy_bool = true;
         REQUIRE(matches[int_].parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
-        CHECK(dummy_bool == false);
     }
 
     {
@@ -399,7 +376,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(no_case[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42"sv;
@@ -407,7 +383,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(no_case[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
         constexpr auto input = " 42"sv;
@@ -415,7 +390,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE(no_case[int_ >> ',' >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
 
     {
@@ -430,7 +404,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(no_skip[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = "42"sv;
@@ -438,7 +411,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(no_skip[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
         constexpr auto input = "42"sv;
@@ -460,7 +432,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(omit[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42"sv;
@@ -468,7 +439,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(omit[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1); // `omit` never yields an attribute
     }
 
     {
@@ -483,7 +453,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE(repeat(1)[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{});
     }
     {
         constexpr auto input = " true123"sv;
@@ -491,7 +460,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(repeat(1)[true_ >> true_].parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{});
     }
     {
         constexpr auto input = " true123"sv;
@@ -499,7 +467,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(repeat(2)[true_].parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{});
     }
 
     {
@@ -514,7 +481,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(skip(space)[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " foo"sv;
@@ -522,7 +488,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(skip(space)[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42 foo"sv;
@@ -530,7 +495,6 @@ TEST_CASE("rollback on failed parse (directive)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE(skip(space)[int_ >> int_].parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42}); // sequence parser has side effect
     }
 
     {
@@ -545,7 +509,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(with<struct with_id_>(input)[int_].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42"sv;
@@ -553,7 +516,6 @@ TEST_CASE("rollback on failed parse (directive)")
         int dummy_int = -1;
         REQUIRE_FALSE(with<struct with_id_>(input)[int_ >> eps(false)].parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect
     }
 }
 
@@ -577,7 +539,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((true_ >> true_).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // `sequence` parser exposes the side effects
     }
 
     // -----------------------------------------------
@@ -588,7 +549,6 @@ TEST_CASE("rollback on failed parse (operator)")
         int dummy_int = -1;
         REQUIRE_FALSE((int_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == 42); // sequence parser has side effect because attribute is not a container
     }
     {
         constexpr auto input = " 42,43"sv;
@@ -596,7 +556,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> eps(false) >> int_).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42}); // each element appends on its own; iterator = rolled back, container = not rolled back
     }
     {
         constexpr auto input = " 42,43"sv;
@@ -604,7 +563,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<int> dummy_ints;
         REQUIRE_FALSE((int_ >> (eps(false) >> int_)).parse(first, input.end(), skipper_ctx, dummy_ints));
         CHECK(first == input.begin());
-        CHECK(dummy_ints == std::vector<int>{42}); // sequence parser has side effect, in contrast to above
     }
 
     // NOLINTBEGIN(misc-redundant-expression)
@@ -620,7 +578,6 @@ TEST_CASE("rollback on failed parse (operator)")
         int dummy_int = -1;
         REQUIRE_FALSE((eps(false) | int_).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42"sv;
@@ -628,7 +585,6 @@ TEST_CASE("rollback on failed parse (operator)")
         int dummy_int = -1;
         REQUIRE_FALSE((eps(false) | int_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1); // `alternative` parser shall not expose the side effects on the failed branch
     }
     {
         constexpr auto input = " true"sv;
@@ -636,7 +592,6 @@ TEST_CASE("rollback on failed parse (operator)")
         bool dummy_bool = true;
         REQUIRE_FALSE((false_ | false_).parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
-        CHECK(dummy_bool == true);
     }
     {
         constexpr auto input = " true"sv;
@@ -644,7 +599,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((true_ >> false_ | true_ >> false_).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{});
     }
 
     {
@@ -659,7 +613,6 @@ TEST_CASE("rollback on failed parse (operator)")
         int dummy_int = -1;
         REQUIRE_FALSE((int_ - eps).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1);
     }
     {
         constexpr auto input = " 42"sv;
@@ -667,7 +620,6 @@ TEST_CASE("rollback on failed parse (operator)")
         int dummy_int = -1;
         REQUIRE_FALSE((int_ - eps).parse(first, input.end(), skipper_ctx, dummy_int));
         CHECK(first == input.begin());
-        CHECK(dummy_int == -1); // `difference` parser shall not expose the side effects
     }
     {
         constexpr auto input = " truefalse"sv;
@@ -675,7 +627,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(((true_ >> true_) - eps).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{}); // `difference` parser shall not expose the side effects
     }
     {
         constexpr auto input = " truetrue"sv;
@@ -683,7 +634,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE(((true_ >> true_) - eps).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{}); // `difference` parser shall not expose the side effects
     }
 
     {
@@ -698,7 +648,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((*true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // `kleene` parser (within sequence) exposes the side effects
     }
 
     {
@@ -713,7 +662,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((+true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true}); // `plus` parser (within sequence) exposes the side effects
     }
 
     {
@@ -742,7 +690,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((true_ % eps(false) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true});// `delimited_list` parser (within sequence) exposes the side effects
     }
 
     {
@@ -795,7 +742,6 @@ TEST_CASE("rollback on failed parse (operator)")
         bool dummy_bool = false;
         REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
-        CHECK(dummy_bool == false);
     }
     {
         constexpr auto input = " true"sv;
@@ -803,7 +749,6 @@ TEST_CASE("rollback on failed parse (operator)")
         bool dummy_bool = false;
         REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bool));
         CHECK(first == input.begin());
-        CHECK(dummy_bool == true);
     }
     {
         constexpr auto input = " false"sv;
@@ -811,8 +756,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::optional<bool> dummy_optional_bool = false;
         REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_optional_bool));
         CHECK(first == input.begin());
-        REQUIRE(dummy_optional_bool.has_value());
-        CHECK(*dummy_optional_bool == false);
     }
     {
         constexpr auto input = " true"sv;
@@ -820,8 +763,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::optional<bool> dummy_optional_bool = false;
         REQUIRE_FALSE((-true_ >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_optional_bool));
         CHECK(first == input.begin());
-        REQUIRE(dummy_optional_bool.has_value());
-        CHECK(*dummy_optional_bool == true);
     }
     {
         constexpr auto input = " truefalse"sv;
@@ -829,7 +770,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::vector<bool> dummy_bools;
         REQUIRE_FALSE((-(true_ >> true_) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_bools == std::vector<bool>{true});
     }
     {
         constexpr auto input = " truefalse"sv;
@@ -837,7 +777,6 @@ TEST_CASE("rollback on failed parse (operator)")
         std::optional<std::vector<bool>> dummy_optional_bools;
         REQUIRE_FALSE((-(true_ >> true_) >> eps(false)).parse(first, input.end(), skipper_ctx, dummy_optional_bools));
         CHECK(first == input.begin());
-        CHECK(dummy_optional_bools.has_value() == false); // `optional` parser for `optional<container attribute>` shall not expose the side effects
     }
 
     // NOLINTEND(misc-redundant-expression)

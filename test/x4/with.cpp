@@ -22,6 +22,8 @@
 #include <utility>
 #include <type_traits>
 
+// NOLINTBEGIN(readability-container-size-empty)
+
 namespace {
 
 struct my_tag;
@@ -140,9 +142,10 @@ TEST_CASE("with")
         std::vector<int> ints;
 
         REQUIRE(parse("(123,456)", start, ints));
-        REQUIRE(!parse("(abc,def)", start, ints));
-        CHECK(matched_count == 2);
+        CHECK(matched_count == 1);
         CHECK(ints == std::vector<int>{123, 456});
+        REQUIRE(!parse("(abc,def)", start, ints));
+        CHECK(ints == std::vector<int>{});
     }
 
     {
@@ -208,3 +211,5 @@ TEST_CASE("with")
         }
     }
 }
+
+// NOLINTEND(readability-container-size-empty)

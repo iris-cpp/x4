@@ -19,7 +19,6 @@
 
 #include <iris/string.hpp>
 
-#include <iterator>
 #include <ranges>
 #include <string>
 #include <type_traits>
@@ -304,6 +303,16 @@ concept X4ImplicitSubject =
 // models `X4Subject`.
 template<class T>
 concept X4Subject = X4ExplicitSubject<T> || X4ImplicitSubject<T>;
+
+// ------------------------------------------------------------
+
+template<X4Subject ParserT>
+using as_parser_traits = parser_traits<as_parser_plain_t<ParserT>>;
+
+template<X4Subject ParserT>
+using as_parser_attr_t = parser_traits<as_parser_plain_t<ParserT>>::attribute_type;
+
+// ------------------------------------------------------------
 
 
 // Checks whether `Parser(as_parser(t))` is valid.

@@ -63,7 +63,7 @@ template<class T>
 struct optional_value
 {
     static_assert(is_optional_v<T>);
-    using type = typename T::value_type;
+    using type = T::value_type;
 };
 
 template<>

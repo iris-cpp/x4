@@ -39,9 +39,9 @@ namespace x4_test {
 namespace detail {
 
 // Provide `x4::unused` default arg fallback
-struct parse_overloads : x4::detail::parse_fn_main
+struct parse_overloads : x4::detail::parse_fn
 {
-    using x4::detail::parse_fn_main::operator();
+    using x4::detail::parse_fn::operator();
 
     // It/Se + Parser
     template<std::forward_iterator It, std::sentinel_for<It> Se, x4::X4Parser<It, Se> Parser>

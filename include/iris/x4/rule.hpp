@@ -408,11 +408,15 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
     constexpr rule(std::string_view name) noexcept
         : name(name)
-    {}
+    {
+        check_invariants();
+    }
 
     constexpr rule(char const* name)
         : name(name)
-    {}
+    {
+        check_invariants();
+    }
 
     // Primary overload
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
@@ -559,7 +563,10 @@ private:
     static constexpr void check_invariants() noexcept
     {
         static_assert(X4Attribute<RuleAttr>);
-        static_assert(X4UnusedAttribute<RuleAttr> || !std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
+        if constexpr (X4NonUnusedAttribute<RuleAttr>) {
+            static_assert(X4ValueAttribute<RuleAttr>);
+            static_assert(!std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
+        }
         static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
     }
 };

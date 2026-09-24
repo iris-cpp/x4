@@ -19,6 +19,8 @@
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/char_traits.hpp>
 
+#include <iris/x4/traits/attribute_traits.hpp>
+
 #include <iris/x4/char/char_class.hpp> // for builtin skipper
 
 #include <iris/x4/parse_result.hpp>
@@ -127,17 +129,17 @@ struct skipper_phrase_parse_context_for_impl<Skipper, R>
 // Note that sentinel is not required, because only the iterator is needed for error info.
 // We keep the empty parameter as the noop placeholder to make the interface consistent with `phrase_parse_context_for`.
 template<class ItOrRange, class = void>
-using parse_context_for = typename detail::parse_context_for_impl<ItOrRange>::type;
+using parse_context_for = detail::parse_context_for_impl<ItOrRange>::type;
 
 template<class ItOrRange, class = void>
-using skipper_parse_context_for = typename detail::skipper_parse_context_for_impl<ItOrRange>::type;
+using skipper_parse_context_for = detail::skipper_parse_context_for_impl<ItOrRange>::type;
 
 // Used for determining the context type required in `IRIS_X4_INSTANTIATE`.
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
-using phrase_parse_context_for = typename detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
+using phrase_parse_context_for = detail::phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 template<class Skipper, class ItOrRange, class SeOrRange = ItOrRange>
-using skipper_phrase_parse_context_for = typename detail::skipper_phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
+using skipper_phrase_parse_context_for = detail::skipper_phrase_parse_context_for_impl<Skipper, ItOrRange, SeOrRange>::type;
 
 
 namespace detail {
@@ -176,35 +178,38 @@ template<std::ranges::forward_range R>
 template<std::ranges::forward_range R>
 using as_parse_range_t = decltype(detail::as_parse_range(std::declval<R const&>()));
 
-struct parse_fn_main
+struct parse_fn
 {
     // --------------------------------------------
     // parse(range)
 
     // R + Parser + Attribute
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute RootAttr>
     static constexpr parse_result_for<R>
-    operator()(R const& range, Parser&& p, ParseAttr& attr)
+    operator()(R const& range, Parser&& p, RootAttr& root_attr)
     {
         // Treat "str" as `string_view`
         auto const& range_ = detail::as_parse_range(range);
 
-        using It = typename parse_result_for<R>::iterator_type;
-        using Se = typename parse_result_for<R>::sentinel_type;
+        using It = parse_result_for<R>::iterator_type;
+        using Se = parse_result_for<R>::sentinel_type;
         It first = std::ranges::begin(range_);
         Se last = std::ranges::end(range_);
 
         expectation_failure<It> expect_failure;
         auto skipper_kind = builtin_skipper_kind::no_skip;
 
+        attribute_reset_guard reset_guard{root_attr};
         bool const ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
             x4::make_context<contexts::expectation_failure>(
                 expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            attr
+            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
         );
+        if (ok) reset_guard.commit();
+
         return parse_result_for<R>{
             .ok = ok,
             .expect_failure = std::move(expect_failure),
@@ -213,29 +218,33 @@ struct parse_fn_main
     }
 
     // parse_result + R + Parser + Attribute
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4Attribute RootAttr>
     static constexpr void
-    operator()(parse_result_for<R>& res, R const& range, Parser&& p, ParseAttr& attr)
+    operator()(parse_result_for<R>& res, R const& range, Parser&& p, RootAttr& root_attr)
     {
         // Treat "str" as `string_view`
         auto const& range_ = detail::as_parse_range(range);
 
-        using It = typename parse_result_for<R>::iterator_type;
-        using Se = typename parse_result_for<R>::sentinel_type;
+        using It = parse_result_for<R>::iterator_type;
+        using Se = parse_result_for<R>::sentinel_type;
         It first = std::ranges::begin(range_);
         Se last = std::ranges::end(range_);
 
         auto skipper_kind = builtin_skipper_kind::no_skip;
 
         res.expect_failure.clear();
+
+        attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
             x4::make_context<contexts::expectation_failure>(
                 res.expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            attr
+            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
         );
+        if (res.ok) reset_guard.commit();
+
         res.remainder = {std::move(first), std::move(last)};
     }
 
@@ -243,15 +252,15 @@ struct parse_fn_main
     // phrase_parse(range)
 
     // R + Parser + Skipper + Attribute + (root_skipper_flag)
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute RootAttr>
     static constexpr parse_result_for<R>
-    operator()(R const& range, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+    operator()(R const& range, Parser&& p, Skipper const& s, RootAttr& root_attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         // Treat "str" as `string_view`
         auto const& range_ = detail::as_parse_range(range);
 
-        using It = typename parse_result_for<R>::iterator_type;
-        using Se = typename parse_result_for<R>::sentinel_type;
+        using It = parse_result_for<R>::iterator_type;
+        using Se = parse_result_for<R>::sentinel_type;
         It first = std::ranges::begin(range_);
         Se last = std::ranges::end(range_);
 
@@ -262,12 +271,17 @@ struct parse_fn_main
             expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
-        bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
+        attribute_reset_guard reset_guard{root_attr};
+        bool ok = as_parser(std::forward<Parser>(p)).parse(
+            first, last, ctx, detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+        );
         if (ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             // ReSharper disable once CppAssignedValueIsNeverUsed
             if (expect_failure) [[unlikely]] ok = false;
         }
+        if (ok) reset_guard.commit();
+
         return parse_result_for<R>{
             .ok = ok,
             .expect_failure = std::move(expect_failure),
@@ -276,15 +290,15 @@ struct parse_fn_main
     }
 
     // parse_result + R + Parser + Skipper + Attribute
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute ParseAttr>
+    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper, X4Attribute RootAttr>
     static constexpr void
-    operator()(parse_result_for<R>& res, R const& range, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+    operator()(parse_result_for<R>& res, R const& range, Parser&& p, Skipper const& s, RootAttr& root_attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         // Treat "str" as `string_view`
         auto const& range_ = detail::as_parse_range(range);
 
-        using It = typename parse_result_for<R>::iterator_type;
-        using Se = typename parse_result_for<R>::sentinel_type;
+        using It = parse_result_for<R>::iterator_type;
+        using Se = parse_result_for<R>::sentinel_type;
         It first = std::ranges::begin(range_);
         Se last = std::ranges::end(range_);
 
@@ -295,11 +309,17 @@ struct parse_fn_main
             res.expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
-        res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
+        attribute_reset_guard reset_guard{root_attr};
+        res.ok = as_parser(std::forward<Parser>(p)).parse(
+            first, last, ctx,
+            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+        );
         if (res.ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             if (res.expect_failure) [[unlikely]] res.ok = false;
         }
+        if (res.ok) reset_guard.commit();
+
         res.remainder = {std::move(first), std::move(last)};
     }
 
@@ -307,21 +327,24 @@ struct parse_fn_main
     // parse(it/se)
 
     // It/Se + Parser + Attribute
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute RootAttr>
     static constexpr parse_result<It, Se>
-    operator()(It first, Se last, Parser&& p, ParseAttr& attr)
+    operator()(It first, Se last, Parser&& p, RootAttr& root_attr)
     {
         expectation_failure<It> expect_failure;
         auto skipper_kind = builtin_skipper_kind::no_skip;
 
+        attribute_reset_guard reset_guard{root_attr};
         bool const ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
             x4::make_context<contexts::expectation_failure>(
                 expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            attr
+            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
         );
+        if (ok) reset_guard.commit();
+
         return parse_result<It, Se>{
             .ok = ok,
             .expect_failure = std::move(expect_failure),
@@ -330,21 +353,24 @@ struct parse_fn_main
     }
 
     // parse_result + It/Se + Parser + Attribute
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4Attribute RootAttr>
     static constexpr void
-    operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, ParseAttr& attr)
+    operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, RootAttr& root_attr)
     {
         res.expect_failure.clear();
         auto skipper_kind = builtin_skipper_kind::no_skip;
 
+        attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
             x4::make_context<contexts::expectation_failure>(
                 res.expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            attr
+            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
         );
+        if (res.ok) reset_guard.commit();
+
         res.remainder = {std::move(first), std::move(last)};
     }
 
@@ -352,9 +378,9 @@ struct parse_fn_main
     // phrase_parse(it/se)
 
     // It/Se + Parser + Skipper + Attribute + (root_skipper_flag)
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute RootAttr>
     static constexpr parse_result<It, Se>
-    operator()(It first, Se last, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+    operator()(It first, Se last, Parser&& p, Skipper const& s, RootAttr& root_attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         expectation_failure<It> expect_failure;
         auto&& maybe_builtin_skipper = to_builtin(s);
@@ -363,12 +389,17 @@ struct parse_fn_main
             expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
-        bool ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
+        attribute_reset_guard reset_guard{root_attr};
+        bool ok = as_parser(std::forward<Parser>(p)).parse(
+            first, last, ctx, detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+        );
         if (ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             // ReSharper disable once CppAssignedValueIsNeverUsed
             if (expect_failure) [[unlikely]] ok = false;
         }
+        if (ok) reset_guard.commit();
+
         return parse_result<It, Se>{
             .ok = ok,
             .expect_failure = std::move(expect_failure),
@@ -377,9 +408,9 @@ struct parse_fn_main
     }
 
     // parse_result + It/Se + Parser + Skipper + Attribute + (root_skipper_flag)
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute ParseAttr>
+    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper, X4Attribute RootAttr>
     static constexpr void
-    operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper const& s, ParseAttr& attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
+    operator()(parse_result<It, Se>& res, It first, Se last, Parser&& p, Skipper const& s, RootAttr& root_attr, root_skipper_flag flag = root_skipper_flag::do_post_skip)
     {
         res.expect_failure.clear();
         auto&& maybe_builtin_skipper = to_builtin(s);
@@ -388,70 +419,20 @@ struct parse_fn_main
             res.expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
         );
 
-        res.ok = as_parser(std::forward<Parser>(p)).parse(first, last, ctx, attr);
+        attribute_reset_guard reset_guard{root_attr};
+        res.ok = as_parser(std::forward<Parser>(p)).parse(
+            first, last, ctx, detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+        );
         if (res.ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
             if (res.expect_failure) [[unlikely]] res.ok = false;
         }
+        if (res.ok) reset_guard.commit();
+
         res.remainder = {std::move(first), std::move(last)};
     }
 
-}; // parse_fn_main
-
-struct parse_fn_deprecated
-{
-    // --------------------------------------------
-    // deprecated `parse`
-
-    // It/Se + Parser
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
-    static constexpr void
-    operator()(It, Se, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // parse_result + It/Se + Parser
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser>
-    static constexpr void
-    operator()(parse_result<It, Se>&, It, Se, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // R + Parser
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser>
-    static constexpr void
-    operator()(R&&, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // parse_result + R + Parser
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser>
-    static constexpr void
-    operator()(parse_result_for<R>&, R&&, Parser&&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // ---------------------------------------------
-    // deprecated `phrase_parse`
-
-    // It/Se + Parser + Skipper
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
-    static constexpr void
-    operator()(It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // parse_result + It/Se + Parser + Skipper
-    template<std::forward_iterator It, std::sentinel_for<It> Se, X4Parser<It, Se> Parser, X4ExplicitParser<It, Se> Skipper>
-    static constexpr void
-    operator()(parse_result<It, Se>&, It, Se, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // R + Parser + Skipper
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
-    static constexpr void
-    operator()(R&&, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-
-    // parse_result + R + Parser + Skipper
-    template<std::ranges::forward_range R, X4RangeParseParser<R> Parser, X4RangeParseSkipper<R> Skipper>
-    static constexpr void
-    operator()(parse_result_for<R>&, R&&, Parser&&, Skipper const&) = delete; // If you don't need Attr, explicitly pass `x4::unused`.
-};
-
-struct parse_fn : parse_fn_main, parse_fn_deprecated
-{
-    using parse_fn_main::operator();
-    using parse_fn_deprecated::operator();
-};
+}; // parse_fn
 
 } // detail
 

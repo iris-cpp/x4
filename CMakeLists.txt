@@ -23,8 +23,18 @@ if(PROJECT_IS_TOP_LEVEL)
     include(CTest) # sets BUILD_TESTING
 endif()
 
-if(PROJECT_IS_TOP_LEVEL OR NOT DEFINED IRIS_ROOT)
-    add_subdirectory(modules/iris)
+if(NOT TARGET Iris::Iris)
+    if(DEFINED IRIS_DIR)
+        cmake_path(ABSOLUTE_PATH IRIS_DIR BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" NORMALIZE OUTPUT_VARIABLE _iris_src)
+    else()
+        set(_iris_src "${CMAKE_CURRENT_SOURCE_DIR}/modules/iris")
+    endif()
+
+    if(NOT EXISTS "${_iris_src}/CMakeLists.txt")
+        message(FATAL_ERROR "Iris was not found at '${_iris_src}'. Set IRIS_DIR to the Iris source directory.")
+    endif()
+
+    add_subdirectory("${_iris_src}" "${CMAKE_CURRENT_BINARY_DIR}/iris")
 endif()
 
 

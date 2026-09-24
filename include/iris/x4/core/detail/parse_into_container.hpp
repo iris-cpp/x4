@@ -102,28 +102,32 @@ struct parse_into_container_impl
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 [[nodiscard]] constexpr bool
-parse_into_container(
-    Parser const& parser, It& first, Se const& last,
-    Context const& ctx, Attr& attr
-)
+parse_into_container(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
-    if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) { // handle unused types first
+    if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) {
         return parser.parse(first, last, ctx, unused);
 
+    } else if constexpr (is_recursive_wrapper_v<Attr>) {
+        return detail::parse_into_container(parser, first, last, ctx, *attr);
+
+    } else if constexpr (traits::is_size_one_sequence_v<Attr>) {
+        // A tuple-like holding a single container; parse into that container
+        return detail::parse_into_container(parser, first, last, ctx, alloy::get<0>(attr));
+
+    } else if constexpr (traits::is_variant_v<Attr>) {
+         // e.g. `char` when the caller is `+char_`
+        using attribute_type = parser_traits<Parser>::attribute_type;
+
+        // e.g. `std::string` when the attribute_type is `char`
+        using substitute_type = traits::variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
+
+        // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
+        auto& variant_alt = attr.template emplace<substitute_type>();
+        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
+
     } else {
-        if constexpr (traits::is_variant_v<Attr>) {
-             // e.g. `char` when the caller is `+char_`
-            using attribute_type = parser_traits<Parser>::attribute_type;
-
-            // e.g. `std::string` when the attribute_type is `char`
-            using substitute_type = traits::variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
-
-            // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
-            auto& variant_alt = attr.template emplace<substitute_type>();
-            return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
-        } else {
-            return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
-        }
+        static_assert(traits::is_container_v<Attr>);
+        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
     }
 }
 
