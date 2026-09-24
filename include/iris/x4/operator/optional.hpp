@@ -16,9 +16,10 @@
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 #include <iris/x4/core/expectation.hpp>
-#include <iris/x4/core/move_to.hpp>
 
+#include <iris/x4/traits/attribute_traits.hpp>
 #include <iris/x4/traits/optional_traits.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/traits/attribute_category.hpp>
 
 #include <iterator>
@@ -47,29 +48,11 @@ struct optional : unary_parser<optional<Subject>, Subject>
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, Context, Attr>)
     {
-        // discard [[nodiscard]]
-        (void)this->subject.parse(first, last, ctx, attr);
-
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !x4::has_expectation_failure(ctx);
-        } else {
+        if (this->subject.parse(first, last, ctx, attr)) {
             return true;
         }
-    }
-
-    // container attribute
-    template<
-        std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-        traits::CategorizedAttr<traits::container_attr> Attr
-    >
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(detail::parse_into_container(this->subject, first, last, ctx, attr)))
-    {
-        // discard [[nodiscard]]
-        (void)detail::parse_into_container(this->subject, first, last, ctx, attr);
+        traits::attribute_traits<Attr>::reset(attr);
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
@@ -85,18 +68,48 @@ struct optional : unary_parser<optional<Subject>, Subject>
     >
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            std::is_nothrow_default_constructible_v<typename traits::optional_value<Attr>::type> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, typename traits::optional_value<Attr>::type> &&
-            noexcept(x4::move_to(std::declval<typename traits::optional_value<Attr>::type&&>(), attr))
-        )
     {
-        typename traits::optional_value<Attr>::type val{}; // value-initialize
-
-        if (this->subject.parse(first, last, ctx, val)) {
-            // assign the parsed value into our attribute
-            x4::move_to(std::move(val), attr);
+        if (this->subject.parse(
+            first, last, ctx,
+            detail::prepare_attribute<typename parser_traits<Subject>::attribute_type>(attr)
+        )) {
             return true;
+        }
+        traits::attribute_traits<Attr>::reset(attr);
+
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            return !x4::has_expectation_failure(ctx);
+        } else {
+            return true;
+        }
+    }
+
+    // container attribute
+    template<
+        std::forward_iterator It, std::sentinel_for<It> Se, class Context,
+        traits::CategorizedAttr<traits::container_attr> Attr
+    >
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+    {
+        // Same logic as in `x4::alternative`
+
+        if (traits::is_empty(attr)) {
+            if (detail::parse_into_container(this->subject, first, last, ctx, attr)) {
+                return true;
+            }
+            traits::clear(attr);
+
+        } else {
+            unwrap_container_appender_t<Attr> buffer;
+            if (detail::parse_into_container(this->subject, first, last, ctx, buffer)) {
+                traits::append(
+                    attr,
+                    std::make_move_iterator(traits::begin(buffer)),
+                    std::make_move_iterator(traits::end(buffer))
+                );
+                return true;
+            }
         }
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {

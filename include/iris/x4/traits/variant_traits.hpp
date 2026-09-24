@@ -10,7 +10,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/x4/core/unused.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/traits/can_hold.hpp>
 
@@ -19,6 +19,8 @@
 #include <concepts>
 #include <type_traits>
 
+// TODO: move this entire header to core (we should not support customizing variant traits)
+
 namespace iris::x4::traits {
 
 template<class T>
@@ -26,8 +28,6 @@ struct is_variant : std::false_type {};
 
 template<class T>
 constexpr bool is_variant_v = is_variant<T>::value;
-
-// `std::variant` is not supported, as it does can't handle recursive types
 
 template<class... Ts>
 struct is_variant<iris::rvariant<Ts...>> : std::true_type {};

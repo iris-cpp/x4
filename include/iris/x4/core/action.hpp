@@ -23,7 +23,6 @@
 #include <concepts>
 #include <type_traits>
 #include <utility>
-#include <format>
 
 namespace iris::x4 {
 
@@ -91,10 +90,6 @@ struct action : proxy_parser<action<Subject, ActionF>, Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr&) const
-        noexcept(
-            std::is_nothrow_default_constructible_v<typename base_type::attribute_type> &&
-            noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
-        )
     {
         typename base_type::attribute_type attr_temp{}; // value-initialize
         return this->parse_main(first, last, ctx, attr_temp);
@@ -125,7 +120,6 @@ public:
         requires can_pass_exposed_attr<Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(this->parse_main(first, last, ctx, attr)))
     {
         return this->parse_main(first, last, ctx, attr);
     }
@@ -135,10 +129,6 @@ public:
         requires (!can_pass_exposed_attr<Attr>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& /* attr is discarded */) const
-        noexcept(
-            std::is_nothrow_default_constructible_v<typename base_type::attribute_type> &&
-            noexcept(this->parse_main(first, last, ctx, std::declval<typename base_type::attribute_type&>()))
-        )
     {
         typename base_type::attribute_type attr_temp{}; // value-initialize
         return this->parse_main(first, last, ctx, attr_temp);
@@ -148,7 +138,7 @@ public:
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("{}[f]", get_info<Subject>{}(this->subject));
+        return get_info<Subject>{}(this->subject) + "[f]";
     }
 
 private:
@@ -156,7 +146,6 @@ private:
     template<class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     call_action(Context const&, Attr&) const
-        noexcept(is_nothrow_directly_invocable_v<ActionF const&>)
     {
         // Explicitly make this hard error instead of emitting "no matching overload".
         // This provides much more human-friendly errors.
@@ -187,7 +176,6 @@ private:
         requires directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>
     [[nodiscard]] constexpr bool
     call_action(Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_directly_invocable_v<ActionF const&, typename detail::action_context<Context, Attr>::type>)
     {
         using action_return_type = directly_invoke_result_t<ActionF const&, typename detail::action_context<Context, Attr>::type>;
         constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
@@ -232,11 +220,6 @@ private:
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse_main(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            std::is_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Subject, It, Se, Context, Attr> &&
-            noexcept(this->call_action(ctx, attr))
-        )
     {
         It const saved_first = first;
         if (!this->subject.parse(first, last, ctx, attr)) return false;

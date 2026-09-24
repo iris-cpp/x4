@@ -19,7 +19,6 @@
 #include <concepts>
 #include <iterator>
 #include <string>
-#include <format>
 #include <type_traits>
 #include <utility>
 
@@ -79,7 +78,6 @@ public:
         requires std::same_as<std::remove_const_t<OuterAttr>, T>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, OuterAttr>::type, exposed_attr_for_child_t<OuterAttr>>)
     {
         if constexpr (Subject::has_action) {
             return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), unused);
@@ -94,7 +92,6 @@ public:
             (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr&) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, unused_type>::type, unused_type>)
     {
         if constexpr (Subject::has_action) {
             return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, unused), unused);
@@ -109,10 +106,6 @@ public:
             (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
-        noexcept(
-            is_nothrow_parsable_v<Subject, It, Se, typename detail::as_type_parser_ctx_impl<Subject::has_action, Context, T>::type, exposed_attr_for_child_t<T>> &&
-            noexcept(x4::move_to(std::declval<T>(), outer_attr))
-        )
     {
         // Ideally we should default to default-initialization and avoid value-initialization.
         // However, there is currently no way to determine whether the attribute is ever touched
@@ -135,11 +128,8 @@ public:
 
     [[nodiscard]] /*constexpr*/ std::string get_x4_info() const
     {
-        return std::format(
-            "as<{}>({})",
-            typeid(T).name(),
-            get_info<Subject>{}(this->subject)
-        );
+        return std::string("as<") + typeid(T).name() + ">("
+            + get_info<Subject>{}(this->subject) + ')';
     }
 };
 

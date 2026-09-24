@@ -12,7 +12,6 @@
 
 #include <iris/x4/core/parser.hpp>
 
-#include <format>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -117,7 +116,6 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<Subject, It, Se, context_t<Context>, Attr>)
     {
         return this->subject.parse(
             first, last,
@@ -128,7 +126,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
 
     [[nodiscard]] std::string get_x4_info() const
     {
-        return std::format("with<...>[{}]", get_info<Subject>{}(this->subject));
+        return "with<...>[" + get_info<Subject>{}(this->subject) + ']';
     }
 
 private:
@@ -234,20 +232,13 @@ struct without_directive : proxy_parser<without_directive<Subject, IDs...>, Subj
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            x4::is_nothrow_parsable_v<
-                Subject, It, Se,
-                std::remove_cvref_t<decltype(x4::remove_all_contexts<IDs...>(ctx))>,
-                Attr
-            >
-        )
     {
         return this->subject.parse(first, last, x4::remove_all_contexts<IDs...>(ctx), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return std::format("without<...>[{}]", get_info<Subject>{}(this->subject));
+        return "without<...>[" + get_info<Subject>{}(this->subject) + ']';
     }
 };
 

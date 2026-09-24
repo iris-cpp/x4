@@ -30,6 +30,8 @@
 # pragma warning(disable: 4709) // comma operator within array index expression
 #endif
 
+using namespace std::string_view_literals;
+
 struct adata
 {
     int a = 0;
@@ -175,5 +177,27 @@ TEST_CASE("optional")
         std::optional<x4_test::move_only> o;
         REQUIRE(parse("s", -x4_test::synth_move_only, o));
         CHECK(o.has_value());
+    }
+
+    // `optional::parse` invoked directly with a non-empty container;
+    // the subject's result must be appended to the existing elements
+    {
+        constexpr auto p = -(char_ >> char_);
+        {
+            auto const input = "a1"sv;
+            auto first = input.begin();
+            std::string s = "x";
+            REQUIRE(p.parse(first, input.end(), x4::unused, s));
+            CHECK(first == input.end());
+            CHECK(s == "xa1");
+        }
+        {
+            auto const input = "a"sv;
+            auto first = input.begin();
+            std::string s = "x";
+            REQUIRE(p.parse(first, input.end(), x4::unused, s));
+            CHECK(first == input.begin());
+            CHECK(s == "x");
+        }
     }
 }

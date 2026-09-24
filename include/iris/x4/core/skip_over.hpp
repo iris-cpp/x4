@@ -64,12 +64,6 @@ struct builtin_skipper_traits<builtin_skipper_kind::space>
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     requires X4Subject<get_context_plain_t<contexts::skipper, Context>>
 constexpr void skip_over(It& first, Se const& last, Context const& ctx)
-    noexcept(is_nothrow_parsable_v<
-        get_context_plain_t<contexts::skipper, Context>,
-        It, Se,
-        std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>,
-        unused_type
-    >)
 {
     auto const& skipper = x4::get<contexts::skipper>(ctx);
 

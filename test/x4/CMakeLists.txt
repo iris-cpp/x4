@@ -38,6 +38,7 @@ x4_define_tests(
     alternative
     and_predicate
     as
+    attribute_contract
     attribute_type_check
     bool
     char

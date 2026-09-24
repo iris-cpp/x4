@@ -13,8 +13,9 @@
 #include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/operator/sequence.hpp>
 
-#include <iris/alloy/tuple.hpp>
+#include <iris/alloy/adapted/std_tuple.hpp>
 
+#include <tuple>
 #include <concepts>
 #include <iterator>
 #include <optional>
@@ -48,22 +49,22 @@ checked_attr(Value&& value) { return { std::forward<Value>(value) }; }
 // instantiate our type checker
 // (checks attribute value just to be sure we are ok)
 template<class Value, class Expr>
-void test_expr(Value const& v, Expr&& expr)
+void test_expr(Value const& v, Expr const& expr)
 {
     Value r;
-    REQUIRE(x4::parse("", std::forward<Expr>(expr), r));
+    REQUIRE(x4::parse("", expr, r));
     CHECK((r == v));
 }
 
 template<class Expr, class Attr>
-void gen_sequence(Attr const& attribute, Expr&& expr)
+void gen_sequence(Attr const& attribute, Expr const& expr)
 {
     test_expr(attribute, expr);
     test_expr(attribute, expr >> x4::eps);
 }
 
 template<class Expected, class... ExpectedTail, class Attr, class Expr, class Value, class... Tail>
-void gen_sequence(Attr const& attribute, Expr&& expr, Value const& v, Tail const&... tail)
+void gen_sequence(Attr const& attribute, Expr const& expr, Value const& v, Tail const&... tail)
 {
     gen_sequence<ExpectedTail...>(attribute, expr >> checked_attr<Expected>(v), tail...);
     gen_sequence<ExpectedTail...>(attribute, expr >> x4::eps >> checked_attr<Expected>(v), tail...);
@@ -81,8 +82,8 @@ template<class Expected, class Value>
 void gen_single_item_tests(Value const& v)
 {
     Expected attribute(v);
-    gen_sequence(attribute, checked_attr<Expected>(v));
-    gen_sequence(attribute, x4::eps >> checked_attr<Expected>(v));
+    gen_sequence(attribute, checked_attr<Value>(v));
+    gen_sequence(attribute, x4::eps >> checked_attr<Value>(v));
 }
 
 template<class Expected, class... ExpectedTail, class Value, class... Tail>
@@ -97,25 +98,23 @@ void gen_tests(Values const&... values)
 {
     gen_single_item_tests<Expected...>(values...);
 
-    alloy::tuple<Expected...> attribute(values...);
+    std::tuple<Expected...> attribute(values...);
     gen_sequence_tests<Expected...>(attribute, values...);
 }
 
 template<class... Attributes>
 void make_test(Attributes const&... attrs)
 {
-    // I would like to place all of this in a single call
-    // but it requires tremendous amount of heap to compile
     gen_tests<Attributes...>(attrs...);
     gen_tests<
         std::optional<Attributes>...,
-        alloy::tuple<Attributes>...
+        std::tuple<Attributes>...
     >(attrs..., attrs...);
 
     gen_tests<
-        std::optional<alloy::tuple<Attributes>>...,
-        alloy::tuple<std::optional<Attributes>>...
-    >(alloy::tuple<Attributes>(attrs)..., attrs...);
+        std::optional<std::tuple<Attributes>>...,
+        std::tuple<std::optional<Attributes>>...
+    >(std::tuple<Attributes>(attrs)..., attrs...);
 }
 
 } // anonymous

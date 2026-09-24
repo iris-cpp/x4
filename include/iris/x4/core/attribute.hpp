@@ -11,8 +11,16 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/type_traits.hpp>
+#include <iris/bits/specialization_of.hpp>
+
 #include <concepts>
 #include <type_traits>
+
+namespace iris::alloy {
+template<class...>
+class tuple;
+} // iris::alloy
 
 namespace iris::x4 {
 
@@ -34,14 +42,19 @@ concept X4UnusedAttribute =
     std::same_as<std::remove_const_t<T>, unused_container_type>;
 
 template<class T>
+concept X4ValueAttribute =
+    !X4UnusedAttribute<T> &&
+    !is_ttp_specialization_of_v<T, alloy::tuple> &&
+    std::default_initializable<T> &&
+    std::move_constructible<T> &&
+    std::is_move_assignable_v<T>;
+
+template<class T>
 concept X4NonUnusedAttribute =
     !X4UnusedAttribute<T> &&
     std::is_object_v<T> && // implies not reference
     !detail::has_parser_base<T> &&
-    std::move_constructible<std::remove_const_t<T>>;
-    // TODO: `fusion::iterator_range` does not satisfy these due to `fusion::vector`'s iterator being a reference type
-    //std::default_initializable<std::remove_const_t<T>> &&
-    //std::assignable_from<std::remove_const_t<T>&, std::remove_const_t<T>>;
+    std::move_constructible<T>;
 
 template<class T>
 concept X4Attribute = X4UnusedAttribute<T> || X4NonUnusedAttribute<T>;

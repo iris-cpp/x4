@@ -13,24 +13,32 @@
 
 #include <iris/x4/core/detail/parse_sequence.hpp>
 #include <iris/x4/core/expectation.hpp>
-#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/parser_traits.hpp>
 
-#include <iris/x4/traits/attribute_of_binary.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/directive/expect.hpp>
 
 #include <iris/alloy/tuple.hpp>
-#include <iris/type_traits.hpp>
 
-#include <format>
+#include <iris/type_list.hpp>
+#include <iris/bits/specialization_of.hpp>
+
 #include <concepts>
 #include <iterator>
+#include <string>
 #include <type_traits>
 #include <utility>
 
+#include <cstddef>
+
 namespace iris::x4 {
+
+template<class... Ps>
+struct sequence;
 
 namespace detail {
 
@@ -42,7 +50,7 @@ template<traits::X4Container Container, class Elem>
     requires
         (!std::same_as<Container, Elem>) &&
         (!traits::X4Container<Elem>) &&
-        requires (Container& c, Elem&& elem) {
+        requires(Container& c, Elem&& elem) {
             traits::push_back(c, std::move(elem));
         }
 struct container_can_hold_element<Container, Elem>
@@ -53,7 +61,7 @@ template<traits::X4Container Container, class ContainerElem>
     requires
         (!std::same_as<Container, ContainerElem>) &&
         traits::X4Container<ContainerElem> &&
-        requires (Container& c, ContainerElem&& container_elem) {
+        requires(Container& c, ContainerElem&& container_elem) {
             x4::move_to(
                 std::make_move_iterator(traits::begin(container_elem)),
                 std::make_move_iterator(traits::end(container_elem)),
@@ -70,44 +78,98 @@ struct container_can_hold_sequence : container_can_hold_element<Container, Seque
 
 template<traits::X4Container Container, class... Ts>
 struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
-    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion here.
+    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion
     : std::conjunction<container_can_hold_element<Container, Ts>...>
 {};
 
+template<class... Ps>
+struct get_sequence_size<sequence<Ps...>>
+{
+    static constexpr std::size_t value = sequence_layout<Ps...>::total_sequence_size;
+};
+
+template<class... Ps, class Container>
+struct get_handles_container<sequence<Ps...>, Container>
+{
+    static constexpr bool value =
+        (parser_traits<Ps>::template handles_container<Container> && ...) ||
+        container_can_hold_sequence<
+            Container,
+            typename parser_traits<sequence<Ps...>>::attribute_type
+        >::value;
+};
+
+// -------------------------------------------------------------
+
+template<class T>
+struct to_sequence_attribute_list
+{
+    using type = type_list<T>;
+};
+
+template<>
+struct to_sequence_attribute_list<unused_type>
+{
+    using type = type_list<>;
+};
+
+template<class... Ts>
+struct to_sequence_attribute_list<alloy::tuple<Ts...>>
+{
+    using type = type_list<Ts...>;
+};
+
+// -------------------------------------------------------------
+
+template<class TypeList>
+struct canonicalize_sequence_attribute;
+
+template<>
+struct canonicalize_sequence_attribute<type_list<>>
+{
+    using type = unused_type;
+};
+
+template<class T>
+struct canonicalize_sequence_attribute<type_list<T>>
+{
+    using type = T;
+};
+
+template<class T0, class T1, class... Ts>
+struct canonicalize_sequence_attribute<type_list<T0, T1, Ts...>>
+{
+    using type = alloy::tuple<T0, T1, Ts...>;
+};
+
+// -------------------------------------------------------------
+
+template<class... Ps>
+struct get_attribute_type<sequence<Ps...>>
+{
+    using type = canonicalize_sequence_attribute<
+        typename concat_type_list<
+            typename to_sequence_attribute_list<typename parser_traits<Ps>::attribute_type>::type...
+        >::type
+    >::type;
+};
+
 } // detail
 
-template<class Left, class Right>
-struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
+
+template<class... Ps>
+struct sequence : nary_parser<sequence<Ps...>, Ps...>
 {
-    using attribute_type = traits::detail::attribute_of_sequence<Left, Right>::type;
-
-    static constexpr std::size_t sequence_size =
-        parser_traits<Left>::sequence_size + parser_traits<Right>::sequence_size;
-
-    template<traits::X4Container Container>
-    static constexpr bool handles_container =
-        (
-            parser_traits<Left>::template handles_container<Container> &&
-            parser_traits<Right>::template handles_container<Container>
-        ) ||
-        detail::container_can_hold_sequence<Container, attribute_type>::value;
-
-    using binary_parser<sequence, Left, Right>::binary_parser;
-
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
-        noexcept(
-            std::is_nothrow_copy_assignable_v<It> &&
-            is_nothrow_parsable_v<Left, It, Se, Context, unused_type> &&
-            is_nothrow_parsable_v<Right, It, Se, Context, unused_type>
-        )
     {
         It const first_saved = first;
 
-        if (this->left.parse(first, last, ctx, unused)
-            && this->right.parse(first, last, ctx, unused)
-        ) {
+        bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (nary::get<Is>(this->elems).parse(first, last, ctx, unused) && ...);
+        }(std::index_sequence_for<Ps...>{});
+        if (ok) {
             return true;
         }
 
@@ -117,7 +179,6 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
                 return false;
             }
         }
-
         first = first_saved;
         return false;
     }
@@ -125,66 +186,53 @@ struct sequence : binary_parser<sequence<Left, Right>, Left, Right>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(noexcept(detail::parse_sequence(*this, first, last, ctx, attr)))
     {
         return detail::parse_sequence(*this, first, last, ctx, attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        if constexpr (iris::is_ttp_specialization_of_v<Right, expect_directive>) {
-            return std::format(
-                "{} > {}",
-                get_info<Left>{}(this->left),
-                get_info<typename Right::subject_type>{}(this->right.subject)
-            );
+        return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            std::string info;
+            ((info += this->template get_x4_element_info<Is>()), ...);
+            return info;
+        }(std::index_sequence_for<Ps...>{});
+    }
+
+private:
+    template<std::size_t I>
+    [[nodiscard]] constexpr std::string get_x4_element_info() const
+    {
+        using element_type = nary::parser_t<I, Ps...>;
+        auto const& elem = nary::get<I>(this->elems);
+
+        if constexpr (I == 0) {
+            return get_info<element_type>{}(elem);
+
+        } else if constexpr (is_ttp_specialization_of_v<element_type, expect_directive>) {
+            return " > " + get_info<typename element_type::subject_type>{}(elem.subject);
+
         } else {
-            return std::format(
-                "{} >> {}",
-                get_info<Left>{}(this->left),
-                get_info<Right>{}(this->right)
-            );
+            return " >> " + get_info<element_type>{}(elem);
         }
     }
 };
 
 template<X4Subject Left, X4Subject Right>
-[[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
+[[nodiscard]] constexpr auto
 operator>>(Left&& left, Right&& right)
-    noexcept(
-        is_parser_nothrow_castable_v<Left> &&
-        is_parser_nothrow_castable_v<Right> &&
-        std::is_nothrow_constructible_v<
-            sequence<as_parser_plain_t<Left>, as_parser_plain_t<Right>>,
-            as_parser_t<Left>,
-            as_parser_t<Right>
-        >
-    )
 {
-    return {as_parser(std::forward<Left>(left)), as_parser(std::forward<Right>(right))};
+    return nary::concat<sequence>(as_parser(static_cast<Left&&>(left)), as_parser(static_cast<Right&&>(right)));
 }
 
 template<X4Subject Left, X4Subject Right>
-[[nodiscard]] constexpr sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>
+[[nodiscard]] constexpr auto
 operator>(Left&& left, Right&& right)
-    noexcept(
-        is_parser_nothrow_castable_v<Left> &&
-        is_parser_nothrow_castable_v<Right> &&
-        std::is_nothrow_constructible_v<
-            expect_directive<as_parser_plain_t<Right>>,
-            as_parser_t<Right>
-        > &&
-        std::is_nothrow_constructible_v<
-            sequence<as_parser_plain_t<Left>, expect_directive<as_parser_plain_t<Right>>>,
-            as_parser_t<Left>,
-            expect_directive<as_parser_plain_t<Right>>
-        >
-    )
 {
-    return {
-        as_parser(std::forward<Left>(left)),
-        expect_directive<as_parser_plain_t<Right>>(as_parser(std::forward<Right>(right)))
-    };
+    return nary::concat<sequence>(
+        as_parser(static_cast<Left&&>(left)),
+        expect_directive<as_parser_plain_t<Right>>(as_parser(static_cast<Right&&>(right)))
+    );
 }
 
 } // iris::x4

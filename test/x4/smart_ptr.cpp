@@ -80,8 +80,7 @@ TEST_CASE("unique_ptr (std::default_delete<T>)")
     {
         std::unique_ptr<int> result = std::make_unique<int>(42);
         REQUIRE_FALSE(parse("1", unique_ptr<int>(eps(false)), result));
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
     {
         std::unique_ptr<int> result = std::make_unique<int>(42);
@@ -89,8 +88,7 @@ TEST_CASE("unique_ptr (std::default_delete<T>)")
             parse("1", unique_ptr<int>(always_throw<int>), result),
             std::runtime_error
         );
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
 }
 
@@ -131,8 +129,7 @@ TEST_CASE("unique_ptr (custom deleter)")
     {
         std::unique_ptr<int, custom_deleter<int>> result(new int(42), custom_deleter<int>{});
         REQUIRE_FALSE(parse("1", unique_ptr<int, custom_deleter<int>>(eps(false)), result));
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
     {
         std::unique_ptr<int, custom_deleter<int>> result(new int(42), custom_deleter<int>{});
@@ -140,8 +137,7 @@ TEST_CASE("unique_ptr (custom deleter)")
             parse("1", unique_ptr<int, custom_deleter<int>>(always_throw<int>), result),
             std::runtime_error
         );
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
 }
 
@@ -182,8 +178,7 @@ TEST_CASE("shared_ptr (std::default_delete<T>)")
     {
         std::shared_ptr<int> result = std::make_shared<int>(42);
         REQUIRE_FALSE(parse("1", shared_ptr<int>(eps(false)), result));
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
     {
         std::shared_ptr<int> result = std::make_shared<int>(42);
@@ -191,8 +186,7 @@ TEST_CASE("shared_ptr (std::default_delete<T>)")
             parse("1", shared_ptr<int>(always_throw<int>), result),
             std::runtime_error
         );
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
 }
 
@@ -233,8 +227,7 @@ TEST_CASE("shared_ptr (custom deleter)")
     {
         std::shared_ptr<int> result(new int(42), custom_deleter<int>{});
         REQUIRE_FALSE(parse("1", shared_ptr<int, custom_deleter<int>>(eps(false)), result));
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
     {
         std::shared_ptr<int> result(new int(42), custom_deleter<int>{});
@@ -242,7 +235,6 @@ TEST_CASE("shared_ptr (custom deleter)")
             parse("1", shared_ptr<int, custom_deleter<int>>(always_throw<int>), result),
             std::runtime_error
         );
-        REQUIRE(!!result);
-        CHECK(*result == 42);
+        REQUIRE(!result);
     }
 }

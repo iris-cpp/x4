@@ -30,11 +30,6 @@ struct no_skip_directive : proxy_parser<no_skip_directive<Subject>, Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<
-            Subject, It, Se,
-            std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>,
-            Attr
-        >)
     {
         //
         // No pre-skip here, in contrast to `lexeme`

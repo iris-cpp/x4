@@ -17,7 +17,6 @@
 
 #include <iris/x4/traits/attribute_category.hpp>
 #include <iris/x4/traits/tuple_traits.hpp>
-#include <iris/x4/traits/variant_traits.hpp>
 
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep
 #include <iris/alloy/utility.hpp>

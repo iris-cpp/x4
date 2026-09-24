@@ -10,9 +10,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
@@ -64,7 +64,6 @@ struct parse_into_container_impl_default
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr)
-        // never noexcept (requires container insertion)
     {
         using unwrapped_attribute_type = iris::unwrap_recursive_t<Attr>;
         auto& unwrapped_attr = iris::unwrap_recursive(attr);
@@ -88,7 +87,6 @@ struct parse_into_container_impl_default
                 // attribute is single element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {
-                //attr = nullptr;
                 static_assert(false, "[BUG] parse_into_container accepts a container, a variant of container or a single element tuple-like of container");
                 return false;
             }
@@ -102,36 +100,34 @@ struct parse_into_container_impl
     : parse_into_container_impl_default<Parser>
 {};
 
-template<class Parser, class It, class Se, class Context, class Attr>
-struct parse_into_container_noexcept : std::false_type {};
-
-template<class Parser, class It, class Se, class Context, class Attr>
-    requires X4UnusedAttribute<Attr> || (!has_attribute_v<Parser>)
-struct parse_into_container_noexcept<Parser, It, Se, Context, Attr> : is_nothrow_parsable<Parser, It, Se, Context, unused_type> {};
-
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 [[nodiscard]] constexpr bool
-parse_into_container(
-    Parser const& parser, It& first, Se const& last,
-    Context const& ctx, Attr& attr
-) noexcept(parse_into_container_noexcept<Parser, It, Se, Context, Attr>::value)
+parse_into_container(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
-    if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) { // handle unused types first
+    if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) {
         return parser.parse(first, last, ctx, unused);
+
+    } else if constexpr (is_recursive_wrapper_v<Attr>) {
+        return detail::parse_into_container(parser, first, last, ctx, *attr);
+
+    } else if constexpr (traits::is_size_one_sequence_v<Attr>) {
+        // A tuple-like holding a single container; parse into that container
+        return detail::parse_into_container(parser, first, last, ctx, alloy::get<0>(attr));
+
+    } else if constexpr (traits::is_variant_v<Attr>) {
+         // e.g. `char` when the caller is `+char_`
+        using attribute_type = parser_traits<Parser>::attribute_type;
+
+        // e.g. `std::string` when the attribute_type is `char`
+        using substitute_type = traits::variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
+
+        // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
+        auto& variant_alt = attr.template emplace<substitute_type>();
+        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
+
     } else {
-        if constexpr (traits::is_variant_v<Attr>) {
-             // e.g. `char` when the caller is `+char_`
-            using attribute_type = parser_traits<Parser>::attribute_type;
-
-            // e.g. `std::string` when the attribute_type is `char`
-            using substitute_type = traits::variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
-
-            // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
-            auto& variant_alt = attr.template emplace<substitute_type>();
-            return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
-        } else {
-            return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
-        }
+        static_assert(traits::is_container_v<Attr>);
+        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
     }
 }
 

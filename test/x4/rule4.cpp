@@ -19,8 +19,9 @@
 
 #include <iris/rvariant.hpp>
 
-#include <iris/alloy/tuple.hpp>
+#include <iris/alloy/adapted/std_tuple.hpp>
 
+#include <tuple>
 #include <iterator>
 #include <string>
 #include <iostream>
@@ -170,9 +171,9 @@ TEST_CASE("rule4")
 
     // test handling of single element tuple
     {
-        auto r = rule<class r_id, alloy::tuple<int>>{} = int_;
+        auto r = rule<class r_id, std::tuple<int>>{} = int_;
 
-        alloy::tuple<int> v(0);
+        std::tuple<int> v(0);
         REQUIRE(parse("1", r, v));
         CHECK(alloy::get<0>(v) == 1);
     }

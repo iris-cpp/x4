@@ -29,20 +29,10 @@ struct expect_directive : proxy_parser<expect_directive<Subject>, Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        // never noexcept; expectation failure requires construction of debug information
     {
-        static_assert(
-            has_context_v<Context, contexts::expectation_failure>,
-            "Context type was not specified for `x4::contexts::expectation_failure`. "
-            "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
-            "Note that you must also bind the context to your skipper."
-        );
-
         bool const r = this->subject.parse(first, last, ctx, attr);
-
-        // only the first failure is needed
-        if (!r && !x4::has_expectation_failure(ctx)) {
-            x4::set_expectation_failure(first, this->subject, ctx);
+        if (!r) {
+            x4::set_expectation_failure_if_empty(first, this->subject, ctx);
         }
         return r;
     }
@@ -84,7 +74,7 @@ struct parse_into_container_impl<expect_directive<Subject>>
     call(
         expect_directive<Subject> const& parser,
         It& first, Se const& last, Context const& ctx, Attr& attr
-    ) // never noexcept; expectation failure requires construction of debug information
+    )
     {
         static_assert(
             has_context_v<Context, contexts::expectation_failure>,

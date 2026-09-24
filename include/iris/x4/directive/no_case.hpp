@@ -30,11 +30,6 @@ struct no_case_directive : proxy_parser<no_case_directive<Subject>, Subject>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(is_nothrow_parsable_v<
-            Subject, It, Se,
-            decltype(x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx)),
-            Attr
-        >)
     {
         return this->subject.parse(
             first, last,

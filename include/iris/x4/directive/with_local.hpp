@@ -67,14 +67,6 @@ struct with_local_directive : proxy_parser<with_local_directive<Subject, ID, T>,
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            std::is_nothrow_default_constructible_v<T> &&
-            x4::is_nothrow_parsable_v<
-                Subject, It, Se,
-                decltype(x4::replace_first_context<ID>(ctx, std::declval<T&>())),
-                Attr
-            >
-        )
     {
         // `x4::make_context(...)` cannot be used here as it invokes infinite recursive instantiation.
 
