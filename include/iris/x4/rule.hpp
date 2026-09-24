@@ -409,13 +409,13 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     constexpr rule(std::string_view name) noexcept
         : name(name)
     {
-        check_invariants();
+        // Don't place `check_invariants()` here; rule must be able to construct with incomplete type
     }
 
     constexpr rule(char const* name)
         : name(name)
     {
-        check_invariants();
+        // Don't place `check_invariants()` here; rule must be able to construct with incomplete type
     }
 
     // Primary overload

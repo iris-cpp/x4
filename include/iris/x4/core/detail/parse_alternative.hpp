@@ -283,6 +283,8 @@ struct parse_alternative_all
         static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_container_type>);
         static_assert(!std::is_const_v<ContainerAttr>);
 
+        // Same logic as in `x4::optional`
+
         // We can (ab)use the exposed attribute as the temporary workspace
         // if and only if the modification or rollback of the exposed attribute
         // does not change the semantic state of the exposed container instance.

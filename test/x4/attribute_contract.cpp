@@ -234,4 +234,13 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
 
     X4_TEST_SUCCESS(Pair(999, "poison"s), "42x", -(int_ >> +alpha >> lit('!')) >> lit("42x"), Pair{});
     X4_TEST_SUCCESS(std::optional{Pair(999, "poison"s)}, "42x", -(int_ >> +alpha >> lit('!')) >> lit("42x"), std::optional<Pair>{});
+
+    // optional over a container
+    X4_TEST_SUCCESS("poison"s, "abc", -(+alpha >> lit('!')) >> lit("abc"), ""s);
+    X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1!", -(int_ >> lit('?')) >> lit("1!"), std::vector<int>{});
+
+    X4_TEST_SUCCESS("poison"s, "ab1", +alpha >> -(digit >> lit('!')) >> lit('1'), "ab"s);
+    X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1,2,3", +(int_ >> lit(',')) >> -(int_ >> lit('!')) >> lit('3'), std::vector<int>({1, 2}));
+
+    X4_TEST_SUCCESS("poison"s, "ab12", +alpha >> -(+digit >> lit('!')) >> lit("12"), "ab"s);
 }

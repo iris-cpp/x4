@@ -118,7 +118,7 @@ struct attribute_traits<OptionalT>
     // The branch writes the optional as a whole (a nested optional parser, or
     // a rule with an optional attribute): hand it over disengaged.
     template<class ParserAttr>
-        requires std::same_as<ParserAttr, OptionalT>
+        requires std::same_as<ParserAttr, OptionalT> || CategorizedAttr<ParserAttr, optional_attr>
     static constexpr OptionalT& clear(OptionalT& opt) noexcept
     {
         opt.reset();
@@ -129,7 +129,7 @@ struct attribute_traits<OptionalT>
     // contained object if already engaged, and prepare that value for `ParserAttr`.
     template<class ParserAttr>
         requires
-            (!std::same_as<ParserAttr, OptionalT>) &&
+            (!CategorizedAttr<ParserAttr, optional_attr>) &&
             detail::clearable_for<value_type, ParserAttr>
     static constexpr decltype(auto) clear(OptionalT& opt)
     {
