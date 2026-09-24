@@ -19,6 +19,7 @@
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/bool.hpp>
 #include <iris/x4/numeric/int.hpp>
+#include <iris/x4/numeric/real.hpp>
 
 #include <iris/x4/directive/omit.hpp>
 
@@ -69,14 +70,26 @@ TEST_CASE("alternative")
     using x4::lit;
     using x4::fixed_value;
     using x4::int_;
+    using x4::double_;
     using x4::unused;
     using x4::omit;
     using x4::eps;
     using x4::true_;
+    using iris::rvariant;
 
     STATIC_CHECK(std::same_as<decltype(int_ | int_), x4::alternative<x4::int_parser<int>, x4::int_parser<int>>>);
     STATIC_CHECK(std::same_as<decltype(int_ | int_ | int_), x4::alternative<x4::int_parser<int>, x4::int_parser<int>, x4::int_parser<int>>>);
     STATIC_CHECK(std::same_as<decltype((int_ | int_) | int_), decltype(int_ | (int_ | int_))>);
+
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | int_)>::attribute_type, int>);
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype((int_ | int_) | int_)>::attribute_type, int>);
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | (int_ | int_))>::attribute_type, int>);
+
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_)>::attribute_type, rvariant<int, double>>);
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | int_)>::attribute_type, rvariant<int, double>>);
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | double_)>::attribute_type, rvariant<int, double>>);
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | (int_ | double_))>::attribute_type, rvariant<int, double>>);
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | (double_ | int_))>::attribute_type, rvariant<int, double>>);
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
