@@ -18,6 +18,7 @@
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 
+#include <iris/x4/string/case_compare.hpp>
 #include <iris/x4/string/detail/string_parse.hpp>
 
 #include <concepts>

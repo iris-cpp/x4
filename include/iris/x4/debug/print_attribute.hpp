@@ -236,11 +236,9 @@ struct print_attribute_debug
     static void call(std::ostream& out, CategorizedAttr<plain_tag> auto const& val)
     {
         if constexpr (
-            std::disjunction_v<
-                std::is_pointer<T>,
-                is_ttp_specialization_of<T, std::unique_ptr>,
-                is_ttp_specialization_of<T, std::shared_ptr>
-            >
+            std::is_pointer_v<T> ||
+            is_ttp_specialization_of_v<T, std::unique_ptr> ||
+            is_ttp_specialization_of_v<T, std::shared_ptr>
         ) {
             auto const* ptr = std::to_address(val);
             if (!ptr) {

@@ -111,7 +111,7 @@ struct parse_sequence_tuple
             if constexpr (I != layout::single_attributed_index) {
                 return elem.parse(first, last, ctx, unused);
 
-            } else if constexpr (tuple_is_size_one_view_v<Attr> && !sequence_passes_view<parser_type>::value) {
+            } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
                 auto&& elem_attr = x4::make_container_appender(alloy::get<0>(attr));
                 return elem.parse(first, last, ctx, elem_attr);
 
@@ -232,10 +232,10 @@ struct parse_into_container_impl<sequence<Ps...>>
     )
     {
         if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold<
+            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold_v<
                 typename parser_traits<sequence<Ps...>>::attribute_type,
                 typename traits::container_value<Attr>::type
-            >::value;
+            >;
 
             if constexpr (sequence_attribute_can_directly_hold_value_type) {
                 return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);

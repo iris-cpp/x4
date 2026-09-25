@@ -132,7 +132,7 @@ TEST_CASE("lit")
     }
 
     {
-        // single-element tuple tests
+        // single-element tuple-like tests
         alloy::tuple<std::string> s;
         REQUIRE(parse("kimpo", x4::string("kimpo"), s));
         CHECK(alloy::get<0>(s) == "kimpo");

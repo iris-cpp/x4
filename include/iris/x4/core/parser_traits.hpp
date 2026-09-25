@@ -47,10 +47,7 @@ struct get_attribute_type<Parser>
 template<class Parser, class Container>
 struct get_handles_container
 {
-    static constexpr bool value = can_hold<
-        typename get_attribute_type<Parser>::type,
-        Container
-    >::value;
+    static constexpr bool value = can_hold_v<Container, typename get_attribute_type<Parser>::type>;
 };
 
 template<class Parser, class Container>
@@ -138,6 +135,13 @@ struct parser_traits
     static constexpr bool has_action = Parser::has_action;
     static constexpr bool need_rcontext = Parser::need_rcontext;
 };
+
+// `Parser` writes into `Container`: it fills the container itself, or yields
+// one element of it
+template<class Parser, class Container>
+concept WritesIntoContainer =
+    parser_traits<Parser>::template handles_container<Container> ||
+    can_hold_v<typename traits::container_value<Container>::type, typename parser_traits<Parser>::attribute_type>;
 
 } // iris::x4
 

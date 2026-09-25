@@ -14,9 +14,11 @@
 
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/container_appender.hpp>
+#include <iris/x4/core/parser_traits.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
@@ -83,11 +85,11 @@ struct parse_into_container_impl_default
             }
 
         } else {
-            if constexpr (tuple_is_size_one_sequence_v<unwrapped_attribute_type>) {
-                // attribute is single element tuple-like; unwrap and try again
+            if constexpr (SingleElementTupleLike<unwrapped_attribute_type>) {
+                // attribute is a single-element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {
-                static_assert(false, "[BUG] parse_into_container accepts a container, a variant of container or a single element tuple-like of container");
+                static_assert(false, "[BUG] parse_into_container accepts a container, a variant of container or a single-element tuple-like of container");
                 return false;
             }
         }
@@ -110,7 +112,7 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
     } else if constexpr (is_recursive_wrapper_v<Attr>) {
         return detail::parse_into_container(parser, first, last, ctx, *attr);
 
-    } else if constexpr (tuple_is_size_one_sequence_v<Attr>) {
+    } else if constexpr (SingleElementTupleLike<Attr>) {
         // A tuple-like holding a single container; parse into that container
         return detail::parse_into_container(parser, first, last, ctx, alloy::get<0>(attr));
 

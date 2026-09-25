@@ -43,7 +43,7 @@ template<class TTuple, class UTuple>
 struct is_all_substitute_for_tuple : std::false_type {};
 
 template<class TTuple, class UTuple>
-    requires tuple_is_same_size_sequence_v<TTuple, UTuple>
+    requires SameSizeTupleLike<TTuple, UTuple>
 struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple_impl<TTuple, UTuple> {};
 
 template<class T, class U>
@@ -110,6 +110,9 @@ struct can_hold<T, T>
 {
     static_assert(X4Attribute<T>);
 };
+
+template<class T, class U>
+inline constexpr bool can_hold_v = can_hold<T, U>::value;
 
 } // iris::x4
 

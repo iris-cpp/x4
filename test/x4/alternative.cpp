@@ -277,7 +277,7 @@ TEST_CASE("alternative")
         REQUIRE(parse("123", parser, var));
     }
 
-    // single element tuple-like case
+    // single-element tuple-like case
     {
         alloy::tuple<iris::rvariant<int, std::string>> fv;
         REQUIRE(parse("12345", int_ | +char_, fv));
@@ -289,7 +289,7 @@ TEST_CASE("alternative")
         CHECK(iris::get<int>(alloy::get<0>(fvi)) == 12345);
     }
 
-    // alternative over single element tuple as part of another tuple
+    // alternative over a single-element tuple-like as part of another tuple
     {
         constexpr auto key1 = lit("long") >> fixed_value(long{});
         constexpr auto key2 = lit("char") >> fixed_value(char{});

@@ -60,8 +60,12 @@ struct ts_real_policies : x4::ureal_policies<T>
         constexpr uint_parser<unsigned, 10, 1, 3> uint3;
         constexpr uint_parser<unsigned, 10, 3, 3> uint3_3;
 
-        if (auto res = parse(first, last, uint3, result); res.ok) {
-            Accumulator n;
+        // `unsigned -> Accumulator` (a floating point type) is a narrowing
+        // conversion, so the digits are parsed into `unsigned` and converted
+        // explicitly.
+        unsigned digits = 0;
+        if (auto res = parse(first, last, uint3, digits); res.ok) {
+            result = static_cast<Accumulator>(digits);
             It iter = res.remainder.begin();
             first = iter;
 
@@ -70,11 +74,12 @@ struct ts_real_policies : x4::ureal_policies<T>
                 if (!res.ok) break;
                 iter = res.remainder.begin();
 
+                unsigned n = 0;
                 parse(res, iter, last, uint3_3, n);
                 if (!res.ok) break;
                 iter = res.remainder.begin();
 
-                result = result * 1000 + n;
+                result = result * 1000 + static_cast<Accumulator>(n);
                 first = iter;
             }
 

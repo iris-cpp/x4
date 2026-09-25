@@ -13,6 +13,7 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/traits/can_hold.hpp>
+#include <iris/x4/core/traits/variant_class.hpp>
 
 #include <iris/rvariant/variant_helper.hpp>
 
@@ -20,16 +21,6 @@
 #include <type_traits>
 
 namespace iris::x4 {
-
-template<class T>
-struct is_variant : std::false_type {};
-
-template<class T>
-constexpr bool is_variant_v = is_variant<T>::value;
-
-template<class... Ts>
-struct is_variant<rvariant<Ts...>> : std::true_type {};
-
 
 namespace detail {
 
@@ -66,7 +57,7 @@ template<class T, class First, class... Rest>
 struct variant_find_holdable_type_impl<T, First, Rest...>
 {
     using type = std::conditional_t<
-        can_hold<unwrap_recursive_t<First>, T>::value,
+        can_hold_v<unwrap_recursive_t<First>, T>,
 
         // Given some type `T`, when both `T` and `recursive_wrapper<T>` is seen
         // during attribute resolution, X4 should ideally materialize the latter

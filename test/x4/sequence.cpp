@@ -124,19 +124,19 @@ TEST_CASE("sequence")
     }
 
     {
-        // a single element tuple
+        // a single-element tuple-like
         std::tuple<char> vec;
         REQUIRE(parse("ab", char_ >> 'b', vec));
         CHECK(alloy::get<0>(vec) == 'a');
     }
 
     {
-        // Make sure single element tuples get passed through if the rhs
-        // has a single element tuple as its attribute. Edit JDG 2014:
+        // Make sure single-element tuple-likes get passed through if the rhs
+        // has a single-element tuple-like as its attribute. Edit JDG 2014:
         // actually the issue here is that if the rhs in this case a rule
         // (r), it should get it (i.e. the sequence parser should not
         // unwrap it). It's odd that the RHS (r) does not really have a
-        // single element tuple, so the original comment is not accurate.
+        // single-element tuple-like, so the original comment is not accurate.
 
         // rule version
         {
@@ -162,8 +162,8 @@ TEST_CASE("sequence")
     }
 
     {
-        // make sure single element tuples get passed through if the rhs
-        // has a single element tuple as its attribute. This is a correction
+        // make sure single-element tuple-likes get passed through if the rhs
+        // has a single-element tuple-like as its attribute. This is a correction
         // of the test above.
 
         // rule version

@@ -112,7 +112,7 @@ TEST_CASE("plus")
         (void)parse("abcde", +char_, x);
     }
 
-    // single-element tuple tests
+    // single-element tuple-like tests
     {
         alloy::tuple<std::string> fs;
         REQUIRE(parse("12345", +char_, fs));

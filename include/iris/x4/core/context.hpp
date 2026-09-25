@@ -12,6 +12,7 @@
 
 #include <iris/config.hpp>
 #include <iris/type_traits.hpp>
+#include <iris/type_list.hpp>
 
 #include <iris/x4/core/unused.hpp>
 

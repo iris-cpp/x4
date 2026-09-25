@@ -23,12 +23,12 @@ template<class Klass>
 struct allocator_ops
 {
     template<class... Allocs>
-    static constexpr bool move_assign_noexcept = std::conjunction_v<
-        std::disjunction<
-            typename std::allocator_traits<Allocs>::propagate_on_container_move_assignment,
-            typename std::allocator_traits<Allocs>::is_always_equal
-        >...
-    >;
+    static constexpr bool move_assign_noexcept = (
+        (
+            std::allocator_traits<Allocs>::propagate_on_container_move_assignment::value ||
+            std::allocator_traits<Allocs>::is_always_equal::value
+        ) && ...
+    );
 
     template<auto AllocMem, auto Mem>
     [[nodiscard]] static constexpr auto copy_construct(Klass& self, Klass const& other)
