@@ -12,10 +12,12 @@
 
 #include <iris/x4/rule.hpp>
 
+#include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/primitive/eps.hpp>
 
 #include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/bool.hpp>
 #include <iris/x4/numeric/int.hpp>
@@ -90,6 +92,20 @@ TEST_CASE("alternative")
     STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | double_)>::attribute_type, rvariant<int, double>>);
     STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | (int_ | double_))>::attribute_type, rvariant<int, double>>);
     STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | double_ | (double_ | int_))>::attribute_type, rvariant<int, double>>);
+
+    {
+        // `T` and `recursive_wrapper<T>` are one alternative; the wrapped form is kept, at the first position
+        using iris::recursive_wrapper;
+        using x4::as;
+        using x4::standard::alpha;
+        constexpr auto plain = as<di_include>(+alpha);
+        constexpr auto wrapped = as<recursive_wrapper<di_include>>(lit('#') >> +alpha);
+
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(plain | wrapped)>::attribute_type, recursive_wrapper<di_include>>);
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(wrapped | plain)>::attribute_type, recursive_wrapper<di_include>>);
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(plain | int_ | wrapped)>::attribute_type, rvariant<recursive_wrapper<di_include>, int>>);
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | wrapped | plain)>::attribute_type, rvariant<int, recursive_wrapper<di_include>>>);
+    }
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
 
