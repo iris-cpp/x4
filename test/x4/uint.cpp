@@ -236,8 +236,9 @@ TEST_CASE("uint")
         CHECK(parse("4294967295", uint32_, u32));
     }
     {
+        // a signed `T`; the attribute must be `T` too, `std::int8_t -> std::uint8_t` is narrowing
         x4::uint_parser<std::int8_t> u_int8_;
-        std::uint8_t u8 = 0;
+        std::int8_t u8 = 0;
 
         CHECK(!parse("999", u_int8_, u8));
         CHECK(!parse("-1", u_int8_, u8));
@@ -247,7 +248,7 @@ TEST_CASE("uint")
     }
     {
         x4::uint_parser<std::int16_t> u_int16_;
-        std::uint16_t u16 = 0;
+        std::int16_t u16 = 0;
 
         CHECK(!parse("99999", u_int16_, u16));
         CHECK(!parse("-1", u_int16_, u16));
@@ -257,7 +258,7 @@ TEST_CASE("uint")
     }
     {
         x4::uint_parser<std::int32_t> u_int32_;
-        std::uint32_t u32 = 0;
+        std::int32_t u32 = 0;
 
         CHECK(!parse("9999999999", u_int32_, u32));
         CHECK(!parse("-1", u_int32_, u32));
