@@ -12,8 +12,9 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/core/traits/variant_traits.hpp>
+#include <iris/x4/core/traits/variant_class.hpp>
 #include <iris/x4/core/traits/optional_traits.hpp>
 
 #include <iris/alloy/traits.hpp>

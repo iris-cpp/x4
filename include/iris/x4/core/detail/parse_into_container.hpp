@@ -17,6 +17,7 @@
 
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/variant_traits.hpp>
 
 #include <iris/alloy/tuple.hpp>
 
