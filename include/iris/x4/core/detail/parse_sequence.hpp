@@ -111,7 +111,7 @@ struct parse_sequence_tuple
             if constexpr (I != layout::single_attributed_index) {
                 return elem.parse(first, last, ctx, unused);
 
-            } else if constexpr (tuple_is_single_element_view_v<Attr> && !sequence_passes_view<parser_type>::value) {
+            } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
                 auto&& elem_attr = x4::make_container_appender(alloy::get<0>(attr));
                 return elem.parse(first, last, ctx, elem_attr);
 

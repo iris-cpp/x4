@@ -83,7 +83,7 @@ struct parse_into_container_impl_default
             }
 
         } else {
-            if constexpr (tuple_is_single_element_v<unwrapped_attribute_type>) {
+            if constexpr (SingleElementTupleLike<unwrapped_attribute_type>) {
                 // attribute is a single-element tuple-like; unwrap and try again
                 return parse_into_container_impl_default<Parser>::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
             } else {
@@ -110,7 +110,7 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
     } else if constexpr (is_recursive_wrapper_v<Attr>) {
         return detail::parse_into_container(parser, first, last, ctx, *attr);
 
-    } else if constexpr (tuple_is_single_element_v<Attr>) {
+    } else if constexpr (SingleElementTupleLike<Attr>) {
         // A tuple-like holding a single container; parse into that container
         return detail::parse_into_container(parser, first, last, ctx, alloy::get<0>(attr));
 

@@ -28,10 +28,9 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     using attribute_type = traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container = std::disjunction_v<
-        std::bool_constant<parser_traits<Left>::template handles_container<Container>>,
-        can_hold<typename parser_traits<Left>::attribute_type, typename traits::container_value<Container>::type>
-    >;
+    static constexpr bool handles_container =
+        parser_traits<Left>::template handles_container<Container> ||
+        can_hold<typename parser_traits<Left>::attribute_type, typename traits::container_value<Container>::type>::value;
 
     using binary_parser<delimited_list, Left, Right>::binary_parser;
 

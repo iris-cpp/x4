@@ -44,6 +44,27 @@ struct iris::alloy::adaptor<fixed_ref<Ref>>
     using getters_list = iris::constant_list<fixed_ref_getter<Ref>{}>;
 };
 
+TEST_CASE("tuple-like concepts")
+{
+    using alloy::tuple;
+
+    STATIC_CHECK(x4::SingleElementTupleLike<tuple<int>>);
+    STATIC_CHECK(x4::SingleElementTupleLike<tuple<int&> const&>);
+    STATIC_CHECK(x4::SingleElementTupleLike<adapted_int>);
+    STATIC_CHECK(!x4::SingleElementTupleLike<tuple<int, int>>);
+    STATIC_CHECK(!x4::SingleElementTupleLike<int>);
+
+    STATIC_CHECK(x4::SingleElementTupleLikeView<tuple<int&>>);
+    STATIC_CHECK(!x4::SingleElementTupleLikeView<tuple<int>>);
+    STATIC_CHECK(!x4::SingleElementTupleLikeView<tuple<int&, int&>>);
+    STATIC_CHECK(!x4::SingleElementTupleLikeView<int>);
+
+    STATIC_CHECK(x4::SameSizeTupleLike<tuple<int, char>, tuple<long, long>>);
+    STATIC_CHECK(!x4::SameSizeTupleLike<tuple<int>, tuple<int, int>>);
+    STATIC_CHECK(!x4::SameSizeTupleLike<int, tuple<int>>);
+    STATIC_CHECK(!x4::SameSizeTupleLike<tuple<int>, int>);
+}
+
 TEST_CASE("unwrap_single_element")
 {
     using alloy::tuple;
