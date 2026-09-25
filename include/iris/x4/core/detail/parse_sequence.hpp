@@ -232,10 +232,10 @@ struct parse_into_container_impl<sequence<Ps...>>
     )
     {
         if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold<
+            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold_v<
                 typename parser_traits<sequence<Ps...>>::attribute_type,
                 typename traits::container_value<Attr>::type
-            >::value;
+            >;
 
             if constexpr (sequence_attribute_can_directly_hold_value_type) {
                 return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);

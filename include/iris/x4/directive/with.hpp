@@ -11,6 +11,7 @@
 =============================================================================*/
 
 #include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/context.hpp>
 
 #include <iterator>
 #include <type_traits>

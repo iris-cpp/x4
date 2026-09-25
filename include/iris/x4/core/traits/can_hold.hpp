@@ -111,6 +111,9 @@ struct can_hold<T, T>
     static_assert(X4Attribute<T>);
 };
 
+template<class T, class U>
+inline constexpr bool can_hold_v = can_hold<T, U>::value;
+
 } // iris::x4
 
 #endif

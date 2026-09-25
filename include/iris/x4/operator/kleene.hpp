@@ -29,9 +29,7 @@ struct kleene : unary_parser<kleene<Subject>, Subject>
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container =
-        parser_traits<Subject>::template handles_container<Container> ||
-        can_hold<typename parser_traits<Subject>::attribute_type, typename traits::container_value<Container>::type>::value;
+    static constexpr bool handles_container = WritesIntoContainer<Subject, Container>;
 
     using unary_parser<kleene, Subject>::unary_parser;
 

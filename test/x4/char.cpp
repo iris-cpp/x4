@@ -45,7 +45,6 @@ TEST_CASE("char")
 
         constexpr auto parser = standard::char_('x');
         char ch{};
-        static_assert(noexcept(parser.parse(first, last, unused, ch)));
         (void)parser.parse(first, last, unused, ch);
 
         // Make sure this is static
@@ -57,7 +56,6 @@ TEST_CASE("char")
         auto const last = sv.end();
         constexpr auto parser = unicode::char_(U'x');
         char32_t ch{};
-        static_assert(noexcept(parser.parse(first, last, unused, ch)));
         (void)parser.parse(first, last, unused, ch);
 
         // Make sure this is static

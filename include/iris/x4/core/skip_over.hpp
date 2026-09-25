@@ -11,14 +11,14 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/config.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/parser.hpp>
 
+#include <concepts>
 #include <iterator>
-#include <type_traits>
 
 namespace iris::x4 {
 
