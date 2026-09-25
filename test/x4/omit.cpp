@@ -56,7 +56,7 @@ TEST_CASE("omit")
 
     {
         // If all elements except 1 is omitted, the attribute is
-        // a single-element tuple. For this case alone, we allow
+        // a single-element tuple-like. For this case alone, we allow
         // naked attributes.
         char attr{};
         REQUIRE(parse("abc", omit[char_] >> 'b' >> char_, attr));

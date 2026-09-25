@@ -29,11 +29,11 @@ template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
     // non-variant `ExposedAttr`
 struct unwrap_container_candidate
 {
-    using type = synthesized_value<
+    using type = unwrap_single_element_t<
         unwrap_recursive_t<
             typename unwrap_container_appender<ExposedAttr>::type
         >
-    >::type;
+    >;
 };
 
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedVariant>
@@ -52,32 +52,6 @@ struct chunk_buffer_impl
     static_assert(traits::X4Container<typename unwrap_container_candidate<ParserAttr, ExposedAttr>::type>);
 };
 
-template<class T>
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
-{
-    return std::forward<T>(value);
-}
-
-template<class T>
-    requires tuple_is_size_one_sequence_v<std::remove_cvref_t<T>>
-[[nodiscard]] constexpr auto&& unwrap_single_element(T&& value) noexcept
-{
-    return std::forward_like<T>(alloy::get<0>(std::forward<T>(value)));
-}
-
-template<class T>
-struct unwrap_single_element_plain
-{
-    using type = std::remove_cvref_t<T>;
-};
-
-template<class T>
-    requires tuple_is_size_one_sequence_v<std::remove_cvref_t<T>>
-struct unwrap_single_element_plain<T>
-{
-    using type = std::remove_cvref_t<alloy::tuple_element_t<0, T>>;
-};
-
 } // detail
 
 
@@ -88,10 +62,8 @@ using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 [[nodiscard]] constexpr auto& get_container(ExposedAttr& attr)
 {
-    using unwrapped_attr_type = detail::unwrap_single_element_plain<
-        unwrap_recursive_t<ExposedAttr>
-    >::type;
-    auto& unwrapped_attr = detail::unwrap_single_element(iris::unwrap_recursive(attr));
+    using unwrapped_attr_type = unwrap_single_element_t<unwrap_recursive_t<ExposedAttr>>;
+    auto& unwrapped_attr = x4::unwrap_single_element(iris::unwrap_recursive(attr));
 
     if constexpr (is_variant_v<unwrapped_attr_type>) {
         using container_alternative = variant_find_holdable_type<

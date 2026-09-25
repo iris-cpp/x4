@@ -169,7 +169,7 @@ TEST_CASE("rule4")
         CHECK(*ov == 1);
     }
 
-    // test handling of single element tuple
+    // test handling of a single-element tuple-like
     {
         auto r = rule<class r_id, std::tuple<int>>{} = int_;
 

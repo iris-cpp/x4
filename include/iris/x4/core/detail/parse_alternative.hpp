@@ -110,9 +110,9 @@ struct pass_non_variant_attribute
     }
 };
 
-// Unwrap single element sequences
+// Unwrap single-element tuple-likes
 template<class Parser, X4Attribute Attr>
-    requires tuple_is_size_one_sequence_v<Attr>
+    requires tuple_is_single_element_v<Attr>
 struct pass_non_variant_attribute<Parser, Attr>
 {
     using attr_type = std::remove_reference_t<

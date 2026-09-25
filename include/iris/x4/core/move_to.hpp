@@ -115,7 +115,7 @@ constexpr void move_to(It const&, Se const&, unused_type const&&) = delete; // t
 // Category specific --------------------------------------
 
 template<NonUnusedCategorizedAttr Source, CategorizedAttr<plain_tag> Dest>
-    requires tuple_is_size_one_sequence_v<Source>
+    requires tuple_is_single_element_v<Source>
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)))))
@@ -126,7 +126,7 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<NonUnusedCategorizedAttr Source, CategorizedAttr<plain_tag> Dest>
-    requires (!tuple_is_size_one_sequence_v<Source>)
+    requires (!tuple_is_single_element_v<Source>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
@@ -140,8 +140,8 @@ move_to(Source&& src, Dest& dest)
 
 template<NonUnusedCategorizedAttr Source, CategorizedAttr<tuple_tag> Dest>
     requires
-        tuple_is_same_size_sequence_v<Dest, Source> &&
-        (!tuple_is_size_one_sequence_v<Dest>)
+        tuple_is_same_size_v<Dest, Source> &&
+        (!tuple_is_single_element_v<Dest>)
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(alloy::tuple_assign(std::forward<Source>(src), dest)))
@@ -167,7 +167,7 @@ move_to(Source&& src, Dest& dest)
 }
 
 template<NonUnusedCategorizedAttr Source, CategorizedAttr<variant_tag> Dest>
-    requires (!std::is_assignable_v<Dest&, Source&&>) && tuple_is_size_one_sequence_v<Source>
+    requires (!std::is_assignable_v<Dest&, Source&&>) && tuple_is_single_element_v<Source>
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(dest = std::forward_like<Source>(alloy::get<0>(std::forward<Source>(src)))))
@@ -229,7 +229,7 @@ move_to(It first, Se last, Dest& dest)
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, CategorizedAttr<tuple_tag> Dest>
-    requires tuple_is_size_one_sequence_v<Dest>
+    requires tuple_is_single_element_v<Dest>
 constexpr void
 move_to(It first, Se last, Dest& dest)
     noexcept(noexcept(x4::move_to(first, last, alloy::get<0>(dest))))
@@ -274,9 +274,9 @@ move_to(Source&& src, Dest& dest)
     }
 }
 
-// Size-one tuple-like forwarding
+// Single-element tuple-like forwarding
 template<NonUnusedCategorizedAttr Source, CategorizedAttr<tuple_tag> Dest>
-    requires tuple_is_size_one_sequence_v<Dest>
+    requires tuple_is_single_element_v<Dest>
 constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(noexcept(x4::move_to(std::forward<Source>(src), alloy::get<0>(dest))))

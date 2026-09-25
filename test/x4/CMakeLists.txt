@@ -87,6 +87,7 @@ x4_define_tests(
     symbols2
     symbols3
     tst
+    tuple_like
     uint
     uint_radix
     unused

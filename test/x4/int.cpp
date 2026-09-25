@@ -231,7 +231,7 @@ TEST_CASE("int")
         CHECK(parse("-12", int2, i));
     }
 
-    // single-element tuple tests
+    // single-element tuple-like tests
     {
         alloy::tuple<int> i{};
 

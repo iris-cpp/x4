@@ -10,9 +10,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/traits/char_traits.hpp>
-#include <iris/x4/core/traits/tuple_traits.hpp>
 
 #include <iris/x4/core/move_to.hpp>
 
@@ -36,10 +34,6 @@ string_parse(
     static_assert(!std::is_array_v<StrR>);
     using CharT = std::ranges::range_value_t<StrR>;
 
-    using synthesized_value_type = synthesized_value_t<Attr>;
-    static_assert(std::same_as<attribute_category_t<synthesized_value_type>, container_tag>);
-    using value_type = traits::container_value<synthesized_value_type>::type;
-    static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
     static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
     It it = first;
@@ -84,10 +78,6 @@ string_parse(
     It& first, Se const& last, Attr& attr
 ) noexcept(std::same_as<std::remove_const_t<Attr>, unused_container_type>)
 {
-    using synthesized_value_type = synthesized_value_t<Attr>;
-    static_assert(std::same_as<attribute_category_t<synthesized_value_type>, container_tag>);
-    using value_type = traits::container_value<synthesized_value_type>::type;
-    static_assert(!CharLike<value_type> || !CharIncompatibleWith<value_type, CharT>, "Mixing incompatible char types is not allowed");
     static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
 
     auto uc_it = ucstr.begin();
