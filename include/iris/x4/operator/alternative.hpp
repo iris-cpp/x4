@@ -54,6 +54,37 @@ struct to_alternative_attribute_list<rvariant<Ts...>>
 
 // -------------------------------------------------------------
 
+template<class T, class Wrapped>
+struct alternative_wrapped_entry {};
+
+template<class T>
+struct alternative_entry {};
+
+template<class T>
+    requires is_recursive_wrapper_v<T>
+struct alternative_entry<T>
+    : alternative_wrapped_entry<unwrap_recursive_t<T>, T>
+{};
+
+template<class... Ts>
+struct alternative_entries
+    : alternative_entry<Ts>...
+{};
+
+template<class T, class Wrapped>
+Wrapped alternative_wrapped_form(alternative_wrapped_entry<unwrap_recursive_t<T>, Wrapped>*);
+
+template<class T>
+T alternative_wrapped_form(...);
+
+template<class TypeList>
+struct unique_alternative_list;
+
+template<class... Ts>
+struct unique_alternative_list<type_list<Ts...>>
+    : unique_type_list<type_list<decltype(detail::alternative_wrapped_form<Ts>(static_cast<alternative_entries<Ts...>*>(nullptr)))...>>
+{};
+
 template<class TypeList>
 struct canonicalize_alternative_attribute;
 
@@ -87,7 +118,7 @@ struct alternative_layout<P0, PRest...>
         typename to_alternative_attribute_list<typename parser_traits<P0>::attribute_type>::type,
         typename to_alternative_attribute_list<typename parser_traits<PRest>::attribute_type>::type...
     >::type;
-    using unique_attrs = unique_type_list<concated_attrs>::type;
+    using unique_attrs = unique_alternative_list<typename unique_type_list<concated_attrs>::type>::type;
     using attribute_type = canonicalize_alternative_attribute<unique_attrs>::type;
 
     // All branches share one attribute type and one slot count; the
