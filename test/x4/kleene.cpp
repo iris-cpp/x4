@@ -22,10 +22,10 @@
 TEST_CASE("kleene")
 {
     using x4::char_;
-    using x4::alpha;
-    using x4::upper;
-    using x4::space;
-    using x4::digit;
+    using x4::standard::alpha;
+    using x4::standard::upper;
+    using x4::standard::space;
+    using x4::standard::digit;
     using x4::int_;
     using x4::lexeme;
 

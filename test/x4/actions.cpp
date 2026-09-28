@@ -18,6 +18,8 @@
 TEST_CASE("action")
 {
     using x4::int_;
+    using x4::standard::digit;
+    using x4::standard::space;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(x4::int_.on_match(std::true_type{}));
 
@@ -35,7 +37,7 @@ TEST_CASE("action")
             next = x4::_attr(ctx);
         };
 
-        REQUIRE(parse(input, x4::int_.on_match(fail) | x4::digit.on_match(setnext), x4::space).is_partial_match());
+        REQUIRE(parse(input, int_.on_match(fail) | digit.on_match(setnext), space).is_partial_match());
         CHECK(next == '1');
     }
 
