@@ -28,7 +28,7 @@
 #include <ostream>
 #include <format>
 #include <ranges>
-#include <print>
+#include <charconv>
 #include <iterator>
 #include <memory>
 #include <type_traits>
@@ -143,7 +143,10 @@ inline void print_chars(std::ostream& os, char32_t const ch)
         major_cat == unicode::properties::separator || major_cat == unicode::properties::other
         // TODO: handle Grapheme_Extend=Yes
     ) {
-        std::print(os, "\\u{{{:x}}}", static_cast<std::int32_t>(ch));
+        char escaped[16]{'\\', 'u', '{'};
+        auto const res = std::to_chars(escaped + 3, std::end(escaped) - 1, static_cast<std::int32_t>(ch), 16);
+        *res.ptr = '}';
+        os.write(escaped, res.ptr + 1 - escaped);
         return;
     }
 

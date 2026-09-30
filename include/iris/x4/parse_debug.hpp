@@ -14,6 +14,18 @@ namespace iris::x4 {
 
 namespace detail {
 
+// Helper for making `std::println` instantiated only when this template is instantiated
+template<class OStream>
+void print_debug_output(OStream const& trace_out, OStream const& error_out, bool const failed)
+{
+    if (!trace_out.str().empty()) {
+        std::println("{}", trace_out.str());
+    }
+    if (failed && !error_out.str().empty()) {
+        std::println("{}", error_out.str());
+    }
+}
+
 struct parse_debug_fn_main
 {
     // --------------------------------------------
@@ -32,10 +44,7 @@ struct parse_debug_fn_main
         };
 
         auto const res = x4::parse(range_, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], attr);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
         return res;
     }
 
@@ -52,10 +61,7 @@ struct parse_debug_fn_main
         };
 
         x4::parse(res, range_, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], attr);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
     }
 
     // --------------------------------------------
@@ -74,10 +80,7 @@ struct parse_debug_fn_main
         };
 
         auto const res = x4::parse(range_, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], s, attr, flag);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
         return res;
     }
 
@@ -94,10 +97,7 @@ struct parse_debug_fn_main
         };
 
         x4::parse(res, range_, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], s, attr, flag);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
     }
 
     // --------------------------------------------
@@ -115,10 +115,7 @@ struct parse_debug_fn_main
         };
 
         auto const res = x4::parse(first, last, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], attr);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
         return res;
     }
 
@@ -134,10 +131,7 @@ struct parse_debug_fn_main
         };
 
         x4::parse(res, first, last, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], attr);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
     }
 
     // --------------------------------------------
@@ -155,10 +149,7 @@ struct parse_debug_fn_main
         };
 
         auto const res = x4::parse(first, last, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], s, attr, flag);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
         return res;
     }
 
@@ -174,10 +165,7 @@ struct parse_debug_fn_main
         };
 
         x4::parse(res, first, last, x4::with<contexts::error_handler>(error_handler)[std::forward<Parser>(p)], s, attr, flag);
-        if (!trace_out.str().empty()) std::println("{}", trace_out.str());
-        if (!res && !error_out.str().empty()) {
-            std::println("{}", error_out.str());
-        }
+        detail::print_debug_output(trace_out, error_out, !res);
     }
 }; // parse_debug_fn
 
