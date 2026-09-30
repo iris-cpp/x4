@@ -6,6 +6,7 @@
 =============================================================================*/
 
 #include "iris_x4_test.hpp"
+#include "iris_x4_test_parse_debug.hpp"
 
 #include <iris/x4/debug/default_error_handler.hpp>
 
@@ -87,6 +88,15 @@ TEST_CASE("print_chars")
         std::ostringstream oss;
         x4::print_chars(oss, unicode_model_string.begin(), unicode_model_string.end(), 17);
         CHECK(oss.str() == R"(aこれは𩸽だ　サロゲート\tペア\u{1680}入)");
+    }
+
+    {
+        std::ostringstream oss;
+        oss.width(8);
+        oss.fill('*');
+        x4::print_chars(oss, U'\u1680');
+        CHECK(oss.str() == R"(\u{1680})");
+        CHECK(oss.width() == 8);
     }
 }
 
