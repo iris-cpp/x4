@@ -108,6 +108,19 @@ The signature of a semantic action is `[](auto&& ctx) { /* ... */ }`.
 >
 > The primary intended use of semantic actions is to handle cases that require ad hoc transformation, such as constructing a binary operator object through a more complex algorithm like precedence climbing.
 
+#### Accessing the attribute of a multi-branch alternative
+
+Normally, `x4::_attr(ctx)` returns a reference to the attribute of the parser the action is attached to. However, when the action is attached to an alternative with a branch that has no attribute, a match may produce no attribute at all. In such cases, the action should access the attribute through `x4::visit_attr`:
+
+```cpp
+constexpr auto timeout = ((x4::int_ >> "ms") | x4::lit("auto")).on_match([](auto&& ctx) {
+    x4::visit_attr(
+        ctx,
+        [](int& ms) { ms = std::min(ms, 1000); },
+        [](x4::unused_type) {} // corresponds to the "auto" branch
+    );
+});
+```
 
 ## Directory Structure
 
@@ -200,7 +213,7 @@ These facilities are used less frequently in ordinary language grammars.
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `as<T>(p)`           | Force `p` to expose `T` as its attribute type. When the outer destination has another compatible type, parse into a temporary `T` and move the result into the destination. |
 | `fixed_value(value)` | Always succeed without consuming input and copy the stored `value` into the exposed attribute.                                                                              |
-| `reset_value<T>`     | Always succeed without consuming input and reset the exposed attribute. Containers are cleared; other values are assigned a value-initialized instance.                     |
+| `default_value<T>`   | Always succeed without consuming input, construct `T{}` on each parse and write it into the exposed attribute.<br>Unlike `fixed_value(T{})`, which copies its stored value, it stores no `T`, so the parser can be a `constexpr` variable even when a value of `T` cannot be one (e.g. a type whose default value owns dynamically allocated storage). |
 | `unique_ptr(p)`      | Expose a `std::unique_ptr` attribute and parse `p` into its pointee. Deduce the pointee type from the attribute of `p`.                                                     |
 | `unique_ptr<T>(p)`   | Expose a `std::unique_ptr<T>` attribute and parse `p` into its pointee. An optional deleter type `D` may also be specified.                                                 |
 | `shared_ptr(p)`      | Expose a `std::shared_ptr` attribute and parse `p` into its pointee. Deduce the pointee type from the attribute of `p`.                                                     |
@@ -291,7 +304,17 @@ constexpr auto p = x4::int_.on_match([](auto&& ctx) {
 
 | Syntax            | Meaning                                                                                                                                                                                                                                                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `_attr(ctx)`      | Return the reference to the attribute associated with the current semantic action. This is the attribute instance produced by the parser `p` on the expression `p.on_match(f)`. It is available only when that parser exposes a non-`unused_type` attribute. Equivalent to `x4::get<x4::contexts::attr>(ctx)`.                                          |
+| `_attr(ctx)`      | Return the reference to the attribute associated with the current semantic action. This is the attribute instance produced by the parser `p` on the expression `p.on_match(f)`. It is available only when that parser exposes a non-`unused_type` attribute. Equivalent to `x4::get<x4::contexts::attr>(ctx)`.<br>*Note:* when `p` is an alternative with a branch that has no attribute, use [`x4::visit_attr`](#accessing-the-attribute-of-a-multi-branch-alternative) instead. |
 | `_rule_var(ctx)`  | Return the reference to the attribute variable of the innermost active `x4::rule` invocation. In a recursive rule, this always refers to the current recursive invocation rather than an outer invocation. Equivalent to `x4::get<x4::contexts::rule_var>(ctx)`. |
 | `_local_var(ctx)` | Return the reference to the innermost local variable created by `with_local<T>[p]` using the default `x4::contexts::local_var` context id. Equivalent to `x4::get<x4::contexts::local_var>(ctx)`.<br>*Note:* when `with_local<T, ID>[p]` uses a custom id, retrieve the value with `x4::get<ID>(ctx)` instead. |
 | `_as_var(ctx)`    | Return the reference to the attribute variable managed by the innermost active `as<T>(p)` facility. Semantic actions inside `p` can use this fetcher to access the value being constructed for the enclosing `as<T>` parser. Equivalent to `x4::get<x4::contexts::as_var>(ctx)`.                                                      |
+
+## Developer's Notes
+
+### Naming Conventions
+
+#### Concepts
+
+- **Public contracts:** `x4::X4PascalCase` (e.g. `X4Attribute`, `X4StrictlyWritable`). A requirement X4 imposes on the user and checks at its public API.
+- **Internal traits:** `x4::detail::snake_case`. A building block of a specific algorithm or logic inside X4, not intended for the user.
+- **Public building blocks for parser authors:** `x4::snake_case`. A helper with which a parser declares its own properties; useful for user-defined parsers as well.
