@@ -37,6 +37,10 @@ if(NOT TARGET Iris::Iris)
     add_subdirectory("${_iris_src}" "${CMAKE_CURRENT_BINARY_DIR}/iris")
 endif()
 
+if(PROJECT_IS_TOP_LEVEL)
+    iris_set_msvc_debug_info()
+endif()
+
 
 # -----------------------------------------------------------------
 # Create the main X4 target
