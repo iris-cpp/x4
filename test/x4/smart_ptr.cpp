@@ -8,11 +8,17 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/attribute/smart_ptr.hpp>
+#include <iris/x4/char/char_class.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
+#include <iris/x4/operator/plus.hpp>
 
 #include <stdexcept>
 #include <memory>
+#include <string>
+#include <vector>
 
 template<class T>
 struct throwing_parser : x4::parser<throwing_parser<T>>
@@ -236,5 +242,30 @@ TEST_CASE("shared_ptr (custom deleter)")
             std::runtime_error
         );
         REQUIRE(!result);
+    }
+}
+
+TEST_CASE("smart_ptr in a container")
+{
+    using x4::int_;
+    using x4::standard::alpha;
+
+    STATIC_CHECK(x4::parser_traits<decltype(+alpha)>::accepts_container<std::string>);
+    STATIC_CHECK(!x4::parser_traits<decltype(x4::unique_ptr(+alpha))>::accepts_container<std::string>);
+    STATIC_CHECK(!x4::parser_traits<decltype(x4::shared_ptr(+alpha))>::accepts_container<std::string>);
+
+    {
+        std::vector<std::unique_ptr<int>> result;
+        REQUIRE(parse("1,2", x4::unique_ptr(int_) % ',', result));
+        REQUIRE(result.size() == 2);
+        CHECK(*result[0] == 1);
+        CHECK(*result[1] == 2);
+    }
+    {
+        std::vector<std::shared_ptr<int>> result;
+        REQUIRE(parse("1,2", x4::shared_ptr(int_) % ',', result));
+        REQUIRE(result.size() == 2);
+        CHECK(*result[0] == 1);
+        CHECK(*result[1] == 2);
     }
 }
