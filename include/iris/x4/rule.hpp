@@ -386,10 +386,12 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     // Do NOT add `static_assert`s or other constructs that cause eager
     // instantiation of `RuleAttr` within this class body.
 
+    static_assert(!std::is_const_v<RuleAttr>);
+
     using id = RuleID;
     using attribute_type = RuleAttr;
 
-    static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleAttr>, unused_type>;
+    static constexpr bool has_attribute = !std::is_same_v<RuleAttr, unused_type>;
     static constexpr bool force_attribute = ForceAttr;
 
     std::string_view name = "unnamed_rule";
@@ -555,9 +557,8 @@ private:
         static_assert(X4Attribute<RuleAttr>);
         if constexpr (X4NonUnusedAttribute<RuleAttr>) {
             static_assert(X4ValueAttribute<RuleAttr>);
-            static_assert(!std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
         }
-        static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
+        static_assert(!std::is_same_v<RuleAttr, unused_container_type>, "`rule` with `unused_container_type` is not supported");
     }
 };
 
