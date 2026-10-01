@@ -13,6 +13,8 @@
 
 #include <iris/x4/core/traits/can_hold.hpp>
 
+#include <iris/type_list.hpp>
+
 #include <concepts>
 #include <type_traits>
 
@@ -93,6 +95,27 @@ struct get_sequence_size<Parser>
 {
     static constexpr std::size_t value = Parser::sequence_size;
 };
+
+template<class Parser>
+concept attribute_passing_proxy =
+    requires { typename Parser::proxy_backend_type; } &&
+    std::same_as<typename get_attribute_type<Parser>::type, typename get_attribute_type<typename Parser::proxy_backend_type>::type>;
+
+template<class Parser>
+struct attribute_candidates
+{
+    using type = std::conditional_t<
+        std::same_as<typename get_attribute_type<Parser>::type, unused_type>,
+        type_list<>,
+        type_list<typename get_attribute_type<Parser>::type>
+    >;
+};
+
+template<attribute_passing_proxy Parser>
+struct attribute_candidates<Parser> : attribute_candidates<typename Parser::proxy_backend_type> {};
+
+template<class Parser>
+using attribute_candidates_t = attribute_candidates<Parser>::type;
 
 } // detail
 

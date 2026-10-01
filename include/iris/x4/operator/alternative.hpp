@@ -34,26 +34,6 @@ struct alternative;
 
 namespace detail {
 
-template<class T>
-struct to_alternative_attribute_list
-{
-    using type = type_list<T>;
-};
-
-template<>
-struct to_alternative_attribute_list<unused_type>
-{
-    using type = type_list<>;
-};
-
-template<class... Ts>
-struct to_alternative_attribute_list<rvariant<Ts...>>
-{
-    using type = type_list<Ts...>;
-};
-
-// -------------------------------------------------------------
-
 template<class T, class Wrapped>
 struct alternative_wrapped_entry {};
 
@@ -115,8 +95,8 @@ template<class P0, class... PRest>
 struct alternative_layout<P0, PRest...>
 {
     using concated_attrs = concat_type_list<
-        typename to_alternative_attribute_list<typename parser_traits<P0>::attribute_type>::type,
-        typename to_alternative_attribute_list<typename parser_traits<PRest>::attribute_type>::type...
+        attribute_candidates_t<P0>,
+        attribute_candidates_t<PRest>...
     >::type;
     using unique_attrs = unique_alternative_list<typename unique_type_list<concated_attrs>::type>::type;
     using attribute_type = canonicalize_alternative_attribute<unique_attrs>::type;
@@ -141,6 +121,12 @@ template<class... Ps>
 struct get_sequence_size<alternative<Ps...>>
 {
     static constexpr std::size_t value = alternative_layout<Ps...>::sequence_size;
+};
+
+template<class... Ps>
+struct attribute_candidates<alternative<Ps...>>
+{
+    using type = alternative_layout<Ps...>::unique_attrs;
 };
 
 } // detail

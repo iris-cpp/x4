@@ -226,6 +226,24 @@ TEST_CASE("attribute contract: prior content does not influence the result")
         REQUIRE(parse("", fixed_value(iris::rvariant<std::string, int>{42}), attr));
         CHECK(attr == wide_t{42});
     }
+    {
+        // prepared to the first alternative, not the alternative held before
+        var_t attr{"poison"s};
+        REQUIRE(parse("", x4::rule<struct no_write_rule, var_t>{} = eps, attr));
+        CHECK(attr == var_t{});
+    }
+    {
+        // a container is emptied by `clear()`, which keeps the allocated capacity (also on a failed parse)
+        std::vector<int> attr({7, 8, 9});
+        attr.reserve(100);
+        auto const capacity = attr.capacity();
+        REQUIRE(parse("1,2", int_ % lit(','), attr));
+        CHECK(attr == std::vector<int>({1, 2}));
+        CHECK(attr.capacity() == capacity);
+        REQUIRE(!parse("1,2", (int_ % lit(',')) >> lit('!'), attr));
+        CHECK(attr.empty());
+        CHECK(attr.capacity() == capacity);
+    }
 }
 
 TEST_CASE("attribute contract: a failed parse resets the attribute")

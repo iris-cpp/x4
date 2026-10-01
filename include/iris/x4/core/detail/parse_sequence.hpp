@@ -68,6 +68,16 @@ struct sequence_layout
     }();
 };
 
+template<class... Ps>
+    requires
+        (sequence_layout<Ps...>::attributed_count == 1) &&
+        std::same_as<
+            typename get_attribute_type<sequence<Ps...>>::type,
+            typename get_attribute_type<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>::type
+        >
+struct attribute_candidates<sequence<Ps...>>
+    : attribute_candidates<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>> {};
+
 template<class P>
 struct sequence_passes_view : std::false_type {};
 

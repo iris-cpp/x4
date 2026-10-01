@@ -58,6 +58,13 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
     }
 };
 
+namespace detail {
+
+template<class Left, class Right>
+struct attribute_candidates<difference<Left, Right>> : attribute_candidates<Left> {};
+
+} // detail
+
 template<X4Subject Left, X4Subject Right>
 [[nodiscard]] constexpr difference<as_parser_plain_t<Left>, as_parser_plain_t<Right>>
 operator-(Left&& left, Right&& right)
