@@ -61,7 +61,7 @@ inline constexpr container_parse container_parse_for = [] {
 
     constexpr planner::node_write part = planner::node_write_of<planner::parse_part_node<container_type, value_type>>;
 
-    if constexpr (part.writable && part.kind == planner::branch_kind::new_default_element) {
+    if constexpr (part.writable && part.kind == branch_kind::new_default_element) {
         return container_parse::part;
 
     } else if constexpr (
@@ -97,7 +97,7 @@ struct ref_or_init_attribute_fn
         using S = planner::storage_t<Attr>;
         S& s = iris::unwrap_recursive(attr);
 
-        constexpr planner::node_write write =planner::node_write_of<
+        constexpr planner::node_write write = planner::node_write_of<
             planner::write_node<S, planner::model_value_t<ParserAttr>>
         >;
 

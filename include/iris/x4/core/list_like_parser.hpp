@@ -46,7 +46,7 @@ using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
 
 // A repetition writes its whole value as one new element when the container takes it as-is
 // (e.g., the value of `*char_` into `vector<string>` is one string).
-// 
+//
 // Otherwise, each parse of the subject is written into the container as a part.
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 inline constexpr bool writes_as_one_element = [] {

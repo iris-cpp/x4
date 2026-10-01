@@ -32,7 +32,7 @@ enum class strong_int : int {};
 
 struct converted_from_int
 {
-    converted_from_int(int) {} // NOLINT(google-explicit-constructor)
+    converted_from_int(int) {} // NOLINT(misc-explicit-constructor)
 };
 
 struct assigned_from_int
