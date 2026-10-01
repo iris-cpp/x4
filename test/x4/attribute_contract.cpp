@@ -27,6 +27,7 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/rule.hpp>
 #include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/smart_ptr.hpp>
 #include <iris/x4/attribute/value.hpp>
@@ -53,6 +54,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <cctype>
 
 namespace {
 
@@ -106,10 +109,47 @@ struct throwing_parser : x4::parser<throwing_parser<T>>
 template<class T>
 inline constexpr throwing_parser<T> always_throw{};
 
+// A container of letters, passed to `std::string` by its conversion
+struct letters : std::vector<char>
+{
+    operator std::string() const { return {begin(), end()}; }
+};
+
+// A container of letters whose conversion to `std::string` turns them into upper case
+struct shouted_letters : std::vector<char>
+{
+    operator std::string() const
+    {
+        std::string shouted(begin(), end());
+        for (char& c : shouted) {
+            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        }
+        return shouted;
+    }
+};
+
 } // anonymous
 
 IRIS_ALLOY_ADAPT_STRUCT(Pair, a, b);
 IRIS_ALLOY_ADAPT_STRUCT(Single, n);
+
+// A rule whose value is assembled by an action, and a rule which fails after writing a part of its value
+constexpr iris::x4::rule<struct assembled_word_id, std::string> assembled_word = "assembled_word";
+constexpr iris::x4::rule<struct banged_word_id, std::string> banged_word = "banged_word";
+constexpr iris::x4::rule<struct letters_word_id, letters> letters_word = "letters_word";
+constexpr iris::x4::rule<struct shouted_word_id, shouted_letters> shouted_word = "shouted_word";
+
+constexpr auto assembled_word_def = assembled_word = (+iris::x4::standard::alpha).on_match([](auto&& ctx) {
+    iris::x4::_rule_var(ctx) = iris::x4::_attr(ctx);
+});
+constexpr auto banged_word_def = banged_word = +iris::x4::standard::alpha >> '!';
+constexpr auto letters_word_def = letters_word = +iris::x4::standard::alpha;
+constexpr auto shouted_word_def = shouted_word = +iris::x4::standard::alpha;
+
+IRIS_X4_DEFINE(assembled_word)
+IRIS_X4_DEFINE(banged_word)
+IRIS_X4_DEFINE(letters_word)
+IRIS_X4_DEFINE(shouted_word)
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -254,6 +294,9 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
     X4_TEST_SUCCESS("poison"s, "ab", +(alpha >> digit | alpha), "ab"s);
     X4_TEST_SUCCESS("poison"s, "a,b", (alpha >> digit | alpha) % lit(','), "ab"s);
     X4_TEST_SUCCESS("poison"s, "xab", x4::as<std::string>(alpha >> (alpha >> digit | alpha)) >> lit('b'), "xa"s);
+    X4_TEST_SUCCESS("poison"s, "ab?", banged_word | (+alpha >> lit('?')), "ab"s);
+    X4_TEST_SUCCESS("poison"s, "ab?", x4::as<std::string>(+alpha >> lit('!')) | (+alpha >> lit('?')), "ab"s);
+    X4_TEST_SUCCESS("poison"s, "ab?", -banged_word >> lit("ab?"), ""s);
 
     // Same as above, where the branch attribute is a variant and the element type is a wider variant
     {
@@ -264,6 +307,30 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", stmt % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}}));
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", *stmt, std::vector<stmt_t>({stmt_t{"12ab"s}}));
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab,1!", (expr >> lit('!') | +alnum) % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}, stmt_t{expr_t{1}}}));
+    }
+
+    // A rule or `as<T>` assembles its own value, which is appended to the elements which were already there
+    {
+        constexpr auto assembled_as = x4::as<std::string>((+alpha).on_match([](auto&& ctx) {
+            x4::_as_var(ctx) = x4::_attr(ctx);
+        }));
+        X4_TEST_SUCCESS("poison"s, "ab cd", assembled_word >> lit(' ') >> assembled_word, "abcd"s);
+        X4_TEST_SUCCESS("poison"s, "ab cd", assembled_as >> lit(' ') >> assembled_as, "abcd"s);
+    }
+
+    // An action on `as<T>` passes the value of `as<T>` on, in a sequence into a container too
+    X4_TEST_SUCCESS("poison"s, "<ab>", lit('<') >> x4::as<std::string>(+alpha).on_match([] {}) >> lit('>'), "ab"s);
+
+    // A rule or `as<T>` of another type passes its value by the ordinary conversion; the result is
+    // appended to the elements which were already there, the same as it is written into an empty one
+    {
+        constexpr auto letters_as = x4::as<letters>(+alpha);
+        X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> letters_word, "xab"s);
+        X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> letters_as, "xab"s);
+
+        X4_TEST_SUCCESS("poison"s, "ab", shouted_word, "AB"s);
+        X4_TEST_SUCCESS("poison"s, "-ab", lit('-') >> shouted_word, "AB"s);
+        X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> shouted_word, "xAB"s);
     }
 
     // The successful branch / subject appends to the elements which were already there

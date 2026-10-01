@@ -19,7 +19,6 @@
 
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/nary_parser.hpp>
-#include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/alloy/tuple.hpp>
@@ -112,12 +111,10 @@ struct parse_sequence_tuple
                 return elem.parse(first, last, ctx, unused);
 
             } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
-                auto&& elem_attr = x4::make_container_appender(alloy::get<0>(attr));
-                return elem.parse(first, last, ctx, elem_attr);
+                return elem.parse(first, last, ctx, alloy::get<0>(attr));
 
             } else {
-                auto&& elem_attr = x4::make_container_appender(attr);
-                return elem.parse(first, last, ctx, elem_attr);
+                return elem.parse(first, last, ctx, attr);
             }
 
         } else {
@@ -125,8 +122,7 @@ struct parse_sequence_tuple
                 return elem.parse(first, last, ctx, unused);
 
             } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
-                auto&& elem_attr = x4::make_container_appender(alloy::get<offset>(attr));
-                return elem.parse(first, last, ctx, elem_attr);
+                return elem.parse(first, last, ctx, alloy::get<offset>(attr));
 
             } else {
                 auto slice = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
@@ -241,8 +237,7 @@ struct parse_into_container_impl<sequence<Ps...>>
                 return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
 
             } else {
-                auto&& appender = x4::make_container_appender(x4::assume_container(attr));
-                return detail::parse_sequence(seq, first, last, ctx, appender);
+                return detail::parse_sequence(seq, first, last, ctx, attr);
             }
 
         } else {

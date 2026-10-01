@@ -12,6 +12,7 @@
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
@@ -73,17 +74,24 @@ private:
     >;
 
 public:
-    // `outer_parser<T>(as<T>(subject))` forwards the outer `T&` (exposed attribute) for the subject
+    // `outer_parser<T>(as<T>(subject))` forwards the outer `T&` (exposed attribute) for the subject, unless
+    // it is a container which already holds the preceding results
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute OuterAttr>
         requires std::same_as<std::remove_const_t<OuterAttr>, T>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
     {
-        if constexpr (Subject::has_action) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), unused);
-        } else {
-            return this->subject.parse(first, last, ctx, outer_attr);
+        if constexpr (traits::is_container_v<T>) {
+            if (!traits::is_empty(outer_attr)) {
+                // The container holds the preceding results, which the attribute of `as<T>`
+                // is kept apart from: parse into a new attribute and append it on success
+                T attr_{};
+                if (!this->parse_subject(first, last, ctx, attr_)) return false;
+                detail::pass_declared_attribute(outer_attr, std::move(attr_));
+                return true;
+            }
         }
+        return this->parse_subject(first, last, ctx, outer_attr);
     }
 
     // `outer_parser<unused_type>(as<T>(subject))` forwards `unused` for the subject
@@ -116,12 +124,7 @@ public:
         // to some arbitrary initial value.
         T attr_{}; // value-initialize
 
-        if constexpr (Subject::has_action) {
-            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), unused)) return false;
-        } else {
-            if (!this->subject.parse(first, last, ctx, attr_)) return false;
-        }
-
+        if (!this->parse_subject(first, last, ctx, attr_)) return false;
         x4::move_to(std::move(attr_), outer_attr);
         return true;
     }
@@ -130,6 +133,19 @@ public:
     {
         return std::string("as<") + typeid(T).name() + ">("
             + get_info<Subject>{}(this->subject) + ')';
+    }
+
+private:
+    // Parses the subject into `attr`, the attribute of `as<T>`; an action in the subject refers to it as `_as_var`
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    [[nodiscard]] constexpr bool
+    parse_subject(It& first, Se const& last, Context const& ctx, Attr& attr) const
+    {
+        if constexpr (Subject::has_action) {
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr), unused);
+        } else {
+            return this->subject.parse(first, last, ctx, attr);
+        }
     }
 };
 

@@ -14,19 +14,18 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/traits/transform_attribute.hpp>
+#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
-#include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
 
 #include <iris/pp/cat.hpp>
-
-#include <iris/bits/specialization_of.hpp>
 
 #include <string_view>
 #include <concepts>
@@ -357,15 +356,13 @@ struct narrowing_checker
 template<class Exposed, class RuleAttr>
 concept RuleAttrConvertible =
     X4Attribute<RuleAttr> &&
-    std::is_assignable_v<unwrap_container_appender_t<std::remove_const_t<Exposed>>&, RuleAttr>;
+    std::is_assignable_v<std::remove_const_t<Exposed>&, RuleAttr>;
 
 template<class Exposed, class RuleAttr>
 concept RuleAttrConvertibleWithoutNarrowing =
     RuleAttrConvertible<Exposed, RuleAttr> &&
     requires {
-        narrowing_checker<
-            unwrap_container_appender_t<std::remove_const_t<Exposed>>
-        >::operator()(std::declval<RuleAttr>());
+        narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<RuleAttr>());
     };
 
 // Resolves "The Spirit X3 rule problem" in Boost.Parser's documentation
@@ -377,10 +374,7 @@ concept RuleAttrTransformable =
     X4Attribute<RuleAttr> &&
     std::default_initializable<RuleAttr> &&
     RuleAttrConvertible<Exposed, RuleAttr> &&
-    RuleAttrConvertibleWithoutNarrowing<
-        unwrap_container_appender_t<std::remove_const_t<Exposed>>,
-        RuleAttr
-    >;
+    RuleAttrConvertibleWithoutNarrowing<std::remove_const_t<Exposed>, RuleAttr>;
 
 template<class Exposed, class RuleAttr>
 concept RuleAttrCompatible =
@@ -443,28 +437,28 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         using detail::parse_rule; // ADL
 
         if constexpr (std::same_as<std::remove_const_t<Exposed>, RuleAttr>) {
+            if constexpr (traits::is_container_v<RuleAttr>) {
+                if (!traits::is_empty(exposed_attr)) {
+                    // The container holds the preceding results, which the attribute of the rule
+                    // is kept apart from: parse into a new attribute and append it on success
+                    RuleAttr rule_attr{};
+                    if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
+                        return false;
+                    }
+                    detail::pass_declared_attribute(exposed_attr, std::move(rule_attr));
+                    return true;
+                }
+            }
             return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
 
         } else {
             static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
 
-            // TODO: specialize `container_appender` case, do not create temporary
-
             RuleAttr rule_attr;
             if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
                 return false;
             }
-
-            if constexpr (is_ttp_specialization_of_v<std::remove_const_t<Exposed>, container_appender>) {
-                traits::append(
-                    exposed_attr.container,
-                    std::make_move_iterator(traits::begin(rule_attr)),
-                    std::make_move_iterator(traits::end(rule_attr))
-                );
-            } else {
-                static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
-                exposed_attr = std::move(rule_attr);
-            }
+            detail::pass_declared_attribute(exposed_attr, std::move(rule_attr));
             return true;
         }
     }

@@ -98,7 +98,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
             traits::clear(attr);
 
         } else {
-            unwrap_container_appender_t<Attr> buffer;
+            Attr buffer;
             if (detail::parse_into_container(this->subject, first, last, ctx, buffer)) {
                 traits::append(
                     attr,

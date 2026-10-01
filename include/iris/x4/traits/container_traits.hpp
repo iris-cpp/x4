@@ -25,13 +25,6 @@
 #include <type_traits>
 #include <utility>
 
-namespace iris::x4 {
-
-template<class ContainerAttr>
-struct container_appender;
-
-} // iris::x4
-
 namespace iris::x4::traits {
 
 // Customization point
@@ -442,11 +435,6 @@ struct is_container : std::false_type
     static_assert(!std::is_reference_v<T>);
     static_assert(!std::is_const_v<T>);
 };
-
-template<class ContainerAttr>
-struct is_container<container_appender<ContainerAttr>>
-    : is_container<ContainerAttr>
-{};
 
 template<class T>
     requires

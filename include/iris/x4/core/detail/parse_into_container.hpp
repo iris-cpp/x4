@@ -13,7 +13,6 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/attribute.hpp>
-#include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
@@ -73,8 +72,7 @@ struct parse_into_container_impl_default
         if constexpr (traits::is_container_v<unwrapped_attribute_type>) { // Attr is a container
             if constexpr (parser_accepts_container<Parser, unwrapped_attribute_type>::value) {
                 // `Parser` accepts the exact `Container`; let parser append directly
-                auto&& appender = x4::make_container_appender(unwrapped_attr);
-                return parser.parse(first, last, ctx, appender);
+                return parser.parse(first, last, ctx, unwrapped_attr);
 
             } else {
                 // `Parser` DOES NOT accept the exact `Container`; parse into `value_type` and append it.

@@ -28,6 +28,47 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+// A container which holds the preceding results keeps them: `src` is appended to it
+template<class T, class Source>
+[[nodiscard]] constexpr bool append_to_nonempty(T& dest, Source&& src)
+{
+    if constexpr (traits::is_container_v<T>) {
+        if (!traits::is_empty(dest)) {
+            if constexpr (std::is_rvalue_reference_v<Source&&>) {
+                traits::append(dest, std::make_move_iterator(traits::begin(src)), std::make_move_iterator(traits::end(src)));
+            } else {
+                traits::append(dest, traits::begin(src), traits::end(src));
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+// Passes `v`, the attribute of `x4::rule` or `x4::as<T>`, to the exposed attribute `s` by the ordinary assignment.
+// A container which holds the preceding results keeps them: the value assigned to a new container is appended to it.
+template<class S, class V>
+constexpr void pass_declared_attribute(S& s, V&& v)
+{
+    if constexpr (traits::is_container_v<S>) {
+        if (!traits::is_empty(s)) {
+            S assigned{};
+            assigned = std::forward<V>(v);
+            traits::append(
+                s,
+                std::make_move_iterator(traits::begin(assigned)),
+                std::make_move_iterator(traits::end(assigned))
+            );
+            return;
+        }
+    }
+    s = std::forward<V>(v);
+}
+
+} // detail
+
 template<class Source, class Dest>
 constexpr void move_to(Source&&, Dest&) = delete; // `Source` and `Dest` do not fall into any of the overload below.
 
@@ -42,25 +83,28 @@ constexpr void move_to(Source&&, Dest&) = delete; // `Source` and `Dest` do not 
 
 template<NonUnusedCategorizedAttr T>
 constexpr void move_to(T const&& src, T& dest)
-    noexcept(std::is_nothrow_assignable_v<T&, T const&&>)
+    noexcept(std::is_nothrow_assignable_v<T&, T const&&> && !traits::is_container_v<T>)
 {
     static_assert(std::is_assignable_v<T&, T const>);
+    if (detail::append_to_nonempty(dest, std::move(src))) return;
     dest = std::move(src);
 }
 
 template<NonUnusedCategorizedAttr T>
 constexpr void move_to(T&& src, T& dest)
-    noexcept(std::is_nothrow_assignable_v<T&, T&&>)
+    noexcept(std::is_nothrow_assignable_v<T&, T&&> && !traits::is_container_v<T>)
 {
     static_assert(std::is_assignable_v<T&, T>);
+    if (detail::append_to_nonempty(dest, std::move(src))) return;
     dest = std::forward<T>(src);
 }
 
 template<NonUnusedCategorizedAttr T>
 constexpr void move_to(T const& src, T& dest)
-    noexcept(std::is_nothrow_copy_assignable_v<T>)
+    noexcept(std::is_nothrow_copy_assignable_v<T> && !traits::is_container_v<T>)
 {
     static_assert(std::is_assignable_v<T&, T const&>);
+    if (detail::append_to_nonempty(dest, src)) return;
     dest = src;
 }
 
@@ -197,9 +241,6 @@ move_to(Source&& src, Dest& dest)
 
 // Containers -------------------------------------------------
 
-template<class ContainerAttr>
-struct container_appender;
-
 template<std::forward_iterator It, std::sentinel_for<It> Se, CategorizedAttr<container_tag> Dest>
 constexpr void
 move_to(It first, Se last, Dest& dest)
@@ -215,17 +256,11 @@ move_to(It first, Se last, Dest& dest)
         );
     }
 
-    if constexpr (!is_ttp_specialization_of_v<Dest, container_appender>) {
-        if (!traits::is_empty(dest)) {
-            traits::clear(dest);
-        }
-    }
-
     // Be careful, this may result in converting surprisingly incompatible types,
     // for example, `std::vector<int>` and `std::set<int>`. Such types must be
     // handled *before* invoking `move_to`.
 
-    traits::append(dest, first, last); // try to reuse underlying memory buffer
+    traits::append(dest, first, last); // the preceding elements are kept
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, CategorizedAttr<tuple_tag> Dest>
@@ -247,13 +282,8 @@ constexpr void
 move_to(Source&& src, Dest& dest)
     noexcept(std::is_nothrow_assignable_v<Dest&, Source&&>)
 {
-    if constexpr (is_ttp_specialization_of_v<std::remove_const_t<Dest>, container_appender>) {
-        static_assert(std::is_assignable_v<typename std::remove_const_t<Dest>::container_type&, Source>);
-        dest.container = std::forward<Source>(src);
-    } else {
-        static_assert(std::is_assignable_v<Dest&, Source>);
-        dest = std::forward<Source>(src);
-    }
+    static_assert(std::is_assignable_v<Dest&, Source>);
+    dest = std::forward<Source>(src);
 }
 
 template<traits::X4Container Source, CategorizedAttr<container_tag> Dest>

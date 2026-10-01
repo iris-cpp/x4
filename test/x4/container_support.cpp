@@ -331,65 +331,41 @@ TEST_CASE("container_support")
 
     STATIC_CHECK(is_container_v<std::string>);
     STATIC_CHECK(!is_associative_v<std::string>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::string>>);
-    STATIC_CHECK(!is_associative_v<x4::container_appender<std::string>>);
 
     STATIC_CHECK(is_container_v<std::vector<int>>);
     STATIC_CHECK(!is_associative_v<std::vector<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::vector<int>>>);
-    STATIC_CHECK(!is_associative_v<x4::container_appender<std::vector<int>>>);
 
     STATIC_CHECK(is_container_v<std::deque<int>>);
     STATIC_CHECK(!is_associative_v<std::deque<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::deque<int>>>);
-    STATIC_CHECK(!is_associative_v<x4::container_appender<std::deque<int>>>);
 
     STATIC_CHECK(is_container_v<std::list<int>>);
     STATIC_CHECK(!is_associative_v<std::list<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::list<int>>>);
-    STATIC_CHECK(!is_associative_v<x4::container_appender<std::list<int>>>);
 
     // ------------------------------------------------------------------
 
     STATIC_CHECK(is_container_v<std::set<int>>);
     STATIC_CHECK(is_associative_v<std::set<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::set<int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::set<int>>>);
 
     STATIC_CHECK(is_container_v<std::unordered_set<int>>);
     STATIC_CHECK(is_associative_v<std::unordered_set<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_set<int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_set<int>>>);
 
     STATIC_CHECK(is_container_v<std::multiset<int>>);
     STATIC_CHECK(is_associative_v<std::multiset<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::multiset<int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::multiset<int>>>);
 
     STATIC_CHECK(is_container_v<std::unordered_multiset<int>>);
     STATIC_CHECK(is_associative_v<std::unordered_multiset<int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_multiset<int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_multiset<int>>>);
 
     STATIC_CHECK(is_container_v<std::map<int, int>>);
     STATIC_CHECK(is_associative_v<std::map<int, int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::map<int, int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::map<int, int>>>);
 
     STATIC_CHECK(is_container_v<std::unordered_map<int, int>>);
     STATIC_CHECK(is_associative_v<std::unordered_map<int, int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_map<int, int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_map<int, int>>>);
 
     STATIC_CHECK(is_container_v<std::multimap<int, int>>);
     STATIC_CHECK(is_associative_v<std::multimap<int, int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::multimap<int, int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::multimap<int, int>>>);
 
     STATIC_CHECK(is_container_v<std::unordered_multimap<int, int>>);
     STATIC_CHECK(is_associative_v<std::unordered_multimap<int, int>>);
-    STATIC_CHECK(is_container_v<x4::container_appender<std::unordered_multimap<int, int>>>);
-    STATIC_CHECK(is_associative_v<x4::container_appender<std::unordered_multimap<int, int>>>);
 
     // ------------------------------------------------------------------
 

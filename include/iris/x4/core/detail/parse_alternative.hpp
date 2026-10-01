@@ -305,7 +305,7 @@ struct parse_alternative_all
         // The container already holds elements: a failed branch must not touch
         // them, and there is no general way to undo appends, so each branch parses
         // into a buffer that is appended only on success.
-        unwrap_container_appender_t<ContainerAttr> buffer;
+        ContainerAttr buffer;
         auto parse_branch = [&]<std::size_t I>() -> bool {
             if (try_branch.template operator()<I>(buffer)) {
                 traits::append(
