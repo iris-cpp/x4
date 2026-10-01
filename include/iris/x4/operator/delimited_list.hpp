@@ -28,7 +28,7 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     using attribute_type = traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container = WritesIntoContainer<Left, Container>;
+    static constexpr bool accepts_container = writes_into_container<Left, Container>;
 
     using binary_parser<delimited_list, Left, Right>::binary_parser;
 

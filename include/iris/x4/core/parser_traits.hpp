@@ -45,17 +45,17 @@ struct get_attribute_type<Parser>
 };
 
 template<class Parser, class Container>
-struct get_handles_container
+struct get_accepts_container
 {
     static constexpr bool value = can_hold_v<Container, typename get_attribute_type<Parser>::type>;
 };
 
 template<class Parser, class Container>
     requires
-        requires { Parser::template handles_container<Container>; }
-struct get_handles_container<Parser, Container>
+        requires { Parser::template accepts_container<Container>; }
+struct get_accepts_container<Parser, Container>
 {
-    static constexpr bool value = Parser::template handles_container<Container>;
+    static constexpr bool value = Parser::template accepts_container<Container>;
 };
 
 } // detail
@@ -130,7 +130,7 @@ struct parser_traits
     static constexpr std::size_t sequence_size = detail::get_sequence_size<Parser>::value;
 
     template<class Container>
-    static constexpr bool handles_container = detail::get_handles_container<Parser, Container>::value;
+    static constexpr bool accepts_container = detail::get_accepts_container<Parser, Container>::value;
 
     static constexpr bool has_action = Parser::has_action;
     static constexpr bool need_rcontext = Parser::need_rcontext;
@@ -139,8 +139,8 @@ struct parser_traits
 // `Parser` writes into `Container`: it fills the container itself, or yields
 // one element of it
 template<class Parser, class Container>
-concept WritesIntoContainer =
-    parser_traits<Parser>::template handles_container<Container> ||
+concept writes_into_container =
+    parser_traits<Parser>::template accepts_container<Container> ||
     can_hold_v<typename traits::container_value<Container>::type, typename parser_traits<Parser>::attribute_type>;
 
 } // iris::x4

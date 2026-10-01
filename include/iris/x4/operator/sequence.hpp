@@ -89,10 +89,10 @@ struct get_sequence_size<sequence<Ps...>>
 };
 
 template<class... Ps, class Container>
-struct get_handles_container<sequence<Ps...>, Container>
+struct get_accepts_container<sequence<Ps...>, Container>
 {
     static constexpr bool value =
-        (parser_traits<Ps>::template handles_container<Container> && ...) ||
+        (parser_traits<Ps>::template accepts_container<Container> && ...) ||
         container_can_hold_sequence<
             Container,
             typename parser_traits<sequence<Ps...>>::attribute_type

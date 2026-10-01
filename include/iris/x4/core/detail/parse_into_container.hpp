@@ -39,7 +39,7 @@ template<class Parser, traits::X4Container Container>
 struct parser_accepts_container
 {
     static constexpr bool value =
-        parser_traits<Parser>::template handles_container<Container> &&
+        parser_traits<Parser>::template accepts_container<Container> &&
         !requires (Container& c, typename parser_traits<Parser>::attribute_type&& v) {
             traits::push_back(c, std::move(v));
         };
@@ -55,7 +55,7 @@ struct parser_accepts_container<Parser, Container>
     >::type;
 
     static constexpr bool value =
-        parser_traits<Parser>::template handles_container<Container> &&
+        parser_traits<Parser>::template accepts_container<Container> &&
         !requires (Container& c, alternative_type&& v) {
             traits::push_back(c, std::move(v));
         };

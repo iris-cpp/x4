@@ -59,9 +59,9 @@ struct as_type_parser : unary_parser<as_type_parser<T, Subject>, Subject>
     static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
     static constexpr bool requires_exact_attribute_type = true;
 
-    // `as_type_parser` should NOT inherit underlying parser's `handles_container`
+    // `as_type_parser` should NOT inherit underlying parser's `accepts_container`
     // because `as_type_parser` is an atomic parser. The default implementation of
-    // `parser_traits<as_type_parser<...>>::handles_container` must transparently
+    // `parser_traits<as_type_parser<...>>::accepts_container` must transparently
     // handle this case.
 
     using unary_parser<as_type_parser, Subject>::unary_parser;

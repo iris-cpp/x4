@@ -90,7 +90,7 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container =
+    static constexpr bool accepts_container =
         can_hold_v<Container, typename parser_traits<Subject>::attribute_type> ||
         can_hold_v<typename traits::container_value<Container>::type, typename parser_traits<Subject>::attribute_type>;
 
