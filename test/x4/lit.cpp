@@ -19,6 +19,7 @@
 #include <iris/alloy/tuple.hpp>
 
 #include <string>
+#include <string_view>
 
 TEST_CASE("lit")
 {
@@ -136,5 +137,16 @@ TEST_CASE("lit")
         alloy::tuple<std::string> s;
         REQUIRE(parse("kimpo", x4::string("kimpo"), s));
         CHECK(alloy::get<0>(s) == "kimpo");
+    }
+
+    {
+        constexpr std::string_view input = "ab";
+        std::string s = "z";
+
+        auto first = input.begin();
+        REQUIRE(x4::lit('a').parse(first, input.end(), x4::unused, s));
+        REQUIRE(x4::lit("b").parse(first, input.end(), x4::unused, s));
+        CHECK(first == input.end());
+        CHECK(s == "z");
     }
 }

@@ -30,7 +30,7 @@ struct backwards_bool_policies : x4::bool_policies<>
         using namespace std::string_view_literals;
         namespace x4 = iris::x4;
         if (x4::detail::string_parse("eurt"sv, first, last, unused_container, case_compare)) {
-            x4::move_to(false, attr);   // result is false
+            x4::write_attribute(attr, false); // result is false
             return true;
         }
         return false;

@@ -67,7 +67,6 @@ x4_define_tests(
     lexeme
     lit
     matches
-    move_to
     not_predicate
     no_case
     no_skip
@@ -88,7 +87,6 @@ x4_define_tests(
     sequence
     skip
     smart_ptr
-    substitution
     symbols1
     symbols2
     symbols3
@@ -101,6 +99,7 @@ x4_define_tests(
     with
     with_local
     without
+    write_attribute
     x3_rule_problem
 )
 

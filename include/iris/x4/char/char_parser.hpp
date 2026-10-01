@@ -12,7 +12,7 @@
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <iris/x4/core/traits/char_traits.hpp>
 
@@ -81,14 +81,6 @@ public:
         requires has_static_test<Context>
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr)
-        noexcept(
-            std::is_nothrow_copy_assignable_v<It> &&
-            noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(first != last) &&
-            noexcept(Derived::test(static_cast<classify_type>(*first), ctx)) &&
-            noexcept(x4::move_to(std::iter_value_t<It>{*first}, attr)) &&
-            noexcept(++first)
-        )
     {
         static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
         static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
@@ -97,7 +89,10 @@ public:
         x4::skip_over(it, last, ctx);
 
         if (it != last && Derived::test(static_cast<classify_type>(*it), ctx)) {
-            x4::move_to(std::iter_value_t<It>{*it++}, attr);
+            if constexpr (x4::has_attribute_v<Derived>) {
+                x4::write_attribute(attr, std::iter_value_t<It>{*it});
+            }
+            ++it;
             first = it;
             return true;
         }
@@ -108,14 +103,6 @@ public:
         requires (!has_static_test<Context>)
     [[nodiscard]] constexpr bool
     parse(this Self const& self /* require const& */, It& first, Se const& last, Context const& ctx, Attr& attr)
-        noexcept(
-            std::is_nothrow_copy_assignable_v<It> &&
-            noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(first != last) &&
-            noexcept(self.test(static_cast<classify_type>(*first), ctx)) &&
-            noexcept(x4::move_to(std::iter_value_t<It>{*first}, attr)) &&
-            noexcept(++first)
-        )
     {
         static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
         static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
@@ -124,7 +111,10 @@ public:
         x4::skip_over(it, last, ctx);
 
         if (it != last && self.test(static_cast<classify_type>(*it), ctx)) {
-            x4::move_to(std::iter_value_t<It>{*it++}, attr);
+            if constexpr (x4::has_attribute_v<Derived>) {
+                x4::write_attribute(attr, std::iter_value_t<It>{*it});
+            }
+            ++it;
             first = it;
             return true;
         }

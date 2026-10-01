@@ -12,7 +12,8 @@
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
@@ -88,7 +89,7 @@ public:
                 // is kept apart from: parse into a new attribute and append it on success
                 T attr_{};
                 if (!this->parse_subject(first, last, ctx, attr_)) return false;
-                detail::pass_declared_attribute(outer_attr, std::move(attr_));
+                planner::pass_declared_attribute(outer_attr, std::move(attr_));
                 return true;
             }
         }
@@ -132,7 +133,7 @@ public:
             T attr_{}; // value-initialize
 
             if (!this->parse_subject(first, last, ctx, attr_)) return false;
-            detail::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
+            planner::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
             return true;
         }
     }

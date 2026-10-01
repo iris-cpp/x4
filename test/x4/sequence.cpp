@@ -538,4 +538,24 @@ TEST_CASE("sequence")
         REQUIRE(parse("ssszs", *x4_test::synth_move_only >> 'z' >> x4_test::synth_move_only, v));
         CHECK(v.size() == 4);
     }
+
+    // Each part of a sequence that is not a range is appended as a new element, even if it is the
+    // only part with a value
+    {
+        std::string s;
+        REQUIRE(parse("a\n", x4::standard::char_ >> '\n', s));
+        CHECK(s == "a");
+    }
+    {
+        x4::rule<struct optional_pair, std::string> const r = "r";
+        auto const rule = r = x4::standard::char_ >> -(x4::standard::char_ >> x4::standard::char_);
+
+        std::string s;
+        REQUIRE(parse("xa1", rule, s));
+        CHECK(s == "xa1");
+
+        auto const res = parse("xa", rule, s);
+        REQUIRE(res.is_partial_match());
+        CHECK(s == "x");
+    }
 }

@@ -247,7 +247,7 @@ struct real_parser : parser<real_parser<T, Policy>>
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(real_parser::parse(first, last, ctx, std::declval<T&>())) &&
-            noexcept(x4::move_to(std::declval<T&&>(), attr))
+            noexcept(x4::write_attribute(attr, std::declval<T&&>()))
         )
     {
         static_assert(X4NonUnusedAttribute<Attr>);
@@ -255,7 +255,7 @@ struct real_parser : parser<real_parser<T, Policy>>
         // this case is called when Attribute is not T
         T attr_;
         if (real_parser::parse(first, last, ctx, attr_)) {
-            x4::move_to(std::move(attr_), attr);
+            x4::write_attribute(attr, std::move(attr_));
             return true;
         }
         return false;

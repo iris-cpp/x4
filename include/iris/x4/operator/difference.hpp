@@ -25,6 +25,9 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
 {
     using attribute_type = parser_traits<Left>::attribute_type;
 
+    template<class Container>
+    static constexpr bool accepts_container = parser_traits<Left>::template accepts_container<Container>;
+
     using binary_parser<difference, Left, Right>::binary_parser;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>

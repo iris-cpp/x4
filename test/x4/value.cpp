@@ -161,7 +161,7 @@ TEST_CASE("attr")
     {
         std::vector<std::vector<int>> vecs;
         std::vector<int> vec{1, 2, 3};
-        x4::move_to(std::move(vec), vecs);
+        x4::write_attribute(vecs, std::move(vec));
         CHECK(vecs == std::vector<std::vector<int>>{std::vector{1, 2, 3}});
     }
     {
@@ -174,7 +174,7 @@ TEST_CASE("attr")
     {
         std::vector<std::string> strs;
         std::string str = "abc";
-        x4::move_to(std::move(str), strs);
+        x4::write_attribute(strs, std::move(str));
         CHECK(strs == std::vector{std::string("abc")});
     }
     {

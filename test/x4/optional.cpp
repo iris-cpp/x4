@@ -10,6 +10,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/char/char.hpp>
+#include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
@@ -17,6 +18,7 @@
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 
 #include <iris/alloy/adapt.hpp>
 #include <iris/alloy/tuple.hpp>
@@ -24,6 +26,7 @@
 #include <concepts>
 #include <optional>
 #include <type_traits>
+#include <vector>
 
 #ifdef _MSC_VER
 // bogus https://developercommunity.visualstudio.com/t/buggy-warning-c4709/471956
@@ -199,5 +202,32 @@ TEST_CASE("optional")
             CHECK(first == input.begin());
             CHECK(s == "x");
         }
+    }
+
+    // Optional into container
+    {
+        std::vector<std::optional<char>> v;
+        REQUIRE(parse("a", char_ >> -char_, v));
+        CHECK(v == std::vector<std::optional<char>>{'a', std::nullopt});
+    }
+    {
+        std::vector<char> v;
+        REQUIRE(parse("a", char_ >> -char_, v));
+        CHECK(v == std::vector<char>{'a'});
+    }
+    {
+        std::vector<int> v;
+        REQUIRE(parse("a", char_ >> -char_, v));
+        CHECK(v == std::vector<int>{97}); // no 0 for the value absent
+    }
+    {
+        std::vector<char> v;
+        REQUIRE(parse("#a,#", ('#' >> -x4::standard::alpha) % ',', v));
+        CHECK(v == std::vector<char>{'a'});
+    }
+    {
+        char c = 0;
+        REQUIRE(parse(",c", -(',' >> char_), c));
+        CHECK(c == 'c');
     }
 }

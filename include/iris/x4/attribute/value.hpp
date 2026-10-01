@@ -16,7 +16,7 @@
 #include <iris/x4/core/traits/char_traits.hpp>
 
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <string>
 #include <string_view>
@@ -65,10 +65,9 @@ struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attr& exposed_attr) const
-        noexcept(noexcept(x4::move_to(std::declval<HeldValueT const&>(), exposed_attr)))
     {
         // Always copy (need reuse in repetitive invocations)
-        x4::move_to(this->held_value_, exposed_attr);
+        x4::write_attribute(exposed_attr, this->held_value_);
         return true;
     }
 
@@ -98,7 +97,7 @@ struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
     [[nodiscard]] static constexpr bool
     parse(It&, Se const&, Context const&, Attr& exposed_attr)
     {
-        x4::move_to(T{}, exposed_attr);
+        x4::write_attribute(exposed_attr, T{});
         return true;
     }
 };

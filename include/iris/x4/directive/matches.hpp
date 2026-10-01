@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/unused.hpp>
 
@@ -42,7 +42,7 @@ struct matches_directive : unary_parser<matches_directive<Subject>, Subject>
             if (x4::has_expectation_failure(ctx)) return false;
         }
 
-        x4::move_to(matched, attr);
+        x4::write_attribute(attr, matched);
         return true;
     }
 };

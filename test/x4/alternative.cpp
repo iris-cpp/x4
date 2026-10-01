@@ -40,6 +40,7 @@
 #include <iris/alloy/adapt.hpp>
 #include <iris/alloy/tuple.hpp>
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -176,6 +177,20 @@ TEST_CASE("alternative")
         STATIC_CHECK(std::same_as<x4::parser_traits<decltype(wrapped | plain)>::attribute_type, recursive_wrapper<di_include>>);
         STATIC_CHECK(std::same_as<x4::parser_traits<decltype(plain | int_ | wrapped)>::attribute_type, rvariant<recursive_wrapper<di_include>, int>>);
         STATIC_CHECK(std::same_as<x4::parser_traits<decltype(int_ | wrapped | plain)>::attribute_type, rvariant<int, recursive_wrapper<di_include>>>);
+
+        recursive_wrapper<di_include> w;
+        REQUIRE(parse("abc", plain | wrapped, w));
+        CHECK(w->FileName == "abc");
+        REQUIRE(parse("#xyz", plain | wrapped, w));
+        CHECK(w->FileName == "xyz");
+
+        rvariant<recursive_wrapper<di_include>, int> v;
+        REQUIRE(parse("#xyz", plain | int_ | wrapped, v));
+        CHECK(iris::get<di_include>(v).FileName == "xyz");
+        REQUIRE(parse("42", plain | int_ | wrapped, v));
+        CHECK(iris::get<int>(v) == 42);
+        REQUIRE(parse("abc", plain | int_ | wrapped, v));
+        CHECK(iris::get<di_include>(v).FileName == "abc");
     }
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_ | char_);
@@ -343,8 +358,7 @@ TEST_CASE("alternative")
         using attribute_type = x4::parser_traits<Parser>::attribute_type;
         STATIC_CHECK(std::same_as<attribute_type, std::vector<bool>>);
 
-        using substitute_type = x4::variant_find_holdable_type<Attr, attribute_type>::type;
-        STATIC_CHECK(std::same_as<substitute_type, std::vector<bool>>);
+        STATIC_CHECK(x4::detail::variant_alternative_for_v<Attr, attribute_type> == 1);
 
         Attr var;
         REQUIRE(parse("truetrue", parser, var));
@@ -357,8 +371,7 @@ TEST_CASE("alternative")
         using attribute_type = x4::parser_traits<Parser>::attribute_type;
         STATIC_CHECK(std::same_as<attribute_type, std::string>);
 
-        using substitute_type = x4::variant_find_holdable_type<Attr, attribute_type>::type;
-        STATIC_CHECK(std::same_as<substitute_type, std::string>);
+        STATIC_CHECK(x4::detail::variant_alternative_for_v<Attr, attribute_type> == 1);
 
         Attr var;
         REQUIRE(parse("123", parser, var));
@@ -449,6 +462,29 @@ TEST_CASE("alternative")
         Bar x;
         CHECK(parse("abaabb", +('a' >> fixed_value(Foo{}) | 'b' >> fixed_value(int{})), x));
     }
+
+    {
+        constexpr auto op = x4::as<std::string>(lit("==") | lit('<'));
+        std::string s;
+        REQUIRE(parse("==", op, s));
+        CHECK(s.empty());
+        REQUIRE(parse("<", op, s));
+        CHECK(s.empty());
+    }
+    {
+        constexpr auto op = x4::as<std::string>(x4::string("==") | x4::string("<"));
+        std::string s;
+        REQUIRE(parse("==", op, s));
+        CHECK(s == "==");
+        REQUIRE(parse("<", op, s));
+        CHECK(s == "<");
+    }
+    {
+        // a failed branch is undone
+        std::string s;
+        REQUIRE(parse("ay", (char_ >> 'x') | (char_ >> 'y'), s));
+        CHECK(s == "a");
+    }
 }
 
 TEST_CASE("alternative of same attributes (a | a)")
@@ -521,6 +557,117 @@ TEST_CASE("alternative of same attributes (a | a)")
         REQUIRE(res.completed());
         CHECK(var == decltype(var){"foo", {true, false}});
     }
+}
+
+namespace {
+
+// The reference for `x4::alternative` without the attribute shared between the branches, for the
+// branches with an attribute:
+// each branch parses into its own attribute, made fresh by `x4::parse`, and the first match
+// is the result. On failure, the result is the default state, as `x4::parse` leaves it.
+template<class Attr>
+struct separate_branches_result
+{
+    bool ok = false;
+    std::size_t rest = 0;
+    Attr attr{};
+};
+
+template<class Attr, class... Branches>
+separate_branches_result<Attr> parse_separate_branches(std::string_view input, Branches const&... branches)
+{
+    // A branch without an attribute leaves the default of the attribute of the alternative, not
+    // of its own; see "attributeless branch leaves the default"
+    static_assert((x4::has_attribute_v<Branches> && ...));
+
+    separate_branches_result<Attr> result;
+    auto parse_branch = [&](auto const& branch) {
+        Attr attr{};
+        auto const res = x4::parse(input, branch, attr);
+        if (!res.ok) return false;
+        result = {.ok = true, .rest = res.remainder.size(), .attr = std::move(attr)};
+        return true;
+    };
+    (void)(parse_branch(branches) || ...);
+    return result;
+}
+
+template<class Attr, class Parser, class... Branches>
+void check_separate_branches(std::string_view input, Parser const& parser, Branches const&... branches)
+{
+    CAPTURE(input);
+    auto const expected = parse_separate_branches<Attr>(input, branches...);
+
+    Attr attr{};
+    auto const res = x4::parse(input, parser, attr);
+    REQUIRE(res.ok == expected.ok);
+    if (res.ok) {
+        CHECK(res.remainder.size() == expected.rest);
+    }
+    CHECK(attr == expected.attr);
+}
+
+} // anonymous
+
+TEST_CASE("alternative attribute reuse")
+{
+    using x4::standard::alpha;
+    using x4::standard::digit;
+    using x4::lit;
+    using x4::int_;
+    using x4::eps;
+    using iris::rvariant;
+
+    // The later branch writes into what the failed branch wrote
+    {
+        constexpr auto excl = +alpha >> '!';
+        constexpr auto quest = +alpha >> '?';
+        for (std::string_view input : {"ab?", "ab!", "ab."}) {
+            check_separate_branches<rvariant<int, std::string>>(input, excl | quest | int_, excl, quest, int_);
+            check_separate_branches<std::string>(input, excl | quest, excl, quest);
+            check_separate_branches<alloy::tuple<int, rvariant<int, std::string>>>(
+                std::string{"1,"} + std::string{input},
+                int_ >> ',' >> (excl | quest),
+                int_ >> ',' >> excl, int_ >> ',' >> quest
+            );
+        }
+    }
+    {
+        constexpr auto excl = int_ >> ',' >> int_ >> '!';
+        constexpr auto quest = int_ >> ',' >> int_ >> '?';
+        check_separate_branches<alloy::tuple<int, int>>("1,2?", excl | quest, excl, quest);
+        check_separate_branches<alloy::tuple<int, int>>("1,2.", excl | quest, excl, quest);
+    }
+    {
+        constexpr auto excl = (int_ % ',') >> '!';
+        constexpr auto quest = (int_ % ',') >> '?';
+        check_separate_branches<std::vector<int>>("1,2?", excl | quest, excl, quest);
+        // into the held alternative, converted from another type
+        check_separate_branches<rvariant<std::vector<int>, std::string>>("1,2?", excl | -quest, excl, -quest);
+    }
+    {
+        // a disengaged optional, converted into the attribute
+        constexpr auto int_x = int_ >> 'x';
+        check_separate_branches<int>("5y", int_x | -(int_ >> 'z'), int_x, -(int_ >> 'z'));
+    }
+    {
+        // into a container which holds the preceding elements
+        constexpr auto excl = +digit >> '!';
+        constexpr auto quest = +digit >> '?';
+        check_separate_branches<std::string>("ab12?", +alpha >> (excl | quest), +alpha >> excl, +alpha >> quest);
+    }
+
+    // The later branch writes another alternative
+    {
+        constexpr auto int_x = int_ >> 'x';
+        constexpr auto one_alpha = lit('1') >> +alpha;
+        check_separate_branches<rvariant<int, std::string>>("1ab", int_x | one_alpha, int_x, one_alpha);
+
+        constexpr auto alpha_excl = +alpha >> '!';
+        constexpr auto a_int = lit('a') >> int_;
+        check_separate_branches<rvariant<int, std::string>>("a1", alpha_excl | a_int, alpha_excl, a_int);
+    }
+
 }
 
 TEST_CASE("declared variant")

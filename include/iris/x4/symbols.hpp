@@ -16,7 +16,7 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/unused.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <iris/x4/string/tst.hpp>
 #include <iris/x4/string/case_compare.hpp>
@@ -240,17 +240,12 @@ struct symbols_parser_impl : parser<symbols_parser_impl<IsShared, Encoding, T, L
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-        noexcept(
-            std::is_nothrow_copy_assignable_v<It> &&
-            noexcept(x4::skip_over(first, last, ctx)) &&
-            noexcept(x4::move_to(std::declval<value_type const&>(), attr))
-        )
     {
         auto it = first;
         x4::skip_over(it, last, ctx);
 
         if (value_type const* val_ptr = lookup->find(it, last, x4::get_case_compare<Encoding>(ctx))) {
-            x4::move_to(*val_ptr, attr);
+            x4::write_attribute(attr, *val_ptr);
             first = it;
             return true;
         }

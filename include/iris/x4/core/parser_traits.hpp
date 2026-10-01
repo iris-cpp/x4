@@ -11,7 +11,7 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/traits/can_hold.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
 
 #include <iris/type_list.hpp>
 
@@ -49,7 +49,7 @@ struct get_attribute_type<Parser>
 template<class Parser, class Container>
 struct get_accepts_container
 {
-    static constexpr bool value = can_hold_v<Container, typename get_attribute_type<Parser>::type>;
+    static constexpr bool value = is_writable_v<Container&, typename get_attribute_type<Parser>::type>;
 };
 
 template<class Parser, class Container>
@@ -152,6 +152,9 @@ struct parser_traits
 
     static constexpr std::size_t sequence_size = detail::get_sequence_size<Parser>::value;
 
+    // If true, X4 may pass `Container` itself to the parser in place of a new element of it,
+    // and the parser appends into it. Whether X4 does so is decided by the priority of writes
+    // into a container (`detail::container_parse_for`).
     template<class Container>
     static constexpr bool accepts_container = detail::get_accepts_container<Parser, Container>::value;
 
@@ -159,12 +162,26 @@ struct parser_traits
     static constexpr bool need_rcontext = Parser::need_rcontext;
 };
 
-// `Parser` writes into `Container`: it fills the container itself, or yields
-// one element of it
+namespace detail {
+
+// The value of `Parser` is written into `Container` as a part: a new element, part by part, or a range appended
+template<class Parser, class Container>
+concept writes_as_part =
+    has_attribute_v<Parser> &&
+    planner::node_write_of<
+        planner::parse_part_node<
+            planner::storage_t<Container>,
+            planner::model_value_t<typename parser_traits<Parser>::attribute_type>
+        >
+    >.writable;
+
+} // detail
+
+// `Parser` writes into `Container`: it is passed the container itself and appends into it, or its value is written into it as a part
 template<class Parser, class Container>
 concept writes_into_container =
     parser_traits<Parser>::template accepts_container<Container> ||
-    can_hold_v<iris::container::element_t<Container>, typename parser_traits<Parser>::attribute_type>;
+    detail::writes_as_part<Parser, Container>;
 
 } // iris::x4
 

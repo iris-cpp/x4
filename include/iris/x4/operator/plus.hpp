@@ -37,23 +37,28 @@ struct plus : unary_parser<plus<Subject>, Subject>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
-        list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+        if constexpr (list_like_parser::writes_as_one_element<attribute_type, Attr>) {
+            return list_like_parser::parse_as_one_element(*this, first, last, ctx, attr);
 
-        if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
-            list_like_parser::successful_merge_into(chunk_buf, container_attr);
         } else {
-            return false;
-        }
+            auto& container_attr = detail::ref_or_init_attribute_for<attribute_type>(attr);
+            list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
 
-        while (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
-            list_like_parser::successful_merge_into(chunk_buf, container_attr);
-        }
+            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
+                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+            } else {
+                return false;
+            }
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !x4::has_expectation_failure(ctx);
-        } else {
-            return true;
+            while (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
+                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+            }
+
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                return !x4::has_expectation_failure(ctx);
+            } else {
+                return true;
+            }
         }
     }
 

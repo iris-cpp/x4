@@ -15,6 +15,7 @@
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/plus.hpp>
@@ -22,6 +23,7 @@
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/alloy/adapted/std_pair.hpp>
+#include <iris/alloy/tuple.hpp>
 #include <iris/rvariant.hpp>
 
 #include <map>
@@ -36,6 +38,40 @@
 #include <type_traits>
 
 namespace x4 = iris::x4;
+
+namespace {
+
+using char_pair = iris::alloy::tuple<char, char>;
+using char_pairs_parser = std::remove_const_t<decltype(+(x4::standard::char_ >> x4::standard::char_))>;
+
+// assignable from the whole attribute of `char_pairs_parser` and from `char`, holding neither by its shape
+struct converted
+{
+    int from_pairs = 0;
+    int from_char = 0;
+
+    converted& operator=(std::vector<char_pair> const&) { ++from_pairs; return *this; }
+    converted& operator=(char) { ++from_char; return *this; }
+};
+
+template<class Container>
+constexpr x4::detail::container_parse char_pairs_parse_for = x4::detail::container_parse_for<char_pairs_parser, Container>;
+
+// made from a `char` by a converting constructor, with or without a default constructor
+struct from_char
+{
+    from_char() = default;
+    from_char(char c) : c(c) {} // NOLINT(misc-explicit-constructor)
+    char c = 0;
+};
+
+struct from_char_only
+{
+    from_char_only(char c) : c(c) {} // NOLINT(misc-explicit-constructor)
+    char c;
+};
+
+} // anonymous
 
 constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
 constexpr x4::rule<class string_rule, std::string> string_rule("string");
@@ -377,5 +413,48 @@ TEST_CASE("container_support")
         REQUIRE(x4::detail::parse_into_container(x4::standard::char_, first, input.end(), x4::unused, v));
         CHECK(first == input.end());
         CHECK(v == iris::rvariant<int, std::string>{std::string("abcd")});
+    }
+}
+
+TEST_CASE("container_parse_for")
+{
+    using x4::detail::container_parse;
+    using iris::rvariant;
+
+    STATIC_CHECK(char_pairs_parse_for<std::string> == container_parse::container);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<std::vector<char_pair>>> == container_parse::part);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char_pair, std::vector<char_pair>>>> == container_parse::part);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char, std::vector<char_pair>>>> == container_parse::part);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<converted>> == container_parse::part);
+
+    // a new element which X4 adds while parsing is constructed by default
+    using char_parser_type = std::remove_const_t<decltype(x4::standard::char_)>;
+    STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char>> == container_parse::part);
+    STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char_only>> == container_parse::none);
+
+    constexpr auto char_pairs = x4::eps >> +(x4::standard::char_ >> x4::standard::char_);
+    {
+        std::string s;
+        REQUIRE(parse("abcd", char_pairs, s));
+        CHECK(s == "abcd");
+    }
+    {
+        std::vector<rvariant<char_pair, std::vector<char_pair>>> v;
+        REQUIRE(parse("abcd", char_pairs, v));
+        REQUIRE(v.size() == 1);
+        CHECK(iris::get<std::vector<char_pair>>(v[0]).size() == 2);
+    }
+    {
+        std::vector<rvariant<char, std::vector<char_pair>>> v;
+        REQUIRE(parse("abcd", char_pairs, v));
+        REQUIRE(v.size() == 1);
+        CHECK(iris::get<std::vector<char_pair>>(v[0]).size() == 2);
+    }
+    {
+        std::vector<converted> v;
+        REQUIRE(parse("abcd", char_pairs, v));
+        REQUIRE(v.size() == 1);
+        CHECK(v[0].from_char == 0);
+        CHECK(v[0].from_pairs == 1);
     }
 }

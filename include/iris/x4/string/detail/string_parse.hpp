@@ -12,7 +12,7 @@
 
 #include <iris/x4/core/traits/char_traits.hpp>
 
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <ranges>
 #include <concepts>
@@ -46,7 +46,7 @@ string_parse(
         }
     }
 
-    x4::move_to(first, it, attr);
+    x4::write_attribute(attr, std::ranges::subrange(first, it));
     first = it;
     return true;
 }
@@ -90,7 +90,7 @@ string_parse(
             return false;
         }
     }
-    x4::move_to(first, it, attr);
+    x4::write_attribute(attr, std::ranges::subrange(first, it));
     first = it;
     return true;
 }

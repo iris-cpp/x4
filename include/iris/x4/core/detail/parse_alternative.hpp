@@ -14,12 +14,10 @@
 
 #include <iris/x4/traits/attribute_traits.hpp>
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/traits/variant_traits.hpp>
 
 #include <iris/x4/core/detail/parse_into_container.hpp>
 #include <iris/x4/core/expectation.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/unused.hpp>
@@ -39,163 +37,6 @@ struct alternative;
 } // iris::x4
 
 namespace iris::x4::detail {
-
-struct pass_variant_unused
-{
-    using type = unused_type;
-
-    template<class T>
-    [[nodiscard]] static constexpr unused_type
-    call(T&) noexcept
-    {
-        return unused_type{};
-    }
-};
-
-template<X4Attribute Attr>
-struct pass_variant_used
-{
-    using type = Attr&;
-
-    [[nodiscard]] static constexpr Attr&
-    call(Attr& v) noexcept
-    {
-        return v;
-    }
-};
-
-template<>
-struct pass_variant_used<unused_type> : pass_variant_unused {};
-
-template<class Parser, X4Attribute Attr>
-struct pass_parser_attribute
-{
-    using attribute_type = parser_traits<Parser>::attribute_type;
-    using substitute_type = variant_find_holdable_type<Attr, attribute_type>::type;
-
-    using type = std::conditional_t<
-        std::same_as<Attr, substitute_type>,
-        Attr&,
-        substitute_type
-    >;
-
-    template<X4Attribute Attr_>
-        requires std::same_as<Attr_, std::remove_reference_t<type>>
-    [[nodiscard]] static constexpr Attr_&
-    call(Attr_& attr) noexcept
-    {
-        return attr;
-    }
-
-    template<X4Attribute Attr_>
-        requires (!std::same_as<Attr_, std::remove_reference_t<type>>)
-    [[nodiscard]] static type
-    call(Attr_&)
-        noexcept(std::is_nothrow_default_constructible_v<type>)
-    {
-        return type{};
-    }
-};
-
-// Pass non-variant attributes as-is
-template<class Parser, X4Attribute Attr>
-struct pass_non_variant_attribute
-{
-    using type = Attr&;
-
-    [[nodiscard]] constexpr static Attr&
-    call(Attr& attribute) noexcept
-    {
-        return attribute;
-    }
-};
-
-// Unwrap single-element tuple-likes
-template<class Parser, X4Attribute Attr>
-    requires SingleElementTupleLike<Attr>
-struct pass_non_variant_attribute<Parser, Attr>
-{
-    using attr_type = std::remove_reference_t<
-        alloy::tuple_element_t<0, Attr>
-    >;
-    using pass = pass_parser_attribute<Parser, attr_type>;
-    using type = pass::type;
-
-    template<X4Attribute Attr_>
-    [[nodiscard]] static constexpr type
-    call(Attr_& attr)
-        noexcept(noexcept(pass::call(alloy::get<0>(attr))))
-    {
-        return pass::call(alloy::get<0>(attr));
-    }
-};
-
-template<class Parser, X4Attribute Attr>
-    requires (!is_variant_v<Attr>)
-struct pass_parser_attribute<Parser, Attr>
-    : pass_non_variant_attribute<Parser, Attr>
-{};
-
-template<class Parser>
-struct pass_parser_attribute<Parser, unused_type>
-    : pass_variant_unused
-{};
-
-template<class Parser, X4Attribute Attr>
-struct pass_variant_attribute
-    : std::conditional_t<
-        has_attribute_v<Parser>,
-        pass_parser_attribute<Parser, Attr>,
-        pass_variant_unused
-    >
-{};
-
-template<class... Ps, X4Attribute Attr>
-struct pass_variant_attribute<alternative<Ps...>, Attr>
-    : std::conditional_t<
-        has_attribute_v<alternative<Ps...>>,
-        pass_variant_used<Attr>,
-        pass_variant_unused
-    >
-{};
-
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires std::is_lvalue_reference_v<typename pass_variant_attribute<Parser, Attr>::type>
-[[nodiscard]] constexpr bool
-parse_alternative(
-    Parser const& p, It& first, Se const& last,
-    Context const& ctx, Attr& attr
-) {
-    return p.parse(first, last, ctx, pass_variant_attribute<Parser, Attr>::call(attr));
-}
-
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires (!std::is_lvalue_reference_v<typename pass_variant_attribute<Parser, Attr>::type>)
-[[nodiscard]] constexpr bool
-parse_alternative(
-    Parser const& p, It& first, Se const& last,
-    Context const& ctx, Attr& attr
-) {
-    auto&& actual_attr = pass_variant_attribute<Parser, Attr>::call(attr);
-    if (!p.parse(first, last, ctx, actual_attr)) return false;
-    x4::move_to(std::move(actual_attr), attr);
-    return true;
-}
-
-template<class Subject>
-struct alternative_helper : proxy_parser<alternative_helper<Subject>, Subject>
-{
-    using proxy_parser<alternative_helper, Subject>::proxy_parser;
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-    {
-        return detail::parse_alternative(this->subject, first, last, ctx, attr);
-    }
-};
-template<class Subject>
-alternative_helper(Subject const&) -> alternative_helper<Subject>;
 
 template<class Context>
 [[nodiscard]] constexpr bool alternative_should_stop(Context const& ctx) noexcept
@@ -222,14 +63,19 @@ struct parse_alternative_all_impl
 
         } else {
             static_assert(
-                requires(branch_attr&& value) { x4::move_to(std::move(value), exposed_attr); },
+                requires(branch_attr&& value) { x4::write_attribute(exposed_attr, std::move(value)); },
                 "The attribute of this branch cannot be converted into the attribute of the alternative."
             );
             // The branch yields a whole value of an unrelated shape (e.g. a narrower variant);
             // parse it into a temporary and convert on success.
             branch_attr temp{};
             if (!try_branch.template operator()<I>(temp)) return false;
-            x4::move_to(std::move(temp), exposed_attr);
+
+            // As in the other branches, the value is written into the default state. An earlier
+            // branch may have failed after writing, and `write_attribute` writes into an existing
+            // content: it appends to a container, and writes nothing for a disengaged optional.
+            traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
+            x4::write_attribute(exposed_attr, std::move(temp));
             return true;
         }
     }
@@ -240,19 +86,6 @@ struct parse_alternative_all_impl
 template<class... Ps>
 struct parse_alternative_all
 {
-    // Tries the branches in order without touching any attribute; used where each
-    // branch writes on its own (appending into a container).
-    template<std::size_t... Is, class Try, class Context>
-    [[nodiscard]] static constexpr bool
-    call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx)
-    {
-        bool matched = false;
-        (void)((((matched = try_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
-        return matched;
-    }
-
-    // -------------------------------------------------------------------------
-
     template<std::size_t... Is, class Try, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] static constexpr bool
     call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, UnusedAttr const& unused_attr)
@@ -293,9 +126,14 @@ struct parse_alternative_all
         // class is monostate.
         if (std::ranges::empty(container_attr)) {
             auto parse_branch = [&]<std::size_t I>() -> bool {
-                if (try_branch.template operator()<I>(container_attr)) return true;
-                iris::container::clear(container_attr);
-                return false;
+                if constexpr (!has_attribute_v<nary::parser_t<I, Ps...>>) {
+                    return try_branch.template operator()<I>(unused);
+
+                } else {
+                    if (try_branch.template operator()<I>(container_attr)) return true;
+                    iris::container::clear(container_attr);
+                    return false;
+                }
             };
             bool matched = false;
             (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
@@ -307,12 +145,17 @@ struct parse_alternative_all
         // into a buffer that is appended only on success.
         ContainerAttr buffer;
         auto parse_branch = [&]<std::size_t I>() -> bool {
-            if (try_branch.template operator()<I>(buffer)) {
-                iris::container::append_range(container_attr, buffer | std::views::as_rvalue);
-                return true;
+            if constexpr (!has_attribute_v<nary::parser_t<I, Ps...>>) {
+                return try_branch.template operator()<I>(unused);
+
+            } else {
+                if (try_branch.template operator()<I>(buffer)) {
+                    iris::container::append_range(container_attr, buffer | std::views::as_rvalue);
+                    return true;
+                }
+                iris::container::clear(buffer);
+                return false;
             }
-            iris::container::clear(buffer);
-            return false;
         };
         bool matched = false;
         (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
@@ -337,11 +180,7 @@ struct parse_into_container_impl<alternative<Ps...>>
         return parse_alternative_all<Ps...>::call(
             std::index_sequence_for<Ps...>{},
             [&]<std::size_t I>(auto& container_attr) {
-                if constexpr (is_variant_v<iris::container::element_t<ExposedAttr>>) {
-                    return detail::parse_into_container(alternative_helper{nary::get<I>(parser.elems)}, first, last, ctx, container_attr);
-                } else {
-                    return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, container_attr);
-                }
+                return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, container_attr);
             },
             ctx,
             exposed_attr

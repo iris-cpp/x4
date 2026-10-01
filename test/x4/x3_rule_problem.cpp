@@ -9,6 +9,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/numeric/real.hpp>
 #include <iris/x4/char/char.hpp>
@@ -132,5 +133,13 @@ TEST_CASE("x3_rule_problem")
 # pragma warning(pop)
 #endif
         CHECK(std::get<0>(iris::get<0>(assigned)) == 3);
+
+        variant written;
+        x4::write_attribute(written, 3.5);
+        CHECK(iris::get<1>(written).value == 3.5);
+
+        variant prepared;
+        REQUIRE(parse(input, double_rule, prepared));
+        CHECK(iris::get<1>(prepared).value == 3.5);
     }
 }

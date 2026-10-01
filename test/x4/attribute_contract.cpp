@@ -67,11 +67,11 @@ struct Pair
     bool operator==(Pair const&) const = default;
 };
 
-struct Single
+struct SingleElement
 {
     int n;
 
-    bool operator==(Single const&) const = default;
+    bool operator==(SingleElement const&) const = default;
 };
 
 // A plain type whose reset can throw: assignment is not `noexcept`.
@@ -131,7 +131,7 @@ struct shouted_letters : std::vector<char>
 } // anonymous
 
 IRIS_ALLOY_ADAPT_STRUCT(Pair, a, b);
-IRIS_ALLOY_ADAPT_STRUCT(Single, n);
+IRIS_ALLOY_ADAPT_STRUCT(SingleElement, n);
 
 // A rule whose value is assembled by an action, and a rule which fails after writing a part of its value
 constexpr iris::x4::rule<struct assembled_word_id, std::string> assembled_word = "assembled_word";
@@ -207,7 +207,7 @@ TEST_CASE("attribute contract: prior content does not influence the result")
     X4_TEST_SUCCESS(std::optional<int>{999}, "42", -int_, std::optional<int>{42});
 
     X4_TEST_SUCCESS(Pair(999, "poison"s), "42abc", int_ >> +alpha, Pair(42, "abc"s));
-    X4_TEST_SUCCESS(Single{999}, "42", int_, Single{42});
+    X4_TEST_SUCCESS(SingleElement{999}, "42", int_, SingleElement{42});
 
     {
         std::unique_ptr<int> attr = std::make_unique<int>(999);
@@ -258,7 +258,7 @@ TEST_CASE("attribute contract: a failed parse resets the attribute")
 
     X4_TEST_FAILURE(std::optional<int>{999}, "x", int_);
     X4_TEST_FAILURE(Pair(999, "poison"s), "42123", int_ >> +alpha);
-    X4_TEST_FAILURE(Single{999}, "x", int_);
+    X4_TEST_FAILURE(SingleElement{999}, "x", int_);
 
     {
         std::unique_ptr<int> attr = std::make_unique<int>(999);
@@ -325,6 +325,15 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", stmt % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}}));
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab", *stmt, std::vector<stmt_t>({stmt_t{"12ab"s}}));
         X4_TEST_SUCCESS(std::vector<stmt_t>{}, "12ab,1!", (expr >> lit('!') | +alnum) % lit(','), std::vector<stmt_t>({stmt_t{"12ab"s}, stmt_t{expr_t{1}}}));
+    }
+
+    // A variant selects the same type over a single-element tuple-like of it, whatever the order
+    {
+        using single_element_or_plain = iris::rvariant<SingleElement, int>;
+        using plain_or_single_element = iris::rvariant<int, SingleElement>;
+        X4_TEST_SUCCESS(single_element_or_plain{}, "12", int_, single_element_or_plain{12});
+        X4_TEST_SUCCESS(plain_or_single_element{}, "12", int_, plain_or_single_element{12});
+        X4_TEST_SUCCESS(std::vector<single_element_or_plain>{}, "1,2", int_ % lit(','), std::vector<single_element_or_plain>({single_element_or_plain{1}, single_element_or_plain{2}}));
     }
 
     // A rule or `as<T>` assembles its own value, which is appended to the elements which were already there

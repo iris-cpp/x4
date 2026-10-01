@@ -14,7 +14,7 @@
 #include <iris/config.hpp>
 
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/parse.hpp>
 
 #include <catch2/catch_test_macros.hpp>  // IWYU pragma: export
@@ -163,7 +163,7 @@ struct synth_parser : x4::parser<synth_parser<T>>
     {
         if (iter != last && *iter == 's') {
             ++iter;
-            x4::move_to(attribute_type{}, attr);
+            x4::write_attribute(attr, attribute_type{});
             return true;
         }
         return false;

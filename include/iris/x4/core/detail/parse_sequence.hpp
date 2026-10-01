@@ -15,7 +15,7 @@
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/traits/attribute_category.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/traits/can_hold.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
 
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/nary_parser.hpp>
@@ -28,7 +28,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <cstddef>
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4 {
 
@@ -238,15 +238,22 @@ struct parse_into_container_impl<sequence<Ps...>>
     )
     {
         if constexpr (traits::X4Container<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold_v<
-                typename parser_traits<sequence<Ps...>>::attribute_type,
-                iris::container::element_t<Attr>
+            // The whole sequence yields one element when its value is written into a new element
+            // (nothing is left behind when a later part fails); otherwise each element of the
+            // sequence writes into the container on its own, as the value is written part by part.
+            using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
+            constexpr planner::node_write part = planner::node_write_of<
+                planner::parse_part_node<planner::storage_t<Attr>, value_type>
             >;
 
-            if constexpr (sequence_attribute_can_directly_hold_value_type) {
-                return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
+            if constexpr (part.writable && part.kind == planner::branch_kind::new_default_element) {
+                return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
 
             } else {
+                static_assert(
+                    parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
+                    "No element of this sequence can write into the container, nor can the sequence as a whole"
+                );
                 return detail::parse_sequence(seq, first, last, ctx, attr);
             }
 

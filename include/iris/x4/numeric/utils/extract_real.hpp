@@ -12,7 +12,7 @@
 =============================================================================*/
 
 #include <iris/x4/core/unused.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <iris/x4/numeric/utils/pow10.hpp>
 
@@ -154,7 +154,7 @@ struct extract_real
                 Policy::parse_inf(first, last, n)
             ) {
                 // If we got a negative sign, negate the number
-                x4::move_to(extension::negate(neg, n), attr);
+                x4::write_attribute(attr, extension::negate(neg, n));
                 return true;    // got a NaN or Inf, return early
             }
 
@@ -245,7 +245,7 @@ struct extract_real
         }
 
         // If we got a negative sign, negate the number
-        x4::move_to(extension::negate(neg, n), attr);
+        x4::write_attribute(attr, extension::negate(neg, n));
 
         // Success!!!
         return true;

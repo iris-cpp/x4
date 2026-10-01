@@ -23,7 +23,7 @@
 #include <utility>
 #include <type_traits>
 
-#include <cstddef>
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4::traits {
 
@@ -180,21 +180,23 @@ struct attribute_traits<VariantT>
         }
     }
 
-    template<class ParserAttr>
-    using tag_type = unwrap_recursive_t<typename variant_find_holdable_type<VariantT, ParserAttr>::type>;
-
+    // Clears the alternative that `ParserAttr` is written into
     template<class ParserAttr>
         requires
             (!std::same_as<ParserAttr, VariantT>) &&
-            requires(VariantT& var) { var.template emplace<tag_type<ParserAttr>>(); }
-    static constexpr tag_type<ParserAttr>& clear(VariantT& var)
+            x4::detail::variant_has_alternative_for_v<VariantT, ParserAttr> &&
+            requires(VariantT& var) { var.template emplace<x4::detail::variant_alternative_for_v<VariantT, ParserAttr>>(); }
+    static constexpr auto& clear(VariantT& var)
     {
-        if (auto* existing_alt = iris::get_if<tag_type<ParserAttr>>(&var)) {
-            attribute_traits<tag_type<ParserAttr>>::template clear<tag_type<ParserAttr>>(*existing_alt);
+        constexpr std::size_t index = x4::detail::variant_alternative_for_v<VariantT, ParserAttr>;
+        using alternative_type = variant_alternative_t<index, VariantT>;
+
+        if (auto* existing_alt = iris::get_if<index>(&var)) {
+            attribute_traits<alternative_type>::template clear<alternative_type>(*existing_alt);
             return *existing_alt;
 
         } else {
-            return var.template emplace<tag_type<ParserAttr>>();
+            return var.template emplace<index>();
         }
     }
 
@@ -261,13 +263,13 @@ struct attribute_traits<TupleLikeT>
 
     template<class ParserAttr>
         requires
-            (!std::same_as<ParserAttr, TupleLikeT>) &&
+            (!std::same_as<unwrap_recursive_t<ParserAttr>, TupleLikeT>) &&
             (alloy::tuple_size_v<TupleLikeT> == 1) &&
             detail::clearable_for<detail::tuple_slot_t<0, TupleLikeT>, ParserAttr>
     static constexpr decltype(auto) clear(TupleLikeT& tup)
     {
-        // A single-element tuple-like is transparent, as in `move_to`: the
-        // branch parses into the element.
+        // Unless the branch yields the single-element tuple-like itself, parse into its element
+        // (consistent with `write_rank`).
         return attribute_traits<detail::tuple_slot_t<0, TupleLikeT>>::template clear<ParserAttr>(
             alloy::get<0>(tup)
         );

@@ -18,7 +18,7 @@
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
 
 #include <iris/x4/core/unused.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <concepts>
 #include <limits>
@@ -306,7 +306,7 @@ struct extract_int
         }
 
         if (count + leading_zeros >= MinDigits) {
-            x4::move_to(std::move(val), attr);
+            x4::write_attribute(attr, std::move(val));
             first = it;
             return true;
         }
@@ -389,7 +389,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
         char_type ch = *it;
         if (!radix_check::is_valid(ch) || !extractor::call(ch, 0, val)) {
             if (count == 0) return false; // must have at least one digit
-            x4::move_to(std::move(val), attr);
+            x4::write_attribute(attr, std::move(val));
             first = it;
             return true;
         }
@@ -405,7 +405,7 @@ struct extract_int<T, Radix, 1, -1, Accumulator, Accumulate>
             ++count;
         }
 
-        x4::move_to(std::move(val), attr);
+        x4::write_attribute(attr, std::move(val));
         first = it;
         return true;
     }
@@ -499,13 +499,13 @@ struct extract_uint
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(extract_uint::call(first, last, std::declval<T&>())) &&
-            noexcept(x4::move_to(std::declval<T&&>(), attr))
+            noexcept(x4::write_attribute(attr, std::declval<T&&>()))
         )
     {
         // this case is called when Attribute is not T
         T tmp_attr; // default initialize
         if (extract_uint::call(first, last, tmp_attr)) {
-            x4::move_to(std::move(tmp_attr), attr);
+            x4::write_attribute(attr, std::move(tmp_attr));
             return true;
         }
         return false;
@@ -558,13 +558,13 @@ struct extract_int
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(extract_int::call(first, last, std::declval<T&>())) &&
-            noexcept(x4::move_to(std::declval<T&&>(), attr))
+            noexcept(x4::write_attribute(attr, std::declval<T&&>()))
         )
     {
         // this case is called when Attribute is not T
         T tmp_attr; // default initialize
         if (extract_int::call(first, last, tmp_attr)) {
-            x4::move_to(std::move(tmp_attr), attr);
+            x4::write_attribute(attr, std::move(tmp_attr));
             return true;
         }
         return false;

@@ -12,7 +12,10 @@
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char_string_literal.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/difference.hpp>
+#include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>
@@ -23,6 +26,7 @@
 TEST_CASE("difference")
 {
     using x4::standard::char_;
+    using x4::standard::alpha;
     using x4::standard::blank;
     using x4::standard::space;
     using x4::lit;
@@ -85,5 +89,36 @@ TEST_CASE("difference")
             s
         ));
         CHECK(s == "foo die"); // wrong implementation yields "foodie"
+    }
+
+    // The container is passed to `Left`, which appends each word into the string itself
+    {
+        constexpr auto words = +alpha % ' ';
+        STATIC_CHECK(x4::parser_traits<decltype(words - lit('x'))>::accepts_container<std::string>);
+
+        std::string text;
+        REQUIRE(parse("ab cd", -(words - lit('x')), text));
+        CHECK(text == "abcd");
+
+        // What `Left` appended before it failed is not left after an optional or an alternative
+        // recovers; a repetition keeps the preceding ones
+        {
+            auto const res = parse("ab cd!", -((words >> ';') - lit('x')), text);
+            REQUIRE(res.ok);
+            CHECK(text.empty());
+            CHECK(res.remainder_str() == "ab cd!");
+        }
+        {
+            auto const res = parse("ab!", ((words >> ';') - lit('x')) | +alpha, text);
+            REQUIRE(res.ok);
+            CHECK(text == "ab");
+            CHECK(res.remainder_str() == "!");
+        }
+        {
+            auto const res = parse("ab;cd ef!", *((words >> ';') - lit('x')), text);
+            REQUIRE(res.ok);
+            CHECK(text == "ab");
+            CHECK(res.remainder_str() == "cd ef!");
+        }
     }
 }

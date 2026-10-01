@@ -14,7 +14,8 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/core/parser.hpp>
@@ -326,7 +327,7 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
             // Used directly as a parser with another attribute: parse into the attribute of the rule and move it on success
             attribute_type rule_attr{};
             if (!impl::template call_rule_definition<ForceAttr>(this->rhs_, this->name, first, last, ctx, rule_attr)) return false;
-            x4::move_to(std::move(rule_attr), attr);
+            x4::write_attribute(attr, std::move(rule_attr));
             return true;
         }
     }
@@ -402,7 +403,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
                     if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
                         return false;
                     }
-                    detail::pass_declared_attribute(exposed_attr, std::move(rule_attr));
+                    planner::pass_declared_attribute(exposed_attr, std::move(rule_attr));
                     return true;
                 }
             }
@@ -419,7 +420,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
                 return false;
             }
-            detail::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
+            planner::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
             return true;
         }
     }
