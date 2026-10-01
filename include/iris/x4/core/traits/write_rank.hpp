@@ -1169,32 +1169,58 @@ struct explored_graph<type_list<Nodes...>, constant_list<Prefixes...>, std::inde
     static constexpr selection selection_of = solution.selected[find_index_exactly_once_v<Node, nodes>];
 };
 
-// The graph from `Root` explored round by round: the nodes `Known`, explored to `Prefixes`, stay first in
+// ReSharper fails to compute the graph in a constraint when a function deduces it as its return
+// type, so the graph is computed by class templates only
+template<class Known, class Prefixes>
+struct explore;
+
+template<class Nodes>
+struct explore_completely;
+
+template<class... Nodes>
+struct explore_completely<type_list<Nodes...>>
+{
+    using type = explored_graph<type_list<Nodes...>, constant_list<node_shape_t<Nodes>::branch_count...>>;
+};
+
+// The graph after the round that explored `Graph`
+template<class Graph, bool Extend = Graph::solution.result.extend, bool Partial = Graph::solution.result.zero_cycle && !Graph::complete>
+struct next_round
+{
+    using type = Graph;
+};
+
+template<class Graph, bool Partial>
+struct next_round<Graph, true, Partial> : explore<typename Graph::nodes, typename Graph::next_prefixes> {};
+
+// from the nodes of the graph, the root first
+template<class Graph>
+struct next_round<Graph, false, true> : explore_completely<typename graph_walk<all_children, type_list<>, typename Graph::nodes>::type> {};
+
+template<class Known, class Prefixes, class Reached>
+struct explore_round;
+
+template<class... Known, std::size_t... Prefixes, class... Reached>
+struct explore_round<type_list<Known...>, constant_list<Prefixes...>, type_list<Reached...>>
+    : next_round<explored_graph<type_list<Known..., Reached...>, constant_list<Prefixes..., node_shape_t<Reached>::next_prefix(0)...>>>
+{};
+
+// The graph explored round by round: the nodes `Known`, explored to `Prefixes`, stay first in
 // their order, and the nodes reached from them are explored to their first prefixes. A graph is explored
 // further while a node is not writable by the branches explored so far. The usable candidates on a cycle
 // of zero edges may depend on the branches not explored, so such a graph is then explored completely.
-template<class Root, class... Known, std::size_t... Prefixes>
-consteval auto explore(type_list<Known...>, constant_list<Prefixes...>)
-{
-    using added = unique_type_list<typename concat_type_list<typename explored_children<Known, Prefixes>::type...>::type, type_list<Known...>>::type;
-
-    return []<class... Reached>(type_list<Reached...>) {
-        using graph = explored_graph<type_list<Known..., Reached...>, constant_list<Prefixes..., node_shape_t<Reached>::next_prefix(0)...>>;
-
-        if constexpr (graph::solution.result.extend) {
-            return detail::explore<Root>(typename graph::nodes{}, typename graph::next_prefixes{});
-
-        } else if constexpr (graph::solution.result.zero_cycle && !graph::complete) {
-            // from the nodes of the graph, `Root` first
-            return []<class... Nodes>(type_list<Nodes...>) {
-                return std::type_identity<explored_graph<type_list<Nodes...>, constant_list<node_shape_t<Nodes>::branch_count...>>>{};
-            }(typename graph_walk<all_children, type_list<>, typename graph::nodes>::type{});
-
-        } else {
-            return std::type_identity<graph>{};
-        }
-    }(typename graph_walk<initial_children, type_list<Known...>, added>::type{});
-}
+template<class... Known, std::size_t... Prefixes>
+struct explore<type_list<Known...>, constant_list<Prefixes...>>
+    : explore_round<
+        type_list<Known...>,
+        constant_list<Prefixes...>,
+        typename graph_walk<
+            initial_children,
+            type_list<Known...>,
+            typename unique_type_list<typename concat_type_list<typename explored_children<Known, Prefixes>::type...>::type, type_list<Known...>>::type
+        >::type
+    >
+{};
 
 } // detail
 
@@ -1215,10 +1241,7 @@ struct node_write
 
 // The graph of the nodes reachable from `Root`, the first of them, explored as far as the selections need
 template<class Root>
-using graph_of = decltype(detail::explore<Root>(
-    type_list<Root>{},
-    constant_list<detail::node_shape_t<Root>::next_prefix(0)>{})
-)::type;
+using graph_of = detail::explore<type_list<Root>, constant_list<detail::node_shape_t<Root>::next_prefix(0)>>::type;
 
 template<class Node>
 inline constexpr node_write node_write_of{

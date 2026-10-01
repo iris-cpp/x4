@@ -54,7 +54,7 @@ struct Id
 struct Wrap
 {
     template<class T>
-    Wrap(T&& t) : v(t) {}
+    Wrap(T&& t) : v(t) {}  // NOLINT(bugprone-forwarding-reference-overload, cppcoreguidelines-missing-std-forward)
     int v;
     bool operator==(Wrap const&) const = default;
 };

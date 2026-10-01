@@ -246,8 +246,9 @@ struct write_attribute_fn
     {}
 
     // Not `noexcept`. Deriving it from the plan is not planned; reconsider it when a concrete need arises.
+    // `is_writable_v` is spelled out, as ReSharper judges a constraint of that variable alone as false.
     template<class S, class V>
-        requires (!X4UnusedAttribute<S> && !X4UnusedAttribute<std::remove_reference_t<V>>) && is_writable_v<S&, V>
+        requires (!X4UnusedAttribute<S> && !X4UnusedAttribute<std::remove_reference_t<V>>) && (write_rank_v<S&, V> != write_rank::none)
     static constexpr void operator()(S& s, V&& v)
     {
         using root = write_node<storage_t<S>, model_value_t<V>>;
