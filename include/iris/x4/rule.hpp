@@ -13,7 +13,6 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/traits/transform_attribute.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
@@ -95,7 +94,7 @@ private:
     using rcontext_t = std::remove_cvref_t<
         decltype(x4::replace_first_context<contexts::rule_var>(
             std::declval<Context const&>(),
-            std::declval<typename transform_attribute<Attr, RHSAttr>::type&>()
+            std::declval<RHSAttr&>()
         ))
     >;
 
@@ -246,21 +245,15 @@ public:
         Context const& ctx, Exposed& exposed_attr
     )
     {
-        // Do down-stream transformation, provide attribute for `rhs` parser
-        using transform = transform_attribute<Attr, Exposed>;
-        using transform_attr = transform::type;
-        transform_attr rhs_attr = transform::pre(exposed_attr);
+        static_assert(std::same_as<Exposed, Attr> || X4UnusedAttribute<Exposed>);
 
         // Creates a place to hold the result of parse_rhs
         // called inside the following scope.
         bool parse_ok = false;
         {
-            // Debug on destructor, i.e., before any modifications are made to the
-            // attribute passed to `parse_rhs`. Note: the debug must be done before
-            // `transform::post`, where some types do some modifications there;
-            // for instance, if `Exposed` is a recursive variant.
-            [[maybe_unused]] scoped_tracer<RuleID, It, Se, Context, std::remove_reference_t<transform_attr>>
-            scoped_tracer{first, last, ctx, rhs_attr, rule_name, &parse_ok};
+            // Debug on destructor
+            [[maybe_unused]] scoped_tracer<RuleID, It, Se, Context, Exposed>
+            scoped_tracer{first, last, ctx, exposed_attr, rule_name, &parse_ok};
 
             // The existence of semantic action inhibits attribute materialization _unless_ it is
             // explicitly required by the user (primarily via `%=`).
@@ -272,13 +265,13 @@ public:
                 if constexpr (ForceAttr) {
                     parse_ok = rule_impl::parse_rhs(
                         rhs, first, last,
-                        rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
-                        rhs_attr
+                        rule_impl::make_rcontext<RHS, It>(ctx, exposed_attr),
+                        exposed_attr
                     );
                 } else {
                     parse_ok = rule_impl::parse_rhs(
                         rhs, first, last,
-                        rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
+                        rule_impl::make_rcontext<RHS, It>(ctx, exposed_attr),
                         unused // <-- omitted attribute
                     );
                 }
@@ -286,15 +279,10 @@ public:
             } else { // RHS has no semantic action
                 parse_ok = rule_impl::parse_rhs(
                     rhs, first, last,
-                    rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
-                    rhs_attr
+                    rule_impl::make_rcontext<RHS, It>(ctx, exposed_attr),
+                    exposed_attr
                 );
             }
-        }
-
-        if (parse_ok) {
-            // Integrate the results back into the original attribute value, if appropriate
-            transform::post(exposed_attr, std::forward<transform_attr>(rhs_attr));
         }
         return parse_ok;
     }
@@ -328,10 +316,18 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return rule_impl<RuleID, attribute_type, SkipDefinitionInjection>
-            ::template call_rule_definition<ForceAttr>(
-                this->rhs_, this->name, first, last, ctx, attr
-            );
+        using impl = rule_impl<RuleID, attribute_type, SkipDefinitionInjection>;
+
+        if constexpr (std::same_as<Attr, attribute_type> || X4UnusedAttribute<Attr>) {
+            return impl::template call_rule_definition<ForceAttr>(this->rhs_, this->name, first, last, ctx, attr);
+
+        } else {
+            // Used directly as a parser with another attribute: parse into the attribute of the rule and move it on success
+            attribute_type rule_attr{};
+            if (!impl::template call_rule_definition<ForceAttr>(this->rhs_, this->name, first, last, ctx, rule_attr)) return false;
+            x4::move_to(std::move(rule_attr), attr);
+            return true;
+        }
     }
 
 private:

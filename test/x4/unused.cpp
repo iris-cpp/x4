@@ -12,7 +12,6 @@
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/rule.hpp>
 
-#include <iris/x4/core/traits/transform_attribute.hpp>
 #include <iris/x4/core/unused.hpp>
 
 #include <type_traits>
@@ -21,8 +20,6 @@
 TEST_CASE("unused")
 {
     namespace traits = x4::traits;
-    using x4::Transformable;
-    using x4::transform_attribute;
     using x4::unused_container_type;
     using x4::unused_container;
 
@@ -62,34 +59,4 @@ TEST_CASE("unused")
 
     STATIC_CHECK(x4::X4Attribute<unused_container_type>);
     STATIC_CHECK(x4::X4Attribute<unused_container_type const>);
-
-    // unused => unused
-    {
-        STATIC_CHECK(Transformable<unused_type, unused_type>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_type, unused_type>::type, unused_type>);
-
-        STATIC_CHECK(Transformable<unused_type const, unused_type>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_type const, unused_type>::type, unused_type>);
-
-        STATIC_CHECK(Transformable<unused_type, unused_type const>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_type, unused_type const>::type, unused_type>);
-
-        STATIC_CHECK(Transformable<unused_type const, unused_type const>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_type const, unused_type const>::type, unused_type>);
-    }
-
-    // unused_container => unused_container
-    {
-        STATIC_CHECK(Transformable<unused_container_type, unused_container_type>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_container_type, unused_container_type>::type, unused_container_type>);
-
-        STATIC_CHECK(Transformable<unused_container_type const, unused_container_type>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_container_type const, unused_container_type>::type, unused_container_type>);
-
-        STATIC_CHECK(Transformable<unused_container_type, unused_container_type const>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_container_type, unused_container_type const>::type, unused_container_type>);
-
-        STATIC_CHECK(Transformable<unused_container_type const, unused_container_type const>);
-        STATIC_CHECK(std::same_as<transform_attribute<unused_container_type const, unused_container_type const>::type, unused_container_type>);
-    }
 }
