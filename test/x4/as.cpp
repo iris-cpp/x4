@@ -23,6 +23,9 @@
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/rule.hpp>
+#include <iris/x4/numeric/int.hpp>
+
+#include <iris/alloy/tuple.hpp>
 
 #include <iris/unicode/string.hpp>
 
@@ -146,6 +149,21 @@ TEST_CASE("as<T>(p)")
         int result = 42;
         REQUIRE(p.parse(empty_input_first, empty_input_last, unused, result));
         CHECK(result == 42);
+    }
+
+    {
+        constexpr auto p = x4::as<int>(x4::int_);
+        constexpr std::string_view input = "7";
+
+        long long converted = 0;
+        auto first = input.begin();
+        REQUIRE(p.parse(first, input.end(), unused, converted));
+        CHECK(converted == 7);
+
+        alloy::tuple<int> single{0};
+        first = input.begin();
+        REQUIRE(p.parse(first, input.end(), unused, single));
+        CHECK(alloy::get<0>(single) == 7);
     }
 }
 

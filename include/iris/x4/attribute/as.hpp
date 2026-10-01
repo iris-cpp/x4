@@ -10,8 +10,9 @@
 =============================================================================*/
 
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/move_to.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
@@ -108,25 +109,32 @@ public:
         }
     }
 
-    // `outer_parser<U>(as<T>(subject))` forwards temporary `T` local variable for the subject, then move the variable to `U&`
+    // `outer_parser<U>(as<T>(subject))` parses into the element of `U` if `U` holds exactly `T` as its single
+    // element; otherwise into a temporary `T`, then passes it to `U&` by the ordinary conversion and assignment,
+    // never reinterpreting it into another structure (the assigned value is appended to a container which holds
+    // the preceding results)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
         requires
             (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
     {
-        // Ideally we should default to default-initialization and avoid value-initialization.
-        // However, there is currently no way to determine whether the attribute is ever touched
-        // by the underlying parser (for example: semantic action).
-        //
-        // Note that this behavior is our implementation details. The underlying parser should
-        // not rely on this behavior; they should never assume the given attribute is defaulted
-        // to some arbitrary initial value.
-        T attr_{}; // value-initialize
+        if constexpr (!has_attribute) {
+            return this->parse(first, last, ctx, unused); // equivalent to `omit[subject]`
 
-        if (!this->parse_subject(first, last, ctx, attr_)) return false;
-        x4::move_to(std::move(attr_), outer_attr);
-        return true;
+        } else if constexpr (detail::holds_as_single_element<std::remove_const_t<OuterAttr>, T>) {
+            return this->parse(first, last, ctx, alloy::get<0>(outer_attr));
+
+        } else {
+            static_assert(X4StrictlyWritable<std::remove_const_t<OuterAttr>&, unwrap_recursive_t<T>&&>);
+            static_assert(!detail::dangles<std::remove_const_t<OuterAttr>, unwrap_recursive_t<T>&&>);
+
+            T attr_{}; // value-initialize
+
+            if (!this->parse_subject(first, last, ctx, attr_)) return false;
+            detail::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
+            return true;
+        }
     }
 
     [[nodiscard]] /*constexpr*/ std::string get_x4_info() const

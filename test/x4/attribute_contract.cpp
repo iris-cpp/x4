@@ -325,12 +325,16 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
     // appended to the elements which were already there, the same as it is written into an empty one
     {
         constexpr auto letters_as = x4::as<letters>(+alpha);
+        constexpr auto shouted_as = x4::as<shouted_letters>(+alpha);
         X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> letters_word, "xab"s);
         X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> letters_as, "xab"s);
 
         X4_TEST_SUCCESS("poison"s, "ab", shouted_word, "AB"s);
         X4_TEST_SUCCESS("poison"s, "-ab", lit('-') >> shouted_word, "AB"s);
         X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> shouted_word, "xAB"s);
+        X4_TEST_SUCCESS("poison"s, "ab", shouted_as, "AB"s);
+        X4_TEST_SUCCESS("poison"s, "-ab", lit('-') >> shouted_as, "AB"s);
+        X4_TEST_SUCCESS("poison"s, "x-ab", alpha >> lit('-') >> shouted_as, "xAB"s);
     }
 
     // The successful branch / subject appends to the elements which were already there

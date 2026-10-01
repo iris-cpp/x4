@@ -14,6 +14,7 @@
 
 #include <iris/alloy/traits.hpp>
 
+#include <concepts>
 #include <type_traits>
 #include <utility>
 
@@ -38,6 +39,11 @@ template<class T>
 concept SingleElementTupleLikeView = SingleElementTupleLike<T> && alloy::TupleLikeView<T>;
 
 namespace detail {
+
+template<class Exposed, class Declared>
+concept holds_as_single_element =
+    SingleElementTupleLike<Exposed> &&
+    std::same_as<alloy::tuple_element_t<0, Exposed>, Declared>;
 
 template<class T>
 struct unwrap_single_element_impl

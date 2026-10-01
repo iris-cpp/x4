@@ -13,6 +13,7 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/move_to.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
@@ -337,46 +338,6 @@ public:
     std::string_view name = "unnamed_rule";
 };
 
-template<class Exposed>
-struct narrowing_checker
-{
-    using Dest = Exposed[];
-
-    // emulate `Exposed x[] = {std::forward<T>(t)};`
-    template<class T>
-    static void operator()(T&&)
-        requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
-};
-
-
-template<class Exposed, class RuleAttr>
-concept RuleAttrConvertible =
-    X4Attribute<RuleAttr> &&
-    std::is_assignable_v<std::remove_const_t<Exposed>&, RuleAttr>;
-
-template<class Exposed, class RuleAttr>
-concept RuleAttrConvertibleWithoutNarrowing =
-    RuleAttrConvertible<Exposed, RuleAttr> &&
-    requires {
-        narrowing_checker<std::remove_const_t<Exposed>>::operator()(std::declval<RuleAttr>());
-    };
-
-// Resolves "The Spirit X3 rule problem" in Boost.Parser's documentation
-// https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
-// https://github.com/boostorg/spirit_x4/issues/38
-template<class Exposed, class RuleAttr>
-concept RuleAttrTransformable =
-    X4Attribute<std::remove_const_t<Exposed>> &&
-    X4Attribute<RuleAttr> &&
-    std::default_initializable<RuleAttr> &&
-    RuleAttrConvertible<Exposed, RuleAttr> &&
-    RuleAttrConvertibleWithoutNarrowing<std::remove_const_t<Exposed>, RuleAttr>;
-
-template<class Exposed, class RuleAttr>
-concept RuleAttrCompatible =
-    std::same_as<std::remove_const_t<Exposed>, RuleAttr> ||
-    RuleAttrTransformable<Exposed, RuleAttr>;
-
 } // detail
 
 template<class RuleID, class RuleAttr = unused_type, bool ForceAttr = false>
@@ -412,9 +373,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
     // Primary overload
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
-        requires
-            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            detail::RuleAttrCompatible<Exposed, RuleAttr>
+        requires (!std::same_as<std::remove_const_t<Exposed>, unused_type>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
     {
@@ -449,27 +408,21 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
             }
             return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
 
-        } else {
-            static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
+        } else if constexpr (detail::holds_as_single_element<std::remove_const_t<Exposed>, RuleAttr>) {
+            return this->parse(first, last, ctx, alloy::get<0>(exposed_attr));
 
-            RuleAttr rule_attr;
+        } else {
+            static_assert(X4StrictlyWritable<std::remove_const_t<Exposed>&, unwrap_recursive_t<RuleAttr>&&>);
+            static_assert(!detail::dangles<std::remove_const_t<Exposed>, unwrap_recursive_t<RuleAttr>&&>);
+
+            RuleAttr rule_attr{};
             if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
                 return false;
             }
-            detail::pass_declared_attribute(exposed_attr, std::move(rule_attr));
+            detail::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
             return true;
         }
     }
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
-        requires
-            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
-            detail::RuleAttrConvertible<Exposed, RuleAttr> &&
-            (!detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>)
-    [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
-
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool

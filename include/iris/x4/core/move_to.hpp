@@ -47,8 +47,9 @@ template<class T, class Source>
     return false;
 }
 
-// Passes `v`, the attribute of `x4::rule` or `x4::as<T>`, to the exposed attribute `s` by the ordinary assignment.
-// A container which holds the preceding results keeps them: the value assigned to a new container is appended to it.
+// Passes `v`, the attribute of `x4::rule` or `x4::as<T>`, to the exposed attribute `s` by the ordinary
+// assignment, which the caller has checked by `X4StrictlyWritable<S&, V&&>`. A container which holds
+// the preceding results keeps them: the value assigned to a new container is appended to it.
 template<class S, class V>
 constexpr void pass_declared_attribute(S& s, V&& v)
 {

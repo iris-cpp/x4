@@ -9,59 +9,128 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/numeric/real.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 
-#include <vector>
+#include <iris/alloy/adapt.hpp>
+#include <iris/alloy/adapted/std_tuple.hpp>
+#include <iris/rvariant.hpp>
+
 #include <set>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <vector>
 
+namespace {
+
+enum class strong_int : int {};
+
+struct converted_from_int
+{
+    converted_from_int(int) {} // NOLINT(google-explicit-constructor)
+};
+
+struct assigned_from_int
+{
+    explicit assigned_from_int(int) {}
+    assigned_from_int& operator=(int) { return *this; }
+};
+
+struct Paren
+{
+    int inner = 0;
+    bool operator==(Paren const&) const = default;
+};
+
+struct Box
+{
+    double value = 0;
+};
+
+} // anonymous
+
+IRIS_ALLOY_ADAPT_STRUCT(Paren, inner);
+IRIS_ALLOY_ADAPT_STRUCT(Box, value);
+
+constexpr x4::rule<struct int_rule_id, int> int_rule = "int_rule";
+constexpr x4::rule<struct ints_rule_id, std::vector<int>> ints_rule = "ints_rule";
+constexpr x4::rule<struct double_rule_id, double> double_rule = "double_rule";
+constexpr x4::rule<struct paren_rule_id, Paren> paren_rule = "paren_rule";
+
+constexpr auto int_rule_def = int_rule = x4::int_;
+constexpr auto ints_rule_def = ints_rule = x4::int_ % ',';
+constexpr auto double_rule_def = double_rule = x4::double_;
+constexpr auto paren_rule_def = paren_rule = '(' >> int_rule >> ')';
+
+IRIS_X4_DEFINE(int_rule)
+IRIS_X4_DEFINE(ints_rule)
+IRIS_X4_DEFINE(double_rule)
+IRIS_X4_DEFINE(paren_rule)
+
+// "The Spirit X3 rule problem" in Boost.Parser's documentation
+// https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
+// https://github.com/boostorg/spirit_x4/issues/38
 TEST_CASE("x3_rule_problem")
 {
-    enum class strong_int : int {};
+    using x4::X4StrictlyWritable;
 
-    // Primitive (int)
+    STATIC_CHECK(X4StrictlyWritable<long long&, int&&>);
+    STATIC_CHECK(!X4StrictlyWritable<short&, int&&>);
+    STATIC_CHECK(!X4StrictlyWritable<unsigned long long&, int&&>);
+    STATIC_CHECK(!X4StrictlyWritable<double&, int&&>);
+    STATIC_CHECK(!X4StrictlyWritable<strong_int&, int&&>);
+    STATIC_CHECK(!X4StrictlyWritable<assigned_from_int&, int&&>); // assignable, but not implicitly convertible
+    STATIC_CHECK(X4StrictlyWritable<long double&, double&&>);
+    STATIC_CHECK(!X4StrictlyWritable<float&, double&&>);
+    STATIC_CHECK(!X4StrictlyWritable<long long&, double&&>);
+
+    STATIC_CHECK(X4StrictlyWritable<converted_from_int&, long long&&>);
+
+    STATIC_CHECK(!X4StrictlyWritable<std::set<int>&, std::vector<int>&&>);
+    STATIC_CHECK(!X4StrictlyWritable<std::vector<strong_int>&, std::vector<int>&&>);
+    STATIC_CHECK(!X4StrictlyWritable<std::string&, char&&>);
+    STATIC_CHECK(!X4StrictlyWritable<int&, Paren&&>);
+
+    STATIC_CHECK(X4StrictlyWritable<std::string_view&, std::string&&>);
+    STATIC_CHECK(x4::detail::dangles<std::string_view, std::string&&>);
+
     {
-        using It = std::string_view::const_iterator;
-        using Se = It;
-        using Rule = x4::rule<struct my_rule, int>;
-
-        STATIC_CHECK(x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, int>);
-        STATIC_CHECK(x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, long long>);
-
-        // Narrowing conversion
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, short>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, unsigned long long>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, double>);
-
-        // Not permitted as of now, but can be relaxed in the future
-        STATIC_CHECK(!x4::detail::RuleAttrTransformable<strong_int, int>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, strong_int>);
+        long long n = 0;
+        REQUIRE(parse("42", int_rule, n));
+        CHECK(n == 42);
+    }
+    {
+        std::vector<int> v;
+        REQUIRE(parse("1,2", ints_rule, v));
+        CHECK(v == std::vector<int>{1, 2});
     }
 
-    // Primitive (double)
     {
-        using It = std::string_view::const_iterator;
-        using Se = It;
-        using Rule = x4::rule<struct my_rule, double>;
-
-        STATIC_CHECK(x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, double>);
-        STATIC_CHECK(x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, long double>);
-
-        // Narrowing conversion
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, int>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, long long>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, unsigned long long>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, float>);
+        Paren p;
+        REQUIRE(parse("7", int_rule, p));
+        CHECK(p == Paren{7});
+        REQUIRE(parse("(1)", paren_rule, p));
+        CHECK(p == Paren{1});
     }
 
-    // "The Spirit X3 rule problem" in Boost.Parser's documentation
-    // https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
-    // https://github.com/boostorg/spirit_x4/issues/38
     {
-        using It = std::string_view::const_iterator;
-        using Se = It;
-        using Rule = x4::rule<struct my_rule, std::vector<int>>;
+        using variant = iris::rvariant<std::tuple<int>, Box>;
+        constexpr std::string_view input = "3.5";
 
-        STATIC_CHECK(x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, std::vector<int>>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, std::set<int>>);
-        STATIC_CHECK(!x4::is_parsable_v<Rule, It, Se, x4::parse_context_for<It, Se>, std::vector<strong_int>>);
+        variant assigned;
+        auto first = input.begin();
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4244)
+#endif
+        REQUIRE(double_rule.parse(first, input.end(), x4::unused, assigned));
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
+        CHECK(std::get<0>(iris::get<0>(assigned)) == 3);
     }
 }
