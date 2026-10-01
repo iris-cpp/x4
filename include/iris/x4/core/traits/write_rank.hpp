@@ -705,24 +705,35 @@ struct all_children : explored_children<Node, node_shape_t<Node>::branch_count> 
 // Breadth first, one frontier at a time, a node reaching `Children<Node>::type`: the frontier and the
 // nodes found from it, other than `Seen`
 template<template<class> class Children, class Seen, class Frontier>
-struct graph_walk
+struct graph_walk;
+
+// IntelliSense (EDG) loses the type when a constrained partial specialization recurses into its
+// primary template, so an empty frontier has its own partial specialization
+template<template<class> class Children, class... Seen>
+struct graph_walk<Children, type_list<Seen...>, type_list<>>
 {
-    using type = Frontier;
+    using type = type_list<>;
 };
 
-template<template<class> class Children, class... Seen, class... Frontier>
-    requires (sizeof...(Frontier) != 0)
-struct graph_walk<Children, type_list<Seen...>, type_list<Frontier...>>
+template<template<class> class Children, class... Seen, class Node, class... Nodes>
+struct graph_walk<Children, type_list<Seen...>, type_list<Node, Nodes...>>
 {
-    using added = unique_type_list<typename concat_type_list<typename Children<Frontier>::type...>::type, type_list<Seen..., Frontier...>>::type;
-    using type = concat_type_list<type_list<Frontier...>, typename graph_walk<Children, type_list<Seen..., Frontier...>, added>::type>::type;
+    using added = unique_type_list<
+        typename concat_type_list<typename Children<Node>::type, typename Children<Nodes>::type...>::type,
+        type_list<Seen..., Node, Nodes...>
+    >::type;
+
+    using type = concat_type_list<
+        type_list<Node, Nodes...>,
+        typename graph_walk<Children, type_list<Seen..., Node, Nodes...>, added>::type
+    >::type;
 };
 
 struct selection
 {
     std::size_t position = no_index; // of the branch
-    branch_kind kind = branch_kind::assign; // of the branch, or of the candidate chosen
     std::size_t alternative = no_index; // of the variant written into, if any
+    branch_kind kind = branch_kind::assign; // of the branch, or of the candidate chosen
     bool ambiguous = false;
 };
 
@@ -753,9 +764,6 @@ template<class T>
 
 struct node_state
 {
-    bool writable = false;
-    bool ok = false; // in the fixpoint being computed
-    bool derived = false; // in the least fixpoint being computed
     std::size_t component = 0; // of the zero edges of the branches which apply, from 1
     std::size_t first_child = 0; // through such an edge, in `children_`
     std::size_t next_child = 0;
@@ -763,6 +771,10 @@ struct node_state
     std::size_t low = 0;
     std::size_t chosen_item = no_index;
     std::size_t zero_parents = 0; // through the zero edges of the plan
+
+    bool writable = false;
+    bool ok = false; // in the fixpoint being computed
+    bool derived = false; // in the least fixpoint being computed
     bool visited = false; // by the plan
 };
 

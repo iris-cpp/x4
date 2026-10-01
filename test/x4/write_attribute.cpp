@@ -26,8 +26,6 @@
 #include <utility>
 #include <vector>
 
-namespace {
-
 using iris::rvariant;
 using iris::recursive_wrapper;
 using x4::write_rank;
@@ -260,8 +258,6 @@ void check_write(S const& initial, V const& value, S const& expected)
         CHECK(s == expected);
     }
 }
-
-} // anonymous
 
 IRIS_ALLOY_ADAPT_STRUCT(Span, first, last);
 IRIS_ALLOY_ADAPT_STRUCT(Paren, inner);
