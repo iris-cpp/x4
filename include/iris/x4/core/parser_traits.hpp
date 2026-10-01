@@ -164,7 +164,7 @@ struct parser_traits
 template<class Parser, class Container>
 concept writes_into_container =
     parser_traits<Parser>::template accepts_container<Container> ||
-    can_hold_v<typename traits::container_value<Container>::type, typename parser_traits<Parser>::attribute_type>;
+    can_hold_v<iris::container::element_t<Container>, typename parser_traits<Parser>::attribute_type>;
 
 } // iris::x4
 

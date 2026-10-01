@@ -34,12 +34,12 @@ namespace detail {
 template<class T, class Source>
 [[nodiscard]] constexpr bool append_to_nonempty(T& dest, Source&& src)
 {
-    if constexpr (traits::is_container_v<T>) {
-        if (!traits::is_empty(dest)) {
+    if constexpr (traits::X4Container<T>) {
+        if (!std::ranges::empty(dest)) {
             if constexpr (std::is_rvalue_reference_v<Source&&>) {
-                traits::append(dest, std::make_move_iterator(traits::begin(src)), std::make_move_iterator(traits::end(src)));
+                iris::container::append_range(dest, src | std::views::as_rvalue);
             } else {
-                traits::append(dest, traits::begin(src), traits::end(src));
+                iris::container::append_range(dest, src);
             }
             return true;
         }
@@ -53,15 +53,11 @@ template<class T, class Source>
 template<class S, class V>
 constexpr void pass_declared_attribute(S& s, V&& v)
 {
-    if constexpr (traits::is_container_v<S>) {
-        if (!traits::is_empty(s)) {
+    if constexpr (traits::X4Container<S>) {
+        if (!std::ranges::empty(s)) {
             S assigned{};
             assigned = std::forward<V>(v);
-            traits::append(
-                s,
-                std::make_move_iterator(traits::begin(assigned)),
-                std::make_move_iterator(traits::end(assigned))
-            );
+            iris::container::append_range(s, assigned | std::views::as_rvalue);
             return;
         }
     }
@@ -84,7 +80,7 @@ constexpr void move_to(Source&&, Dest&) = delete; // `Source` and `Dest` do not 
 
 template<NonUnusedCategorizedAttr T>
 constexpr void move_to(T const&& src, T& dest)
-    noexcept(std::is_nothrow_assignable_v<T&, T const&&> && !traits::is_container_v<T>)
+    noexcept(std::is_nothrow_assignable_v<T&, T const&&> && !traits::X4Container<T>)
 {
     static_assert(std::is_assignable_v<T&, T const>);
     if (detail::append_to_nonempty(dest, std::move(src))) return;
@@ -93,7 +89,7 @@ constexpr void move_to(T const&& src, T& dest)
 
 template<NonUnusedCategorizedAttr T>
 constexpr void move_to(T&& src, T& dest)
-    noexcept(std::is_nothrow_assignable_v<T&, T&&> && !traits::is_container_v<T>)
+    noexcept(std::is_nothrow_assignable_v<T&, T&&> && !traits::X4Container<T>)
 {
     static_assert(std::is_assignable_v<T&, T>);
     if (detail::append_to_nonempty(dest, std::move(src))) return;
@@ -102,7 +98,7 @@ constexpr void move_to(T&& src, T& dest)
 
 template<NonUnusedCategorizedAttr T>
 constexpr void move_to(T const& src, T& dest)
-    noexcept(std::is_nothrow_copy_assignable_v<T> && !traits::is_container_v<T>)
+    noexcept(std::is_nothrow_copy_assignable_v<T> && !traits::X4Container<T>)
 {
     static_assert(std::is_assignable_v<T&, T const&>);
     if (detail::append_to_nonempty(dest, src)) return;
@@ -250,9 +246,9 @@ move_to(It first, Se last, Dest& dest)
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_type>);
     static_assert(!std::same_as<std::remove_const_t<Dest>, unused_container_type>);
 
-    if constexpr (CharLike<std::remove_cvref_t<std::iter_value_t<It>>> && CharLike<std::remove_cvref_t<typename traits::container_value<Dest>::type>>) {
+    if constexpr (CharLike<std::remove_cvref_t<std::iter_value_t<It>>> && CharLike<std::remove_cvref_t<iris::container::element_t<Dest>>>) {
         static_assert(
-            std::same_as<std::remove_cvref_t<std::iter_value_t<It>>, std::remove_cvref_t<typename traits::container_value<Dest>::type>>,
+            std::same_as<std::remove_cvref_t<std::iter_value_t<It>>, std::remove_cvref_t<iris::container::element_t<Dest>>>,
             "Mixing incompatible char types is not allowed"
         );
     }
@@ -261,7 +257,7 @@ move_to(It first, Se last, Dest& dest)
     // for example, `std::vector<int>` and `std::set<int>`. Such types must be
     // handled *before* invoking `move_to`.
 
-    traits::append(dest, first, last); // the preceding elements are kept
+    iris::container::append_range(dest, std::ranges::subrange(first, last)); // the preceding elements are kept
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, CategorizedAttr<tuple_tag> Dest>
@@ -294,8 +290,8 @@ move_to(Source&& src, Dest& dest)
 {
     static_assert(!std::same_as<std::remove_cvref_t<Source>, Dest>, "[BUG] This call should instead resolve to the overload handling identical types");
 
-    if constexpr (std::is_constructible_v<typename traits::container_value<Dest>::type, Source>) {
-        traits::push_back(dest, std::forward<Source>(src));
+    if constexpr (std::is_constructible_v<iris::container::element_t<Dest>, Source>) {
+        iris::container::append(dest, std::forward<Source>(src));
     } else {
         if constexpr (std::is_rvalue_reference_v<Source&&>) {
             x4::move_to(std::make_move_iterator(std::ranges::begin(src)), std::make_move_iterator(std::ranges::end(src)), dest);

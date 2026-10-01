@@ -50,9 +50,7 @@ template<traits::X4Container Container, class Elem>
     requires
         (!std::same_as<Container, Elem>) &&
         (!traits::X4Container<Elem>) &&
-        requires(Container& c, Elem&& elem) {
-            traits::push_back(c, std::move(elem));
-        }
+        pushable_into_container<Container, Elem>
 struct container_can_hold_element<Container, Elem>
     : std::true_type
 {};
@@ -63,8 +61,8 @@ template<traits::X4Container Container, class ContainerElem>
         traits::X4Container<ContainerElem> &&
         requires(Container& c, ContainerElem&& container_elem) {
             x4::move_to(
-                std::make_move_iterator(traits::begin(container_elem)),
-                std::make_move_iterator(traits::end(container_elem)),
+                std::make_move_iterator(std::ranges::begin(container_elem)),
+                std::make_move_iterator(std::ranges::end(container_elem)),
                 c
             );
         }

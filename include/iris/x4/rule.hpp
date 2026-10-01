@@ -394,8 +394,8 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         using detail::parse_rule; // ADL
 
         if constexpr (std::same_as<std::remove_const_t<Exposed>, RuleAttr>) {
-            if constexpr (traits::is_container_v<RuleAttr>) {
-                if (!traits::is_empty(exposed_attr)) {
+            if constexpr (traits::X4Container<RuleAttr>) {
+                if (!std::ranges::empty(exposed_attr)) {
                     // The container holds the preceding results, which the attribute of the rule
                     // is kept apart from: parse into a new attribute and append it on success
                     RuleAttr rule_attr{};

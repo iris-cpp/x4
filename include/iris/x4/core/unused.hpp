@@ -38,7 +38,7 @@ struct unused_type
 };
 
 // The attribute category type for `unused_container_type` is
-// `container_attribute`, but it does not satisfy `is_container`.
+// `container_attribute`, but it does not satisfy `X4Container`.
 struct unused_container_type
 {
     constexpr explicit unused_container_type() noexcept = default;

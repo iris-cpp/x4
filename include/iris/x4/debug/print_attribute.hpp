@@ -285,8 +285,8 @@ struct print_attribute_debug
         } else {
             out << '[';
             bool is_first = true;
-            auto last = traits::end(val);
-            for (auto it = traits::begin(val); it != last; ++it) {
+            auto last = std::ranges::end(val);
+            for (auto it = std::ranges::begin(val); it != last; ++it) {
                 if (is_first) {
                     is_first = false;
                 } else {

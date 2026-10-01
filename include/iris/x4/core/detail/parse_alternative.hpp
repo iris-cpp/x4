@@ -291,10 +291,10 @@ struct parse_alternative_all
         // The only situation we can guarantee such condition is when the container
         // is empty; assuming that the "empty" state of any user-provided container
         // class is monostate.
-        if (traits::is_empty(container_attr)) {
+        if (std::ranges::empty(container_attr)) {
             auto parse_branch = [&]<std::size_t I>() -> bool {
                 if (try_branch.template operator()<I>(container_attr)) return true;
-                traits::clear(container_attr);
+                iris::container::clear(container_attr);
                 return false;
             };
             bool matched = false;
@@ -308,14 +308,10 @@ struct parse_alternative_all
         ContainerAttr buffer;
         auto parse_branch = [&]<std::size_t I>() -> bool {
             if (try_branch.template operator()<I>(buffer)) {
-                traits::append(
-                    container_attr,
-                    std::make_move_iterator(traits::begin(buffer)),
-                    std::make_move_iterator(traits::end(buffer))
-                );
+                iris::container::append_range(container_attr, buffer | std::views::as_rvalue);
                 return true;
             }
-            traits::clear(buffer);
+            iris::container::clear(buffer);
             return false;
         };
         bool matched = false;
@@ -336,12 +332,12 @@ struct parse_into_container_impl<alternative<Ps...>>
         It& first, Se const& last, Context const& ctx, ExposedAttr& exposed_attr
     )
     {
-        static_assert(traits::is_container_v<ExposedAttr>);
+        static_assert(traits::X4Container<ExposedAttr>);
 
         return parse_alternative_all<Ps...>::call(
             std::index_sequence_for<Ps...>{},
             [&]<std::size_t I>(auto& container_attr) {
-                if constexpr (is_variant_v<typename traits::container_value<ExposedAttr>::type>) {
+                if constexpr (is_variant_v<iris::container::element_t<ExposedAttr>>) {
                     return detail::parse_into_container(alternative_helper{nary::get<I>(parser.elems)}, first, last, ctx, container_attr);
                 } else {
                     return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, container_attr);

@@ -82,8 +82,8 @@ public:
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
     {
-        if constexpr (traits::is_container_v<T>) {
-            if (!traits::is_empty(outer_attr)) {
+        if constexpr (traits::X4Container<T>) {
+            if (!std::ranges::empty(outer_attr)) {
                 // The container holds the preceding results, which the attribute of `as<T>`
                 // is kept apart from: parse into a new attribute and append it on success
                 T attr_{};

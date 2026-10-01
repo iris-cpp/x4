@@ -91,20 +91,16 @@ struct optional : unary_parser<optional<Subject>, Subject>
     {
         // Same logic as in `x4::alternative`
 
-        if (traits::is_empty(attr)) {
+        if (std::ranges::empty(attr)) {
             if (detail::parse_into_container(this->subject, first, last, ctx, attr)) {
                 return true;
             }
-            traits::clear(attr);
+            iris::container::clear(attr);
 
         } else {
             Attr buffer;
             if (detail::parse_into_container(this->subject, first, last, ctx, buffer)) {
-                traits::append(
-                    attr,
-                    std::make_move_iterator(traits::begin(buffer)),
-                    std::make_move_iterator(traits::end(buffer))
-                );
+                iris::container::append_range(attr, buffer | std::views::as_rvalue);
                 return true;
             }
         }

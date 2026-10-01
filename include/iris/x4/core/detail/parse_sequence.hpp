@@ -237,10 +237,10 @@ struct parse_into_container_impl<sequence<Ps...>>
         Context const& ctx, Attr& attr
     )
     {
-        if constexpr (traits::is_container_v<Attr>) {
+        if constexpr (traits::X4Container<Attr>) {
             constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold_v<
                 typename parser_traits<sequence<Ps...>>::attribute_type,
-                typename traits::container_value<Attr>::type
+                iris::container::element_t<Attr>
             >;
 
             if constexpr (sequence_attribute_can_directly_hold_value_type) {

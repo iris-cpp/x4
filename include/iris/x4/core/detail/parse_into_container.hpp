@@ -34,14 +34,18 @@ struct optional;
 
 namespace iris::x4::detail {
 
+// A value is pushed into a container as an element by an implicit conversion; `unused_type` is pushed as nothing
+template<class Container, class V>
+concept pushable_into_container =
+    std::same_as<std::remove_cvref_t<V>, unused_type> ||
+    (std::convertible_to<V, std::ranges::range_value_t<Container>> && iris::container::appendable<Container, V>);
+
 template<class Parser, traits::X4Container Container>
 struct parser_accepts_container
 {
     static constexpr bool value =
         parser_traits<Parser>::template accepts_container<Container> &&
-        !requires (Container& c, typename parser_traits<Parser>::attribute_type&& v) {
-            traits::push_back(c, std::move(v));
-        };
+        !pushable_into_container<Container, typename parser_traits<Parser>::attribute_type>;
 };
 
 template<class Parser, traits::X4Container Container>
@@ -55,9 +59,7 @@ struct parser_accepts_container<Parser, Container>
 
     static constexpr bool value =
         parser_traits<Parser>::template accepts_container<Container> &&
-        !requires (Container& c, alternative_type&& v) {
-            traits::push_back(c, std::move(v));
-        };
+        !pushable_into_container<Container, alternative_type>;
 };
 
 template<class Parser>
@@ -69,16 +71,16 @@ struct parse_into_container_impl_default
         using unwrapped_attribute_type = iris::unwrap_recursive_t<Attr>;
         auto& unwrapped_attr = iris::unwrap_recursive(attr);
 
-        if constexpr (traits::is_container_v<unwrapped_attribute_type>) { // Attr is a container
+        if constexpr (traits::X4Container<unwrapped_attribute_type>) { // Attr is a container
             if constexpr (parser_accepts_container<Parser, unwrapped_attribute_type>::value) {
                 // `Parser` accepts the exact `Container`; let parser append directly
                 return parser.parse(first, last, ctx, unwrapped_attr);
 
             } else {
                 // `Parser` DOES NOT accept the exact `Container`; parse into `value_type` and append it.
-                typename traits::container_value<unwrapped_attribute_type>::type value{}; // value-initialize
+                iris::container::element_t<unwrapped_attribute_type> value{}; // value-initialize
                 if (!parser.parse(first, last, ctx, value)) return false;
-                traits::push_back(unwrapped_attr, std::move(value));
+                iris::container::append(unwrapped_attr, std::move(value));
                 return true;
             }
 
@@ -127,7 +129,7 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
 
     } else {
-        static_assert(traits::is_container_v<Attr>);
+        static_assert(traits::X4Container<Attr>);
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
     }
 }

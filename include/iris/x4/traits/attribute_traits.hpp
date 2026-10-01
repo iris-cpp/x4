@@ -213,15 +213,15 @@ template<CategorizedAttr<container_tag> ContainerT>
 struct attribute_traits<ContainerT>
 {
     static constexpr void reset(ContainerT& container)
-        noexcept(noexcept(traits::clear(container)))
+        noexcept(noexcept(iris::container::clear(container)))
     {
-        traits::clear(container);
+        iris::container::clear(container);
     }
 
     template<class ParserAttr>
     static constexpr ContainerT& clear(ContainerT& container)
     {
-        traits::clear(container);
+        iris::container::clear(container);
         return container;
     }
 };

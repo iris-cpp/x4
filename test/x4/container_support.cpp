@@ -327,48 +327,25 @@ void test_string_support()
 
 TEST_CASE("container_support")
 {
-    using x4::traits::is_container_v;
-    using x4::traits::is_associative_v;
+    using x4::traits::X4Container;
 
     // ------------------------------------------------------------------
 
-    STATIC_CHECK(is_container_v<std::string>);
-    STATIC_CHECK(!is_associative_v<std::string>);
-
-    STATIC_CHECK(is_container_v<std::vector<int>>);
-    STATIC_CHECK(!is_associative_v<std::vector<int>>);
-
-    STATIC_CHECK(is_container_v<std::deque<int>>);
-    STATIC_CHECK(!is_associative_v<std::deque<int>>);
-
-    STATIC_CHECK(is_container_v<std::list<int>>);
-    STATIC_CHECK(!is_associative_v<std::list<int>>);
+    STATIC_CHECK(X4Container<std::string>);
+    STATIC_CHECK(X4Container<std::vector<int>>);
+    STATIC_CHECK(X4Container<std::deque<int>>);
+    STATIC_CHECK(X4Container<std::list<int>>);
 
     // ------------------------------------------------------------------
 
-    STATIC_CHECK(is_container_v<std::set<int>>);
-    STATIC_CHECK(is_associative_v<std::set<int>>);
-
-    STATIC_CHECK(is_container_v<std::unordered_set<int>>);
-    STATIC_CHECK(is_associative_v<std::unordered_set<int>>);
-
-    STATIC_CHECK(is_container_v<std::multiset<int>>);
-    STATIC_CHECK(is_associative_v<std::multiset<int>>);
-
-    STATIC_CHECK(is_container_v<std::unordered_multiset<int>>);
-    STATIC_CHECK(is_associative_v<std::unordered_multiset<int>>);
-
-    STATIC_CHECK(is_container_v<std::map<int, int>>);
-    STATIC_CHECK(is_associative_v<std::map<int, int>>);
-
-    STATIC_CHECK(is_container_v<std::unordered_map<int, int>>);
-    STATIC_CHECK(is_associative_v<std::unordered_map<int, int>>);
-
-    STATIC_CHECK(is_container_v<std::multimap<int, int>>);
-    STATIC_CHECK(is_associative_v<std::multimap<int, int>>);
-
-    STATIC_CHECK(is_container_v<std::unordered_multimap<int, int>>);
-    STATIC_CHECK(is_associative_v<std::unordered_multimap<int, int>>);
+    STATIC_CHECK(X4Container<std::set<int>>);
+    STATIC_CHECK(X4Container<std::unordered_set<int>>);
+    STATIC_CHECK(X4Container<std::multiset<int>>);
+    STATIC_CHECK(X4Container<std::unordered_multiset<int>>);
+    STATIC_CHECK(X4Container<std::map<int, int>>);
+    STATIC_CHECK(X4Container<std::unordered_map<int, int>>);
+    STATIC_CHECK(X4Container<std::multimap<int, int>>);
+    STATIC_CHECK(X4Container<std::unordered_multimap<int, int>>);
 
     // ------------------------------------------------------------------
 

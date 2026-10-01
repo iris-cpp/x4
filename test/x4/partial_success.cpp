@@ -97,7 +97,6 @@ TEST_CASE("partial success (alternative)")
     {
         static_assert(x4::CategorizedAttr<std::vector<int>, x4::container_tag>);
         static_assert(x4::traits::X4Container<std::vector<int>>);
-        static_assert(x4::traits::is_container_v<std::vector<int>>);
 
         {
             std::vector<int> ints;
@@ -131,7 +130,6 @@ TEST_CASE("partial success (alternative)")
     {
         static_assert(x4::CategorizedAttr<std::string, x4::container_tag>);
         static_assert(x4::traits::X4Container<std::string>);
-        static_assert(x4::traits::is_container_v<std::string>);
 
         {
             std::string str;
@@ -181,7 +179,6 @@ TEST_CASE("partial success (alternative)")
     {
         static_assert(x4::CategorizedAttr<strong_int, x4::plain_tag>);
         static_assert(!x4::traits::X4Container<strong_int>);
-        static_assert(!x4::traits::is_container_v<strong_int>);
 
         {
             strong_int si;
@@ -201,7 +198,6 @@ TEST_CASE("partial success (alternative)")
 
         static_assert(x4::CategorizedAttr<pair_int, x4::tuple_tag>);
         static_assert(!x4::traits::X4Container<pair_int>);
-        static_assert(!x4::traits::is_container_v<pair_int>);
 
         {
             pair_int pi;

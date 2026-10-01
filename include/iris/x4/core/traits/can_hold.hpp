@@ -48,7 +48,7 @@ struct is_all_substitute_for_tuple<TTuple, UTuple> : is_all_substitute_for_tuple
 
 template<class T, class U>
 struct value_type_can_hold
-    : can_hold<typename traits::container_value<T>::type, typename traits::container_value<U>::type>
+    : can_hold<iris::container::element_t<T>, iris::container::element_t<U>>
 {};
 
 // This "implementation" exists for short-circuiting `can_hold` for certain trivial combinations
@@ -65,8 +65,8 @@ struct can_hold_impl<T, U>
 
 template<class T, class U>
     requires
-        traits::is_container_v<T> &&
-        traits::is_container_v<U>
+        traits::X4Container<T> &&
+        traits::X4Container<U>
 struct can_hold_impl<T, U>
     : detail::value_type_can_hold<T, U>
 {};

@@ -507,35 +507,31 @@ TEST_CASE("sequence")
             typename T::value_type;
         });
         STATIC_CHECK(requires(T& c) {
-            traits::begin(c);
+            std::ranges::begin(c);
         });
         STATIC_CHECK(requires(T& c) {
-            requires std::forward_iterator<decltype(traits::begin(c))>;
+            requires std::forward_iterator<decltype(std::ranges::begin(c))>;
         });
         STATIC_CHECK(requires(T& c) {
-            traits::end(c);
+            std::ranges::end(c);
         });
         STATIC_CHECK(requires(T& c) {
-            requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
+            requires std::sentinel_for<decltype(std::ranges::end(c)), decltype(std::ranges::begin(c))>;
         });
         STATIC_CHECK(requires(T& c) {
-            traits::is_empty(c);
+            std::ranges::empty(c);
         });
         STATIC_CHECK(requires(T& c) {
-            traits::push_back(c, std::declval<typename T::value_type>());
+            iris::container::append(c, std::declval<typename T::value_type>());
+        });
+        STATIC_CHECK(requires(T& c, T& other) {
+            iris::container::append_range(c, other | std::views::as_rvalue);
         });
         STATIC_CHECK(requires(T& c) {
-            traits::append(
-                c,
-                std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
-                std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
-            );
-        });
-        STATIC_CHECK(requires(T& c) {
-            traits::clear(c);
+            iris::container::clear(c);
         });
 
-        STATIC_CHECK(traits::is_container_v<std::vector<x4_test::move_only>>);
+        STATIC_CHECK(traits::X4Container<std::vector<x4_test::move_only>>);
         STATIC_CHECK(x4::CategorizedAttr<std::vector<x4_test::move_only>, x4::container_tag>);
 
         std::vector<x4_test::move_only> v;
