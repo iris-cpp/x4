@@ -36,7 +36,6 @@
 
 #include <array>
 #include <concepts>
-#include <numeric>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -645,13 +644,21 @@ struct node_shape<type_list<Branches...>>
     [[nodiscard]] static constexpr std::size_t items_before(std::size_t prefix) noexcept
     {
         constexpr std::size_t counts[]{branch_shape<Branches>::items..., 0};
-        return std::accumulate(counts, counts + prefix, std::size_t{0});
+        std::size_t items = 0;
+        for (std::size_t i = 0; i < prefix; ++i) {
+            items += counts[i];
+        }
+        return items;
     }
 
     [[nodiscard]] static constexpr std::size_t edges_before(std::size_t prefix) noexcept
     {
         constexpr std::size_t counts[]{branch_shape<Branches>::edges..., 0};
-        return std::accumulate(counts, counts + prefix, std::size_t{0});
+        std::size_t edges = 0;
+        for (std::size_t i = 0; i < prefix; ++i) {
+            edges += counts[i];
+        }
+        return edges;
     }
 
     // The items and the edges of the first `Prefix` branches

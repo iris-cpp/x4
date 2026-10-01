@@ -44,7 +44,6 @@ using x4::string;
 
 using It = std::string_view::const_iterator;
 using Se = It;
-using Context = unused_type;
 
 constexpr auto do_nothing = [](auto&&) {};
 constexpr auto disable_attr = eps.on_match([](auto&&) {});

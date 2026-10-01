@@ -38,6 +38,8 @@
 #include <optional>
 #include <string>
 
+// NOLINTBEGIN(bugprone-chained-comparison)
+
 TEST_CASE("sequence")
 {
     namespace traits = x4::traits;
@@ -547,15 +549,18 @@ TEST_CASE("sequence")
         CHECK(s == "a");
     }
     {
-        x4::rule<struct optional_pair, std::string> const r = "r";
-        auto const rule = r = x4::standard::char_ >> -(x4::standard::char_ >> x4::standard::char_);
+        constexpr x4::rule<struct optional_pair, std::string> r = "r";
+        (void)r;
+        constexpr auto char_opt_char2 = r = x4::standard::char_ >> -(x4::standard::char_ >> x4::standard::char_);
 
         std::string s;
-        REQUIRE(parse("xa1", rule, s));
+        REQUIRE(parse("xa1", char_opt_char2, s));
         CHECK(s == "xa1");
 
-        auto const res = parse("xa", rule, s);
+        auto const res = parse("xa", char_opt_char2, s);
         REQUIRE(res.is_partial_match());
         CHECK(s == "x");
     }
 }
+
+// NOLINTEND(bugprone-chained-comparison)
