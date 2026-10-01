@@ -19,8 +19,10 @@
 #include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/alloy/adapted/std_pair.hpp>
+#include <iris/rvariant.hpp>
 
 #include <map>
 #include <set>
@@ -30,6 +32,7 @@
 #include <deque>
 #include <list>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace x4 = iris::x4;
@@ -386,4 +389,16 @@ TEST_CASE("container_support")
 
     test_multimap_support<std::multimap<std::string, std::string>>();
     test_multimap_support<std::unordered_multimap<std::string, std::string>>();
+
+    {
+        // the container held by a variant is appended to, not replaced
+        constexpr std::string_view input = "cd";
+        iris::rvariant<int, std::string> v = std::string("ab");
+
+        auto first = input.begin();
+        REQUIRE(x4::detail::parse_into_container(x4::standard::char_, first, input.end(), x4::unused, v));
+        REQUIRE(x4::detail::parse_into_container(x4::standard::char_, first, input.end(), x4::unused, v));
+        CHECK(first == input.end());
+        CHECK(v == iris::rvariant<int, std::string>{std::string("abcd")});
+    }
 }

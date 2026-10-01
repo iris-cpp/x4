@@ -121,8 +121,9 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
         // e.g. `std::string` when the attribute_type is `char`
         using substitute_type = variant_find_holdable_type<Attr, typename traits::default_container<attribute_type>::type>::type;
 
-        // instead of creating a temporary `substitute_type`, append directly into the emplaced alternative
-        auto& variant_alt = attr.template emplace<substitute_type>();
+        // append directly into the alternative, held or else emplaced, instead of into a temporary
+        auto* const held = iris::get_if<substitute_type>(&attr);
+        auto& variant_alt = held ? *held : attr.template emplace<substitute_type>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
 
     } else {

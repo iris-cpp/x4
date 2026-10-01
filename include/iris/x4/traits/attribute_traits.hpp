@@ -24,7 +24,6 @@
 #include <type_traits>
 
 #include <cstddef>
-#include <cassert>
 
 namespace iris::x4::traits {
 
@@ -199,23 +198,13 @@ struct attribute_traits<VariantT>
         }
     }
 
+    // The default state is the first alternative; the alternative held is not kept, since a parser
+    // yielding the variant itself may succeed without writing into it
     template<class ParserAttr>
         requires std::same_as<ParserAttr, VariantT>
     static constexpr VariantT& clear(VariantT& var)
     {
-        assert(!var.valueless_by_exception());
-
-        // Reuse the existing alternative instance.
-        // We don't call `visit(...)` here, since it increases the compilation time by few hundred msec
-        [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-            (void)(
-                (
-                    var.index() == Is
-                    ? (attribute_traits<variant_alternative_t<Is, VariantT>>::reset(*iris::get_if<Is>(&var)), true)
-                    : false
-                ) || ...
-            );
-        }(std::make_index_sequence<variant_size_v<VariantT>>{});
+        attribute_traits::reset(var);
         return var;
     }
 };
