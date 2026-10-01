@@ -761,18 +761,10 @@ struct solver_result
     bool zero_cycle = false; // among the zero edges of the branches which apply
 };
 
-// `new T[size]{}`, of one element for none: MSVC rejects an array of no element in a constant evaluation.
-// This can NOT be made `std::unique_ptr`, as it increases the compilation time by ~20%.
-template<class T>
-[[nodiscard]] constexpr T* new_array(std::size_t size)
-{
-    return new T[size == 0 ? 1 : size]{};
-}
-
 struct node_state
 {
     std::size_t component = 0; // of the zero edges of the branches which apply, from 1
-    std::size_t first_child = 0; // through such an edge, in `children_`
+    std::size_t first_child = 0; // through such an edge, in `ws_.children`
     std::size_t next_child = 0;
     std::size_t order = 0; // of Tarjan's algorithm, from 1
     std::size_t low = 0;
@@ -785,30 +777,26 @@ struct node_state
     bool visited = false; // by the plan
 };
 
+// The arrays `graph_solver` works on, allocated by the caller as the sizes are known there.
+struct graph_workspace
+{
+    node_state* nodes = nullptr; // and one past the last, for the end of the children of the last
+    bool* applies = nullptr; // of each item
+    std::size_t* children = nullptr; // of each edge
+    std::size_t* stack = nullptr; // of each node
+    std::size_t* calls = nullptr;
+    std::size_t* pending = nullptr;
+};
+
 // The selections of the nodes of a graph and the rank of its root, the first node. Not a template:
 // every graph is solved by the same function, over arrays.
 class graph_solver
 {
 public:
-    constexpr explicit graph_solver(graph_view const& graph)
+    constexpr graph_solver(graph_view const& graph, graph_workspace const& ws) noexcept
         : graph_(graph)
-        , nodes_(detail::new_array<node_state>(graph.node_count + 1))
-        , applies_(detail::new_array<bool>(graph.first_item[graph.node_count]))
-        , children_(detail::new_array<std::size_t>(graph.edge_count))
-        , stack_(detail::new_array<std::size_t>(graph.node_count))
-        , calls_(detail::new_array<std::size_t>(graph.node_count))
-        , pending_(detail::new_array<std::size_t>(graph.node_count))
+        , ws_(ws)
     {}
-
-    constexpr ~graph_solver()
-    {
-        delete[] nodes_;
-        delete[] applies_;
-        delete[] children_;
-        delete[] stack_;
-        delete[] calls_;
-        delete[] pending_;
-    }
 
     graph_solver(graph_solver const&) = delete;
     graph_solver& operator=(graph_solver const&) = delete;
@@ -821,12 +809,12 @@ public:
 
         find_writable(no_index, no_index);
         for (std::size_t node = 0; node < node_count; ++node) {
-            nodes_[node].writable = nodes_[node].ok;
+            ws_.nodes[node].writable = ws_.nodes[node].ok;
         }
 
         // a node not writable by the branches explored so far may be by the others
         for (std::size_t node = 0; node < node_count; ++node) {
-            if (!nodes_[node].writable && !graph_.complete[node]) {
+            if (!ws_.nodes[node].writable && !graph_.complete[node]) {
                 extend[node] = true;
                 result.extend = true;
             }
@@ -836,19 +824,19 @@ public:
         // a branch applies if its condition holds and its children are writable
         for (std::size_t node = 0; node < node_count; ++node) {
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
-                applies_[i] = nodes_[node].writable && applies(graph_.items[i]);
+                ws_.applies[i] = ws_.nodes[node].writable && applies(graph_.items[i]);
             }
         }
         find_components();
         for (std::size_t node = 0; node < node_count; ++node) {
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
-                result.zero_cycle = result.zero_cycle || (applies_[i] && cyclic(node, graph_.items[i]));
+                result.zero_cycle = result.zero_cycle || (ws_.applies[i] && cyclic(node, graph_.items[i]));
             }
         }
 
         // the selection: the first position with a usable candidate
         for (std::size_t node = 0; node < node_count; ++node) {
-            if (!nodes_[node].writable) continue;
+            if (!ws_.nodes[node].writable) continue;
 
             selection& chosen = selected[node];
             std::size_t candidates = 0;
@@ -861,7 +849,7 @@ public:
                 chosen.kind = item.kind;
                 chosen.alternative = item.alternative;
                 chosen.ambiguous = item.kind == branch_kind::wrapping_many || (item.kind == branch_kind::conversion && item.alternative == no_index);
-                nodes_[node].chosen_item = i;
+                ws_.nodes[node].chosen_item = i;
                 ++candidates;
             }
             if (candidates >= 2) {
@@ -870,7 +858,7 @@ public:
             }
         }
 
-        if (nodes_[0].writable) {
+        if (ws_.nodes[0].writable) {
             result.rank = plan_rank(selected);
         }
         return result;
@@ -882,50 +870,50 @@ private:
     [[nodiscard]] constexpr write_rank plan_rank(selection const* selected) noexcept
     {
         bool converts = false;
-        std::size_t plan_size = 0; // in `stack_`
+        std::size_t plan_size = 0; // in `ws_.stack`
         std::size_t pending = 0;
-        pending_[pending++] = 0;
-        nodes_[0].visited = true;
+        ws_.pending[pending++] = 0;
+        ws_.nodes[0].visited = true;
         while (pending != 0) {
-            std::size_t const node = pending_[--pending];
+            std::size_t const node = ws_.pending[--pending];
             if (selected[node].ambiguous) return write_rank::none;
 
-            stack_[plan_size++] = node;
-            graph_item const& item = graph_.items[nodes_[node].chosen_item];
+            ws_.stack[plan_size++] = node;
+            graph_item const& item = graph_.items[ws_.nodes[node].chosen_item];
             converts = converts || item.kind == branch_kind::assign || item.kind == branch_kind::conversion;
             for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
                 graph_edge const& edge = graph_.edges[e];
                 if (!edge.descent) {
-                    ++nodes_[edge.child].zero_parents;
+                    ++ws_.nodes[edge.child].zero_parents;
                 }
-                if (nodes_[edge.child].visited) continue;
+                if (ws_.nodes[edge.child].visited) continue;
 
-                nodes_[edge.child].visited = true;
-                pending_[pending++] = edge.child;
+                ws_.nodes[edge.child].visited = true;
+                ws_.pending[pending++] = edge.child;
             }
         }
 
         // the zero edges of the plan without a cycle: every node is removed, one without a zero parent at a time
         std::size_t removed = 0;
         for (std::size_t k = 0; k != plan_size; ++k) {
-            if (nodes_[stack_[k]].zero_parents == 0) {
-                pending_[pending++] = stack_[k];
+            if (ws_.nodes[ws_.stack[k]].zero_parents == 0) {
+                ws_.pending[pending++] = ws_.stack[k];
             }
         }
         while (pending != 0) {
-            graph_item const& item = graph_.items[nodes_[pending_[--pending]].chosen_item];
+            graph_item const& item = graph_.items[ws_.nodes[ws_.pending[--pending]].chosen_item];
             ++removed;
             for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
                 graph_edge const& edge = graph_.edges[e];
-                if (!edge.descent && --nodes_[edge.child].zero_parents == 0) {
-                    pending_[pending++] = edge.child;
+                if (!edge.descent && --ws_.nodes[edge.child].zero_parents == 0) {
+                    ws_.pending[pending++] = edge.child;
                 }
             }
         }
         if (removed != plan_size) return write_rank::none;
 
         return
-            graph_.items[nodes_[0].chosen_item].kind == branch_kind::assign_same ? write_rank::exact :
+            graph_.items[ws_.nodes[0].chosen_item].kind == branch_kind::assign_same ? write_rank::exact :
             converts ? write_rank::assignable_without_narrowing :
             write_rank::structural;
     }
@@ -941,10 +929,10 @@ private:
 
         // a node none of whose branches has its condition is never writable
         for (std::size_t node = 0; node < node_count; ++node) {
-            nodes_[node].ok = false;
+            ws_.nodes[node].ok = false;
             for (std::size_t i = first_item(node); i != last_item(node); ++i) {
                 if (graph_.items[i].cond) {
-                    nodes_[node].ok = true;
+                    ws_.nodes[node].ok = true;
                     break;
                 }
             }
@@ -954,27 +942,27 @@ private:
             // mostly follows its parent
             std::size_t pending = 0;
             for (std::size_t node = node_count; node-- != 0;) {
-                nodes_[node].derived = false;
-                if (nodes_[node].ok) {
-                    pending_[pending++] = node;
+                ws_.nodes[node].derived = false;
+                if (ws_.nodes[node].ok) {
+                    ws_.pending[pending++] = node;
                 }
             }
             for (std::size_t before = pending + 1; pending != before;) { // until a pass derives none
                 before = pending;
                 pending = 0;
                 for (std::size_t k = 0; k != before; ++k) {
-                    std::size_t const node = pending_[k];
+                    std::size_t const node = ws_.pending[k];
                     if (derivable_node(node)) {
-                        nodes_[node].derived = true;
+                        ws_.nodes[node].derived = true;
                     } else {
-                        pending_[pending++] = node;
+                        ws_.pending[pending++] = node;
                     }
                 }
             }
             if (pending == 0) break;
 
             for (std::size_t k = 0; k != pending; ++k) {
-                nodes_[pending_[k]].ok = false;
+                ws_.nodes[ws_.pending[k]].ok = false;
             }
         }
     }
@@ -1004,7 +992,7 @@ private:
 
         for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
             graph_edge const& edge = graph_.edges[e];
-            if (edge.descent ? !nodes_[edge.child].ok : !nodes_[edge.child].derived) return false;
+            if (edge.descent ? !ws_.nodes[edge.child].ok : !ws_.nodes[edge.child].derived) return false;
         }
         return true;
     }
@@ -1014,7 +1002,7 @@ private:
         if (!item.cond) return false;
 
         for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
-            if (!nodes_[graph_.edges[e].child].writable) return false;
+            if (!ws_.nodes[graph_.edges[e].child].writable) return false;
         }
         return true;
     }
@@ -1024,7 +1012,7 @@ private:
     {
         for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
             graph_edge const& edge = graph_.edges[e];
-            if (!edge.descent && nodes_[edge.child].component == nodes_[node].component) return true;
+            if (!edge.descent && ws_.nodes[edge.child].component == ws_.nodes[node].component) return true;
         }
         return false;
     }
@@ -1032,11 +1020,11 @@ private:
     // A finite write takes the item at the node, the other nodes taking any of theirs
     [[nodiscard]] constexpr bool usable(std::size_t node, std::size_t i) noexcept
     {
-        if (!applies_[i]) return false;
+        if (!ws_.applies[i]) return false;
         if (!cyclic(node, graph_.items[i])) return true;
 
         find_writable(node, i);
-        return nodes_[node].ok;
+        return ws_.nodes[node].ok;
     }
 
     // The strongly connected components of the zero edges of the branches which apply, by Tarjan's
@@ -1047,41 +1035,41 @@ private:
 
         std::size_t child_count = 0;
         for (std::size_t node = 0; node < node_count; ++node) {
-            node_state& state = nodes_[node];
+            node_state& state = ws_.nodes[node];
             state.first_child = state.next_child = child_count;
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
-                if (!applies_[i]) continue;
+                if (!ws_.applies[i]) continue;
 
                 for (std::size_t e = graph_.items[i].first_edge; e != graph_.items[i].last_edge; ++e) {
                     if (!graph_.edges[e].descent) {
-                        children_[child_count++] = graph_.edges[e].child;
+                        ws_.children[child_count++] = graph_.edges[e].child;
                     }
                 }
             }
         }
-        nodes_[node_count].first_child = child_count;
+        ws_.nodes[node_count].first_child = child_count;
 
         std::size_t stack_size = 0;
         std::size_t call_count = 0;
         std::size_t next_order = 1;
         std::size_t next_component = 1;
         for (std::size_t root = 0; root < node_count; ++root) {
-            if (nodes_[root].order != 0) continue;
+            if (ws_.nodes[root].order != 0) continue;
 
-            nodes_[root].order = nodes_[root].low = next_order++;
-            stack_[stack_size++] = root;
-            calls_[call_count++] = root;
+            ws_.nodes[root].order = ws_.nodes[root].low = next_order++;
+            ws_.stack[stack_size++] = root;
+            ws_.calls[call_count++] = root;
 
             while (call_count != 0) {
-                std::size_t const node = calls_[call_count - 1];
-                node_state& state = nodes_[node];
-                if (state.next_child != nodes_[node + 1].first_child) {
-                    std::size_t const child = children_[state.next_child++];
-                    node_state& child_state = nodes_[child];
+                std::size_t const node = ws_.calls[call_count - 1];
+                node_state& state = ws_.nodes[node];
+                if (state.next_child != ws_.nodes[node + 1].first_child) {
+                    std::size_t const child = ws_.children[state.next_child++];
+                    node_state& child_state = ws_.nodes[child];
                     if (child_state.order == 0) {
                         child_state.order = child_state.low = next_order++;
-                        stack_[stack_size++] = child;
-                        calls_[call_count++] = child;
+                        ws_.stack[stack_size++] = child;
+                        ws_.calls[call_count++] = child;
 
                     } else if (child_state.component == 0 && child_state.order < state.low) { // on the stack
                         state.low = child_state.order;
@@ -1092,26 +1080,21 @@ private:
                 if (state.low == state.order) {
                     std::size_t member = no_index;
                     do {
-                        member = stack_[--stack_size];
-                        nodes_[member].component = next_component;
+                        member = ws_.stack[--stack_size];
+                        ws_.nodes[member].component = next_component;
                     } while (member != node);
                     ++next_component;
                 }
                 --call_count;
-                if (call_count != 0 && state.low < nodes_[calls_[call_count - 1]].low) {
-                    nodes_[calls_[call_count - 1]].low = state.low;
+                if (call_count != 0 && state.low < ws_.nodes[ws_.calls[call_count - 1]].low) {
+                    ws_.nodes[ws_.calls[call_count - 1]].low = state.low;
                 }
             }
         }
     }
 
     graph_view graph_;
-    node_state* nodes_; // and one past the last, for the end of the children of the last
-    bool* applies_; // of each item
-    std::size_t* children_;
-    std::size_t* stack_;
-    std::size_t* calls_;
-    std::size_t* pending_;
+    graph_workspace ws_;
     std::size_t restricted_node_ = no_index;
     std::size_t restricted_item_ = no_index;
 };
@@ -1135,9 +1118,12 @@ inline constexpr std::array<std::size_t, sizeof...(Children) + 1> child_indices<
 template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
 [[nodiscard]] constexpr graph_solution<sizeof...(Nodes)> solve_nodes(type_list<Nodes...>, constant_list<Prefixes...>, std::index_sequence<Is...>)
 {
+    constexpr std::size_t item_count = (node_shape_t<Nodes>::items_before(Prefixes) + ... + 0);
+    constexpr std::size_t edge_count = (node_shape_t<Nodes>::edges_before(Prefixes) + ... + 0);
+
     std::array<std::size_t, sizeof...(Nodes) + 1> first_item{};
-    std::array<graph_item, (node_shape_t<Nodes>::items_before(Prefixes) + ... + 0)> items{};
-    std::array<graph_edge, (node_shape_t<Nodes>::edges_before(Prefixes) + ... + 0)> edges{};
+    std::array<graph_item, item_count> items{};
+    std::array<graph_edge, edge_count> edges{};
     std::array<bool, sizeof...(Nodes)> const complete{(Prefixes == node_shape_t<Nodes>::branch_count)...};
 
     graph_output out{items.data(), edges.data()};
@@ -1151,9 +1137,32 @@ template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
     );
     first_item[sizeof...(Nodes)] = out.item_index;
 
+    std::array<node_state, sizeof...(Nodes) + 1> nodes{};
+    std::array<bool, item_count> applies{};
+    std::array<std::size_t, edge_count> children{};
+    std::array<std::size_t, sizeof...(Nodes)> stack{};
+    std::array<std::size_t, sizeof...(Nodes)> calls{};
+    std::array<std::size_t, sizeof...(Nodes)> pending{};
+
     graph_solution<sizeof...(Nodes)> solution;
-    solution.result = graph_solver(graph_view{sizeof...(Nodes), first_item.data(), items.data(), edges.data(), edges.size(), complete.data()})
-        .solve(solution.selected.data(), solution.extend.data());
+    solution.result = graph_solver(
+        graph_view{
+            .node_count = sizeof...(Nodes),
+            .first_item = first_item.data(),
+            .items = items.data(),
+            .edges = edges.data(),
+            .edge_count = edges.size(),
+            .complete = complete.data(),
+        },
+        graph_workspace{
+            .nodes = nodes.data(),
+            .applies = applies.data(),
+            .children = children.data(),
+            .stack = stack.data(),
+            .calls = calls.data(),
+            .pending = pending.data(),
+        }
+    ).solve(solution.selected.data(), solution.extend.data());
     return solution;
 }
 
