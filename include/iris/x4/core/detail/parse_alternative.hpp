@@ -15,6 +15,7 @@
 #include <iris/x4/traits/attribute_traits.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
+#include <iris/x4/core/detail/action_slot.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/write_attribute.hpp>
@@ -88,6 +89,34 @@ struct parse_alternative_all_impl
             return true;
         }
     }
+
+    // The slot of a semantic action records whether the branch which matched wrote the attribute.
+    template<std::size_t I, class Try, class Slot>
+    [[nodiscard]] static constexpr bool parse_slot_branch(Try&& try_branch, Slot& slot)
+    {
+        using branch_parser = nary::parser_t<I, Ps...>;
+        using attribute_type = Slot::attribute_type;
+
+        if constexpr (!has_attribute_v<branch_parser>) {
+            slot.disengage();
+            return try_branch.template operator()<I>(unused);
+
+        } else if constexpr (may_leave_attribute_unwritten_v<branch_parser>) {
+            slot.disengage();
+            return try_branch.template operator()<I>(slot);
+
+        } else {
+            attribute_type& attr = slot.engage();
+            bool matched = false;
+            if constexpr (traits::X4Container<attribute_type>) {
+                matched = try_branch.template operator()<I>(attr); // into the new, empty container
+            } else {
+                matched = parse_alternative_all_impl::parse_branch<I>(try_branch, attr);
+            }
+            if (!matched) slot.disengage();
+            return matched;
+        }
+    }
 };
 
 // Tries the branches in order; stops at the first match, or at an expectation
@@ -105,13 +134,23 @@ struct parse_alternative_all
     }
 
     template<std::size_t... Is, class Try, class Context, X4NonUnusedAttribute ExposedAttr>
-        requires (!traits::X4Container<ExposedAttr>)
+        requires (!traits::X4Container<ExposedAttr>) && (!is_action_slot_v<ExposedAttr>)
     [[nodiscard]] static constexpr bool
     call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, ExposedAttr& exposed_attr)
     {
         static_assert(!std::is_const_v<ExposedAttr>);
         bool matched = false;
         (void)((((matched = parse_alternative_all_impl<Ps...>::template parse_branch<Is>(try_branch, exposed_attr))) || detail::alternative_should_stop(ctx)) || ...);
+        return matched;
+    }
+
+    template<std::size_t... Is, class Try, class Context, class Slot>
+        requires is_action_slot_v<Slot>
+    [[nodiscard]] static constexpr bool
+    call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, Slot& slot)
+    {
+        bool matched = false;
+        (void)((((matched = parse_alternative_all_impl<Ps...>::template parse_slot_branch<Is>(try_branch, slot))) || detail::alternative_should_stop(ctx)) || ...);
         return matched;
     }
 
@@ -149,9 +188,12 @@ struct parse_alternative_all
             return matched;
         }
 
-        // The container already holds elements: a failed branch must not touch
-        // them, and there is no general way to undo appends, so each branch parses
-        // into a buffer that is appended only on success.
+        // ---------------------------------------------------------------
+        // The container already holds elements
+
+        // A failed branch must not touch the existing elements, and there is no general
+        // way to undo appends. So each branch parses into a buffer that is appended only
+        // on success.
         ContainerAttr buffer;
         auto parse_branch = [&]<std::size_t I>() -> bool {
             if constexpr (!has_attribute_v<nary::parser_t<I, Ps...>>) {
