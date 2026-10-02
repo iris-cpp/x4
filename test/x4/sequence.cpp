@@ -38,6 +38,8 @@
 #include <optional>
 #include <string>
 
+// NOLINTBEGIN(bugprone-chained-comparison)
+
 TEST_CASE("sequence")
 {
     namespace traits = x4::traits;
@@ -507,39 +509,58 @@ TEST_CASE("sequence")
             typename T::value_type;
         });
         STATIC_CHECK(requires(T& c) {
-            traits::begin(c);
+            std::ranges::begin(c);
         });
         STATIC_CHECK(requires(T& c) {
-            requires std::forward_iterator<decltype(traits::begin(c))>;
+            requires std::forward_iterator<decltype(std::ranges::begin(c))>;
         });
         STATIC_CHECK(requires(T& c) {
-            traits::end(c);
+            std::ranges::end(c);
         });
         STATIC_CHECK(requires(T& c) {
-            requires std::sentinel_for<decltype(traits::end(c)), decltype(traits::begin(c))>;
+            requires std::sentinel_for<decltype(std::ranges::end(c)), decltype(std::ranges::begin(c))>;
         });
         STATIC_CHECK(requires(T& c) {
-            traits::is_empty(c);
+            std::ranges::empty(c);
         });
         STATIC_CHECK(requires(T& c) {
-            traits::push_back(c, std::declval<typename T::value_type>());
+            iris::container::append(c, std::declval<typename T::value_type>());
+        });
+        STATIC_CHECK(requires(T& c, T& other) {
+            iris::container::append_range(c, other | std::views::as_rvalue);
         });
         STATIC_CHECK(requires(T& c) {
-            traits::append(
-                c,
-                std::declval<decltype(std::make_move_iterator(traits::begin(c)))>(),
-                std::declval<decltype(std::make_move_iterator(traits::end(c)))>()
-            );
-        });
-        STATIC_CHECK(requires(T& c) {
-            traits::clear(c);
+            iris::container::clear(c);
         });
 
-        STATIC_CHECK(traits::is_container_v<std::vector<x4_test::move_only>>);
+        STATIC_CHECK(traits::X4Container<std::vector<x4_test::move_only>>);
         STATIC_CHECK(x4::CategorizedAttr<std::vector<x4_test::move_only>, x4::container_tag>);
 
         std::vector<x4_test::move_only> v;
         REQUIRE(parse("ssszs", *x4_test::synth_move_only >> 'z' >> x4_test::synth_move_only, v));
         CHECK(v.size() == 4);
     }
+
+    // Each part of a sequence that is not a range is appended as a new element, even if it is the
+    // only part with a value
+    {
+        std::string s;
+        REQUIRE(parse("a\n", x4::standard::char_ >> '\n', s));
+        CHECK(s == "a");
+    }
+    {
+        constexpr x4::rule<struct optional_pair, std::string> r = "r";
+        (void)r;
+        constexpr auto char_opt_char2 = r = x4::standard::char_ >> -(x4::standard::char_ >> x4::standard::char_);
+
+        std::string s;
+        REQUIRE(parse("xa1", char_opt_char2, s));
+        CHECK(s == "xa1");
+
+        auto const res = parse("xa", char_opt_char2, s);
+        REQUIRE(res.is_partial_match());
+        CHECK(s == "x");
+    }
 }
+
+// NOLINTEND(bugprone-chained-comparison)

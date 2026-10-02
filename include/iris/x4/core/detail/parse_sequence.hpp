@@ -15,11 +15,10 @@
 #include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/traits/attribute_category.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/traits/can_hold.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
 
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/nary_parser.hpp>
-#include <iris/x4/core/container_appender.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/alloy/tuple.hpp>
@@ -29,7 +28,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <cstddef>
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4 {
 
@@ -68,6 +67,23 @@ struct sequence_layout
         return parser_count;
     }();
 };
+
+template<class... Ps>
+    requires (sequence_layout<Ps...>::attributed_count == 1)
+struct may_leave_attribute_unwritten<sequence<Ps...>>
+    : may_leave_attribute_unwritten<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>
+{};
+
+template<class... Ps>
+    requires
+        (sequence_layout<Ps...>::attributed_count == 1) &&
+        std::same_as<
+            typename get_attribute_type<sequence<Ps...>>::type,
+            typename get_attribute_type<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>::type
+        >
+struct attribute_candidates<sequence<Ps...>>
+    : attribute_candidates<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>
+{};
 
 template<class P>
 struct sequence_passes_view : std::false_type {};
@@ -112,12 +128,10 @@ struct parse_sequence_tuple
                 return elem.parse(first, last, ctx, unused);
 
             } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
-                auto&& elem_attr = x4::make_container_appender(alloy::get<0>(attr));
-                return elem.parse(first, last, ctx, elem_attr);
+                return elem.parse(first, last, ctx, alloy::get<0>(attr));
 
             } else {
-                auto&& elem_attr = x4::make_container_appender(attr);
-                return elem.parse(first, last, ctx, elem_attr);
+                return elem.parse(first, last, ctx, attr);
             }
 
         } else {
@@ -125,8 +139,7 @@ struct parse_sequence_tuple
                 return elem.parse(first, last, ctx, unused);
 
             } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
-                auto&& elem_attr = x4::make_container_appender(alloy::get<offset>(attr));
-                return elem.parse(first, last, ctx, elem_attr);
+                return elem.parse(first, last, ctx, alloy::get<offset>(attr));
 
             } else {
                 auto slice = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
@@ -231,18 +244,30 @@ struct parse_into_container_impl<sequence<Ps...>>
         Context const& ctx, Attr& attr
     )
     {
-        if constexpr (traits::is_container_v<Attr>) {
-            constexpr bool sequence_attribute_can_directly_hold_value_type = can_hold_v<
-                typename parser_traits<sequence<Ps...>>::attribute_type,
-                typename traits::container_value<Attr>::type
+        if constexpr (traits::X4Container<Attr>) {
+            // The whole sequence yields one element when its value is written into a new element
+            // (nothing is left behind when a later part fails); otherwise each element of the
+            // sequence writes into the container on its own, as the value is written part by part.
+            //
+            // Note: A sequence that may succeed without writing its value does not yield a new element
+            //       (see `container_parse_strategy`).
+            using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
+            constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
+                planner::sequence_part_node<planner::storage_t<Attr>, value_type>
             >;
 
-            if constexpr (sequence_attribute_can_directly_hold_value_type) {
-                return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
+            if constexpr (
+                strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
+                !may_leave_attribute_unwritten_v<sequence<Ps...>>
+            ) {
+                return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
 
             } else {
-                auto&& appender = x4::make_container_appender(x4::assume_container(attr));
-                return detail::parse_sequence(seq, first, last, ctx, appender);
+                static_assert(
+                    parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
+                    "No element of this sequence can write into the container, nor can the sequence as a whole"
+                );
+                return detail::parse_sequence(seq, first, last, ctx, attr);
             }
 
         } else {

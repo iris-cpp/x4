@@ -95,7 +95,7 @@ struct minimal_binary_unused_parser
 
 TEST_CASE("parser")
 {
-    using x4::blank;
+    using x4::standard::blank;
 
     {
         using It = std::string_view::const_iterator;

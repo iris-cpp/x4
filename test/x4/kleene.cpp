@@ -14,18 +14,25 @@
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/plus.hpp>
+#include <iris/x4/operator/sequence.hpp>
 
+#include <iris/alloy/tuple.hpp>
+#include <iris/rvariant.hpp>
+
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 TEST_CASE("kleene")
 {
     using x4::char_;
-    using x4::alpha;
-    using x4::upper;
-    using x4::space;
-    using x4::digit;
+    using x4::standard::alpha;
+    using x4::standard::upper;
+    using x4::standard::space;
+    using x4::standard::digit;
     using x4::int_;
     using x4::lexeme;
 
@@ -118,5 +125,78 @@ TEST_CASE("kleene")
         std::vector<x4_test::move_only> v;
         REQUIRE(parse("sss", *x4_test::synth_move_only, v));
         CHECK(v.size() == 3);
+    }
+
+    // the whole value is one element when the element type takes it, else each parse is written as a part
+    {
+        std::vector<std::string> v;
+        REQUIRE(parse("abc1", *~char_(','), v));
+        CHECK(v == std::vector<std::string>{"abc1"});
+    }
+    {
+        std::vector<std::string> v;
+        REQUIRE(parse("a1b2", *(alpha >> digit), v));
+        CHECK(v == std::vector<std::string>{"a1b2"});
+    }
+    {
+        std::vector<iris::alloy::tuple<int, char>> v;
+        REQUIRE(parse("1a2b", *(int_ >> alpha), v));
+        CHECK(v == std::vector<iris::alloy::tuple<int, char>>{{1, 'a'}, {2, 'b'}});
+    }
+    {
+        std::vector<int> v;
+        REQUIRE(parse("1,2", *(int_ >> ',' >> int_), v));
+        CHECK(v == std::vector<int>{1, 2});
+    }
+    {
+        constexpr auto items = *~char_(',') >> *(',' >> *~char_(','));
+        std::vector<std::string> v;
+        REQUIRE(parse("abc1,abc2", items, v));
+        CHECK(v == std::vector<std::string>{"abc1", "abc2"});
+
+        std::string s;
+        REQUIRE(parse("abc1,abc2", items, s));
+        CHECK(s == "abc1abc2");
+    }
+    {
+        std::vector<std::string> v;
+        REQUIRE(parse("ab", +~char_(','), v));
+        CHECK(v == std::vector<std::string>{"ab"});
+    }
+    {
+        // An optional from one parse is appended as is if the element type accepts it, else only its content
+        std::vector<char> v;
+        REQUIRE(parse("a,,b,", *(-alpha >> ','), v));
+        CHECK(v == std::vector<char>{'a', 'b'});
+
+        std::vector<std::optional<char>> o;
+        REQUIRE(parse("a,,b,", *(-alpha >> ','), o));
+        CHECK(o == std::vector<std::optional<char>>{'a', std::nullopt, 'b'});
+    }
+    {
+        // The container held by a variant is appended to, not replaced
+        constexpr std::string_view input = "cd";
+        iris::rvariant<int, std::string> v = std::string("ab");
+
+        auto first = input.begin();
+        REQUIRE((*char_).parse(first, input.end(), x4::unused, v));
+        CHECK(first == input.end());
+        CHECK(v == iris::rvariant<int, std::string>{std::string("abcd")});
+    }
+    {
+        // The container in an optional is engaged and appended to, as a value is written into an optional
+        iris::alloy::tuple<char, std::optional<std::string>> t;
+        REQUIRE(parse("x:ab", char_ >> ':' >> *alpha, t));
+        CHECK(t == iris::alloy::tuple<char, std::optional<std::string>>{'x', std::string("ab")});
+
+        iris::rvariant<int, std::optional<std::string>> v;
+        REQUIRE(parse("ab", *alpha, v));
+        CHECK(v == iris::rvariant<int, std::optional<std::string>>{std::optional<std::string>("ab")});
+
+        constexpr std::string_view input = "cd";
+        std::optional<std::string> o = std::string("ab");
+        auto first = input.begin();
+        REQUIRE((*alpha).parse(first, input.end(), x4::unused, o));
+        CHECK(o == std::string("abcd"));
     }
 }

@@ -24,8 +24,8 @@ using skipper_type = x4::rule<class skipper_r>;
 constexpr skipper_type skipper = "skipper";
 IRIS_X4_DECLARE(skipper_type)
 
-// the `unused_type const` must have the same effect as no attribute
-using skipper2_type = x4::rule<class skipper2_r, unused_type const>;
+// an explicit `unused_type` must have the same effect as no attribute
+using skipper2_type = x4::rule<class skipper2_r, unused_type>;
 constexpr skipper2_type skipper2 = "skipper2";
 IRIS_X4_DECLARE(skipper2_type)
 

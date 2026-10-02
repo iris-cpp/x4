@@ -14,7 +14,7 @@
 #include <iris/x4/core/traits/numeric_traits.hpp>
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
 
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 
@@ -35,11 +35,11 @@ struct bool_policies
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompare>
     [[nodiscard]] static constexpr bool
     parse_true(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
-        noexcept(noexcept(x4::move_to(T(true), attr_)))
+        noexcept(noexcept(x4::write_attribute(attr_, T(true))))
     {
         using token_def = numeric_token<std::iter_value_t<It>>;
         if (detail::string_parse(std::basic_string_view{token_def::true_}, first, last, unused_container, compare)) {
-            x4::move_to(T(true), attr_);
+            x4::write_attribute(attr_, T(true));
             return true;
         }
         return false;
@@ -48,11 +48,11 @@ struct bool_policies
     template<std::forward_iterator It, std::sentinel_for<It> Se, X4Attribute Attr, class CaseCompare>
     [[nodiscard]] static constexpr bool
     parse_false(It& first, Se const& last, Attr& attr_, CaseCompare const& compare)
-        noexcept(noexcept(x4::move_to(T(false), attr_)))
+        noexcept(noexcept(x4::write_attribute(attr_, T(false))))
     {
         using token_def = numeric_token<std::iter_value_t<It>>;
         if (detail::string_parse(std::basic_string_view{token_def::false_}, first, last, unused_container, compare)) {
-            x4::move_to(T(false), attr_);
+            x4::write_attribute(attr_, T(false));
             return true;
         }
         return false;
@@ -102,14 +102,14 @@ struct bool_parser : parser<bool_parser<T, Policy>>
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(bool_parser::parse(first, last, ctx, std::declval<T&>())) &&
-            noexcept(x4::move_to(std::declval<T>(), attr))
+            noexcept(x4::write_attribute(attr, std::declval<T>()))
         )
     {
         static_assert(X4NonUnusedAttribute<Attr>);
 
         T attr_{};
         if (bool_parser::parse(first, last, ctx, attr_)) {
-            x4::move_to(std::move(attr_), attr);
+            x4::write_attribute(attr, std::move(attr_));
             return true;
         }
         return false;
@@ -166,14 +166,14 @@ struct literal_bool_parser : parser<literal_bool_parser<ExpectedValue, Policy>>
         noexcept(
             std::is_nothrow_default_constructible_v<T> &&
             noexcept(literal_bool_parser::parse(first, last, ctx, std::declval<T&>())) &&
-            noexcept(x4::move_to(std::declval<T>(), attr))
+            noexcept(x4::write_attribute(attr, std::declval<T>()))
         )
     {
         static_assert(X4NonUnusedAttribute<Attr>);
 
         T attr_;
         if (literal_bool_parser::parse(first, last, ctx, attr_)) {
-            x4::move_to(std::move(attr_), attr);
+            x4::write_attribute(attr, std::move(attr_));
             return true;
         }
         return false;

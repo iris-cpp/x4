@@ -16,7 +16,7 @@
 #include <iris/x4/core/traits/char_traits.hpp>
 
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/move_to.hpp>
+#include <iris/x4/core/write_attribute.hpp>
 
 #include <string>
 #include <string_view>
@@ -65,10 +65,9 @@ struct fixed_value_parser : parser<fixed_value_parser<T, HeldValueT>>
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It&, Se const&, Context const&, Attr& exposed_attr) const
-        noexcept(noexcept(x4::move_to(std::declval<HeldValueT const&>(), exposed_attr)))
     {
         // Always copy (need reuse in repetitive invocations)
-        x4::move_to(this->held_value_, exposed_attr);
+        x4::write_attribute(exposed_attr, this->held_value_);
         return true;
     }
 
@@ -76,7 +75,7 @@ private:
     IRIS_NO_UNIQUE_ADDRESS HeldValueT held_value_{};
 };
 
-// aka `reset_value<T>`
+// aka `default_value<T>`
 template<class T>
 struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
 {
@@ -92,22 +91,13 @@ struct fixed_value_parser<T, void> : parser<fixed_value_parser<T, void>>
         return true;
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ContainerAttr>
-        requires CategorizedAttr<ContainerAttr, container_tag>
-    [[nodiscard]] static constexpr bool
-    parse(It&, Se const&, Context const&, ContainerAttr& exposed_attr) noexcept
-    {
-        traits::clear(exposed_attr);
-        return true;
-    }
-
+    // `T{}` by the ordinary write rules: an empty `std::vector<int>` adds no element to a `std::vector<int>`,
+    // but one to a `std::vector<std::vector<int>>`
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-        requires (!CategorizedAttr<Attr, container_tag>)
     [[nodiscard]] static constexpr bool
     parse(It&, Se const&, Context const&, Attr& exposed_attr)
-        noexcept(noexcept(exposed_attr = Attr{}))
     {
-        exposed_attr = Attr{};
+        x4::write_attribute(exposed_attr, T{});
         return true;
     }
 };
@@ -136,7 +126,7 @@ struct get_info<fixed_value_parser<T, HeldValueT>>
     operator()(fixed_value_parser<T, HeldValueT> const&) const
     {
         if constexpr (std::is_void_v<HeldValueT>) {
-            return "reset_value<T>";
+            return "default_value<T>";
         } else {
             return "fixed_value<T>(...)";
         }
@@ -186,19 +176,17 @@ namespace parsers {
 // to the given parameter. Copies the held instance on each invocation.
 [[maybe_unused]] inline constexpr detail::fixed_value_gen fixed_value{};
 
-// A special `fixed_value` parser that resets the variable and always succeeds.
-//
-// This can be used for constructing `constexpr` instance of a parser
-// even when `T` has dynamically allocated storage.
-// For example, normal `fixed_value(std::vector<int>{})` cannot be assigned
-// to a `constexpr` instance, but `reset_value<std::vector<int>>` can.
+// An always-succeeding parser which constructs `T{}` on each invocation and writes it by the ordinary
+// write rules. Unlike `fixed_value(T{})` it holds no `T`, so it can be a `constexpr` variable even where
+// a `T` cannot: given `struct Defaults { std::vector<int> values{1, 2, 3}; };`,
+// `constexpr auto p = default_value<Defaults>;` is well-formed, `fixed_value(Defaults{})` is not.
 template<class T>
-[[maybe_unused]] inline constexpr fixed_value_parser<T, void> reset_value{};
+[[maybe_unused]] inline constexpr fixed_value_parser<T, void> default_value{};
 
 } // parsers
 
 using parsers::fixed_value;
-using parsers::reset_value;
+using parsers::default_value;
 
 } // iris::x4
 

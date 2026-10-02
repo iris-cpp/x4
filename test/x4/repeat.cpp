@@ -15,7 +15,9 @@
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/directive/repeat.hpp>
 #include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/plus.hpp>
 
@@ -179,5 +181,28 @@ TEST_CASE("repeat")
         std::vector<x4_test::move_only> v;
         REQUIRE(parse("sss", repeat(3)[x4_test::synth_move_only], v));
         CHECK(v.size() == 3);
+    }
+
+    {
+        constexpr auto words = +alpha % ' ';
+        STATIC_CHECK(x4::parser_traits<decltype(words)>::accepts_container<std::string>);
+        STATIC_CHECK(x4::parser_traits<decltype(repeat(1)[words])>::accepts_container<std::string>);
+
+        std::string text;
+        REQUIRE(parse("ab cd", -repeat(1)[words], text));
+        CHECK(text == "abcd");
+
+        {
+            auto const res = parse("ab;cd", -repeat(2)[words >> ';'], text);
+            REQUIRE(res.ok);
+            CHECK(text.empty());
+            CHECK(res.remainder_str() == "ab;cd");
+        }
+        {
+            auto const res = parse("ab;cd ef", *repeat(1)[words >> ';'], text);
+            REQUIRE(res.ok);
+            CHECK(text == "ab");
+            CHECK(res.remainder_str() == "cd ef");
+        }
     }
 }

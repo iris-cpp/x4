@@ -22,6 +22,18 @@
 #include <type_traits>
 #include <concepts>
 
+namespace {
+
+// The default value owns dynamically allocated storage, so it cannot be held in a `constexpr` variable
+struct allocating_default
+{
+    std::vector<int> values{1, 2, 3};
+};
+
+constexpr auto allocating_default_p = x4::default_value<allocating_default>;
+
+} // anonymous
+
 TEST_CASE("attr")
 {
     using namespace std::string_literals;
@@ -149,7 +161,7 @@ TEST_CASE("attr")
     {
         std::vector<std::vector<int>> vecs;
         std::vector<int> vec{1, 2, 3};
-        x4::move_to(std::move(vec), vecs);
+        x4::write_attribute(vecs, std::move(vec));
         CHECK(vecs == std::vector<std::vector<int>>{std::vector{1, 2, 3}});
     }
     {
@@ -162,7 +174,7 @@ TEST_CASE("attr")
     {
         std::vector<std::string> strs;
         std::string str = "abc";
-        x4::move_to(std::move(str), strs);
+        x4::write_attribute(strs, std::move(str));
         CHECK(strs == std::vector{std::string("abc")});
     }
     {
@@ -194,25 +206,34 @@ TEST_CASE("attr")
     }
 }
 
-TEST_CASE("reset_value")
+TEST_CASE("default_value")
 {
-    using x4::reset_value;
+    using x4::default_value;
 
     {
         int val = 42;
-        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(reset_value<int>)>::attribute_type, int>);
-        REQUIRE(parse("", reset_value<int>, val));
+        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(default_value<int>)>::attribute_type, int>);
+        REQUIRE(parse("", default_value<int>, val));
         CHECK(val == 0);
     }
+
+    // `T{}` written by the ordinary write rules, as `fixed_value` writes its value
+    STATIC_CHECK(std::same_as<x4::parser_traits<decltype(default_value<std::vector<int>>)>::attribute_type, std::vector<int>>);
     {
         std::vector<int> val;
-        val.reserve(100);
-        val.emplace_back(42);
-        auto const prev_capacity = val.capacity();
+        REQUIRE(parse("1,2", x4::int_ >> ',' >> default_value<std::vector<int>> >> x4::int_, val));
+        CHECK(val == std::vector<int>{1, 2});
+    }
+    {
+        std::vector<std::vector<int>> val;
+        REQUIRE(parse("", default_value<std::vector<int>>, val));
+        CHECK(val == std::vector<std::vector<int>>{{}});
+    }
 
-        STATIC_CHECK(std::same_as<x4::parser_traits<decltype(reset_value<std::vector<int>>)>::attribute_type, std::vector<int>>);
-        REQUIRE(parse("", reset_value<std::vector<int>>, val));
-        CHECK(val.empty());
-        CHECK(val.capacity() == prev_capacity); // should preserve capacity as per `.clear()`
+    // a `constexpr` parser, although the default value owns dynamically allocated storage
+    {
+        allocating_default val{{}};
+        REQUIRE(parse("", allocating_default_p, val));
+        CHECK(val.values == std::vector<int>{1, 2, 3});
     }
 }

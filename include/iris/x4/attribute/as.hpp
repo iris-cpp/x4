@@ -10,8 +10,11 @@
 =============================================================================*/
 
 #include <iris/x4/core/parser.hpp>
-#include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
+#include <iris/x4/core/write_attribute.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
@@ -59,9 +62,9 @@ struct as_type_parser : unary_parser<as_type_parser<T, Subject>, Subject>
     static constexpr bool has_action = false; // Explicitly re-enable attribute detection in `x4::rule`
     static constexpr bool requires_exact_attribute_type = true;
 
-    // `as_type_parser` should NOT inherit underlying parser's `handles_container`
+    // `as_type_parser` should NOT inherit underlying parser's `accepts_container`
     // because `as_type_parser` is an atomic parser. The default implementation of
-    // `parser_traits<as_type_parser<...>>::handles_container` must transparently
+    // `parser_traits<as_type_parser<...>>::accepts_container` must transparently
     // handle this case.
 
     using unary_parser<as_type_parser, Subject>::unary_parser;
@@ -73,17 +76,24 @@ private:
     >;
 
 public:
-    // `outer_parser<T>(as<T>(subject))` forwards the outer `T&` (exposed attribute) for the subject
+    // `outer_parser<T>(as<T>(subject))` forwards the outer `T&` (exposed attribute) for the subject, unless
+    // it is a container which already holds the preceding results
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute OuterAttr>
         requires std::same_as<std::remove_const_t<OuterAttr>, T>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
     {
-        if constexpr (Subject::has_action) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, outer_attr), unused);
-        } else {
-            return this->subject.parse(first, last, ctx, outer_attr);
+        if constexpr (traits::X4Container<T>) {
+            if (!std::ranges::empty(outer_attr)) {
+                // The container holds the preceding results, which the attribute of `as<T>`
+                // is kept apart from: parse into a new attribute and append it on success
+                T attr_{};
+                if (!this->parse_subject(first, last, ctx, attr_)) return false;
+                planner::pass_declared_attribute(outer_attr, std::move(attr_));
+                return true;
+            }
         }
+        return this->parse_subject(first, last, ctx, outer_attr);
     }
 
     // `outer_parser<unused_type>(as<T>(subject))` forwards `unused` for the subject
@@ -100,36 +110,51 @@ public:
         }
     }
 
-    // `outer_parser<U>(as<T>(subject))` forwards temporary `T` local variable for the subject, then move the variable to `U&`
+    // `outer_parser<U>(as<T>(subject))` parses into the element of `U` if `U` holds exactly `T` as its single
+    // element; otherwise into a temporary `T`, then passes it to `U&` by the ordinary conversion and assignment,
+    // never reinterpreting it into another structure (the assigned value is appended to a container which holds
+    // the preceding results)
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute OuterAttr>
         requires
             (!std::same_as<std::remove_const_t<OuterAttr>, T>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, OuterAttr& outer_attr) const
     {
-        // Ideally we should default to default-initialization and avoid value-initialization.
-        // However, there is currently no way to determine whether the attribute is ever touched
-        // by the underlying parser (for example: semantic action).
-        //
-        // Note that this behavior is our implementation details. The underlying parser should
-        // not rely on this behavior; they should never assume the given attribute is defaulted
-        // to some arbitrary initial value.
-        T attr_{}; // value-initialize
+        if constexpr (!has_attribute) {
+            return this->parse(first, last, ctx, unused); // equivalent to `omit[subject]`
 
-        if constexpr (Subject::has_action) {
-            if (!this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr_), unused)) return false;
+        } else if constexpr (detail::holds_as_single_element<std::remove_const_t<OuterAttr>, T>) {
+            return this->parse(first, last, ctx, alloy::get<0>(outer_attr));
+
         } else {
-            if (!this->subject.parse(first, last, ctx, attr_)) return false;
-        }
+            static_assert(X4StrictlyWritable<std::remove_const_t<OuterAttr>&, unwrap_recursive_t<T>&&>);
+            static_assert(!detail::dangles<std::remove_const_t<OuterAttr>, unwrap_recursive_t<T>&&>);
 
-        x4::move_to(std::move(attr_), outer_attr);
-        return true;
+            T attr_{}; // value-initialize
+
+            if (!this->parse_subject(first, last, ctx, attr_)) return false;
+            planner::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
+            return true;
+        }
     }
 
     [[nodiscard]] /*constexpr*/ std::string get_x4_info() const
     {
         return std::string("as<") + typeid(T).name() + ">("
             + get_info<Subject>{}(this->subject) + ')';
+    }
+
+private:
+    // Parses the subject into `attr`, the attribute of `as<T>`; an action in the subject refers to it as `_as_var`
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+    [[nodiscard]] constexpr bool
+    parse_subject(It& first, Se const& last, Context const& ctx, Attr& attr) const
+    {
+        if constexpr (Subject::has_action) {
+            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr), unused);
+        } else {
+            return this->subject.parse(first, last, ctx, attr);
+        }
     }
 };
 

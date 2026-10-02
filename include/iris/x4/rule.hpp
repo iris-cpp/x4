@@ -13,20 +13,20 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/traits/transform_attribute.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
+#include <iris/x4/core/traits/write_rank.hpp>
+#include <iris/x4/core/write_attribute.hpp>
+#include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
-#include <iris/x4/core/container_appender.hpp>
 
 #include <iris/x4/debug/error_handler.hpp>
 
 #include <iris/pp/cat.hpp>
-
-#include <iris/bits/specialization_of.hpp>
 
 #include <string_view>
 #include <concepts>
@@ -96,7 +96,7 @@ private:
     using rcontext_t = std::remove_cvref_t<
         decltype(x4::replace_first_context<contexts::rule_var>(
             std::declval<Context const&>(),
-            std::declval<typename transform_attribute<Attr, RHSAttr>::type&>()
+            std::declval<RHSAttr&>()
         ))
     >;
 
@@ -247,21 +247,15 @@ public:
         Context const& ctx, Exposed& exposed_attr
     )
     {
-        // Do down-stream transformation, provide attribute for `rhs` parser
-        using transform = transform_attribute<Attr, Exposed>;
-        using transform_attr = transform::type;
-        transform_attr rhs_attr = transform::pre(exposed_attr);
+        static_assert(std::same_as<Exposed, Attr> || X4UnusedAttribute<Exposed>);
 
         // Creates a place to hold the result of parse_rhs
         // called inside the following scope.
         bool parse_ok = false;
         {
-            // Debug on destructor, i.e., before any modifications are made to the
-            // attribute passed to `parse_rhs`. Note: the debug must be done before
-            // `transform::post`, where some types do some modifications there;
-            // for instance, if `Exposed` is a recursive variant.
-            [[maybe_unused]] scoped_tracer<RuleID, It, Se, Context, std::remove_reference_t<transform_attr>>
-            scoped_tracer{first, last, ctx, rhs_attr, rule_name, &parse_ok};
+            // Debug on destructor
+            [[maybe_unused]] scoped_tracer<RuleID, It, Se, Context, Exposed>
+            scoped_tracer{first, last, ctx, exposed_attr, rule_name, &parse_ok};
 
             // The existence of semantic action inhibits attribute materialization _unless_ it is
             // explicitly required by the user (primarily via `%=`).
@@ -273,13 +267,13 @@ public:
                 if constexpr (ForceAttr) {
                     parse_ok = rule_impl::parse_rhs(
                         rhs, first, last,
-                        rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
-                        rhs_attr
+                        rule_impl::make_rcontext<RHS, It>(ctx, exposed_attr),
+                        exposed_attr
                     );
                 } else {
                     parse_ok = rule_impl::parse_rhs(
                         rhs, first, last,
-                        rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
+                        rule_impl::make_rcontext<RHS, It>(ctx, exposed_attr),
                         unused // <-- omitted attribute
                     );
                 }
@@ -287,15 +281,10 @@ public:
             } else { // RHS has no semantic action
                 parse_ok = rule_impl::parse_rhs(
                     rhs, first, last,
-                    rule_impl::make_rcontext<RHS, It>(ctx, rhs_attr),
-                    rhs_attr
+                    rule_impl::make_rcontext<RHS, It>(ctx, exposed_attr),
+                    exposed_attr
                 );
             }
-        }
-
-        if (parse_ok) {
-            // Integrate the results back into the original attribute value, if appropriate
-            transform::post(exposed_attr, std::forward<transform_attr>(rhs_attr));
         }
         return parse_ok;
     }
@@ -329,10 +318,18 @@ struct rule_definition : parser<rule_definition<RuleID, RHS, RuleDefAttr, ForceA
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return rule_impl<RuleID, attribute_type, SkipDefinitionInjection>
-            ::template call_rule_definition<ForceAttr>(
-                this->rhs_, this->name, first, last, ctx, attr
-            );
+        using impl = rule_impl<RuleID, attribute_type, SkipDefinitionInjection>;
+
+        if constexpr (std::same_as<Attr, attribute_type> || X4UnusedAttribute<Attr>) {
+            return impl::template call_rule_definition<ForceAttr>(this->rhs_, this->name, first, last, ctx, attr);
+
+        } else {
+            // Used directly as a parser with another attribute: parse into the attribute of the rule and move it on success
+            attribute_type rule_attr{};
+            if (!impl::template call_rule_definition<ForceAttr>(this->rhs_, this->name, first, last, ctx, rule_attr)) return false;
+            x4::write_attribute(attr, std::move(rule_attr));
+            return true;
+        }
     }
 
 private:
@@ -341,51 +338,6 @@ private:
 public:
     std::string_view name = "unnamed_rule";
 };
-
-template<class Exposed>
-struct narrowing_checker
-{
-    using Dest = Exposed[];
-
-    // emulate `Exposed x[] = {std::forward<T>(t)};`
-    template<class T>
-    static void operator()(T&&)
-        requires requires(T&& t) { { Dest{std::forward<T>(t)} }; };
-};
-
-
-template<class Exposed, class RuleAttr>
-concept RuleAttrConvertible =
-    X4Attribute<RuleAttr> &&
-    std::is_assignable_v<unwrap_container_appender_t<std::remove_const_t<Exposed>>&, RuleAttr>;
-
-template<class Exposed, class RuleAttr>
-concept RuleAttrConvertibleWithoutNarrowing =
-    RuleAttrConvertible<Exposed, RuleAttr> &&
-    requires {
-        narrowing_checker<
-            unwrap_container_appender_t<std::remove_const_t<Exposed>>
-        >::operator()(std::declval<RuleAttr>());
-    };
-
-// Resolves "The Spirit X3 rule problem" in Boost.Parser's documentation
-// https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem
-// https://github.com/boostorg/spirit_x4/issues/38
-template<class Exposed, class RuleAttr>
-concept RuleAttrTransformable =
-    X4Attribute<std::remove_const_t<Exposed>> &&
-    X4Attribute<RuleAttr> &&
-    std::default_initializable<RuleAttr> &&
-    RuleAttrConvertible<Exposed, RuleAttr> &&
-    RuleAttrConvertibleWithoutNarrowing<
-        unwrap_container_appender_t<std::remove_const_t<Exposed>>,
-        RuleAttr
-    >;
-
-template<class Exposed, class RuleAttr>
-concept RuleAttrCompatible =
-    std::same_as<std::remove_const_t<Exposed>, RuleAttr> ||
-    RuleAttrTransformable<Exposed, RuleAttr>;
 
 } // detail
 
@@ -396,10 +348,12 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
     // Do NOT add `static_assert`s or other constructs that cause eager
     // instantiation of `RuleAttr` within this class body.
 
+    static_assert(!std::is_const_v<RuleAttr>);
+
     using id = RuleID;
     using attribute_type = RuleAttr;
 
-    static constexpr bool has_attribute = !std::is_same_v<std::remove_const_t<RuleAttr>, unused_type>;
+    static constexpr bool has_attribute = !std::is_same_v<RuleAttr, unused_type>;
     static constexpr bool force_attribute = ForceAttr;
 
     std::string_view name = "unnamed_rule";
@@ -420,9 +374,7 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
 
     // Primary overload
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
-        requires
-            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            detail::RuleAttrCompatible<Exposed, RuleAttr>
+        requires (!std::same_as<std::remove_const_t<Exposed>, unused_type>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Exposed& exposed_attr) const
     {
@@ -443,41 +395,35 @@ struct rule : parser<rule<RuleID, RuleAttr, ForceAttr>>
         using detail::parse_rule; // ADL
 
         if constexpr (std::same_as<std::remove_const_t<Exposed>, RuleAttr>) {
+            if constexpr (traits::X4Container<RuleAttr>) {
+                if (!std::ranges::empty(exposed_attr)) {
+                    // The container holds the preceding results, which the attribute of the rule
+                    // is kept apart from: parse into a new attribute and append it on success
+                    RuleAttr rule_attr{};
+                    if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
+                        return false;
+                    }
+                    planner::pass_declared_attribute(exposed_attr, std::move(rule_attr));
+                    return true;
+                }
+            }
             return static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, exposed_attr));  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
 
+        } else if constexpr (detail::holds_as_single_element<std::remove_const_t<Exposed>, RuleAttr>) {
+            return this->parse(first, last, ctx, alloy::get<0>(exposed_attr));
+
         } else {
-            static_assert(detail::RuleAttrTransformable<Exposed, RuleAttr>);
+            static_assert(X4StrictlyWritable<std::remove_const_t<Exposed>&, unwrap_recursive_t<RuleAttr>&&>);
+            static_assert(!detail::dangles<std::remove_const_t<Exposed>, unwrap_recursive_t<RuleAttr>&&>);
 
-            // TODO: specialize `container_appender` case, do not create temporary
-
-            RuleAttr rule_attr;
+            RuleAttr rule_attr{};
             if (!static_cast<bool>(parse_rule(detail::rule_id<RuleID>{}, first, last, rule_agnostic_ctx, rule_attr))) {  // NOLINT(bugprone-non-zero-enum-to-bool-conversion)
                 return false;
             }
-
-            if constexpr (is_ttp_specialization_of_v<std::remove_const_t<Exposed>, container_appender>) {
-                traits::append(
-                    exposed_attr.container,
-                    std::make_move_iterator(traits::begin(rule_attr)),
-                    std::make_move_iterator(traits::end(rule_attr))
-                );
-            } else {
-                static_assert(std::is_assignable_v<Exposed&, RuleAttr>);
-                exposed_attr = std::move(rule_attr);
-            }
+            planner::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
             return true;
         }
     }
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Exposed>
-        requires
-            (!std::same_as<std::remove_const_t<Exposed>, unused_type>) &&
-            (!detail::RuleAttrCompatible<Exposed, RuleAttr>) &&
-            detail::RuleAttrConvertible<Exposed, RuleAttr> &&
-            (!detail::RuleAttrConvertibleWithoutNarrowing<Exposed, RuleAttr>)
-    [[nodiscard]] constexpr bool
-    parse(It&, Se const&, Context const&, Exposed&) const = delete; // Rule attribute needs narrowing conversion
-
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
     [[nodiscard]] constexpr bool
@@ -565,9 +511,8 @@ private:
         static_assert(X4Attribute<RuleAttr>);
         if constexpr (X4NonUnusedAttribute<RuleAttr>) {
             static_assert(X4ValueAttribute<RuleAttr>);
-            static_assert(!std::is_const_v<RuleAttr>, "Rule attribute cannot be const qualified");
         }
-        static_assert(!std::is_same_v<std::remove_const_t<RuleAttr>, unused_container_type>, "`rule` with `unused_container_type` is not supported");
+        static_assert(!std::is_same_v<RuleAttr, unused_container_type>, "`rule` with `unused_container_type` is not supported");
     }
 };
 

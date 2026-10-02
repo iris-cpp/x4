@@ -37,7 +37,7 @@ struct checked_fixed_value_parser : x4::fixed_value_parser<Value>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr_) const
     {
-        static_assert(std::same_as<Expected, x4::unwrap_container_appender_t<Attr>>);
+        static_assert(std::same_as<Expected, Attr>);
         return base_type::parse(first, last, ctx, attr_);
     }
 };

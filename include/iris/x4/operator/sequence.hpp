@@ -14,7 +14,6 @@
 #include <iris/x4/core/detail/parse_sequence.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/nary_parser.hpp>
-#include <iris/x4/core/move_to.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 
@@ -33,7 +32,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <cstddef>
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4 {
 
@@ -42,61 +41,18 @@ struct sequence;
 
 namespace detail {
 
-template<traits::X4Container Container, class Elem>
-struct container_can_hold_element : std::is_same<Container, Elem>
-{};
-
-template<traits::X4Container Container, class Elem>
-    requires
-        (!std::same_as<Container, Elem>) &&
-        (!traits::X4Container<Elem>) &&
-        requires(Container& c, Elem&& elem) {
-            traits::push_back(c, std::move(elem));
-        }
-struct container_can_hold_element<Container, Elem>
-    : std::true_type
-{};
-
-template<traits::X4Container Container, class ContainerElem>
-    requires
-        (!std::same_as<Container, ContainerElem>) &&
-        traits::X4Container<ContainerElem> &&
-        requires(Container& c, ContainerElem&& container_elem) {
-            x4::move_to(
-                std::make_move_iterator(traits::begin(container_elem)),
-                std::make_move_iterator(traits::end(container_elem)),
-                c
-            );
-        }
-struct container_can_hold_element<Container, ContainerElem>
-    : std::true_type
-{};
-
-template<traits::X4Container Container, class SequenceAttr_Maybe_Unwrapped>
-struct container_can_hold_sequence : container_can_hold_element<Container, SequenceAttr_Maybe_Unwrapped>
-{};
-
-template<traits::X4Container Container, class... Ts>
-struct container_can_hold_sequence<Container, alloy::tuple<Ts...>>
-    // this should not delegate to `container_can_hold_sequence`; we don't want recursive expansion
-    : std::conjunction<container_can_hold_element<Container, Ts>...>
-{};
-
 template<class... Ps>
 struct get_sequence_size<sequence<Ps...>>
 {
     static constexpr std::size_t value = sequence_layout<Ps...>::total_sequence_size;
 };
 
+// A sequence accepts a container when every element of it can write into
+// the container; the sequence as a whole then writes nothing of its own.
 template<class... Ps, class Container>
-struct get_handles_container<sequence<Ps...>, Container>
+struct get_accepts_container<sequence<Ps...>, Container>
 {
-    static constexpr bool value =
-        (parser_traits<Ps>::template handles_container<Container> && ...) ||
-        container_can_hold_sequence<
-            Container,
-            typename parser_traits<sequence<Ps...>>::attribute_type
-        >::value;
+    static constexpr bool value = ((!has_attribute_v<Ps> || writes_into_container<Ps, Container>) && ...);
 };
 
 // -------------------------------------------------------------

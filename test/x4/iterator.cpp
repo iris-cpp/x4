@@ -61,12 +61,8 @@ using namespace std::string_view_literals;
 
 // On failed parse,
 //   - The `first` iterator shall point to the previous position, and
-//   - The attribute shall not be modified.
-//     - Best-effort; there are many exceptions as of now. In other words,
-//       rollbacks may or may not occur depending on the situation.
-//     - In practice, the current implementation only "holds" the attribute
-//       only when it is semantically possible to preliminarily check the
-//       parse success on the right hand side of the underlying parser.
+//   - The attribute is left in a valid but unspecified state when `parse` of a parser is
+//     called directly, as the tests below do (`x4::parse` resets it to its default state).
 
 // NOLINTBEGIN(readability-container-size-empty)
 

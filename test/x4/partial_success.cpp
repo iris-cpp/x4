@@ -97,7 +97,6 @@ TEST_CASE("partial success (alternative)")
     {
         static_assert(x4::CategorizedAttr<std::vector<int>, x4::container_tag>);
         static_assert(x4::traits::X4Container<std::vector<int>>);
-        static_assert(x4::traits::is_container_v<std::vector<int>>);
 
         {
             std::vector<int> ints;
@@ -111,7 +110,7 @@ TEST_CASE("partial success (alternative)")
             // `x4::alternative`, we would see {1, 2, 98, 99} here.
             CHECK(ints == std::vector<int>{98, 99});
         }
-        // Failed parse should not modify the exposed attribute
+        // A failed parse leaves the exposed attribute in its default state
         {
             std::vector<int> ints;
             REQUIRE(!parse("1 2", int_ >> int_ >> eps(false) | fixed_value(98) >> fixed_value(99) >> eps(false), space, ints));
@@ -131,7 +130,6 @@ TEST_CASE("partial success (alternative)")
     {
         static_assert(x4::CategorizedAttr<std::string, x4::container_tag>);
         static_assert(x4::traits::X4Container<std::string>);
-        static_assert(x4::traits::is_container_v<std::string>);
 
         {
             std::string str;
@@ -161,7 +159,7 @@ TEST_CASE("partial success (alternative)")
             // Wrong implementation yields "bookwormfoodie"
             CHECK(str == "foodie");
         }
-        // Failed parse should not modify the exposed attribute
+        // A failed parse leaves the exposed attribute in its default state
         {
             std::string str;
             REQUIRE(!parse("foodie", fixed_value("bookworm") >> eps(false) | string("foodie") >> eps(false), str));
@@ -181,7 +179,6 @@ TEST_CASE("partial success (alternative)")
     {
         static_assert(x4::CategorizedAttr<strong_int, x4::plain_tag>);
         static_assert(!x4::traits::X4Container<strong_int>);
-        static_assert(!x4::traits::is_container_v<strong_int>);
 
         {
             strong_int si;
@@ -201,7 +198,6 @@ TEST_CASE("partial success (alternative)")
 
         static_assert(x4::CategorizedAttr<pair_int, x4::tuple_tag>);
         static_assert(!x4::traits::X4Container<pair_int>);
-        static_assert(!x4::traits::is_container_v<pair_int>);
 
         {
             pair_int pi;
@@ -245,14 +241,14 @@ TEST_CASE("partial success (list-like)")
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
         STATIC_CHECK(std::same_as<x4::parser_traits<Subject>::attribute_type, alloy::tuple<char, char, char>>);
-        STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, char, char>>::value);
+        STATIC_CHECK(x4::planner::node_write_strategy_of<x4::planner::sequence_part_node<std::string, char>>.kind == x4::planner::branch_kind::new_element);
 
         using Container = std::string;
 
-        STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<Subject>::template accepts_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template accepts_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template accepts_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template accepts_container<Container>);
     }
 
     // kleene
@@ -337,14 +333,15 @@ TEST_CASE("partial success (list-like)")
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(aOOc)>, Subject>);
         STATIC_CHECK(std::same_as<x4::parser_traits<Subject>::attribute_type, alloy::tuple<char, std::string, char>>);
-        STATIC_CHECK(x4::detail::container_can_hold_sequence<std::string, alloy::tuple<char, std::string, char>>::value);
+        STATIC_CHECK(x4::planner::node_write_strategy_of<x4::planner::sequence_part_node<std::string, char>>.kind == x4::planner::branch_kind::new_element);
+        STATIC_CHECK(x4::write_rank_v<std::string&, std::string> == x4::write_rank::structural);
 
         using Container = std::string;
 
-        STATIC_CHECK(x4::parser_traits<Subject>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template handles_container<Container>);
-        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template handles_container<Container>);
+        STATIC_CHECK(x4::parser_traits<Subject>::template accepts_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::kleene<Subject>>::template accepts_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::plus<Subject>>::template accepts_container<Container>);
+        STATIC_CHECK(x4::parser_traits<x4::delimited_list<Subject, x4::literal_char<standard, unused_type>>>::template accepts_container<Container>);
     }
 
     // kleene

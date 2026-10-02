@@ -14,6 +14,7 @@
 
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/parser_traits.hpp>
 
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep
@@ -23,8 +24,7 @@
 #include <utility>
 #include <type_traits>
 
-#include <cstddef>
-#include <cassert>
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4::traits {
 
@@ -37,6 +37,15 @@ template<class ExposedAttr, class ParserAttr>
 concept clearable_for = requires(ExposedAttr& attr) {
     attribute_traits<ExposedAttr>::template clear<ParserAttr>(attr);
 };
+
+// The part that `ParserAttr` is written into is prepared in place only if it is
+// not plain, or of the type of the value. Otherwise, the whole attribute is reset,
+// and a new plain part is directly constructed from the value when it is written
+// (i.e., never default-constructed-then-assigned).
+template<class T, class ParserAttr>
+concept creatable_in_place_for =
+    !CategorizedAttr<unwrap_recursive_t<T>, plain_tag> ||
+    std::same_as<unwrap_recursive_t<T>, unwrap_recursive_t<ParserAttr>>;
 
 template<class T, class U>
 concept proper_attribute_for =
@@ -59,9 +68,9 @@ struct attribute_traits
     static_assert(CategorizedAttr<ExposedAttr, plain_tag>);
 
     static constexpr void reset(ExposedAttr& attr)
-        noexcept(noexcept(attr = ExposedAttr{}))
+        noexcept(noexcept(attr = ExposedAttr()))
     {
-        attr = ExposedAttr{};
+        attr = ExposedAttr();
     }
 
     template<class ParserAttr>
@@ -69,9 +78,10 @@ struct attribute_traits
             std::default_initializable<ParserAttr> &&
             weakly_assignable_from<ExposedAttr&, ParserAttr>
     static constexpr ExposedAttr& clear(ExposedAttr& attr)
+        noexcept(noexcept(attr = ParserAttr()))
     {
         static_assert(detail::proper_attribute_for<ExposedAttr, ParserAttr>);
-        attr = ParserAttr{};
+        attr = ParserAttr();
         return attr;
     }
 
@@ -81,10 +91,11 @@ struct attribute_traits
             (!weakly_assignable_from<ExposedAttr&, ParserAttr>) &&
             std::constructible_from<ExposedAttr, ParserAttr>
     static constexpr ExposedAttr& clear(ExposedAttr& attr)
+        noexcept(noexcept(attr = ExposedAttr(ParserAttr())))
     {
         static_assert(std::default_initializable<ParserAttr>);
         static_assert(detail::proper_attribute_for<ExposedAttr, ExposedAttr>);
-        attr = ExposedAttr{ParserAttr{}};
+        attr = ExposedAttr(ParserAttr());
         return attr;
     }
 };
@@ -130,6 +141,7 @@ struct attribute_traits<OptionalT>
     template<class ParserAttr>
         requires
             (!CategorizedAttr<ParserAttr, optional_tag>) &&
+            detail::creatable_in_place_for<value_type, ParserAttr> &&
             detail::clearable_for<value_type, ParserAttr>
     static constexpr decltype(auto) clear(OptionalT& opt)
     {
@@ -181,41 +193,34 @@ struct attribute_traits<VariantT>
         }
     }
 
-    template<class ParserAttr>
-    using tag_type = unwrap_recursive_t<typename variant_find_holdable_type<VariantT, ParserAttr>::type>;
-
+    // Clears the alternative that `ParserAttr` is written into
     template<class ParserAttr>
         requires
             (!std::same_as<ParserAttr, VariantT>) &&
-            requires(VariantT& var) { var.template emplace<tag_type<ParserAttr>>(); }
-    static constexpr tag_type<ParserAttr>& clear(VariantT& var)
+            x4::detail::variant_has_alternative_for_v<VariantT, ParserAttr> &&
+            detail::creatable_in_place_for<variant_alternative_t<x4::detail::variant_alternative_for_v<VariantT, ParserAttr>, VariantT>, ParserAttr> &&
+            requires(VariantT& var) { var.template emplace<x4::detail::variant_alternative_for_v<VariantT, ParserAttr>>(); }
+    static constexpr auto& clear(VariantT& var)
     {
-        if (auto* existing_alt = iris::get_if<tag_type<ParserAttr>>(&var)) {
-            attribute_traits<tag_type<ParserAttr>>::template clear<tag_type<ParserAttr>>(*existing_alt);
+        constexpr std::size_t index = x4::detail::variant_alternative_for_v<VariantT, ParserAttr>;
+        using alternative_type = variant_alternative_t<index, VariantT>;
+
+        if (auto* existing_alt = iris::get_if<index>(&var)) {
+            attribute_traits<alternative_type>::template clear<alternative_type>(*existing_alt);
             return *existing_alt;
 
         } else {
-            return var.template emplace<tag_type<ParserAttr>>();
+            return var.template emplace<index>();
         }
     }
 
+    // The default state is the first alternative; the alternative held is not kept, since a parser
+    // yielding the variant itself may succeed without writing into it
     template<class ParserAttr>
         requires std::same_as<ParserAttr, VariantT>
     static constexpr VariantT& clear(VariantT& var)
     {
-        assert(!var.valueless_by_exception());
-
-        // Reuse the existing alternative instance.
-        // We don't call `visit(...)` here, since it increases the compilation time by few hundred msec
-        [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-            (void)(
-                (
-                    var.index() == Is
-                    ? (attribute_traits<variant_alternative_t<Is, VariantT>>::reset(*iris::get_if<Is>(&var)), true)
-                    : false
-                ) || ...
-            );
-        }(std::make_index_sequence<variant_size_v<VariantT>>{});
+        attribute_traits::reset(var);
         return var;
     }
 };
@@ -224,15 +229,15 @@ template<CategorizedAttr<container_tag> ContainerT>
 struct attribute_traits<ContainerT>
 {
     static constexpr void reset(ContainerT& container)
-        noexcept(noexcept(traits::clear(container)))
+        noexcept(noexcept(iris::container::clear(container)))
     {
-        traits::clear(container);
+        iris::container::clear(container);
     }
 
     template<class ParserAttr>
     static constexpr ContainerT& clear(ContainerT& container)
     {
-        traits::clear(container);
+        iris::container::clear(container);
         return container;
     }
 };
@@ -272,13 +277,13 @@ struct attribute_traits<TupleLikeT>
 
     template<class ParserAttr>
         requires
-            (!std::same_as<ParserAttr, TupleLikeT>) &&
+            (!std::same_as<unwrap_recursive_t<ParserAttr>, TupleLikeT>) &&
             (alloy::tuple_size_v<TupleLikeT> == 1) &&
             detail::clearable_for<detail::tuple_slot_t<0, TupleLikeT>, ParserAttr>
     static constexpr decltype(auto) clear(TupleLikeT& tup)
     {
-        // A single-element tuple-like is transparent, as in `move_to`: the
-        // branch parses into the element.
+        // Unless the branch yields the single-element tuple-like itself, parse into its element
+        // (consistent with `write_rank`).
         return attribute_traits<detail::tuple_slot_t<0, TupleLikeT>>::template clear<ParserAttr>(
             alloy::get<0>(tup)
         );
@@ -289,26 +294,25 @@ struct attribute_traits<TupleLikeT>
 
 namespace iris::x4::detail {
 
-template<X4UnusedAttribute ParserAttr, class ExposedAttr>
-[[nodiscard]] constexpr unused_type const& prepare_attribute(ExposedAttr& exposed_attr)
+// Prepares `exposed_attr` for `Parser` in its default state: the part the attribute type of `Parser`
+// is written into, or the whole attribute for a parser that may succeed without writing it.
+template<class Parser, class ExposedAttr>
+[[nodiscard]] constexpr decltype(auto)
+prepare_attribute_for(ExposedAttr& exposed_attr)
 {
-    traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
-    return unused;
-}
+    using parser_attr = parser_traits<Parser>::attribute_type;
 
-template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
-    requires traits::detail::clearable_for<ExposedAttr, ParserAttr>
-[[nodiscard]] constexpr decltype(auto) prepare_attribute(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
-{
-    return traits::attribute_traits<ExposedAttr>::template clear<ParserAttr>(exposed_attr);
-}
+    if constexpr (X4UnusedAttribute<parser_attr>) {
+        traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
+        return (unused);
 
-template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
-    requires (!traits::detail::clearable_for<ExposedAttr, ParserAttr>)
-[[nodiscard]] constexpr ExposedAttr& prepare_attribute(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
-{
-    traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
-    return exposed_attr;
+    } else if constexpr (!may_leave_attribute_unwritten_v<Parser> && traits::detail::clearable_for<ExposedAttr, parser_attr>) {
+        return traits::attribute_traits<ExposedAttr>::template clear<parser_attr>(exposed_attr);
+
+    } else {
+        traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
+        return (exposed_attr);
+    }
 }
 
 template<X4Attribute ExposedAttr>

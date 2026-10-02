@@ -144,7 +144,7 @@ struct proxy_parser : unary_parser<Derived, Subject>
     static constexpr std::size_t sequence_size = parser_traits<Subject>::sequence_size;
 
     template<class Container>
-    static constexpr bool handles_container = parser_traits<Subject>::template handles_container<Container>;
+    static constexpr bool accepts_container = parser_traits<Subject>::template accepts_container<Container>;
 
     using unary_parser<Derived, Subject>::unary_parser;
 };

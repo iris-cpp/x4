@@ -15,6 +15,7 @@
 #include <iris/bits/specialization_of.hpp>
 
 #include <concepts>
+#include <ranges> // IWYU pragma: keep
 #include <type_traits>
 
 namespace iris::alloy {
@@ -58,6 +59,26 @@ concept X4NonUnusedAttribute =
 
 template<class T>
 concept X4Attribute = X4UnusedAttribute<T> || X4NonUnusedAttribute<T>;
+
+namespace detail {
+
+template<class SRef>
+inline constexpr bool mandates_writable_ref = [] {
+    static_assert(std::is_lvalue_reference_v<SRef>);
+    static_assert(!std::is_const_v<std::remove_reference_t<SRef>>);
+    return true;
+}();
+
+template<class T, class V>
+concept dangles = std::ranges::borrowed_range<T> && !std::ranges::borrowed_range<V>;
+
+} // detail
+
+template<class SRef, class V>
+concept X4StrictlyWritable =
+    detail::mandates_writable_ref<SRef> &&
+    weakly_assignable_from<SRef, V> &&
+    is_convertible_without_narrowing_v<V, std::remove_reference_t<SRef>>;
 
 } // iris::x4
 

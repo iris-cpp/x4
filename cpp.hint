@@ -1,0 +1,18 @@
+/*=============================================================================
+    Copyright (c) 2026 The Iris Project Contributors
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+=============================================================================*/
+
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+
+#define IRIS_ALLOY_ADAPT_STRUCT
+
+#define IRIS_X4_DECLARE
+#define IRIS_X4_DECLARE_CONSTEXPR
+#define IRIS_X4_DEFINE
+#define IRIS_X4_DEFINE_CONSTEXPR
+#define IRIS_X4_INSTANTIATE

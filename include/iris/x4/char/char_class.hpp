@@ -131,21 +131,6 @@ IRIS_X4_CHAR_CLASSES(standard_wide)
 #undef IRIS_X4_CHAR_CLASS
 #undef IRIS_X4_CHAR_CLASSES
 
-// Don't put these in namespace `parsers`, these are too much
-
-using x4::standard::alnum;
-using x4::standard::alpha;
-using x4::standard::digit;
-using x4::standard::xdigit;
-using x4::standard::cntrl;
-using x4::standard::graph;
-using x4::standard::lower;
-using x4::standard::print;
-using x4::standard::punct;
-using x4::standard::space;
-using x4::standard::blank;
-using x4::standard::upper;
-
 
 namespace detail {
 

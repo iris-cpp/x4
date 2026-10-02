@@ -151,6 +151,9 @@ struct unique_ptr_parser : detail::unique_ptr_parser_base<
 
     static constexpr bool requires_exact_attribute_type = true;
 
+    template<class Container>
+    static constexpr bool accepts_container = false;
+
     using unique_ptr_parser::unique_ptr_parser_base::unique_ptr_parser_base;
 
     [[nodiscard]] constexpr std::string get_x4_info() const
@@ -318,6 +321,9 @@ struct shared_ptr_parser : detail::shared_ptr_parser_base<
     using attribute_type = std::shared_ptr<T>;
 
     static constexpr bool requires_exact_attribute_type = true;
+
+    template<class Container>
+    static constexpr bool accepts_container = false;
 
     using shared_ptr_parser::shared_ptr_parser_base::shared_ptr_parser_base;
 

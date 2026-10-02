@@ -34,7 +34,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
     using attribute_type = build_optional<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container = WritesIntoContainer<Subject, Container>;
+    static constexpr bool accepts_container = writes_into_container<Subject, Container>;
 
     using unary_parser<optional, Subject>::unary_parser;
 
@@ -68,7 +68,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
     {
         if (this->subject.parse(
             first, last, ctx,
-            detail::prepare_attribute<typename parser_traits<Subject>::attribute_type>(attr)
+            detail::prepare_attribute_for<Subject>(attr)
         )) {
             return true;
         }
@@ -91,20 +91,16 @@ struct optional : unary_parser<optional<Subject>, Subject>
     {
         // Same logic as in `x4::alternative`
 
-        if (traits::is_empty(attr)) {
+        if (std::ranges::empty(attr)) {
             if (detail::parse_into_container(this->subject, first, last, ctx, attr)) {
                 return true;
             }
-            traits::clear(attr);
+            iris::container::clear(attr);
 
         } else {
-            unwrap_container_appender_t<Attr> buffer;
+            Attr buffer;
             if (detail::parse_into_container(this->subject, first, last, ctx, buffer)) {
-                traits::append(
-                    attr,
-                    std::make_move_iterator(traits::begin(buffer)),
-                    std::make_move_iterator(traits::end(buffer))
-                );
+                iris::container::append_range(attr, buffer | std::views::as_rvalue);
                 return true;
             }
         }

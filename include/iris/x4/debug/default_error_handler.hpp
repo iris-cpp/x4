@@ -18,6 +18,7 @@
 #include <iris/colorize_format.hpp>
 
 #include <print>
+#include <concepts>
 #include <ranges>
 #include <filesystem>
 #include <iterator>
@@ -232,7 +233,9 @@ private:
         this->print_line_highlight(line, err_pos);
     }
 
-    void print_file_line(int line) const
+    // A template so that `std::print` is instantiated lazily
+    template<std::integral Line>
+    void print_file_line(Line const line) const
     {
         if (!error_out_) return;
 

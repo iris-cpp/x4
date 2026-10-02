@@ -70,7 +70,7 @@ struct attribute_category<unused_container_type>
     using type = container_tag;
 
     // The attribute category type for `unused_container_type` is
-    // `container_attribute`, but it does not satisfy `is_container`.
+    // `container_attribute`, but it does not satisfy `X4Container`.
 };
 
 template<class T>
@@ -95,7 +95,7 @@ struct attribute_category<T>
 };
 
 template<class T>
-    requires traits::is_container_v<std::remove_cvref_t<T>>
+    requires traits::X4Container<std::remove_cvref_t<T>>
 struct attribute_category<T>
 {
     using type = container_tag;

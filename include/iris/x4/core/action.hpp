@@ -12,19 +12,108 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/traits/attribute_traits.hpp>
+#include <iris/x4/traits/container_traits.hpp>
+
+#include <iris/x4/core/detail/action_slot.hpp>
+
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/context.hpp>
+#include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/action_context.hpp>
+#include <iris/x4/core/parser_traits.hpp>
+#include <iris/x4/core/write_attribute.hpp>
+
+#include <iris/rvariant/recursive_wrapper.hpp>
+#include <iris/rvariant/variant_helper.hpp>
 
 #include <iris/type_traits.hpp>
 
 #include <iterator>
 #include <concepts>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
 namespace iris::x4 {
+
+namespace detail {
+
+struct action_attribute_access;
+
+// Returned by `x4::_attr` when the subject of the action may succeed without writing the attribute.
+// The semantic action can read it only through `x4::visit_attr`.
+//
+// The visitor is called with:
+//   - `unused` if the match wrote nothing
+//   - the candidate held if `IsMultiCand` (the attribute is a variant of the candidates of an alternative)
+//   - otherwise the attribute itself
+template<class A, bool IsMultiCand>
+class action_attribute_view
+{
+    constexpr explicit action_attribute_view(A* attr) noexcept
+        : attr_(attr)
+    {}
+
+    A* attr_; // null if no attribute
+
+    friend struct action_attribute_access;
+};
+
+template<class T>
+struct is_action_attribute_view : std::false_type {};
+
+template<class A, bool IsMultiCand>
+struct is_action_attribute_view<action_attribute_view<A, IsMultiCand>> : std::true_type {};
+
+template<class T>
+inline constexpr bool is_action_attribute_view_v = is_action_attribute_view<std::remove_cvref_t<T>>::value;
+
+struct action_attribute_access
+{
+    template<class A, bool IsMultiCand>
+    [[nodiscard]] static constexpr action_attribute_view<A, IsMultiCand> make(A* attr) noexcept
+    {
+        return action_attribute_view<A, IsMultiCand>(attr);
+    }
+
+    template<class A, bool IsMultiCand, class Visitor>
+    static constexpr void visit(action_attribute_view<A, IsMultiCand> const& view, Visitor&& visitor)
+    {
+        if (!view.attr_) {
+            std::forward<Visitor>(visitor)(unused);
+            return;
+        }
+        if constexpr (IsMultiCand) {
+            view.attr_->visit([&](auto& candidate) { std::forward<Visitor>(visitor)(iris::unwrap_recursive(candidate)); });
+
+        } else {
+            std::forward<Visitor>(visitor)(iris::unwrap_recursive(*view.attr_));
+        }
+    }
+};
+
+} // detail
+
+// Calls `fs` with the attribute the match of a semantic action wrote, as `T&`, or with `unused_type`
+// if it wrote none. Two or more functions are combined by `iris::overloaded`, which copies or moves them.
+template<class Context, class... Fs>
+constexpr void visit_attr(Context const& ctx, Fs&&... fs)
+{
+    static_assert(sizeof...(Fs) >= 1);
+    auto const& view = x4::_attr(ctx);
+    static_assert(
+        detail::is_action_attribute_view_v<decltype(view)>,
+        "`x4::visit_attr` takes the attribute of a subject which may succeed without writing it"
+    );
+    if constexpr (sizeof...(Fs) == 1) {
+        detail::action_attribute_access::visit(view, std::forward<Fs>(fs)...);
+
+    } else {
+        detail::action_attribute_access::visit(view, iris::overloaded{std::forward<Fs>(fs)...});
+    }
+}
 
 namespace detail {
 
@@ -73,14 +162,17 @@ struct action : proxy_parser<action<Subject, ActionF>, Subject>
     static constexpr bool need_rcontext = true;
     static constexpr bool requires_exact_attribute_type = false; // reset
 
-    ActionF f;
+    // The subject may succeed without writing its attribute (an alternative with a branch without
+    // an attribute): the action sees the attribute the match wrote, or none (see `x4::visit_attr`)
+    static constexpr bool sees_written_attribute =
+        has_attribute_v<Subject> && detail::may_leave_attribute_unwritten_v<Subject>;
 
     template<class SubjectT, class ActionT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<ActionF, ActionT>
     constexpr action(SubjectT&& subject, ActionT&& f)
         noexcept(std::is_nothrow_constructible_v<base_type, SubjectT> && std::is_nothrow_constructible_v<ActionF, ActionT>)
         : base_type(std::forward<SubjectT>(subject))
-        , f(std::forward<ActionT>(f))
+        , f_(std::forward<ActionT>(f))
     {
     }
 
@@ -88,11 +180,19 @@ struct action : proxy_parser<action<Subject, ActionF>, Subject>
     // Since we can assume that the subject unconditionally requires `_attr`,
     // we must create a temporary variable to pass it to the subject.
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
+        requires (!sees_written_attribute)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr&) const
     {
+        It local_it = first;
         typename base_type::attribute_type attr_temp{}; // value-initialize
-        return this->parse_main(first, last, ctx, attr_temp);
+        if (!this->subject.parse(local_it, last, ctx, attr_temp)) return false;
+
+        if (this->call_action(ctx, attr_temp)) {
+            first = local_it;
+            return true;
+        }
+        return false;
     }
 
 private:
@@ -117,21 +217,61 @@ private:
 public:
     // When the exposed attribute is NOT `unused_type`.
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-        requires can_pass_exposed_attr<Attr>
+        requires (!sees_written_attribute) && can_pass_exposed_attr<Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return this->parse_main(first, last, ctx, attr);
+        It local_it = first;
+        if (!this->subject.parse(local_it, last, ctx, attr)) return false;
+
+        if (this->call_action(ctx, attr)) {
+            first = local_it;
+            return true;
+        }
+        return false;
     }
 
     // When the exposed attribute is NOT `unused_type`.
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-        requires (!can_pass_exposed_attr<Attr>)
+        requires (!sees_written_attribute) && (!can_pass_exposed_attr<Attr>)
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& /* attr is discarded */) const
     {
         typename base_type::attribute_type attr_temp{}; // value-initialize
-        return this->parse_main(first, last, ctx, attr_temp);
+        It local_it = first;
+        if (!this->subject.parse(local_it, last, ctx, attr_temp)) return false;
+
+        if (this->call_action(ctx, attr_temp)) {
+            first = local_it;
+            return true;
+        }
+        return false;
+    }
+
+    // The subject may succeed without writing its attribute. The subject parses into a slot of
+    // the action, which records whether the match wrote the attribute; the action sees it through
+    // a view, and the attribute is written into `attr` only when the action accepts the match.
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+        requires sees_written_attribute
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
+    {
+        using attribute_type = base_type::attribute_type;
+        constexpr bool is_multi_cand = detail::attribute_candidates_t<Subject>::size >= 2;
+
+        It const saved_first = first;
+        detail::action_slot<attribute_type> slot;
+        if (!this->subject.parse(first, last, ctx, slot)) return false;
+
+        auto const view = detail::action_attribute_access::make<attribute_type, is_multi_cand>(
+            slot.is_generated() ? std::addressof(slot.value()) : nullptr
+        );
+        if (!this->call_action(ctx, view)) {
+            first = saved_first;
+            return false;
+        }
+        action::commit<is_multi_cand>(attr, slot);
+        return true;
     }
 
     constexpr void operator[](auto const&) const = delete; // You can't add semantic action for semantic action
@@ -142,6 +282,39 @@ public:
     }
 
 private:
+    template<bool IsMultiCand, X4Attribute Attr, class A>
+    static constexpr void commit(Attr& attr, detail::action_slot<A>& slot)
+    {
+        if constexpr (X4UnusedAttribute<Attr>) {
+            return;
+
+        } else if constexpr (detail::is_action_slot_v<Attr>) {
+            if (!slot.is_generated()) {
+                attr.disengage();
+                return;
+            }
+            auto& engaged = attr.engage();
+            detail::write_slot_value<IsMultiCand>(slot, [&engaged]<class V>(V&& value) {
+                x4::write_attribute(engaged, std::forward<V>(value));
+            });
+
+        } else if constexpr (traits::X4Container<planner::storage_t<Attr>>) {
+            if (slot.is_generated()) {
+                detail::write_slot_value<IsMultiCand>(slot, [&attr]<class V>(V&& value) {
+                    x4::write_attribute(attr, std::forward<V>(value));
+                });
+            }
+
+        } else {
+            traits::attribute_traits<Attr>::reset(attr);
+            if (slot.is_generated()) {
+                detail::write_slot_value<IsMultiCand>(slot, [&attr]<class V>(V&& value) {
+                    x4::write_attribute(attr, std::forward<V>(value));
+                });
+            }
+        }
+    }
+
     // Semantic action with no parameter: `p[([] { /* ... */ })]`
     template<class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
@@ -164,9 +337,9 @@ private:
         );
 
         if constexpr (action_returns_bool) {
-            return this->f();
+            return this->f_();
         } else {
-            this->f();
+            this->f_();
             return true;
         }
     }
@@ -187,17 +360,17 @@ private:
         // Inject `_attr` only when `Attr` is not `unused_type`
         if constexpr (X4UnusedAttribute<Attr>) {
             if constexpr (action_returns_bool) {
-                return this->f(ctx);
+                return this->f_(ctx);
             } else {
-                this->f(ctx);
+                this->f_(ctx);
                 return true;
             }
 
         } else {
             if constexpr (action_returns_bool) {
-                return this->f(x4::make_context<contexts::attr>(attr, ctx));
+                return this->f_(x4::make_context<contexts::attr>(attr, ctx));
             } else {
-                this->f(x4::make_context<contexts::attr>(attr, ctx));
+                this->f_(x4::make_context<contexts::attr>(attr, ctx));
                 return true;
             }
         }
@@ -217,21 +390,8 @@ private:
         return false; // dummy
     }
 
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    parse_main(It& first, Se const& last, Context const& ctx, Attr& attr) const
-    {
-        It const saved_first = first;
-        if (!this->subject.parse(first, last, ctx, attr)) return false;
-
-        if (this->call_action(ctx, attr)) {
-            return true;
-        }
-        // reset iterators if semantic action failed the match
-        // retrospectively
-        first = saved_first;
-        return false;
-    }
+private:
+    ActionF f_;
 };
 
 } // iris::x4

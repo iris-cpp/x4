@@ -28,7 +28,7 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     using attribute_type = traits::default_container<typename parser_traits<Left>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container = WritesIntoContainer<Left, Container>;
+    static constexpr bool accepts_container = writes_into_container<Left, Container>;
 
     using binary_parser<delimited_list, Left, Right>::binary_parser;
 
@@ -36,29 +36,34 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
-        list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+        if constexpr (list_like_parser::writes_as_one_element<attribute_type, Attr>) {
+            return list_like_parser::parse_as_one_element(*this, first, last, ctx, attr);
 
-        // In order to succeed, we need to match at least one element
-        if (detail::parse_into_container(this->left, first, last, ctx, chunk_buf)) {
-            list_like_parser::successful_merge_into(chunk_buf, container_attr);
         } else {
-            return false;
-        }
+            auto& container_attr = detail::ref_or_init_attribute_for<attribute_type>(attr);
+            list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
 
-        It last_parse_it = first;
-        while (
-            this->right.parse(last_parse_it, last, ctx, unused) &&
-            detail::parse_into_container(this->left, last_parse_it, last, ctx, chunk_buf)
-        ) {
-            list_like_parser::successful_merge_into(chunk_buf, container_attr);
-            first = last_parse_it;
-        }
+            // In order to succeed, we need to match at least one element
+            if (detail::parse_into_container(this->left, first, last, ctx, chunk_buf)) {
+                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+            } else {
+                return false;
+            }
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !x4::has_expectation_failure(ctx);
-        } else {
-            return true;
+            It last_parse_it = first;
+            while (
+                this->right.parse(last_parse_it, last, ctx, unused) &&
+                detail::parse_into_container(this->left, last_parse_it, last, ctx, chunk_buf)
+            ) {
+                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+                first = last_parse_it;
+            }
+
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                return !x4::has_expectation_failure(ctx);
+            } else {
+                return true;
+            }
         }
     }
 

@@ -90,9 +90,7 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
 
     template<class Container>
-    static constexpr bool handles_container =
-        can_hold_v<Container, typename parser_traits<Subject>::attribute_type> ||
-        can_hold_v<typename traits::container_value<Container>::type, typename parser_traits<Subject>::attribute_type>;
+    static constexpr bool accepts_container = writes_into_container<Subject, Container>;
 
     template<class SubjectT, detail::RepeatBounds BoundsT>
         requires std::is_constructible_v<base_type, SubjectT> && std::is_constructible_v<Bounds, BoundsT>
@@ -106,34 +104,39 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        auto& container_attr = list_like_parser::get_container<attribute_type, Attr>(attr);
-        list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+        if constexpr (list_like_parser::writes_as_one_element<attribute_type, Attr>) {
+            return list_like_parser::parse_as_one_element(*this, first, last, ctx, attr);
 
-        It local_it = first;
-        typename Bounds::value_type i{};
-        for (; !bounds_.got_min(i); ++i) {
-            if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf)) {
-                // We can't merge here; it will lead to partial status
-            } else {
-                return false;
-            }
-        }
-        list_like_parser::successful_merge_into(chunk_buf, container_attr);
-
-        first = local_it;
-        // parse some more up to the maximum specified
-        for (; !bounds_.got_max(i); ++i) {
-            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
-                list_like_parser::successful_merge_into(chunk_buf, container_attr);
-            } else {
-                break;
-            }
-        }
-
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !x4::has_expectation_failure(ctx);
         } else {
-            return true;
+            auto& container_attr = detail::ref_or_init_attribute_for<attribute_type>(attr);
+            list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+
+            It local_it = first;
+            typename Bounds::value_type i{};
+            for (; !bounds_.got_min(i); ++i) {
+                if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf)) {
+                    // We can't merge here; it will lead to partial status
+                } else {
+                    return false;
+                }
+            }
+            list_like_parser::successful_merge_into(chunk_buf, container_attr);
+
+            first = local_it;
+            // parse some more up to the maximum specified
+            for (; !bounds_.got_max(i); ++i) {
+                if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
+                    list_like_parser::successful_merge_into(chunk_buf, container_attr);
+                } else {
+                    break;
+                }
+            }
+
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                return !x4::has_expectation_failure(ctx);
+            } else {
+                return true;
+            }
         }
     }
 

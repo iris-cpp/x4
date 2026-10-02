@@ -34,25 +34,36 @@ struct alternative;
 
 namespace detail {
 
-template<class T>
-struct to_alternative_attribute_list
-{
-    using type = type_list<T>;
-};
+template<class T, class Wrapped>
+struct alternative_wrapped_entry {};
 
-template<>
-struct to_alternative_attribute_list<unused_type>
-{
-    using type = type_list<>;
-};
+template<class T>
+struct alternative_entry {};
+
+template<class T>
+    requires is_recursive_wrapper_v<T>
+struct alternative_entry<T>
+    : alternative_wrapped_entry<unwrap_recursive_t<T>, T>
+{};
 
 template<class... Ts>
-struct to_alternative_attribute_list<rvariant<Ts...>>
-{
-    using type = type_list<Ts...>;
-};
+struct alternative_entries
+    : alternative_entry<Ts>...
+{};
 
-// -------------------------------------------------------------
+template<class T, class Wrapped>
+Wrapped alternative_wrapped_form(alternative_wrapped_entry<unwrap_recursive_t<T>, Wrapped>*);
+
+template<class T>
+T alternative_wrapped_form(...);
+
+template<class TypeList>
+struct unique_alternative_list;
+
+template<class... Ts>
+struct unique_alternative_list<type_list<Ts...>>
+    : unique_type_list<type_list<decltype(detail::alternative_wrapped_form<Ts>(static_cast<alternative_entries<Ts...>*>(nullptr)))...>>
+{};
 
 template<class TypeList>
 struct canonicalize_alternative_attribute;
@@ -84,10 +95,10 @@ template<class P0, class... PRest>
 struct alternative_layout<P0, PRest...>
 {
     using concated_attrs = concat_type_list<
-        typename to_alternative_attribute_list<typename parser_traits<P0>::attribute_type>::type,
-        typename to_alternative_attribute_list<typename parser_traits<PRest>::attribute_type>::type...
+        attribute_candidates_t<P0>,
+        attribute_candidates_t<PRest>...
     >::type;
-    using unique_attrs = unique_type_list<concated_attrs>::type;
+    using unique_attrs = unique_alternative_list<typename unique_type_list<concated_attrs>::type>::type;
     using attribute_type = canonicalize_alternative_attribute<unique_attrs>::type;
 
     // All branches share one attribute type and one slot count; the
@@ -111,6 +122,18 @@ struct get_sequence_size<alternative<Ps...>>
 {
     static constexpr std::size_t value = alternative_layout<Ps...>::sequence_size;
 };
+
+template<class... Ps>
+struct attribute_candidates<alternative<Ps...>>
+{
+    using type = alternative_layout<Ps...>::unique_attrs;
+};
+
+template<class... Ps>
+struct may_leave_attribute_unwritten<alternative<Ps...>> : std::bool_constant<
+    has_attribute_v<alternative<Ps...>> &&
+    ((!has_attribute_v<Ps> || may_leave_attribute_unwritten_v<Ps>) || ...)
+> {};
 
 } // detail
 

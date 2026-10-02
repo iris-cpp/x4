@@ -50,12 +50,12 @@ TEST_CASE("rule1")
     static_assert( x4::has_attribute_v<decltype(rule<class r_, int>{} = int_)>);
     static_assert(!x4::has_attribute_v<decltype(rule<class r_     >{} = int_)>);
 
-    STATIC_CHECK( x4::parser_traits<rule<class r_, std::string>>::handles_container<std::string>);
-    STATIC_CHECK( x4::parser_traits<rule<class r_, std::vector<int>>>::handles_container<std::vector<int>>);
-    //STATIC_CHECK( x4::parser_traits<rule<class r_, std::vector<int>>>::handles_container<std::vector<iris::rvariant<int, std::string>>>);
-    STATIC_CHECK(!x4::parser_traits<rule<class r_, int>>::handles_container<std::vector<int>>); // yields an element, not the container
-    //STATIC_CHECK(!x4::parser_traits<rule<class r_, iris::rvariant<int, std::string>>>::handles_container<std::string>); // yields a variant, cannot write into `std::string`
-    STATIC_CHECK(!x4::parser_traits<rule<class r_, iris::rvariant<int, std::string>>>::handles_container<std::vector<iris::rvariant<int, std::string>>>);
+    STATIC_CHECK( x4::parser_traits<rule<class r_, std::string>>::accepts_container<std::string>);
+    STATIC_CHECK( x4::parser_traits<rule<class r_, std::vector<int>>>::accepts_container<std::vector<int>>);
+    //STATIC_CHECK( x4::parser_traits<rule<class r_, std::vector<int>>>::accepts_container<std::vector<iris::rvariant<int, std::string>>>);
+    STATIC_CHECK(!x4::parser_traits<rule<class r_, int>>::accepts_container<std::vector<int>>); // yields an element, not the container
+    //STATIC_CHECK(!x4::parser_traits<rule<class r_, iris::rvariant<int, std::string>>>::accepts_container<std::string>); // yields a variant, cannot write into `std::string`
+    STATIC_CHECK(!x4::parser_traits<rule<class r_, iris::rvariant<int, std::string>>>::accepts_container<std::vector<iris::rvariant<int, std::string>>>);
 
     {
         // basic tests
