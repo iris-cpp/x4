@@ -198,9 +198,12 @@ concept constructible_from_value =
         !both_char_like<T, std::remove_reference_t<V>>
     );
 
-// A new `T` is made from the value. A plain `T` is constructed from it, never constructed by default and
-// assigned instead, as `T t = v;` and `T t; t = v;` are different operations. A `T` that is not plain is
-// constructed from a value of its own type, and otherwise by default and then written into by its shape.
+// A new `T` can be made from the value:
+// - A plain `T` is constructed from the value (`T t(v);`, never `T t; t = v;`).
+// - A `T` of the type of the value is constructed from the value.
+// - Any other `T` must be default constructible.
+// - A variant also must be default constructible, though it is constructed holding the alternative
+//   its write selects.
 template<class T, class V>
 concept makeable =
     (!std::same_as<attribute_category_t<T>, plain_tag> && std::is_default_constructible_v<T>) ||
