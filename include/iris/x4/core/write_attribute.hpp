@@ -17,6 +17,7 @@
 #include <iris/alloy/traits.hpp>
 #include <iris/type_list.hpp>
 
+#include <concepts>
 #include <optional>
 #include <ranges>
 #include <type_traits>
@@ -34,22 +35,24 @@ namespace detail {
 template<class Graph, class NodeT>
 struct write_plan;
 
-// Constructs a new object for the value by invoking `construct`.
+// Constructs a new object for the value by invoking `construct(fill, args...)`, which constructs
+// the object from `args` and then calls `fill` with it.
 //
 // - A plain type, or one of the type of the value, is constructed from the value.
 // - A variant is constructed holding the alternative its write selects, which is
 //   made by the same rule, so that no alternative is constructed by default and
 //   then written into.
-// - Any other type is constructed by default and written into by its shape.
+// - Any other type is constructed by default and written into by its shape (by `fill`).
 template<class Graph, class NodeT, class Construct>
 constexpr void construct_node(Construct const& construct, typename NodeT::value_type&& value)
 {
     using T = NodeT::storage_type;
     using V = NodeT::value_type;
     constexpr branch_selection selection = Graph::template selection_of<NodeT>;
+    constexpr auto fill_nothing = [](auto&) noexcept {};
 
     if constexpr (constructible_from_value<T, V>) {
-        construct(std::forward<V>(value));
+        construct(fill_nothing, std::forward<V>(value));
 
     } else if constexpr (
         std::same_as<attribute_category_t<T>, variant_tag> &&
@@ -59,18 +62,19 @@ constexpr void construct_node(Construct const& construct, typename NodeT::value_
 
         if constexpr (selection.kind == branch_kind::conversion) {
             if constexpr (is_wrapped_alternative_v<J, T>) {
-                construct(std::in_place_index<J>, std::in_place, std::forward<V>(value));
+                construct(fill_nothing, std::in_place_index<J>, std::in_place, std::forward<V>(value));
             } else {
-                construct(std::in_place_index<J>, std::forward<V>(value));
+                construct(fill_nothing, std::in_place_index<J>, std::forward<V>(value));
             }
 
         } else {
             detail::construct_node<Graph, write_node<variant_alternative_t<J, T>, V>>(
-                [&construct]<class... Args>(Args&&... args) -> auto& {
+                [&construct]<class Fill, class... Args>(Fill const& fill, Args&&... args) {
+                    auto const fill_alternative = [&fill](auto& variant) { fill(iris::unsafe_get<J>(variant)); };
                     if constexpr (is_wrapped_alternative_v<J, T>) {
-                        return iris::unsafe_get<J>(construct(std::in_place_index<J>, std::in_place, std::forward<Args>(args)...));
+                        construct(fill_alternative, std::in_place_index<J>, std::in_place, std::forward<Args>(args)...);
                     } else {
-                        return iris::unsafe_get<J>(construct(std::in_place_index<J>, std::forward<Args>(args)...));
+                        construct(fill_alternative, std::in_place_index<J>, std::forward<Args>(args)...);
                     }
                 },
                 std::forward<V>(value)
@@ -94,7 +98,7 @@ constexpr void construct_node(Construct const& construct, typename NodeT::value_
         }(std::make_index_sequence<variant_size_v<std::remove_cvref_t<V>>>{});
 
     } else {
-        write_plan<Graph, NodeT>::apply(construct(), std::forward<V>(value));
+        construct([&value](auto& object) { write_plan<Graph, NodeT>::apply(object, std::forward<V>(value)); });
     }
 }
 
@@ -109,11 +113,11 @@ constexpr void engage(Optional& s, typename NodeT::value_type&& value)
         return;
     }
     detail::construct_node<Graph, NodeT>(
-        [&s]<class... Args>(Args&&... args) -> auto& {
+        [&s]<class Fill, class... Args>(Fill const& fill, Args&&... args) {
             if constexpr (is_recursive_wrapper_v<typename Optional::value_type>) {
-                return iris::unwrap_recursive(s.emplace(std::in_place, std::forward<Args>(args)...));
+                fill(iris::unwrap_recursive(s.emplace(std::in_place, std::forward<Args>(args)...)));
             } else {
-                return iris::unwrap_recursive(s.emplace(std::forward<Args>(args)...));
+                fill(iris::unwrap_recursive(s.emplace(std::forward<Args>(args)...)));
             }
         },
         std::forward<V>(value)
@@ -131,26 +135,46 @@ constexpr void write_alternative(Variant& s, typename NodeT::value_type&& value)
         return;
     }
     detail::construct_node<Graph, NodeT>(
-        [&s]<class... Args>(Args&&... args) -> auto& {
+        [&s]<class Fill, class... Args>(Fill const& fill, Args&&... args) {
             if constexpr (is_wrapped_alternative_v<J, Variant>) {
-                return s.template emplace<J>(std::in_place, std::forward<Args>(args)...);
+                fill(s.template emplace<J>(std::in_place, std::forward<Args>(args)...));
             } else {
-                return s.template emplace<J>(std::forward<Args>(args)...);
+                fill(s.template emplace<J>(std::forward<Args>(args)...));
             }
         },
         std::forward<V>(value)
     );
 }
 
-// Appends an element made by `construct_node` into the container.
+// Appends an element constructed from `args` into the container, and calls `fill` with it.
 //
-// - If an element can be written in place after it is appended (e.g. `std::vector`),
-//   the element is constructed directly in the container.
-//   - In this case, `value` itself must not refer into the container; otherwise the
+// - If the element can be constructed directly in the container from `args`, and written in
+//   place after it is appended (e.g. `std::vector`), it is constructed so.
+//   - In this case, the value written must not refer into the container; otherwise the
 //     behavior is undefined.
 //
-// - Otherwise (e.g. `std::set`, whose elements are const), the element is made outside
-//   the container first and then appended.
+// - Otherwise, the element is made outside the container first and then appended; e.g. an
+//   element of `std::set`, which is const, or of a container which appends a complete element
+//   only (`push_back(T)`).
+template<class Container, class Fill, class... Args>
+constexpr void append_element(Container& s, Fill const& fill, Args&&... args)
+{
+    using element_type = iris::container::element_t<Container>;
+
+    if constexpr (
+        std::same_as<std::ranges::range_reference_t<Container>, element_type&> &&
+        std::invocable<decltype(iris::container::append_return) const&, Container&, Args...>
+    ) {
+        fill(iris::unwrap_recursive(iris::container::append_return(s, std::forward<Args>(args)...)));
+
+    } else {
+        std::optional<element_type> element;
+        fill(iris::unwrap_recursive(element.emplace(std::forward<Args>(args)...)));
+        iris::container::append(s, std::move(*element));
+    }
+}
+
+// Appends an element made by `construct_node` into the container (see `append_element`)
 template<class Graph, class NodeT, class Container>
 constexpr void push_new_element(Container& s, typename NodeT::value_type&& value)
 {
@@ -161,35 +185,16 @@ constexpr void push_new_element(Container& s, typename NodeT::value_type&& value
         iris::container::append(s, std::forward<V>(value));
 
     } else {
-        using element_type = iris::container::element_t<Container>;
-
-        if constexpr (std::same_as<std::ranges::range_reference_t<Container>, element_type&>) {
-            detail::construct_node<Graph, NodeT>(
-                [&s]<class... Args>(Args&&... args) -> auto& {
-                    if constexpr (is_recursive_wrapper_v<element_type>) {
-                        return iris::unwrap_recursive(iris::container::append_return(s, std::in_place, std::forward<Args>(args)...));
-                    } else {
-                        return iris::unwrap_recursive(iris::container::append_return(s, std::forward<Args>(args)...));
-                    }
-                },
-                std::forward<V>(value)
-            );
-
-        } else {
-            std::optional<element_type> element;
-
-            detail::construct_node<Graph, NodeT>(
-                [&element]<class... Args>(Args&&... args) -> auto& {
-                    if constexpr (is_recursive_wrapper_v<element_type>) {
-                        return iris::unwrap_recursive(element.emplace(std::in_place, std::forward<Args>(args)...));
-                    } else {
-                        return iris::unwrap_recursive(element.emplace(std::forward<Args>(args)...));
-                    }
-                },
-                std::forward<V>(value)
-            );
-            iris::container::append(s, std::move(*element));
-        }
+        detail::construct_node<Graph, NodeT>(
+            [&s]<class Fill, class... Args>(Fill const& fill, Args&&... args) {
+                if constexpr (is_recursive_wrapper_v<iris::container::element_t<Container>>) {
+                    detail::append_element(s, fill, std::in_place, std::forward<Args>(args)...);
+                } else {
+                    detail::append_element(s, fill, std::forward<Args>(args)...);
+                }
+            },
+            std::forward<V>(value)
+        );
     }
 }
 

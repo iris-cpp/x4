@@ -585,6 +585,17 @@ TEST_CASE("write_attribute")
     }
 }
 
+template<class T>
+struct PushOnly
+{
+    using value_type = T;
+    std::vector<T> data;
+
+    [[nodiscard]] auto begin() noexcept { return data.begin(); }
+    [[nodiscard]] auto end() noexcept { return data.end(); }
+    void clear() noexcept { data.clear(); }
+    void push_back(T value) { data.emplace_back(std::move(value)); }
+};
 
 // - Can be default constructed
 // - Can be constructed from `int`
@@ -691,8 +702,20 @@ TEST_CASE("new object")
         x4::write_attribute(s, std::vector<std::vector<int>>{{1, 2}});
         CHECK(s == std::set<std::vector<long long>>{{1, 2}});
     }
+    {
+        using Value = rvariant<int, std::string>;
+        STATIC_CHECK(x4::traits::X4Container<PushOnly<Value>>);
+        STATIC_CHECK(x4::is_writable_v<PushOnly<Value>&, std::vector<int>>);
+        PushOnly<Value> c;
+        x4::write_attribute(c, std::vector<int>{1, 2});
+        CHECK(c.data == std::vector<Value>{1, 2});
 
-    // An existing one is assigned
+        PushOnly<rvariant<WeakNumber, std::string>> numbers;
+        x4::write_attribute(numbers, std::vector<int>{1});
+        REQUIRE(numbers.data.size() == 1);
+        CHECK(iris::get<0>(numbers.data[0]).constructed_from_int_and_never_reassigned);
+    }
+
     {
         std::optional<WeakNumber> o{std::in_place};
         x4::write_attribute(o, 1);
