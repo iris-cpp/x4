@@ -68,9 +68,9 @@ struct attribute_traits
     static_assert(CategorizedAttr<ExposedAttr, plain_tag>);
 
     static constexpr void reset(ExposedAttr& attr)
-        noexcept(noexcept(attr = ExposedAttr{}))
+        noexcept(noexcept(attr = ExposedAttr()))
     {
-        attr = ExposedAttr{};
+        attr = ExposedAttr();
     }
 
     template<class ParserAttr>
@@ -78,9 +78,10 @@ struct attribute_traits
             std::default_initializable<ParserAttr> &&
             weakly_assignable_from<ExposedAttr&, ParserAttr>
     static constexpr ExposedAttr& clear(ExposedAttr& attr)
+        noexcept(noexcept(attr = ParserAttr()))
     {
         static_assert(detail::proper_attribute_for<ExposedAttr, ParserAttr>);
-        attr = ParserAttr{};
+        attr = ParserAttr();
         return attr;
     }
 
@@ -90,10 +91,11 @@ struct attribute_traits
             (!weakly_assignable_from<ExposedAttr&, ParserAttr>) &&
             std::constructible_from<ExposedAttr, ParserAttr>
     static constexpr ExposedAttr& clear(ExposedAttr& attr)
+        noexcept(noexcept(attr = ExposedAttr(ParserAttr())))
     {
         static_assert(std::default_initializable<ParserAttr>);
         static_assert(detail::proper_attribute_for<ExposedAttr, ExposedAttr>);
-        attr = ExposedAttr{ParserAttr{}};
+        attr = ExposedAttr(ParserAttr());
         return attr;
     }
 };

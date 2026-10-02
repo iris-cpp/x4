@@ -372,3 +372,26 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
     X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1,2!", +(int_ >> lit(',')) >> -(int_ >> lit('!')), std::vector<int>({1, 2}));
     X4_TEST_SUCCESS(std::vector<int>({7, 8, 9}), "1,2!", +(int_ >> lit(',')) >> (int_ >> lit('?') | int_ >> lit('!')), std::vector<int>({1, 2}));
 }
+
+// Accumulates the digits directly into its attribute, relying on the attribute being prepared to `int{}`
+struct accumulating_digits : x4::parser<accumulating_digits>
+{
+    using attribute_type = int;
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
+    [[nodiscard]] static constexpr bool parse(It& first, Se const& last, Context const&, Attr& attr)
+    {
+        if (first == last || *first < '0' || '9' < *first) return false;
+        for (; first != last && '0' <= *first && *first <= '9'; ++first) {
+            attr = attr * 10 + (*first - '0');
+        }
+        return true;
+    }
+};
+
+TEST_CASE("attribute contract: plain attribute parser with potential leftover")
+{
+    constexpr accumulating_digits accumulate{};
+    X4_TEST_SUCCESS(999, "12", accumulate, 12);
+    X4_TEST_SUCCESS(0, "12", (accumulate >> lit(';')) | accumulate, 12);
+}
