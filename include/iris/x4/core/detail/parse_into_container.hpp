@@ -122,8 +122,8 @@ struct ref_or_init_attribute_fn
 
         } else if constexpr (strategy.alternative_index != planner::no_index) {
             if constexpr (std::is_default_constructible_v<variant_alternative_t<strategy.alternative_index, S>>) {
-                if (auto* const held = iris::get_if<strategy.alternative_index>(&s)) {
-                    return ref_or_init_attribute_fn{}(*held);
+                if (auto* const existing_alt = iris::get_if<strategy.alternative_index>(&s)) {
+                    return ref_or_init_attribute_fn{}(*existing_alt);
                 }
                 return ref_or_init_attribute_fn{}(s.template emplace<strategy.alternative_index>());
 
@@ -268,8 +268,8 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
         );
         // append directly into the alternative, held or else emplaced, instead of into a temporary
         constexpr std::size_t alt_index = variant_alternative_for_v<Attr, container_type>;
-        auto* const held = iris::get_if<alt_index>(&attr);
-        auto& variant_alt = held ? *held : attr.template emplace<alt_index>();
+        auto* const existing_alt = iris::get_if<alt_index>(&attr);
+        auto& variant_alt = existing_alt ? *existing_alt : attr.template emplace<alt_index>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
 
     } else {

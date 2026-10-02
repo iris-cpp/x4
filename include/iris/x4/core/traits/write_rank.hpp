@@ -87,15 +87,27 @@ inline constexpr std::size_t no_index = static_cast<std::size_t>(-1);
 
 // W(S, V): the write of `V` into `S`
 template<class S, class V>
-struct write_node {};
+struct write_node
+{
+    using storage_type = S;
+    using value_type = V;
+};
 
 // E(S, x): an element `x` of a range appended into the container `S`
 template<class S, class V>
-struct range_element_node {};
+struct range_element_node
+{
+    using storage_type = S;
+    using value_type = V;
+};
 
 // P(S, y): a part `y` of a sequence, or the value of one parse of a repetition, appended into the container `S`
 template<class S, class V>
-struct sequence_part_node {};
+struct sequence_part_node
+{
+    using storage_type = S;
+    using value_type = V;
+};
 
 // A storage is an object type; a value is the type of an expression (`T` for an rvalue, `T&` or
 // `T const&` for an lvalue). `recursive_wrapper` is unwrapped.
@@ -174,7 +186,7 @@ concept plain_writable =
     !x4::detail::dangles<S, V> &&
     !both_char_like<S, std::remove_reference_t<V>>;
 
-// `T` is copy-initialized from the value itself; a type other than plain only from the same type
+// `T` is constructible from the value itself; a type other than plain only from the same type
 template<class T, class V>
 concept constructible_from_value =
     (std::same_as<std::remove_cvref_t<V>, T> && std::is_convertible_v<V, T>) ||
@@ -217,7 +229,7 @@ struct edge
 template<branch_kind Kind, std::size_t Alternative, bool Cond, class... Edges>
 struct branch {};
 
-// The candidates at one position, of which the one applying is chosen; ambiguous if two apply
+// The candidates at one position, of which the one applying is selected; ambiguous if two apply
 template<class... Branches>
 struct branch_group {};
 
@@ -716,7 +728,7 @@ struct branch_selection
 {
     std::size_t branch_index = no_index;
     std::size_t alternative_index = no_index; // of the variant written into, if any
-    branch_kind kind = branch_kind::assign; // of the branch, or of the candidate chosen
+    branch_kind kind = branch_kind::assign; // of the branch, or of the candidate selected
     bool is_ambiguous = false;
 };
 
@@ -778,7 +790,7 @@ public:
     graph_solver& operator=(graph_solver const&) = delete;
 
     // The selections, the nodes to explore further, and the rank of the root
-    [[nodiscard]] constexpr solver_result solve(branch_selection* selected, bool* extend) noexcept
+    [[nodiscard]] constexpr solver_result solve(branch_selection* selections, bool* extend) noexcept
     {
         std::size_t const node_count = graph_.node_count;
         solver_result result;
@@ -814,28 +826,28 @@ public:
         for (std::size_t node = 0; node < node_count; ++node) {
             if (!ws_.nodes[node].is_writable) continue;
 
-            branch_selection& chosen = selected[node];
+            branch_selection& selection = selections[node];
             std::size_t candidates = 0;
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
                 graph_item const& item = graph_.items[i];
-                if (chosen.branch_index != no_index && item.position != chosen.branch_index) break;
+                if (selection.branch_index != no_index && item.position != selection.branch_index) break;
                 if (!usable(node, i)) continue;
 
-                chosen.branch_index = item.position;
-                chosen.kind = item.kind;
-                chosen.alternative_index = item.alternative;
-                chosen.is_ambiguous = item.kind == branch_kind::wrapping_many || (item.kind == branch_kind::conversion && item.alternative == no_index);
+                selection.branch_index = item.position;
+                selection.kind = item.kind;
+                selection.alternative_index = item.alternative;
+                selection.is_ambiguous = item.kind == branch_kind::wrapping_many || (item.kind == branch_kind::conversion && item.alternative == no_index);
                 ws_.nodes[node].chosen_item = i;
                 ++candidates;
             }
             if (candidates >= 2) {
-                chosen.alternative_index = no_index;
-                chosen.is_ambiguous = true;
+                selection.alternative_index = no_index;
+                selection.is_ambiguous = true;
             }
         }
 
         if (ws_.nodes[0].is_writable) {
-            result.rank = plan_rank(selected);
+            result.rank = plan_rank(selections);
         }
         return result;
     }
@@ -1220,14 +1232,14 @@ struct explore<type_list<Known...>, constant_list<Prefixes...>>
 // writes into, and whether a container takes a value as a new element or appended by the parser)
 struct node_write_strategy
 {
-    constexpr node_write_strategy(write_rank rank, detail::branch_selection const& chosen) noexcept
+    constexpr node_write_strategy(write_rank rank, detail::branch_selection const& selection) noexcept
         : is_writable(rank != write_rank::none)
-        , kind(chosen.kind)
-        , alternative_index(chosen.alternative_index)
+        , kind(selection.kind)
+        , alternative_index(selection.alternative_index)
     {}
 
     bool is_writable; // the write from the node is accepted, not `write_rank::none`
-    branch_kind kind; // of the branch selected, or of the candidate chosen
+    branch_kind kind; // of the branch selected, or of the candidate selected
     std::size_t alternative_index; // of the variant written into, if any
 };
 

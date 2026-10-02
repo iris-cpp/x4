@@ -21,7 +21,7 @@ namespace iris::x4::detail {
 // whether the match wrote it.
 //
 // The action owns the slot and passes it to the subject as its attribute; it goes through the
-// parsers which pass the attribute through, down to the alternative whose chosen branch decides
+// parsers which pass the attribute through, down to the alternative whose selected branch decides
 // whether the attribute is written.
 template<class A>
 class action_slot

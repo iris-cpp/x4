@@ -17,6 +17,7 @@
 #include <iris/alloy/traits.hpp>
 #include <iris/type_list.hpp>
 
+#include <optional>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -30,90 +31,160 @@ namespace planner {
 namespace detail {
 
 // The plan of a node: the branch the selection in `Graph` chose, executed recursively
-template<class Graph, class Node>
+template<class Graph, class NodeT>
 struct write_plan;
 
-template<class Node>
-struct node_types;
-
-template<template<class, class> class Node, class S, class V>
-struct node_types<Node<S, V>>
+template<class Graph, class NodeT, class Construct>
+constexpr void construct_node(Construct const& construct, typename NodeT::value_type&& value)
 {
-    using storage = S;
-    using value = V;
-};
+    using T = NodeT::storage_type;
+    using V = NodeT::value_type;
+    constexpr branch_selection selection = Graph::template selection_of<NodeT>;
 
-// The argument which constructs `T` from the value, as `T t = value;` does: the value itself if of
-// the type `T`, else a `T` copy-initialized from it
-template<class T, class V>
-[[nodiscard]] constexpr std::conditional_t<std::same_as<std::remove_cvref_t<V>, T>, V&&, T> construction_argument(V&& value)
-{
-    return std::forward<V>(value);
+    if constexpr (constructible_from_value<T, V>) {
+        construct(std::forward<V>(value));
+
+    } else if constexpr (
+        std::same_as<attribute_category_t<T>, variant_tag> &&
+        (selection.kind == branch_kind::same_alternative || selection.kind == branch_kind::structural || selection.kind == branch_kind::conversion)
+    ) {
+        constexpr std::size_t J = selection.alternative_index;
+
+        if constexpr (selection.kind == branch_kind::conversion) {
+            if constexpr (is_wrapped_alternative_v<J, T>) {
+                construct(std::in_place_index<J>, std::in_place, std::forward<V>(value));
+            } else {
+                construct(std::in_place_index<J>, std::forward<V>(value));
+            }
+
+        } else {
+            detail::construct_node<Graph, write_node<variant_alternative_t<J, T>, V>>(
+                [&construct]<class... Args>(Args&&... args) -> auto& {
+                    if constexpr (is_wrapped_alternative_v<J, T>) {
+                        return iris::unwrap_recursive(iris::unsafe_get<J>(construct(std::in_place_index<J>, std::in_place, std::forward<Args>(args)...)));
+                    } else {
+                        return iris::unwrap_recursive(iris::unsafe_get<J>(construct(std::in_place_index<J>, std::forward<Args>(args)...)));
+                    }
+                },
+                std::forward<V>(value)
+            );
+        }
+
+    } else if constexpr (std::same_as<attribute_category_t<T>, variant_tag> && selection.kind == branch_kind::split) {
+        [&construct, &value]<std::size_t... Is>(std::index_sequence<Is...>) {
+            (void)(
+                (
+                    value.index() == Is &&
+                    (
+                        detail::construct_node<Graph, write_node<T, part_value_t<V, decltype(iris::get<Is>(std::declval<V&>()))>>>(
+                            construct,
+                            iris::unwrap_recursive(std::forward_like<V>(iris::get<Is>(value)))
+                        ),
+                        true
+                    )
+                ) || ...
+            );
+        }(std::make_index_sequence<variant_size_v<std::remove_cvref_t<V>>>{});
+
+    } else {
+        write_plan<Graph, NodeT>::apply(construct(), std::forward<V>(value));
+    }
 }
 
-// Into the content of an optional if any. Otherwise a new content is constructed from the value, or one
-// that is not plain is constructed by default and written into.
-template<class Graph, class Child, class Optional>
-constexpr void engage(Optional& s, typename node_types<Child>::value&& value)
+// Engage into the content of an optional if any, else into a new content that `construct_new` makes
+template<class Graph, class NodeT, class Optional>
+constexpr void engage(Optional& s, typename NodeT::value_type&& value)
 {
-    using T = node_types<Child>::storage;
-    using V = node_types<Child>::value;
+    using V = NodeT::value_type;
 
     if (s) {
-        write_plan<Graph, Child>::apply(iris::unwrap_recursive(*s), std::forward<V>(value));
+        write_plan<Graph, NodeT>::apply(iris::unwrap_recursive(*s), std::forward<V>(value));
         return;
     }
-    if constexpr (constructible_from_value<T, V>) {
-        s.emplace(detail::construction_argument<T, V>(std::forward<V>(value)));
-    } else {
-        s.emplace();
-        write_plan<Graph, Child>::apply(iris::unwrap_recursive(*s), std::forward<V>(value));
-    }
+    detail::construct_node<Graph, NodeT>(
+        [&s]<class... Args>(Args&&... args) -> auto& {
+            if constexpr (is_recursive_wrapper_v<typename Optional::value_type>) {
+                return iris::unwrap_recursive(s.emplace(std::in_place, std::forward<Args>(args)...));
+            } else {
+                return iris::unwrap_recursive(s.emplace(std::forward<Args>(args)...));
+            }
+        },
+        std::forward<V>(value)
+    );
 }
 
-// Into the alternative `J` if held. Otherwise a new one is constructed from the value, or one that is not
-// plain is constructed by default and written into.
-template<class Graph, std::size_t J, class Child, class Variant>
-constexpr void write_alternative(Variant& s, typename node_types<Child>::value&& value)
+// Write into the alternative `J` if held, else into a new one that `construct_new` makes
+template<class Graph, std::size_t J, class NodeT, class Variant>
+constexpr void write_alternative(Variant& s, typename NodeT::value_type&& value)
 {
-    using T = node_types<Child>::storage;
-    using V = node_types<Child>::value;
+    using V = NodeT::value_type;
 
-    if (auto* const held = iris::get_if<J>(&s)) {
-        write_plan<Graph, Child>::apply(*held, std::forward<V>(value));
+    if (auto* const existing_alt = iris::get_if<J>(&s)) {
+        write_plan<Graph, NodeT>::apply(*existing_alt, std::forward<V>(value));
         return;
     }
-    if constexpr (constructible_from_value<T, V>) {
-        s.template emplace<J>(detail::construction_argument<T, V>(std::forward<V>(value)));
-    } else {
-        write_plan<Graph, Child>::apply(s.template emplace<J>(), std::forward<V>(value));
-    }
+    detail::construct_node<Graph, NodeT>(
+        [&s]<class... Args>(Args&&... args) -> auto& {
+            if constexpr (is_wrapped_alternative_v<J, Variant>) {
+                return iris::unwrap_recursive(s.template emplace<J>(std::in_place, std::forward<Args>(args)...));
+            } else {
+                return iris::unwrap_recursive(s.template emplace<J>(std::forward<Args>(args)...));
+            }
+        },
+        std::forward<V>(value)
+    );
 }
 
-// A new element constructed from the value, or one that is not plain constructed by default and written into
-template<class Graph, class Child, class Container>
-constexpr void push_new_element(Container& s, typename node_types<Child>::value&& value)
+// Appends a new element that `construct_new` makes
+template<class Graph, class NodeT, class Container>
+constexpr void push_new_element(Container& s, typename NodeT::value_type&& value)
 {
-    using element_type = iris::container::element_t<Container>;
-    using T = node_types<Child>::storage;
-    using V = node_types<Child>::value;
+    using T = NodeT::storage_type;
+    using V = NodeT::value_type;
 
     if constexpr (constructible_from_value<T, V>) {
-        element_type element = std::forward<V>(value);
-        iris::container::append(s, std::move(element));
+        iris::container::append(s, std::forward<V>(value));
 
     } else {
-        element_type element{};
-        write_plan<Graph, Child>::apply(iris::unwrap_recursive(element), std::forward<V>(value));
-        iris::container::append(s, std::move(element));
+        using element_type = iris::container::element_t<Container>;
+
+        if constexpr (iris::container::mapping_container<Container>) {
+            std::optional<element_type> element;
+
+            detail::construct_node<Graph, NodeT>(
+                [&element]<class... Args>(Args&&... args) -> auto& {
+                    if constexpr (is_recursive_wrapper_v<element_type>) {
+                        return iris::unwrap_recursive(element.emplace(std::in_place, std::forward<Args>(args)...));
+                    } else {
+                        return iris::unwrap_recursive(element.emplace(std::forward<Args>(args)...));
+                    }
+                },
+                std::forward<V>(value)
+            );
+            iris::container::append(s, std::move(*element));
+
+        } else {
+            static_assert(iris::container::growable_array<Container>);
+
+            detail::construct_node<Graph, NodeT>(
+                [&s]<class... Args>(Args&&... args) -> auto& {
+                    if constexpr (is_recursive_wrapper_v<element_type>) {
+                        return iris::unwrap_recursive(iris::container::append_return(s, std::in_place, std::forward<Args>(args)...));
+                    } else {
+                        return iris::unwrap_recursive(iris::container::append_return(s, std::forward<Args>(args)...));
+                    }
+                },
+                std::forward<V>(value)
+            );
+        }
     }
 }
 
-template<class Graph, class Branch, std::size_t Alternative>
+template<class Graph, class Branch, std::size_t AlternativeI>
 struct write_step;
 
-template<class Graph, branch_kind Kind, std::size_t Alternative, class... Edges>
-struct write_step<Graph, branch<Kind, Alternative, true, Edges...>, Alternative>
+template<class Graph, branch_kind Kind, std::size_t AlternativeI, class... Edges>
+struct write_step<Graph, branch<Kind, AlternativeI, true, Edges...>, AlternativeI>
 {
     template<std::size_t I>
     using child = pack_indexing_t<I, Edges...>::node;
@@ -162,20 +233,23 @@ struct write_step<Graph, branch<Kind, Alternative, true, Edges...>, Alternative>
             }
 
         } else if constexpr (Kind == branch_kind::same_alternative || Kind == branch_kind::structural) {
-            detail::write_alternative<Graph, Alternative, child<0>>(s, std::forward<V>(v));
+            detail::write_alternative<Graph, AlternativeI, child<0>>(s, std::forward<V>(v));
 
         } else if constexpr (Kind == branch_kind::conversion) {
-            using T = storage_t<variant_alternative_t<Alternative, S>>;
-
-            if (auto* const held = iris::get_if<Alternative>(&s)) {
-                *held = std::forward<V>(v);
+            if (auto* const existing_alt = iris::get_if<AlternativeI>(&s)) {
+                *existing_alt = std::forward<V>(v);
                 return;
             }
-            s.template emplace<Alternative>(detail::construction_argument<T, V>(std::forward<V>(v)));
+            using T = storage_t<variant_alternative_t<AlternativeI, S>>;
+            if constexpr (is_convertible_without_narrowing_v<V, T>) {
+                s.template emplace<AlternativeI>(std::forward<V>(v));
+            } else {
+                s.template emplace<AlternativeI>(T(std::forward<V>(v)));
+            }
 
         } else if constexpr (Kind == branch_kind::wrapping) {
-            auto* const held = iris::get_if<Alternative>(&s);
-            auto& wrapper = held ? *held : s.template emplace<Alternative>();
+            auto* const existing_alt = iris::get_if<AlternativeI>(&s);
+            auto& wrapper = existing_alt ? *existing_alt : s.template emplace<AlternativeI>();
             write_plan<Graph, child<0>>::apply(iris::unwrap_recursive(alloy::get<0>(wrapper)), std::forward<V>(v));
 
         } else if constexpr (Kind == branch_kind::split) {
@@ -195,9 +269,9 @@ struct write_step<Graph, branch<Kind, Alternative, true, Edges...>, Alternative>
     }
 };
 
-// The candidate of a group for the alternative chosen
-template<class Graph, class... Branches, std::size_t Alternative>
-struct write_step<Graph, branch_group<Branches...>, Alternative>
+// The candidate of a group for the alternative selected
+template<class Graph, class... Branches, std::size_t AlternativeI>
+struct write_step<Graph, branch_group<Branches...>, AlternativeI>
 {
     template<class Branch>
     struct chosen
@@ -206,28 +280,28 @@ struct write_step<Graph, branch_group<Branches...>, Alternative>
     };
 
     template<branch_kind Kind, class... Edges>
-    struct chosen<branch<Kind, Alternative, true, Edges...>>
+    struct chosen<branch<Kind, AlternativeI, true, Edges...>>
     {
-        using type = type_list<branch<Kind, Alternative, true, Edges...>>;
+        using type = type_list<branch<Kind, AlternativeI, true, Edges...>>;
     };
 
     template<class S, class V>
     static constexpr void apply(S& s, V&& v)
     {
         using branch_type = at_c_t<0, typename concat_type_list<typename chosen<Branches>::type...>::type>;
-        write_step<Graph, branch_type, Alternative>::template apply<S, V>(s, std::forward<V>(v));
+        write_step<Graph, branch_type, AlternativeI>::template apply<S, V>(s, std::forward<V>(v));
     }
 };
 
-template<class Graph, template<class, class> class Node, class S, class V>
-struct write_plan<Graph, Node<S, V>>
+template<class Graph, template<class, class> class NodeTT, class S, class V>
+struct write_plan<Graph, NodeTT<S, V>>
 {
-    static constexpr branch_selection chosen = Graph::template selection_of<Node<S, V>>;
+    static constexpr branch_selection selection = Graph::template selection_of<NodeTT<S, V>>;
 
     static constexpr void apply(S& s, V&& v)
     {
-        using branch_type = at_c_t<chosen.branch_index, typename branches_of<Node<S, V>>::type>;
-        write_step<Graph, branch_type, chosen.alternative_index>::template apply<S, V>(s, std::forward<V>(v));
+        using branch_type = at_c_t<selection.branch_index, typename branches_of<NodeTT<S, V>>::type>;
+        write_step<Graph, branch_type, selection.alternative_index>::template apply<S, V>(s, std::forward<V>(v));
     }
 };
 

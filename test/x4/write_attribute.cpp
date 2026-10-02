@@ -652,6 +652,28 @@ TEST_CASE("new object")
         CHECK(iris::get<1>(var).constructed_from_int_and_never_reassigned);
     }
 
+    {
+        std::optional<rvariant<WeakNumber, std::string>> o;
+        x4::write_attribute(o, 1);
+        REQUIRE(o.has_value());
+        CHECK(iris::get<0>(*o).constructed_from_int_and_never_reassigned);  // NOLINT(bugprone-unchecked-optional-access)
+    }
+    {
+        std::vector<rvariant<WeakNumber, std::string>> v;
+        REQUIRE(parse("1", int_ % ',', v));
+        CHECK(iris::get<0>(v[0]).constructed_from_int_and_never_reassigned);
+    }
+    {
+        rvariant<std::string, recursive_wrapper<rvariant<WeakNumber, std::string>>> var;
+        x4::write_attribute(var, 1);
+        CHECK(iris::get<0>(iris::get<1>(var)).constructed_from_int_and_never_reassigned);
+    }
+    {
+        std::vector<rvariant<WeakNumber, std::string>> v;
+        x4::write_attribute(v, std::vector<rvariant<int, std::string>>{1});
+        CHECK(iris::get<0>(v[0]).constructed_from_int_and_never_reassigned);
+    }
+
     // An existing one is assigned
     {
         std::optional<WeakNumber> o{std::in_place};
