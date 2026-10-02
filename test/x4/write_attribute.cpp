@@ -673,6 +673,17 @@ TEST_CASE("new object")
         x4::write_attribute(v, std::vector<rvariant<int, std::string>>{1});
         CHECK(iris::get<0>(v[0]).constructed_from_int_and_never_reassigned);
     }
+    // An element of `std::set` cannot be written in place; it is made first and then inserted
+    {
+        std::set<rvariant<int, std::string>> s;
+        x4::write_attribute(s, std::vector<int>{2, 1});
+        CHECK(s == std::set<rvariant<int, std::string>>{1, 2});
+    }
+    {
+        std::set<std::vector<long long>> s;
+        x4::write_attribute(s, std::vector<std::vector<int>>{{1, 2}});
+        CHECK(s == std::set<std::vector<long long>>{{1, 2}});
+    }
 
     // An existing one is assigned
     {

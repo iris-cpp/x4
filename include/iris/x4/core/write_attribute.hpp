@@ -34,6 +34,13 @@ namespace detail {
 template<class Graph, class NodeT>
 struct write_plan;
 
+// Constructs a new object for the value by invoking `construct`.
+//
+// - A plain type, or one of the type of the value, is constructed from the value.
+// - A variant is constructed holding the alternative its write selects, which is
+//   made by the same rule, so that no alternative is constructed by default and
+//   then written into.
+// - Any other type is constructed by default and written into by its shape.
 template<class Graph, class NodeT, class Construct>
 constexpr void construct_node(Construct const& construct, typename NodeT::value_type&& value)
 {
@@ -91,7 +98,7 @@ constexpr void construct_node(Construct const& construct, typename NodeT::value_
     }
 }
 
-// Engage into the content of an optional if any, else into a new content that `construct_new` makes
+// Engage into the content of an optional if any, else into a new content that `construct_node` makes
 template<class Graph, class NodeT, class Optional>
 constexpr void engage(Optional& s, typename NodeT::value_type&& value)
 {
@@ -113,7 +120,7 @@ constexpr void engage(Optional& s, typename NodeT::value_type&& value)
     );
 }
 
-// Write into the alternative `J` if held, else into a new one that `construct_new` makes
+// Write into the alternative `J` if held, else into a new one that `construct_node` makes
 template<class Graph, std::size_t J, class NodeT, class Variant>
 constexpr void write_alternative(Variant& s, typename NodeT::value_type&& value)
 {
@@ -135,7 +142,15 @@ constexpr void write_alternative(Variant& s, typename NodeT::value_type&& value)
     );
 }
 
-// Appends a new element that `construct_new` makes
+// Appends an element made by `construct_node` into the container.
+//
+// - If an element can be written in place after it is appended (e.g. `std::vector`),
+//   the element is constructed directly in the container.
+//   - In this case, `value` itself must not refer into the container; otherwise the
+//     behavior is undefined.
+//
+// - Otherwise (e.g. `std::set`, whose elements are const), the element is made outside
+//   the container first and then appended.
 template<class Graph, class NodeT, class Container>
 constexpr void push_new_element(Container& s, typename NodeT::value_type&& value)
 {
@@ -148,7 +163,19 @@ constexpr void push_new_element(Container& s, typename NodeT::value_type&& value
     } else {
         using element_type = iris::container::element_t<Container>;
 
-        if constexpr (iris::container::mapping_container<Container>) {
+        if constexpr (std::same_as<std::ranges::range_reference_t<Container>, element_type&>) {
+            detail::construct_node<Graph, NodeT>(
+                [&s]<class... Args>(Args&&... args) -> auto& {
+                    if constexpr (is_recursive_wrapper_v<element_type>) {
+                        return iris::unwrap_recursive(iris::container::append_return(s, std::in_place, std::forward<Args>(args)...));
+                    } else {
+                        return iris::unwrap_recursive(iris::container::append_return(s, std::forward<Args>(args)...));
+                    }
+                },
+                std::forward<V>(value)
+            );
+
+        } else {
             std::optional<element_type> element;
 
             detail::construct_node<Graph, NodeT>(
@@ -162,20 +189,6 @@ constexpr void push_new_element(Container& s, typename NodeT::value_type&& value
                 std::forward<V>(value)
             );
             iris::container::append(s, std::move(*element));
-
-        } else {
-            static_assert(iris::container::growable_array<Container>);
-
-            detail::construct_node<Graph, NodeT>(
-                [&s]<class... Args>(Args&&... args) -> auto& {
-                    if constexpr (is_recursive_wrapper_v<element_type>) {
-                        return iris::unwrap_recursive(iris::container::append_return(s, std::in_place, std::forward<Args>(args)...));
-                    } else {
-                        return iris::unwrap_recursive(iris::container::append_return(s, std::forward<Args>(args)...));
-                    }
-                },
-                std::forward<V>(value)
-            );
         }
     }
 }
@@ -240,12 +253,7 @@ struct write_step<Graph, branch<Kind, AlternativeI, true, Edges...>, Alternative
                 *existing_alt = std::forward<V>(v);
                 return;
             }
-            using T = storage_t<variant_alternative_t<AlternativeI, S>>;
-            if constexpr (is_convertible_without_narrowing_v<V, T>) {
-                s.template emplace<AlternativeI>(std::forward<V>(v));
-            } else {
-                s.template emplace<AlternativeI>(T(std::forward<V>(v)));
-            }
+            s.template emplace<AlternativeI>(std::forward<V>(v));
 
         } else if constexpr (Kind == branch_kind::wrapping) {
             auto* const existing_alt = iris::get_if<AlternativeI>(&s);
