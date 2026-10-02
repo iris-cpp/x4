@@ -81,6 +81,12 @@ struct Ctor
     Ctor& operator=(int) = delete;
 };
 
+struct AmbiguousCtor
+{
+    explicit AmbiguousCtor(long) {}
+    AmbiguousCtor(unsigned) {}
+};
+
 struct Span
 {
     Span(int first, int count) : first(first), last(first + count) {}
@@ -366,6 +372,7 @@ TEST_CASE("write_rank")
     STATIC_CHECK(rank<std::optional<std::vector<int>>, std::vector<int>> == structural);
     STATIC_CHECK(rank<std::optional<std::vector<int>>, int> == none);
     STATIC_CHECK(rank<std::optional<Ctor>, int> == none);
+    STATIC_CHECK(rank<std::optional<AmbiguousCtor>, int> == none); // copy-initializable, but direct-initialization is ambiguous
     STATIC_CHECK(rank<std::optional<long long>, std::optional<int>> == converts);
     STATIC_CHECK(rank<std::optional<int>, long long> == none);
     STATIC_CHECK(rank<char, std::optional<char>> == structural);

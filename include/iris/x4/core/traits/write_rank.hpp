@@ -186,7 +186,8 @@ concept plain_writable =
     !x4::detail::dangles<S, V> &&
     !both_char_like<S, std::remove_reference_t<V>>;
 
-// `T` is constructible from the value itself; a type other than plain only from the same type
+// `T` is constructible from the value itself, by direct-initialization where the value converts implicitly
+// without narrowing; a type other than plain only from the same type
 template<class T, class V>
 concept constructible_from_value =
     (std::same_as<std::remove_cvref_t<V>, T> && std::is_convertible_v<V, T>) ||
@@ -194,6 +195,7 @@ concept constructible_from_value =
         !std::same_as<std::remove_cvref_t<V>, T> &&
         std::same_as<attribute_category_t<T>, plain_tag> &&
         is_convertible_without_narrowing_v<V, T> &&
+        std::is_constructible_v<T, V> &&
         !x4::detail::dangles<T, V> &&
         !both_char_like<T, std::remove_reference_t<V>>
     );
