@@ -61,9 +61,9 @@ constexpr void construct_node(Construct const& construct, typename NodeT::value_
             detail::construct_node<Graph, write_node<variant_alternative_t<J, T>, V>>(
                 [&construct]<class... Args>(Args&&... args) -> auto& {
                     if constexpr (is_wrapped_alternative_v<J, T>) {
-                        return iris::unwrap_recursive(iris::unsafe_get<J>(construct(std::in_place_index<J>, std::in_place, std::forward<Args>(args)...)));
+                        return iris::unsafe_get<J>(construct(std::in_place_index<J>, std::in_place, std::forward<Args>(args)...));
                     } else {
-                        return iris::unwrap_recursive(iris::unsafe_get<J>(construct(std::in_place_index<J>, std::forward<Args>(args)...)));
+                        return iris::unsafe_get<J>(construct(std::in_place_index<J>, std::forward<Args>(args)...));
                     }
                 },
                 std::forward<V>(value)
@@ -78,7 +78,7 @@ constexpr void construct_node(Construct const& construct, typename NodeT::value_
                     (
                         detail::construct_node<Graph, write_node<T, part_value_t<V, decltype(iris::get<Is>(std::declval<V&>()))>>>(
                             construct,
-                            iris::unwrap_recursive(std::forward_like<V>(iris::get<Is>(value)))
+                            std::forward_like<V>(iris::get<Is>(value))
                         ),
                         true
                     )
@@ -126,9 +126,9 @@ constexpr void write_alternative(Variant& s, typename NodeT::value_type&& value)
     detail::construct_node<Graph, NodeT>(
         [&s]<class... Args>(Args&&... args) -> auto& {
             if constexpr (is_wrapped_alternative_v<J, Variant>) {
-                return iris::unwrap_recursive(s.template emplace<J>(std::in_place, std::forward<Args>(args)...));
+                return s.template emplace<J>(std::in_place, std::forward<Args>(args)...);
             } else {
-                return iris::unwrap_recursive(s.template emplace<J>(std::forward<Args>(args)...));
+                return s.template emplace<J>(std::forward<Args>(args)...);
             }
         },
         std::forward<V>(value)
@@ -254,7 +254,7 @@ struct write_step<Graph, branch<Kind, AlternativeI, true, Edges...>, Alternative
 
         } else if constexpr (Kind == branch_kind::split) {
             [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-                (void)((v.index() == Is && (write_plan<Graph, child<Is>>::apply(s, iris::unwrap_recursive(std::forward_like<V>(iris::get<Is>(v)))), true)) || ...);
+                (void)((v.index() == Is && (write_plan<Graph, child<Is>>::apply(s, std::forward_like<V>(iris::get<Is>(v))), true)) || ...);
             }(std::index_sequence_for<Edges...>{});
 
         } else if constexpr (Kind == branch_kind::parts) {
