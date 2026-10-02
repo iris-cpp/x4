@@ -252,12 +252,12 @@ struct parse_into_container_impl<sequence<Ps...>>
             // Note: A sequence that may succeed without writing its value does not yield a new element
             //       (see `container_parse_strategy`).
             using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
-            constexpr planner::node_write part = planner::node_write_of<
+            constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
                 planner::sequence_part_node<planner::storage_t<Attr>, value_type>
             >;
 
             if constexpr (
-                part.writable && part.kind == planner::branch_kind::new_element &&
+                strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
                 !may_leave_attribute_unwritten_v<sequence<Ps...>>
             ) {
                 return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);

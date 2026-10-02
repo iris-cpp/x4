@@ -241,7 +241,7 @@ TEST_CASE("partial success (list-like)")
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(abc)>, Subject>);
         STATIC_CHECK(std::same_as<x4::parser_traits<Subject>::attribute_type, alloy::tuple<char, char, char>>);
-        STATIC_CHECK(x4::planner::node_write_of<x4::planner::sequence_part_node<std::string, char>>.kind == x4::planner::branch_kind::new_element);
+        STATIC_CHECK(x4::planner::node_write_strategy_of<x4::planner::sequence_part_node<std::string, char>>.kind == x4::planner::branch_kind::new_element);
 
         using Container = std::string;
 
@@ -333,7 +333,7 @@ TEST_CASE("partial success (list-like)")
         >;
         static_assert(std::same_as<std::remove_const_t<decltype(aOOc)>, Subject>);
         STATIC_CHECK(std::same_as<x4::parser_traits<Subject>::attribute_type, alloy::tuple<char, std::string, char>>);
-        STATIC_CHECK(x4::planner::node_write_of<x4::planner::sequence_part_node<std::string, char>>.kind == x4::planner::branch_kind::new_element);
+        STATIC_CHECK(x4::planner::node_write_strategy_of<x4::planner::sequence_part_node<std::string, char>>.kind == x4::planner::branch_kind::new_element);
         STATIC_CHECK(x4::write_rank_v<std::string&, std::string> == x4::write_rank::structural);
 
         using Container = std::string;

@@ -222,12 +222,12 @@ struct write_step<Graph, branch_group<Branches...>, Alternative>
 template<class Graph, template<class, class> class Node, class S, class V>
 struct write_plan<Graph, Node<S, V>>
 {
-    static constexpr selection chosen = Graph::template selection_of<Node<S, V>>;
+    static constexpr branch_selection chosen = Graph::template selection_of<Node<S, V>>;
 
     static constexpr void apply(S& s, V&& v)
     {
-        using branch_type = at_c_t<chosen.position, typename branches_of<Node<S, V>>::type>;
-        write_step<Graph, branch_type, chosen.alternative>::template apply<S, V>(s, std::forward<V>(v));
+        using branch_type = at_c_t<chosen.branch_index, typename branches_of<Node<S, V>>::type>;
+        write_step<Graph, branch_type, chosen.alternative_index>::template apply<S, V>(s, std::forward<V>(v));
     }
 };
 
@@ -274,7 +274,7 @@ template<class S, class V>
 constexpr void write_part(S& s, V&& v)
 {
     using node = sequence_part_node<storage_t<S>, model_value_t<V>>;
-    static_assert(node_write_of<node>.writable, "The value is not written into the container, as a new element or otherwise");
+    static_assert(node_write_strategy_of<node>.is_writable, "The value is not written into the container, as a new element or otherwise");
 
     detail::write_plan<graph_of<node>, node>::apply(
         iris::unwrap_recursive(s),

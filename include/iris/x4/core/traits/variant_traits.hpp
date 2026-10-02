@@ -31,13 +31,13 @@ struct variant_alternative_for {};
 
 template<class Variant, class Value>
     requires
-        (planner::node_write_of<planner::write_node<Variant, planner::model_value_t<Value>>>.writable) &&
-        (planner::node_write_of<planner::write_node<Variant, planner::model_value_t<Value>>>.alternative != planner::no_index)
+        (planner::node_write_strategy_of<planner::write_node<Variant, planner::model_value_t<Value>>>.is_writable) &&
+        (planner::node_write_strategy_of<planner::write_node<Variant, planner::model_value_t<Value>>>.alternative_index != planner::no_index)
 struct variant_alternative_for<Variant, Value>
 {
-    static constexpr std::size_t value = planner::node_write_of<
+    static constexpr std::size_t value = planner::node_write_strategy_of<
         planner::write_node<Variant, planner::model_value_t<Value>>
-    >.alternative;
+    >.alternative_index;
 };
 
 template<class Variant, class Value>

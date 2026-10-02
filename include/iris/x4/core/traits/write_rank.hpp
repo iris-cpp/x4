@@ -69,8 +69,9 @@ struct write_rank_impl;
 
 } // detail
 
-// `SRef` is the type of the attribute as an expression, `S&` (as `std::is_assignable_v`);
-// `V` is the type of the value as an expression, `T` for an rvalue
+// How a value of type `V` is written into the attribute of type `SRef`.
+// `SRef` must be `S&` for a non-const `S`, as the left operand of `iris::weakly_assignable_from` is.
+// `V` is the right operand.
 template<class SRef, class V>
 inline constexpr write_rank write_rank_v = detail::write_rank_impl<SRef, V>::value;
 
@@ -380,7 +381,7 @@ consteval auto write_branches()
             return branch_list<transparent_branch<S, V>>;
 
         } else if constexpr (std::same_as<std::remove_cvref_t<V>, S>) {
-            return branch_list<branch<branch_kind::assign_same, no_index, std::is_assignable_v<S&, V>>>;
+            return branch_list<branch<branch_kind::assign_same, no_index, weakly_assignable_from<S&, V>>>;
 
         } else {
             return branch_list<branch<branch_kind::assign, no_index, plain_writable<S, V>>>;
@@ -711,12 +712,12 @@ struct graph_walk<Children, type_list<Seen...>, type_list<Node, Nodes...>>
     >::type;
 };
 
-struct selection
+struct branch_selection
 {
-    std::size_t position = no_index; // of the branch
-    std::size_t alternative = no_index; // of the variant written into, if any
+    std::size_t branch_index = no_index;
+    std::size_t alternative_index = no_index; // of the variant written into, if any
     branch_kind kind = branch_kind::assign; // of the branch, or of the candidate chosen
-    bool ambiguous = false;
+    bool is_ambiguous = false;
 };
 
 struct graph_view
@@ -732,8 +733,8 @@ struct graph_view
 struct solver_result
 {
     write_rank rank = write_rank::none; // of the root
-    bool extend = false; // a node is to be explored further
-    bool zero_cycle = false; // among the zero edges of the branches which apply
+    bool needs_extension = false; // a node is to be explored further
+    bool has_zero_cycle = false; // among the zero edges of the branches which apply
 };
 
 struct node_state
@@ -746,10 +747,10 @@ struct node_state
     std::size_t chosen_item = no_index;
     std::size_t zero_parents = 0; // through the zero edges of the plan
 
-    bool writable = false;
+    bool is_writable = false;
     bool ok = false; // in the fixpoint being computed
-    bool derived = false; // in the least fixpoint being computed
-    bool visited = false; // by the plan
+    bool is_derived = false; // in the least fixpoint being computed
+    bool is_visited = false; // by the plan
 };
 
 // The arrays `graph_solver` works on, allocated by the caller as the sizes are known there.
@@ -777,63 +778,63 @@ public:
     graph_solver& operator=(graph_solver const&) = delete;
 
     // The selections, the nodes to explore further, and the rank of the root
-    [[nodiscard]] constexpr solver_result solve(selection* selected, bool* extend) noexcept
+    [[nodiscard]] constexpr solver_result solve(branch_selection* selected, bool* extend) noexcept
     {
         std::size_t const node_count = graph_.node_count;
         solver_result result;
 
         find_writable(no_index, no_index);
         for (std::size_t node = 0; node < node_count; ++node) {
-            ws_.nodes[node].writable = ws_.nodes[node].ok;
+            ws_.nodes[node].is_writable = ws_.nodes[node].ok;
         }
 
         // a node not writable by the branches explored so far may be by the others
         for (std::size_t node = 0; node < node_count; ++node) {
-            if (!ws_.nodes[node].writable && !graph_.complete[node]) {
+            if (!ws_.nodes[node].is_writable && !graph_.complete[node]) {
                 extend[node] = true;
-                result.extend = true;
+                result.needs_extension = true;
             }
         }
-        if (result.extend) return result;
+        if (result.needs_extension) return result;
 
         // a branch applies if its condition holds and its children are writable
         for (std::size_t node = 0; node < node_count; ++node) {
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
-                ws_.applies[i] = ws_.nodes[node].writable && applies(graph_.items[i]);
+                ws_.applies[i] = ws_.nodes[node].is_writable && applies(graph_.items[i]);
             }
         }
         find_components();
         for (std::size_t node = 0; node < node_count; ++node) {
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
-                result.zero_cycle = result.zero_cycle || (ws_.applies[i] && cyclic(node, graph_.items[i]));
+                result.has_zero_cycle = result.has_zero_cycle || (ws_.applies[i] && cyclic(node, graph_.items[i]));
             }
         }
 
         // the selection: the first position with a usable candidate
         for (std::size_t node = 0; node < node_count; ++node) {
-            if (!ws_.nodes[node].writable) continue;
+            if (!ws_.nodes[node].is_writable) continue;
 
-            selection& chosen = selected[node];
+            branch_selection& chosen = selected[node];
             std::size_t candidates = 0;
             for (std::size_t i = graph_.first_item[node]; i != graph_.first_item[node + 1]; ++i) {
                 graph_item const& item = graph_.items[i];
-                if (chosen.position != no_index && item.position != chosen.position) break;
+                if (chosen.branch_index != no_index && item.position != chosen.branch_index) break;
                 if (!usable(node, i)) continue;
 
-                chosen.position = item.position;
+                chosen.branch_index = item.position;
                 chosen.kind = item.kind;
-                chosen.alternative = item.alternative;
-                chosen.ambiguous = item.kind == branch_kind::wrapping_many || (item.kind == branch_kind::conversion && item.alternative == no_index);
+                chosen.alternative_index = item.alternative;
+                chosen.is_ambiguous = item.kind == branch_kind::wrapping_many || (item.kind == branch_kind::conversion && item.alternative == no_index);
                 ws_.nodes[node].chosen_item = i;
                 ++candidates;
             }
             if (candidates >= 2) {
-                chosen.alternative = no_index;
-                chosen.ambiguous = true;
+                chosen.alternative_index = no_index;
+                chosen.is_ambiguous = true;
             }
         }
 
-        if (ws_.nodes[0].writable) {
+        if (ws_.nodes[0].is_writable) {
             result.rank = plan_rank(selected);
         }
         return result;
@@ -842,16 +843,16 @@ public:
 private:
     // The rank of the plan: the nodes reached through the selections, none of them ambiguous, and
     // no cycle of the zero edges among them (a conflict of the selections)
-    [[nodiscard]] constexpr write_rank plan_rank(selection const* selected) noexcept
+    [[nodiscard]] constexpr write_rank plan_rank(branch_selection const* selected) noexcept
     {
         bool converts = false;
         std::size_t plan_size = 0; // in `ws_.stack`
         std::size_t pending = 0;
         ws_.pending[pending++] = 0;
-        ws_.nodes[0].visited = true;
+        ws_.nodes[0].is_visited = true;
         while (pending != 0) {
             std::size_t const node = ws_.pending[--pending];
-            if (selected[node].ambiguous) return write_rank::none;
+            if (selected[node].is_ambiguous) return write_rank::none;
 
             ws_.stack[plan_size++] = node;
             graph_item const& item = graph_.items[ws_.nodes[node].chosen_item];
@@ -861,9 +862,9 @@ private:
                 if (!edge.descent) {
                     ++ws_.nodes[edge.child].zero_parents;
                 }
-                if (ws_.nodes[edge.child].visited) continue;
+                if (ws_.nodes[edge.child].is_visited) continue;
 
-                ws_.nodes[edge.child].visited = true;
+                ws_.nodes[edge.child].is_visited = true;
                 ws_.pending[pending++] = edge.child;
             }
         }
@@ -917,7 +918,7 @@ private:
             // mostly follows its parent
             std::size_t pending = 0;
             for (std::size_t node = node_count; node-- != 0;) {
-                ws_.nodes[node].derived = false;
+                ws_.nodes[node].is_derived = false;
                 if (ws_.nodes[node].ok) {
                     ws_.pending[pending++] = node;
                 }
@@ -928,7 +929,7 @@ private:
                 for (std::size_t k = 0; k != before; ++k) {
                     std::size_t const node = ws_.pending[k];
                     if (derivable_node(node)) {
-                        ws_.nodes[node].derived = true;
+                        ws_.nodes[node].is_derived = true;
                     } else {
                         ws_.pending[pending++] = node;
                     }
@@ -967,7 +968,7 @@ private:
 
         for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
             graph_edge const& edge = graph_.edges[e];
-            if (edge.descent ? !ws_.nodes[edge.child].ok : !ws_.nodes[edge.child].derived) return false;
+            if (edge.descent ? !ws_.nodes[edge.child].ok : !ws_.nodes[edge.child].is_derived) return false;
         }
         return true;
     }
@@ -977,7 +978,7 @@ private:
         if (!item.cond) return false;
 
         for (std::size_t e = item.first_edge; e != item.last_edge; ++e) {
-            if (!ws_.nodes[graph_.edges[e].child].writable) return false;
+            if (!ws_.nodes[graph_.edges[e].child].is_writable) return false;
         }
         return true;
     }
@@ -1077,8 +1078,8 @@ private:
 template<std::size_t NodeCount>
 struct graph_solution
 {
-    std::array<selection, NodeCount> selected{};
-    std::array<bool, NodeCount> extend{};
+    std::array<branch_selection, NodeCount> selections{};
+    std::array<bool, NodeCount> needs_extension{};
     solver_result result;
 };
 
@@ -1137,7 +1138,7 @@ template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
             .calls = calls.data(),
             .pending = pending.data(),
         }
-    ).solve(solution.selected.data(), solution.extend.data());
+    ).solve(solution.selections.data(), solution.needs_extension.data());
     return solution;
 }
 
@@ -1152,12 +1153,12 @@ struct explored_graph<type_list<Nodes...>, constant_list<Prefixes...>, std::inde
 
     static constexpr graph_solution<sizeof...(Nodes)> solution = detail::solve_nodes(nodes{}, constant_list<Prefixes...>{}, std::index_sequence<Is...>{});
 
-    static constexpr bool complete = ((Prefixes == node_shape_t<Nodes>::branch_count) && ...);
+    static constexpr bool is_complete = ((Prefixes == node_shape_t<Nodes>::branch_count) && ...);
 
-    using next_prefixes = constant_list<(solution.extend[Is] ? node_shape_t<Nodes>::next_prefix(Prefixes) : Prefixes)...>;
+    using next_prefixes = constant_list<(solution.needs_extension[Is] ? node_shape_t<Nodes>::next_prefix(Prefixes) : Prefixes)...>;
 
     template<class Node>
-    static constexpr selection selection_of = solution.selected[find_index_exactly_once_v<Node, nodes>];
+    static constexpr branch_selection selection_of = solution.selections[find_index_exactly_once_v<Node, nodes>];
 };
 
 // ReSharper fails to compute the graph in a constraint when a function deduces it as its return
@@ -1175,7 +1176,7 @@ struct explore_completely<type_list<Nodes...>>
 };
 
 // The graph after the round that explored `Graph`
-template<class Graph, bool Extend = Graph::solution.result.extend, bool Partial = Graph::solution.result.zero_cycle && !Graph::complete>
+template<class Graph, bool Extend = Graph::solution.result.needs_extension, bool Partial = Graph::solution.result.has_zero_cycle && !Graph::is_complete>
 struct next_round
 {
     using type = Graph;
@@ -1217,17 +1218,17 @@ struct explore<type_list<Known...>, constant_list<Prefixes...>>
 
 // The write the selection of a node performs, which the parse side follows (the part a parser
 // writes into, and whether a container takes a value as a new element or appended by the parser)
-struct node_write
+struct node_write_strategy
 {
-    constexpr node_write(write_rank rank, detail::selection const& chosen) noexcept
-        : writable(rank != write_rank::none)
+    constexpr node_write_strategy(write_rank rank, detail::branch_selection const& chosen) noexcept
+        : is_writable(rank != write_rank::none)
         , kind(chosen.kind)
-        , alternative(chosen.alternative)
+        , alternative_index(chosen.alternative_index)
     {}
 
-    bool writable; // the write from the node is accepted, not `write_rank::none`
+    bool is_writable; // the write from the node is accepted, not `write_rank::none`
     branch_kind kind; // of the branch selected, or of the candidate chosen
-    std::size_t alternative; // of the variant written into, if any
+    std::size_t alternative_index; // of the variant written into, if any
 };
 
 // The graph of the nodes reachable from `Root`, the first of them, explored as far as the selections need
@@ -1235,7 +1236,7 @@ template<class Root>
 using graph_of = detail::explore<type_list<Root>, constant_list<detail::node_shape_t<Root>::next_prefix(0)>>::type;
 
 template<class Node>
-inline constexpr node_write node_write_of{
+inline constexpr node_write_strategy node_write_strategy_of{
     graph_of<Node>::solution.result.rank,
     graph_of<Node>::template selection_of<Node>
 };

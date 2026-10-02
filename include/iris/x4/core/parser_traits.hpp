@@ -186,12 +186,12 @@ namespace detail {
 template<class Parser, class Container>
 concept writes_as_part =
     has_attribute_v<Parser> &&
-    planner::node_write_of<
+    planner::node_write_strategy_of<
         planner::sequence_part_node<
             planner::storage_t<Container>,
             planner::model_value_t<typename parser_traits<Parser>::attribute_type>
         >
-    >.writable;
+    >.is_writable;
 
 } // detail
 

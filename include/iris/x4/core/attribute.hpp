@@ -15,7 +15,7 @@
 #include <iris/bits/specialization_of.hpp>
 
 #include <concepts>
-#include <ranges>
+#include <ranges> // IWYU pragma: keep
 #include <type_traits>
 
 namespace iris::alloy {
@@ -77,7 +77,7 @@ concept dangles = std::ranges::borrowed_range<T> && !std::ranges::borrowed_range
 template<class SRef, class V>
 concept X4StrictlyWritable =
     detail::mandates_writable_ref<SRef> &&
-    std::is_assignable_v<SRef, V> &&
+    weakly_assignable_from<SRef, V> &&
     is_convertible_without_narrowing_v<V, std::remove_reference_t<SRef>>;
 
 } // iris::x4

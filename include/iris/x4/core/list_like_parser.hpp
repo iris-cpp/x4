@@ -51,10 +51,10 @@ using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 inline constexpr bool writes_as_one_element = [] {
     using container_type = planner::storage_t<chunk_buffer<ParserAttr, ExposedAttr>>;
-    constexpr planner::node_write write = planner::node_write_of<
+    constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
         planner::write_node<container_type, planner::model_value_t<ParserAttr>>
     >;
-    return write.writable && write.kind == planner::branch_kind::whole;
+    return strategy.is_writable && strategy.kind == planner::branch_kind::whole;
 }();
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ExposedAttr>

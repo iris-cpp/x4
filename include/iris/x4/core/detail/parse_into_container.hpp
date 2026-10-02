@@ -73,24 +73,24 @@ inline constexpr container_parse_strategy container_parse_strategy_for = [] {
     using container_type = planner::storage_t<Container>;
     using value_type = planner::model_value_t<typename parser_traits<Parser>::attribute_type>;
 
-    constexpr planner::node_write part = planner::node_write_of<planner::sequence_part_node<container_type, value_type>>;
+    constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<planner::sequence_part_node<container_type, value_type>>;
 
-    if constexpr (may_leave_attribute_unwritten_v<Parser> && (part.writable || parser_traits<Parser>::template accepts_container<Container>)) {
+    if constexpr (may_leave_attribute_unwritten_v<Parser> && (strategy.is_writable || parser_traits<Parser>::template accepts_container<Container>)) {
         return container_parse_strategy::container_itself;
 
-    } else if constexpr (part.writable && part.kind == branch_kind::new_element) {
+    } else if constexpr (strategy.is_writable && strategy.kind == branch_kind::new_element) {
         return container_parse_strategy::as_part;
 
     } else if constexpr (
-        part.writable && part.kind == branch_kind::range &&
-        planner::node_write_of<planner::write_node<container_type, value_type>>.kind == branch_kind::whole
+        strategy.is_writable && strategy.kind == branch_kind::range &&
+        planner::node_write_strategy_of<planner::write_node<container_type, value_type>>.kind == branch_kind::whole
     ) {
         return container_parse_strategy::as_part;
 
     } else if constexpr (parser_traits<Parser>::template accepts_container<Container>) {
         return container_parse_strategy::container_itself;
 
-    } else if constexpr (part.writable) {
+    } else if constexpr (strategy.is_writable) {
         return container_parse_strategy::as_part;
 
     } else {
@@ -113,25 +113,25 @@ struct ref_or_init_attribute_fn
         using S = planner::storage_t<Attr>;
         S& s = iris::unwrap_recursive(attr);
 
-        constexpr planner::node_write write = planner::node_write_of<
+        constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
             planner::write_node<S, planner::model_value_t<ParserAttr>>
         >;
 
-        if constexpr (!write.writable) {
+        if constexpr (!strategy.is_writable) {
             return s;
 
-        } else if constexpr (write.alternative != planner::no_index) {
-            if constexpr (std::is_default_constructible_v<variant_alternative_t<write.alternative, S>>) {
-                if (auto* const held = iris::get_if<write.alternative>(&s)) {
+        } else if constexpr (strategy.alternative_index != planner::no_index) {
+            if constexpr (std::is_default_constructible_v<variant_alternative_t<strategy.alternative_index, S>>) {
+                if (auto* const held = iris::get_if<strategy.alternative_index>(&s)) {
                     return ref_or_init_attribute_fn{}(*held);
                 }
-                return ref_or_init_attribute_fn{}(s.template emplace<write.alternative>());
+                return ref_or_init_attribute_fn{}(s.template emplace<strategy.alternative_index>());
 
             } else {
                 return s;
             }
 
-        } else if constexpr (write.kind == branch_kind::engage) {
+        } else if constexpr (strategy.kind == branch_kind::engage) {
             if constexpr (std::is_default_constructible_v<typename S::value_type>) {
                 if (!s) {
                     s.emplace();
@@ -142,7 +142,7 @@ struct ref_or_init_attribute_fn
                 return s;
             }
 
-        } else if constexpr (write.kind == branch_kind::single_slot) {
+        } else if constexpr (strategy.kind == branch_kind::single_slot) {
             return ref_or_init_attribute_fn{}(alloy::get<0>(s));
 
         } else {
@@ -160,10 +160,10 @@ inline constexpr ref_or_init_attribute_fn<ParserAttr> ref_or_init_attribute_for{
 template<class S, class V>
 concept parses_into_new_element =
     (
-        planner::node_write_of<planner::sequence_part_node<S, V>>.kind == planner::branch_kind::new_element ||
+        planner::node_write_strategy_of<planner::sequence_part_node<S, V>>.kind == planner::branch_kind::new_element ||
         (
-            planner::node_write_of<planner::sequence_part_node<S, V>>.kind == planner::branch_kind::range &&
-            planner::node_write_of<planner::write_node<S, V>>.kind == planner::branch_kind::whole
+            planner::node_write_strategy_of<planner::sequence_part_node<S, V>>.kind == planner::branch_kind::range &&
+            planner::node_write_strategy_of<planner::write_node<S, V>>.kind == planner::branch_kind::whole
         )
     ) &&
     std::is_default_constructible_v<iris::container::element_t<S>> &&
@@ -267,9 +267,9 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
             "The variant has no alternative which can hold the container of the parser's attribute"
         );
         // append directly into the alternative, held or else emplaced, instead of into a temporary
-        constexpr std::size_t index = variant_alternative_for_v<Attr, container_type>;
-        auto* const held = iris::get_if<index>(&attr);
-        auto& variant_alt = held ? *held : attr.template emplace<index>();
+        constexpr std::size_t alt_index = variant_alternative_for_v<Attr, container_type>;
+        auto* const held = iris::get_if<alt_index>(&attr);
+        auto& variant_alt = held ? *held : attr.template emplace<alt_index>();
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
 
     } else {
