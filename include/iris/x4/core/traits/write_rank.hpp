@@ -198,14 +198,30 @@ concept constructible_from_value =
         !both_char_like<T, std::remove_reference_t<V>>
     );
 
+// Mandated where a write reaches a variant, or makes a new one. Otherwise, whether a new variant can
+// be made would depend on the order of its alternatives, and would silently change the candidates.
+template<class S, class Category = attribute_category_t<S>>
+inline constexpr bool mandates_variant_default_state = true;
+
+template<class S>
+inline constexpr bool mandates_variant_default_state<S, variant_tag> = [] {
+    static_assert(
+        std::is_default_constructible_v<S>,
+        "The variant attribute has no default state, as its first alternative is not default constructible. "
+        "Reorder the alternatives so that a default constructible one comes first."
+    );
+    return true;
+}();
+
 // A new `T` can be made from the value:
+// - A variant is constructed holding the alternative its write selects. It must have the default state
+//   (mandated), though the state is not used.
 // - A plain `T` is constructed from the value (`T t(v);`, never `T t; t = v;`).
 // - A `T` of the type of the value is constructed from the value.
 // - Any other `T` must be default constructible.
-// - A variant also must be default constructible, though it is constructed holding the alternative
-//   its write selects.
 template<class T, class V>
 concept makeable =
+    (std::same_as<attribute_category_t<T>, variant_tag> && mandates_variant_default_state<T>) ||
     (!std::same_as<attribute_category_t<T>, plain_tag> && std::is_default_constructible_v<T>) ||
     constructible_from_value<T, V>;
 
@@ -532,6 +548,7 @@ struct branches_of<write_node<S, V>>
 {
     static_assert(!std::is_reference_v<S> && !std::is_const_v<S>, "[BUG] A storage is an object type");
     static_assert(mandates_no_const_part<S>);
+    static_assert(mandates_variant_default_state<S>);
 
     using type = decltype(detail::write_branches<S, V>())::type;
 };

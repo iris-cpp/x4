@@ -386,12 +386,12 @@ TEST_CASE("write_rank")
 # pragma warning(push)
 # pragma warning(disable: 4244)
 #endif
-    STATIC_CHECK(rank<rvariant<Port, int>, long long> == converts); // Port
+    STATIC_CHECK(rank<rvariant<int, Port>, long long> == converts); // Port
 #ifdef _MSC_VER
 # pragma warning(pop)
 #endif
-    STATIC_CHECK(rank<rvariant<Port, long long>, int> == converts); // long long, by a standard conversion
-    STATIC_CHECK(rank<rvariant<Port, Wrap>, int> == none); // ambiguous, both by a user-defined conversion
+    STATIC_CHECK(rank<rvariant<long long, Port>, int> == converts); // long long, by a standard conversion
+    STATIC_CHECK(rank<rvariant<std::string, Port, Wrap>, int> == none); // ambiguous, both by a user-defined conversion
 
     // rvariant from an rvariant: into the same type, alternative by alternative, then wrapped
     STATIC_CHECK(rank<rvariant<int, rvariant<int, char>>, rvariant<int, char>> == structural);
@@ -403,7 +403,7 @@ TEST_CASE("write_rank")
     STATIC_CHECK(rank<rvariant<std::string, Literal>, int> == converts);
     STATIC_CHECK(rank<rvariant<long long, Literal>, int> == converts);
     STATIC_CHECK(rank<rvariant<Literal, Real>, long long> == structural);
-    STATIC_CHECK(rank<rvariant<Port, Literal>, long long> == converts); // Port, as a conversion precedes wrapping
+    STATIC_CHECK(rank<rvariant<Literal, Port>, long long> == converts); // Port, as a conversion precedes wrapping
     STATIC_CHECK(rank<rvariant<std::string, Count>, double> == none);
     STATIC_CHECK(rank<rvariant<std::string, Ints>, std::vector<int>> == structural);
     STATIC_CHECK(rank<rvariant<char, Paren>, int> == none);
@@ -506,9 +506,9 @@ TEST_CASE("write_attribute")
 # pragma warning(push)
 # pragma warning(disable: 4244)
 #endif
-    check_write(rvariant<Port, int>{0}, 5LL, rvariant<Port, int>{Port{5}});
-    check_write(rvariant<Port, long long>{0LL}, 5, rvariant<Port, long long>{5LL});
-    check_write(rvariant<Port, Literal>{Literal{}}, 5LL, rvariant<Port, Literal>{Port{5}});
+    check_write(rvariant<int, Port>{0}, 5LL, rvariant<int, Port>{Port{5}});
+    check_write(rvariant<long long, Port>{0LL}, 5, rvariant<long long, Port>{5LL});
+    check_write(rvariant<Literal, Port>{Literal{}}, 5LL, rvariant<Literal, Port>{Port{5}});
 #ifdef _MSC_VER
 # pragma warning(pop)
 #endif
