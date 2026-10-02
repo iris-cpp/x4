@@ -62,18 +62,17 @@ inline constexpr container_parse container_parse_for = [] {
     using container_type = planner::storage_t<Container>;
     using value_type = planner::model_value_t<typename parser_traits<Parser>::attribute_type>;
 
-    constexpr planner::node_write part = planner::node_write_of<planner::parse_part_node<container_type, value_type>>;
+    constexpr planner::node_write part = planner::node_write_of<planner::sequence_part_node<container_type, value_type>>;
 
     if constexpr (may_leave_attribute_unwritten_v<Parser> && (part.writable || parser_traits<Parser>::template accepts_container<Container>)) {
         return container_parse::container;
 
-    } else if constexpr (part.writable && part.kind == branch_kind::new_default_element) {
+    } else if constexpr (part.writable && part.kind == branch_kind::new_element) {
         return container_parse::part;
 
     } else if constexpr (
         part.writable && part.kind == branch_kind::range &&
-        planner::node_write_of<planner::write_node<container_type, value_type>>.kind == branch_kind::whole &&
-        std::is_default_constructible_v<iris::container::element_t<container_type>>
+        planner::node_write_of<planner::write_node<container_type, value_type>>.kind == branch_kind::whole
     ) {
         return container_parse::part;
 
@@ -144,12 +143,15 @@ struct ref_or_init_attribute_fn
 template<class ParserAttr>
 inline constexpr ref_or_init_attribute_fn<ParserAttr> ref_or_init_attribute_for{};
 
+// A new element is parsed into in place only where its write converts nothing. A plain object created on
+// the way then has the type of the value, so the parser writes into it as it would into a temporary of
+// that type, from which the object is otherwise moved.
 template<class S, class V>
 concept parses_into_new_element =
     (
-        planner::node_write_of<planner::parse_part_node<S, V>>.kind == planner::branch_kind::new_default_element ||
+        planner::node_write_of<planner::sequence_part_node<S, V>>.kind == planner::branch_kind::new_element ||
         (
-            planner::node_write_of<planner::parse_part_node<S, V>>.kind == planner::branch_kind::range &&
+            planner::node_write_of<planner::sequence_part_node<S, V>>.kind == planner::branch_kind::range &&
             planner::node_write_of<planner::write_node<S, V>>.kind == planner::branch_kind::whole
         )
     ) &&
@@ -200,7 +202,9 @@ struct parse_into_container_impl_default
             constexpr container_parse write = container_parse_for<Parser, unwrapped_attribute_type>;
             static_assert(
                 write != container_parse::none,
-                "The parser neither accepts this container nor yields an element of it"
+                "The value of this parser cannot be added to the container, as a new element, part by part, or as a range. "
+                "A new element of a plain type must be constructible from the value. Note: a default constructor and an assignment "
+                "are not enough."
             );
             if constexpr (write == container_parse::container) {
                 return parse_into_container_impl_default::parse_container(parser, first, last, ctx, unwrapped_attr);

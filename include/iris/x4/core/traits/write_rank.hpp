@@ -92,15 +92,9 @@ struct write_node {};
 template<class S, class V>
 struct range_element_node {};
 
-// P(S, y): a part `y` of a sequence appended into the container `S`
+// P(S, y): a part `y` of a sequence, or the value of one parse of a repetition, appended into the container `S`
 template<class S, class V>
 struct sequence_part_node {};
-
-// P(S, y) as the parse side appends a value: a part of a sequence, or the value of one parse of a
-// repetition. A new element which X4 adds while parsing is constructed by default and written into,
-// never made from the value (the condition D(elem(S)) in place of mk(elem(S), y))
-template<class S, class V>
-struct parse_part_node {};
 
 // A storage is an object type; a value is the type of an expression (`T` for an rvalue, `T&` or
 // `T const&` for an lvalue). `recursive_wrapper` is unwrapped.
@@ -133,7 +127,6 @@ enum class branch_kind : unsigned char
     wrapping_many,       // two or more single-element tuple-like alternatives: ambiguous
     split,               // alternative by alternative of the value
     new_element,
-    new_default_element, // on the parse side: constructed by default, then written into
     parts,
     range,
 };
@@ -192,9 +185,13 @@ concept constructible_from_value =
         !both_char_like<T, std::remove_reference_t<V>>
     );
 
-// Where the value is at hand, `T` is constructed from it, or by default and then written into
+// A new `T` is made from the value. A plain `T` is constructed from it, never constructed by default and
+// assigned instead, as `T t = v;` and `T t; t = v;` are different operations. A `T` that is not plain is
+// constructed from a value of its own type, and otherwise by default and then written into by its shape.
 template<class T, class V>
-concept makeable = constructible_from_value<T, V> || std::is_default_constructible_v<T>;
+concept makeable =
+    (!std::same_as<attribute_category_t<T>, plain_tag> && std::is_default_constructible_v<T>) ||
+    constructible_from_value<T, V>;
 
 // The elements of the range value `range` to be appended, moved from unless the value is an lvalue
 template<class V>
@@ -471,31 +468,13 @@ consteval auto write_branches()
     }
 }
 
-// The new element of E(S, x) and P(S, y) is made from the value; on the parse side it is constructed
-// by default and written into
-template<template<class, class> class Node, class S, class V>
-consteval auto new_element_branch()
-{
-    using element = storage_t<iris::container::element_t<S>>;
-
-    if constexpr (std::same_as<Node<S, V>, parse_part_node<S, V>>) {
-        return std::type_identity<branch<
-            branch_kind::new_default_element, no_index,
-            std::is_default_constructible_v<element> && iris::container::appendable<S, iris::container::element_t<S>>,
-            edge<write_node<element, V>, false>
-        >>{};
-
-    } else {
-        return std::type_identity<branch<
-            branch_kind::new_element, no_index,
-            makeable<element, V> && iris::container::appendable<S, iris::container::element_t<S>>,
-            edge<write_node<element, V>, false>
-        >>{};
-    }
-}
-
-template<template<class, class> class Node, class S, class V>
-using new_element_branch_t = decltype(detail::new_element_branch<Node, S, V>())::type;
+// The new element of E(S, x) and P(S, y), made from the value
+template<class S, class V>
+using new_element_branch = branch<
+    branch_kind::new_element, no_index,
+    makeable<storage_t<iris::container::element_t<S>>, V> && iris::container::appendable<S, iris::container::element_t<S>>,
+    edge<write_node<storage_t<iris::container::element_t<S>>, V>, false>
+>;
 
 // The branches of E(S, x) and P(S, y): New, then Parts for a sequence value; an optional value through
 // its content; a range value of P(S, y) appended as a range
@@ -513,15 +492,11 @@ consteval auto part_branches()
         return branch_list<branch<branch_kind::transparent, no_index, true, edge<Node<S, content_value_t<V>>, true>>>;
 
     } else if constexpr (std::same_as<attribute_category_t<std::remove_cvref_t<V>>, tuple_tag>) {
-        // The parts are written through P(S, y), also from E(S, x); on the parse side through its own P(S, y)
+        // The parts are written through P(S, y), also from E(S, x)
         return []<std::size_t... Is>(std::index_sequence<Is...>) {
-            constexpr bool parse_side = std::same_as<Node<S, V>, parse_part_node<S, V>>;
             return branch_list<
-                new_element_branch_t<Node, S, V>,
-                branch<branch_kind::parts, no_index, true, edge<
-                    std::conditional_t<parse_side, parse_part_node<S, slot_value_t<Is, V>>, sequence_part_node<S, slot_value_t<Is, V>>>,
-                    true
-                >...>
+                new_element_branch<S, V>,
+                branch<branch_kind::parts, no_index, true, edge<sequence_part_node<S, slot_value_t<Is, V>>, true>...>
             >;
         }(std::make_index_sequence<alloy::tuple_size_v<std::remove_cvref_t<V>>>{});
 
@@ -529,7 +504,7 @@ consteval auto part_branches()
         return branch_list<branch<branch_kind::range, no_index, true, edge<write_node<S, V>, false>>>;
 
     } else {
-        return branch_list<new_element_branch_t<Node, S, V>>;
+        return branch_list<new_element_branch<S, V>>;
     }
 }
 

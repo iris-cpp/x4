@@ -425,12 +425,12 @@ TEST_CASE("container_parse_for")
     STATIC_CHECK(char_pairs_parse_for<std::vector<std::vector<char_pair>>> == container_parse::part);
     STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char_pair, std::vector<char_pair>>>> == container_parse::part);
     STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char, std::vector<char_pair>>>> == container_parse::part);
-    STATIC_CHECK(char_pairs_parse_for<std::vector<converted>> == container_parse::part);
 
-    // a new element which X4 adds while parsing is constructed by default
+    // A new plain element is constructed from the value, never constructed by default and assigned
+    STATIC_CHECK(char_pairs_parse_for<std::vector<converted>> == container_parse::none);
     using char_parser_type = std::remove_const_t<decltype(x4::standard::char_)>;
     STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char>> == container_parse::part);
-    STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char_only>> == container_parse::none);
+    STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char_only>> == container_parse::part);
 
     constexpr auto char_pairs = x4::eps >> +(x4::standard::char_ >> x4::standard::char_);
     {
@@ -449,12 +449,5 @@ TEST_CASE("container_parse_for")
         REQUIRE(parse("abcd", char_pairs, v));
         REQUIRE(v.size() == 1);
         CHECK(iris::get<std::vector<char_pair>>(v[0]).size() == 2);
-    }
-    {
-        std::vector<converted> v;
-        REQUIRE(parse("abcd", char_pairs, v));
-        REQUIRE(v.size() == 1);
-        CHECK(v[0].from_char == 0);
-        CHECK(v[0].from_pairs == 1);
     }
 }

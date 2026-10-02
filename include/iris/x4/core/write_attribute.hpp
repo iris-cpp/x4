@@ -51,7 +51,8 @@ template<class T, class V>
     return std::forward<V>(value);
 }
 
-// Into the content of an optional if any, else a content made from the value, or by default and written into
+// Into the content of an optional if any. Otherwise a new content is constructed from the value, or one
+// that is not plain is constructed by default and written into.
 template<class Graph, class Child, class Optional>
 constexpr void engage(Optional& s, typename node_types<Child>::value&& value)
 {
@@ -70,7 +71,8 @@ constexpr void engage(Optional& s, typename node_types<Child>::value&& value)
     }
 }
 
-// Into the alternative `J` if held, else one made from the value, or by default and written into
+// Into the alternative `J` if held. Otherwise a new one is constructed from the value, or one that is not
+// plain is constructed by default and written into.
 template<class Graph, std::size_t J, class Child, class Variant>
 constexpr void write_alternative(Variant& s, typename node_types<Child>::value&& value)
 {
@@ -88,7 +90,7 @@ constexpr void write_alternative(Variant& s, typename node_types<Child>::value&&
     }
 }
 
-// A new element made from the value, or by default and written into
+// A new element constructed from the value, or one that is not plain constructed by default and written into
 template<class Graph, class Child, class Container>
 constexpr void push_new_element(Container& s, typename node_types<Child>::value&& value)
 {
@@ -151,11 +153,6 @@ struct write_step<Graph, branch<Kind, Alternative, true, Edges...>, Alternative>
         } else if constexpr (Kind == branch_kind::whole || Kind == branch_kind::new_element) {
             detail::push_new_element<Graph, child<0>>(s, std::forward<V>(v));
 
-        } else if constexpr (Kind == branch_kind::new_default_element) {
-            iris::container::element_t<S> element{};
-            write_plan<Graph, child<0>>::apply(iris::unwrap_recursive(element), std::forward<V>(v));
-            iris::container::append(s, std::move(element));
-
         } else if constexpr (Kind == branch_kind::append_all) {
             iris::container::append_range(s, detail::appended_elements<V>(v));
 
@@ -174,11 +171,7 @@ struct write_step<Graph, branch<Kind, Alternative, true, Edges...>, Alternative>
                 *held = std::forward<V>(v);
                 return;
             }
-            if constexpr (constructible_from_value<T, V>) {
-                s.template emplace<Alternative>(detail::construction_argument<T, V>(std::forward<V>(v)));
-            } else {
-                s.template emplace<Alternative>() = std::forward<V>(v);
-            }
+            s.template emplace<Alternative>(detail::construction_argument<T, V>(std::forward<V>(v)));
 
         } else if constexpr (Kind == branch_kind::wrapping) {
             auto* const held = iris::get_if<Alternative>(&s);
@@ -280,7 +273,7 @@ constexpr void pass_declared_attribute(S& s, V&& v)
 template<class S, class V>
 constexpr void write_part(S& s, V&& v)
 {
-    using node = parse_part_node<storage_t<S>, model_value_t<V>>;
+    using node = sequence_part_node<storage_t<S>, model_value_t<V>>;
     static_assert(node_write_of<node>.writable, "The value is not written into the container, as a new element or otherwise");
 
     detail::write_plan<graph_of<node>, node>::apply(

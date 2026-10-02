@@ -54,10 +54,7 @@ inline constexpr bool writes_as_one_element = [] {
     constexpr planner::node_write write = planner::node_write_of<
         planner::write_node<container_type, planner::model_value_t<ParserAttr>>
     >;
-    // the new element is one X4 adds while parsing, so constructed by default
-    return
-        write.writable && write.kind == planner::branch_kind::whole &&
-        std::is_default_constructible_v<iris::container::element_t<container_type>>;
+    return write.writable && write.kind == planner::branch_kind::whole;
 }();
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ExposedAttr>

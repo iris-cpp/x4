@@ -15,6 +15,14 @@
 #include <iris/rvariant/rvariant_io.hpp>
 
 #include <iris/x4/core/traits/write_rank.hpp>
+#include <iris/x4/core/detail/parse_into_container.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/delimited_list.hpp>
+#include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/optional.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/rule.hpp>
 
 #include <filesystem>
 #include <initializer_list>
@@ -23,6 +31,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -567,6 +576,150 @@ TEST_CASE("write_attribute")
         CHECK(iris::get<long long>(loop.cond) == 1);
         CHECK(iris::get<double>(iris::get<ast::Expr>(loop.body.stmts.at(0))) == 2.5);
     }
+}
+
+
+// - Can be default constructed
+// - Can be constructed from `int`
+// - Can assign `int`
+struct WeakNumber
+{
+    WeakNumber() = default;
+    WeakNumber(int) : constructed_from_int_and_never_reassigned(true) {}
+    WeakNumber& operator=(int) { constructed_from_int_and_never_reassigned = false; return *this; }
+    bool constructed_from_int_and_never_reassigned = false;
+};
+
+// - Can be default constructed
+// - Can NOT be converted from `int` as constructor being `explicit`
+// - Can assign `int`
+struct StrongNumber
+{
+    StrongNumber() = default;
+    explicit StrongNumber(int) {}
+    StrongNumber& operator=(int) { return *this; }
+};
+
+struct ID_Param
+{
+    WeakNumber id;
+    std::optional<WeakNumber> param;
+};
+IRIS_ALLOY_ADAPT_STRUCT(ID_Param, id, param);
+
+TEST_CASE("new object")
+{
+    using x4::int_;
+    using x4::is_writable_v;
+
+    // A new plain object is constructed from the value, by `write_attribute` and while parsing alike
+    {
+        std::vector<WeakNumber> v;
+        x4::write_attribute(v, std::vector<int>{1});
+        CHECK(v[0].constructed_from_int_and_never_reassigned);
+    }
+    {
+        std::vector<WeakNumber> v;
+        REQUIRE(parse("1", int_ % ',', v));
+        CHECK(v[0].constructed_from_int_and_never_reassigned);
+    }
+    {
+        std::optional<WeakNumber> o;
+        x4::write_attribute(o, 1);
+        REQUIRE(o.has_value());
+        CHECK(o->constructed_from_int_and_never_reassigned);  // NOLINT(bugprone-unchecked-optional-access)
+    }
+    {
+        std::optional<WeakNumber> o;
+        REQUIRE(parse("1", -int_, o));
+        REQUIRE(o.has_value());
+        CHECK(o->constructed_from_int_and_never_reassigned);  // NOLINT(bugprone-unchecked-optional-access)
+    }
+    {
+        std::optional<WeakNumber> o;
+        REQUIRE(parse("1", int_, o));
+        REQUIRE(o.has_value());
+        CHECK(o->constructed_from_int_and_never_reassigned);  // NOLINT(bugprone-unchecked-optional-access)
+    }
+    {
+        rvariant<std::string, WeakNumber> var;
+        x4::write_attribute(var, 1);
+        CHECK(iris::get<1>(var).constructed_from_int_and_never_reassigned);
+    }
+    {
+        rvariant<std::string, WeakNumber> var;
+        REQUIRE(parse("1", int_, var));
+        CHECK(iris::get<1>(var).constructed_from_int_and_never_reassigned);
+    }
+
+    // An existing one is assigned
+    {
+        std::optional<WeakNumber> o{std::in_place};
+        x4::write_attribute(o, 1);
+        CHECK(!o->constructed_from_int_and_never_reassigned);
+    }
+    {
+        rvariant<std::string, WeakNumber> var{std::in_place_index<1>};
+        x4::write_attribute(var, 1);
+        CHECK(!iris::get<1>(var).constructed_from_int_and_never_reassigned);
+    }
+    {
+        // The default state holds `WeakNumber`, as `std::variant<WeakNumber, std::string> v; v = 1;` assigns
+        rvariant<WeakNumber, std::string> var;
+        REQUIRE(parse("1", int_, var));
+        CHECK(!iris::get<0>(var).constructed_from_int_and_never_reassigned);
+    }
+    {
+        ID_Param idp;
+        x4::write_attribute(idp, alloy::tuple<int, int>{1, 2});
+        CHECK(!idp.id.constructed_from_int_and_never_reassigned);
+        REQUIRE(idp.param.has_value());
+        CHECK(idp.param->constructed_from_int_and_never_reassigned);  // NOLINT(bugprone-unchecked-optional-access)
+    }
+    {
+        ID_Param idp;
+        REQUIRE(parse("1,2", int_ >> ',' >> int_, idp));
+        CHECK(!idp.id.constructed_from_int_and_never_reassigned);
+        REQUIRE(idp.param.has_value());
+        CHECK(idp.param->constructed_from_int_and_never_reassigned);  // NOLINT(bugprone-unchecked-optional-access)
+    }
+
+    // No default constructor is needed
+    check_write(std::vector<Port>{}, std::vector<int>{1, 2}, std::vector<Port>{Port{1}, Port{2}});
+    {
+        std::vector<Port> v;
+        REQUIRE(parse("1,2", int_ % ',', v));
+        CHECK(v == std::vector<Port>{Port{1}, Port{2}});
+    }
+    {
+        constexpr auto ports = x4::rule<struct ports_rule, std::vector<Port>>{"ports"} = *(int_ >> ';');
+        std::vector<Port> v;
+        REQUIRE(parse("1;2;", ports, v));
+        CHECK(v == std::vector<Port>{Port{1}, Port{2}});
+    }
+    {
+        // The failed parse adds nothing
+        std::vector<Port> v;
+        auto const result = parse("1;2", *(int_ >> ';'), v);
+        REQUIRE(result.is_partial_match());
+        CHECK(result.remainder_str() == "2");
+        CHECK(v == std::vector<Port>{Port{1}});
+    }
+    {
+        std::optional<WeakNumber> o;
+        auto const result = parse("1", -(int_ >> ';'), o);
+        REQUIRE(result.is_partial_match());
+        CHECK(result.remainder_str() == "1");
+        CHECK(!o);
+    }
+
+    // A new plain object is never default-constructed-then-assigned.
+    // See also: `creatable_in_place_for`.
+    STATIC_CHECK(is_writable_v<StrongNumber&, int>);
+    STATIC_CHECK(!is_writable_v<std::optional<StrongNumber>&, int>);
+    STATIC_CHECK(!is_writable_v<std::vector<StrongNumber>&, std::vector<int>>);
+    STATIC_CHECK(!is_writable_v<rvariant<std::string, StrongNumber>&, int>);
+    STATIC_CHECK(x4::detail::container_parse_for<std::remove_const_t<decltype(int_)>, std::vector<StrongNumber>> == x4::detail::container_parse::none);
 }
 
 TEST_CASE("is_writable")

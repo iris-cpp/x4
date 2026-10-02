@@ -38,6 +38,15 @@ concept clearable_for = requires(ExposedAttr& attr) {
     attribute_traits<ExposedAttr>::template clear<ParserAttr>(attr);
 };
 
+// The part that `ParserAttr` is written into is prepared in place only if it is
+// not plain, or of the type of the value. Otherwise, the whole attribute is reset,
+// and a new plain part is directly constructed from the value when it is written
+// (i.e., never default-constructed-then-assigned).
+template<class T, class ParserAttr>
+concept creatable_in_place_for =
+    !CategorizedAttr<unwrap_recursive_t<T>, plain_tag> ||
+    std::same_as<unwrap_recursive_t<T>, unwrap_recursive_t<ParserAttr>>;
+
 template<class T, class U>
 concept proper_attribute_for =
     X4ValueAttribute<U> &&
@@ -130,6 +139,7 @@ struct attribute_traits<OptionalT>
     template<class ParserAttr>
         requires
             (!CategorizedAttr<ParserAttr, optional_tag>) &&
+            detail::creatable_in_place_for<value_type, ParserAttr> &&
             detail::clearable_for<value_type, ParserAttr>
     static constexpr decltype(auto) clear(OptionalT& opt)
     {
@@ -186,6 +196,7 @@ struct attribute_traits<VariantT>
         requires
             (!std::same_as<ParserAttr, VariantT>) &&
             x4::detail::variant_has_alternative_for_v<VariantT, ParserAttr> &&
+            detail::creatable_in_place_for<variant_alternative_t<x4::detail::variant_alternative_for_v<VariantT, ParserAttr>, VariantT>, ParserAttr> &&
             requires(VariantT& var) { var.template emplace<x4::detail::variant_alternative_for_v<VariantT, ParserAttr>>(); }
     static constexpr auto& clear(VariantT& var)
     {

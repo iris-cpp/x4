@@ -253,11 +253,11 @@ struct parse_into_container_impl<sequence<Ps...>>
             //       (see `container_parse`).
             using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
             constexpr planner::node_write part = planner::node_write_of<
-                planner::parse_part_node<planner::storage_t<Attr>, value_type>
+                planner::sequence_part_node<planner::storage_t<Attr>, value_type>
             >;
 
             if constexpr (
-                part.writable && part.kind == planner::branch_kind::new_default_element &&
+                part.writable && part.kind == planner::branch_kind::new_element &&
                 !may_leave_attribute_unwritten_v<sequence<Ps...>>
             ) {
                 return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
