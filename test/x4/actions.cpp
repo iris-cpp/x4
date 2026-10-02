@@ -392,6 +392,26 @@ TEST_CASE("visit_attr candidates")
         });
     }
 
+    {
+        auto const check_number = [](auto const& number) {
+            long long value = -1;
+            REQUIRE(parse("42", number, value));
+            CHECK(value == 42);
+            REQUIRE(parse("12345678901", number, value)); // `long_long`, as `int_` overflows
+            CHECK(value == 12345678901);
+            value = -1;
+            REQUIRE(parse("null", number, value));
+            CHECK(value == 0);
+
+            std::vector<long long> values;
+            REQUIRE(parse("42,12345678901,null", number % ',', values));
+            CHECK(values == std::vector<long long>{42, 12345678901});
+        };
+        auto const number = int_ | x4::long_long | lit("null");
+        check_number(number);
+        check_number(number.on_match([] {}));
+    }
+
     // `Literal&`, `Ident&` or none, written into `Primary` and `std::vector<Primary>`
     {
         std::vector<std::string> seen;

@@ -11,9 +11,11 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/bits/specialization_of.hpp>
+#include <iris/rvariant/recursive_wrapper.hpp>
 
 #include <optional>
 #include <type_traits>
+#include <utility>
 
 namespace iris::x4::detail {
 
@@ -57,6 +59,22 @@ private:
 
 template<class T>
 inline constexpr bool is_action_slot_v = is_ttp_specialization_of_v<std::remove_const_t<T>, action_slot>;
+
+// Calls `writer` with the value in `slot`, moved.
+//   - `IsMultiCand`: the value is a variant of the attributes of the branches of `a | b | ...`.
+//     `write` is called with the one it holds, i.e. the attribute of the branch that matched.
+//   - Otherwise: `writer` is called with the value itself.
+// A variant declared by `rule` or `as<T>` is the attribute of one branch, so it is passed whole.
+template<bool IsMultiCand, class A, class WriterF>
+constexpr void write_slot_value(action_slot<A>& slot, WriterF const& writer)
+{
+    if constexpr (IsMultiCand) {
+        slot.value().visit([&writer](auto& candidate) { writer(std::move(iris::unwrap_recursive(candidate))); });
+
+    } else {
+        writer(std::move(slot.value()));
+    }
+}
 
 } // iris::x4::detail
 

@@ -19,9 +19,11 @@
 #include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/traits/variant_traits.hpp>
 #include <iris/x4/core/write_attribute.hpp>
+#include <iris/x4/core/detail/action_slot.hpp>
 
 #include <iris/alloy/tuple.hpp>
 #include <iris/rvariant/rvariant.hpp>
+#include <iris/type_list.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -36,36 +38,29 @@ struct optional;
 
 namespace iris::x4::detail {
 
-// How a parser writes into a container, following the write of its value as a part (P(S, y)), by
-// one of two paths:
-//   "part": the value of the parser is written into the container as a part. It is parsed into a
-//     new element directly where the element takes the value by its shape, else into a temporary
-//     which `write_part` writes; a range may be appended, so not always one element is added.
-//   "container": the container itself is passed to the parser, which appends into it (a range
-//     appended, the parts of a sequence, the content of an optional).
-//
-// The names follow the two roles in `writes_into_container` (`writes_as_part`, `accepts_container`),
-// but the path is chosen by the priority below, not by which of them holds:
-//
-//   1. A parser that may succeed without writing its value (an alternative with a branch without
-//      an attribute, possibly wrapped) is passed the container, even when its value could be
-//      written as a part. Otherwise, a new element would be added even when nothing is written.
-//   2. A value which becomes one new element (a range included, when it becomes one element as a
-//      whole) is written as a part.
-//   3. Otherwise, a parser which accepts the container is passed it.
-//   4. Otherwise, a value which can be written as a part is written so.
 enum class container_parse_strategy : unsigned char
 {
     // The value of the parser cannot be written into the container in any way.
     none,
 
+    // The container itself is passed to the parser, which appends into it.
+    container_itself,
+
     // The value of the parser is written into the container as a "part", i.e.,
     // a new element, the parts of a sequence, or an appended range.
     as_part,
 
-    // The container itself is passed to the parser, which appends into it.
-    container_itself,
+    // The parser may succeed without writing its value. It is passed a slot, and the value
+    // written (if any) is written into the container as a part.
+    as_part_if_written,
 };
+
+template<class Container, class Candidates>
+inline constexpr bool candidates_write_as_part = false;
+
+template<class Container, class... Cs>
+inline constexpr bool candidates_write_as_part<Container, type_list<Cs...>> =
+    (planner::node_write_strategy_of<planner::sequence_part_node<Container, planner::model_value_t<Cs>>>.is_writable && ...);
 
 template<class Parser, traits::X4Container Container>
 inline constexpr container_parse_strategy container_parse_strategy_for = [] {
@@ -75,8 +70,16 @@ inline constexpr container_parse_strategy container_parse_strategy_for = [] {
 
     constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<planner::sequence_part_node<container_type, value_type>>;
 
-    if constexpr (may_leave_attribute_unwritten_v<Parser> && (strategy.is_writable || parser_traits<Parser>::template accepts_container<Container>)) {
-        return container_parse_strategy::container_itself;
+    if constexpr (may_leave_attribute_unwritten_v<Parser>) {
+        if constexpr (candidates_write_as_part<container_type, attribute_candidates_t<Parser>>) {
+            return container_parse_strategy::as_part_if_written;
+
+        } else if constexpr (parser_traits<Parser>::template accepts_container<Container>) {
+            return container_parse_strategy::container_itself;
+
+        } else {
+            return container_parse_strategy::none;
+        }
 
     } else if constexpr (strategy.is_writable && strategy.kind == branch_kind::new_element) {
         return container_parse_strategy::as_part;
@@ -196,6 +199,20 @@ struct parse_into_container_impl_default
         return true;
     }
 
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container ContainerAttr>
+    static constexpr bool parse_written_part(Parser const& parser, It& first, Se const& last, Context& ctx, ContainerAttr& container)
+    {
+        detail::action_slot<typename parser_traits<Parser>::attribute_type> slot;
+        if (!parser.parse(first, last, ctx, slot)) return false;
+
+        if (slot.is_generated()) {
+            detail::write_slot_value<attribute_candidates_t<Parser>::size >= 2>(slot, [&container]<class V>(V&& value) {
+                planner::write_part(container, std::forward<V>(value));
+            });
+        }
+        return true;
+    }
+
     // pass `container` itself to the parser, which appends into it
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container Container>
     static constexpr bool parse_container(Parser const& parser, It& first, Se const& last, Context& ctx, Container& container)
@@ -210,15 +227,19 @@ struct parse_into_container_impl_default
         auto& unwrapped_attr = iris::unwrap_recursive(attr);
 
         if constexpr (traits::X4Container<unwrapped_attribute_type>) { // Attr is a container
-            constexpr container_parse_strategy write = container_parse_strategy_for<Parser, unwrapped_attribute_type>;
+            constexpr container_parse_strategy strategy = container_parse_strategy_for<Parser, unwrapped_attribute_type>;
             static_assert(
-                write != container_parse_strategy::none,
+                strategy != container_parse_strategy::none,
                 "The value of this parser cannot be added to the container, as a new element, part by part, or as a range. "
                 "A new element of a plain type must be constructible from the value. Note: a default constructor and an assignment "
                 "are not enough."
             );
-            if constexpr (write == container_parse_strategy::container_itself) {
+            if constexpr (strategy == container_parse_strategy::as_part_if_written) {
+                return parse_into_container_impl_default::parse_written_part(parser, first, last, ctx, unwrapped_attr);
+
+            } else if constexpr (strategy == container_parse_strategy::container_itself) {
                 return parse_into_container_impl_default::parse_container(parser, first, last, ctx, unwrapped_attr);
+
             } else {
                 return parse_into_container_impl_default::parse_part(parser, first, last, ctx, unwrapped_attr);
             }

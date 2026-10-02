@@ -270,7 +270,7 @@ public:
             first = saved_first;
             return false;
         }
-        action::commit(attr, slot);
+        action::commit<is_multi_cand>(attr, slot);
         return true;
     }
 
@@ -282,11 +282,7 @@ public:
     }
 
 private:
-    // Moves the value in `slot` into `attr` once the action accepts the match:
-    //   - the slot of an enclosing action: takes the value, or is left empty
-    //   - a container: the value is appended by `write_part`
-    //   - otherwise: `attr` is reset, then the value (if any) is written
-    template<X4Attribute Attr, class A>
+    template<bool IsMultiCand, X4Attribute Attr, class A>
     static constexpr void commit(Attr& attr, detail::action_slot<A>& slot)
     {
         if constexpr (X4UnusedAttribute<Attr>) {
@@ -297,17 +293,24 @@ private:
                 attr.disengage();
                 return;
             }
-            x4::write_attribute(attr.engage(), std::move(slot.value()));
+            auto& engaged = attr.engage();
+            detail::write_slot_value<IsMultiCand>(slot, [&engaged]<class V>(V&& value) {
+                x4::write_attribute(engaged, std::forward<V>(value));
+            });
 
         } else if constexpr (traits::X4Container<planner::storage_t<Attr>>) {
             if (slot.is_generated()) {
-                planner::write_part(attr, std::move(slot.value()));
+                detail::write_slot_value<IsMultiCand>(slot, [&attr]<class V>(V&& value) {
+                    x4::write_attribute(attr, std::forward<V>(value));
+                });
             }
 
         } else {
             traits::attribute_traits<Attr>::reset(attr);
             if (slot.is_generated()) {
-                x4::write_attribute(attr, std::move(slot.value()));
+                detail::write_slot_value<IsMultiCand>(slot, [&attr]<class V>(V&& value) {
+                    x4::write_attribute(attr, std::forward<V>(value));
+                });
             }
         }
     }

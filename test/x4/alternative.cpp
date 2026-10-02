@@ -76,7 +76,7 @@ struct undefined
 
 struct Object
 {
-    std::string name;
+    [[maybe_unused]] std::string name;
     bool operator==(Object const&) const = default;
 };
 
@@ -791,6 +791,9 @@ TEST_CASE("attributeless branch leaves the default")
     {
         std::vector<int> ints;
         REQUIRE(parse("1 2 3 - 5 - - 7 -", (int_ | '-') % ' ', ints));
+        CHECK(ints == std::vector<int>{1, 2, 3, 5, 7});
+        ints.clear();
+        REQUIRE(parse("1 2 3 - 5 - - 7 -", lexeme[int_ | '-'] % ' ', ints)); // wrapped
         CHECK(ints == std::vector<int>{1, 2, 3, 5, 7});
     }
     {
