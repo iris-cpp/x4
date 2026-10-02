@@ -56,25 +56,28 @@ struct parse_alternative_all_impl
     template<std::size_t I, class Try, X4NonUnusedAttribute ExposedAttr>
     [[nodiscard]] static constexpr bool parse_branch(Try&& try_branch, ExposedAttr& exposed_attr)
     {
-        using branch_attr = parser_traits<nary::parser_t<I, Ps...>>::attribute_type;
-        if constexpr (!X4UnusedAttribute<branch_attr> && may_leave_attribute_unwritten_v<nary::parser_t<I, Ps...>>) {
-            // The branch may succeed without writing (e.g. an alternative wrapped in a directive):
-            // hand over the whole attribute, whose default state then remains
-            traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
-            return try_branch.template operator()<I>(exposed_attr);
+        // Don't declare alias templates for parser type or attribute type here;
+        // Visual Studio often hides the real type when it is wrapped in a local alias.
 
-        } else if constexpr (X4UnusedAttribute<branch_attr> || traits::detail::clearable_for<ExposedAttr, branch_attr>) {
-            auto&& alt_attr = detail::prepare_attribute<branch_attr>(exposed_attr);
-            return try_branch.template operator()<I>(alt_attr);
+        if constexpr (
+            may_leave_attribute_unwritten_v<nary::parser_t<I, Ps...>> ||
+            X4UnusedAttribute<typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type> ||
+            traits::detail::clearable_for<ExposedAttr, typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type>
+        ) {
+            auto&& attr = detail::prepare_attribute_for<nary::parser_t<I, Ps...>>(exposed_attr);
+            return try_branch.template operator()<I>(attr);
 
         } else {
             static_assert(
-                requires(branch_attr&& value) { x4::write_attribute(exposed_attr, std::move(value)); },
+                requires(typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type&& value) {
+                    x4::write_attribute(exposed_attr, std::move(value));
+                },
                 "The attribute of this branch cannot be converted into the attribute of the alternative."
             );
             // The branch yields a whole value of an unrelated shape (e.g. a narrower variant);
             // parse it into a temporary and convert on success.
-            branch_attr temp{};
+            typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type temp{};
+
             if (!try_branch.template operator()<I>(temp)) return false;
 
             // As in the other branches, the value is written into the default state. An earlier

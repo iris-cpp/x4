@@ -104,7 +104,7 @@ concept attribute_passing_proxy =
 // Whether the parser may succeed without writing its attribute, i.e., an alternative with a
 // branch without an attribute, or a parser that passes its attribute to such an alternative.
 //
-// The attribute given to such a parser is NOT prepared for its attribute type (`prepare_attribute`),
+// The attribute given to such a parser is NOT prepared for its attribute type (`prepare_attribute_for`),
 // as the part made for that type would remain even when nothing is written (e.g., `int` emplaced
 // into `rvariant<std::string, int>` by `int_ | lit("auto")`, left as `0` when "auto" matches).
 //

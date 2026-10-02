@@ -281,41 +281,24 @@ struct attribute_traits<TupleLikeT>
 
 namespace iris::x4::detail {
 
-template<X4UnusedAttribute ParserAttr, class ExposedAttr>
-[[nodiscard]] constexpr unused_type const& prepare_attribute(ExposedAttr& exposed_attr)
-{
-    traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
-    return unused;
-}
-
-template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
-    requires traits::detail::clearable_for<ExposedAttr, ParserAttr>
-[[nodiscard]] constexpr decltype(auto) prepare_attribute(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
-{
-    return traits::attribute_traits<ExposedAttr>::template clear<ParserAttr>(exposed_attr);
-}
-
-template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
-    requires (!traits::detail::clearable_for<ExposedAttr, ParserAttr>)
-[[nodiscard]] constexpr ExposedAttr& prepare_attribute(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
-{
-    traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
-    return exposed_attr;
-}
-
-// Prepares `exposed_attr` for `Parser`. A parser which may succeed without writing its attribute
-// is handed the whole attribute in its default state, rather than the part its attribute type is
-// written into.
+// Prepares `exposed_attr` for `Parser` in its default state: the part the attribute type of `Parser`
+// is written into, or the whole attribute for a parser that may succeed without writing it.
 template<class Parser, class ExposedAttr>
 [[nodiscard]] constexpr decltype(auto)
-prepare_attribute_for(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
+prepare_attribute_for(ExposedAttr& exposed_attr)
 {
-    if constexpr (may_leave_attribute_unwritten_v<Parser>) {
+    using parser_attr = parser_traits<Parser>::attribute_type;
+
+    if constexpr (X4UnusedAttribute<parser_attr>) {
         traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
-        return (exposed_attr);
+        return (unused);
+
+    } else if constexpr (!may_leave_attribute_unwritten_v<Parser> && traits::detail::clearable_for<ExposedAttr, parser_attr>) {
+        return traits::attribute_traits<ExposedAttr>::template clear<parser_attr>(exposed_attr);
 
     } else {
-        return detail::prepare_attribute<typename parser_traits<Parser>::attribute_type>(exposed_attr);
+        traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
+        return (exposed_attr);
     }
 }
 
