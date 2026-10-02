@@ -172,7 +172,7 @@ struct parser_traits
 
     // If true, X4 may pass `Container` itself to the parser in place of a new element of it,
     // and the parser appends into it. Whether X4 does so is decided by the priority of writes
-    // into a container (`detail::container_parse_for`).
+    // into a container (`detail::container_parse_strategy_for`).
     template<class Container>
     static constexpr bool accepts_container = detail::get_accepts_container<Parser, Container>::value;
 

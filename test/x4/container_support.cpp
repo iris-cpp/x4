@@ -55,7 +55,7 @@ struct converted
 };
 
 template<class Container>
-constexpr x4::detail::container_parse char_pairs_parse_for = x4::detail::container_parse_for<char_pairs_parser, Container>;
+constexpr x4::detail::container_parse_strategy char_pairs_parse_for = x4::detail::container_parse_strategy_for<char_pairs_parser, Container>;
 
 // made from a `char` by a converting constructor, with or without a default constructor
 struct from_char
@@ -416,21 +416,21 @@ TEST_CASE("container_support")
     }
 }
 
-TEST_CASE("container_parse_for")
+TEST_CASE("container_parse_strategy_for")
 {
-    using x4::detail::container_parse;
+    using x4::detail::container_parse_strategy;
     using iris::rvariant;
 
-    STATIC_CHECK(char_pairs_parse_for<std::string> == container_parse::container);
-    STATIC_CHECK(char_pairs_parse_for<std::vector<std::vector<char_pair>>> == container_parse::part);
-    STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char_pair, std::vector<char_pair>>>> == container_parse::part);
-    STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char, std::vector<char_pair>>>> == container_parse::part);
+    STATIC_CHECK(char_pairs_parse_for<std::string> == container_parse_strategy::container_itself);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<std::vector<char_pair>>> == container_parse_strategy::as_part);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char_pair, std::vector<char_pair>>>> == container_parse_strategy::as_part);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<rvariant<char, std::vector<char_pair>>>> == container_parse_strategy::as_part);
 
     // A new plain element is constructed from the value, never constructed by default and assigned
-    STATIC_CHECK(char_pairs_parse_for<std::vector<converted>> == container_parse::none);
+    STATIC_CHECK(char_pairs_parse_for<std::vector<converted>> == container_parse_strategy::none);
     using char_parser_type = std::remove_const_t<decltype(x4::standard::char_)>;
-    STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char>> == container_parse::part);
-    STATIC_CHECK(x4::detail::container_parse_for<char_parser_type, std::vector<from_char_only>> == container_parse::part);
+    STATIC_CHECK(x4::detail::container_parse_strategy_for<char_parser_type, std::vector<from_char>> == container_parse_strategy::as_part);
+    STATIC_CHECK(x4::detail::container_parse_strategy_for<char_parser_type, std::vector<from_char_only>> == container_parse_strategy::as_part);
 
     constexpr auto char_pairs = x4::eps >> +(x4::standard::char_ >> x4::standard::char_);
     {

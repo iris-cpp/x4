@@ -719,7 +719,7 @@ TEST_CASE("new object")
     STATIC_CHECK(!is_writable_v<std::optional<StrongNumber>&, int>);
     STATIC_CHECK(!is_writable_v<std::vector<StrongNumber>&, std::vector<int>>);
     STATIC_CHECK(!is_writable_v<rvariant<std::string, StrongNumber>&, int>);
-    STATIC_CHECK(x4::detail::container_parse_for<std::remove_const_t<decltype(int_)>, std::vector<StrongNumber>> == x4::detail::container_parse::none);
+    STATIC_CHECK(x4::detail::container_parse_strategy_for<std::remove_const_t<decltype(int_)>, std::vector<StrongNumber>> == x4::detail::container_parse_strategy::none);
 }
 
 TEST_CASE("is_writable")

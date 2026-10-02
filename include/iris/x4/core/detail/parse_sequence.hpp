@@ -250,7 +250,7 @@ struct parse_into_container_impl<sequence<Ps...>>
             // sequence writes into the container on its own, as the value is written part by part.
             //
             // Note: A sequence that may succeed without writing its value does not yield a new element
-            //       (see `container_parse`).
+            //       (see `container_parse_strategy`).
             using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
             constexpr planner::node_write part = planner::node_write_of<
                 planner::sequence_part_node<planner::storage_t<Attr>, value_type>
