@@ -47,10 +47,13 @@ namespace iris::x4::detail {
 // The names follow the two roles in `writes_into_container` (`writes_as_part`, `accepts_container`),
 // but the path is chosen by the priority below, not by which of them holds:
 //
-//   1. A value which becomes one new element (a range included, when it becomes one element as a
+//   1. A parser that may succeed without writing its value (an alternative with a branch without
+//      an attribute, possibly wrapped) is passed the container, even when its value could be
+//      written as a part. Otherwise, a new element would be added even when nothing is written.
+//   2. A value which becomes one new element (a range included, when it becomes one element as a
 //      whole) is written as a part.
-//   2. Otherwise, a parser which accepts the container is passed it.
-//   3. Otherwise, a value which can be written as a part is written so.
+//   3. Otherwise, a parser which accepts the container is passed it.
+//   4. Otherwise, a value which can be written as a part is written so.
 enum class container_parse { none, part, container };
 
 template<class Parser, traits::X4Container Container>
@@ -61,7 +64,10 @@ inline constexpr container_parse container_parse_for = [] {
 
     constexpr planner::node_write part = planner::node_write_of<planner::parse_part_node<container_type, value_type>>;
 
-    if constexpr (part.writable && part.kind == branch_kind::new_default_element) {
+    if constexpr (may_leave_attribute_unwritten_v<Parser> && (part.writable || parser_traits<Parser>::template accepts_container<Container>)) {
+        return container_parse::container;
+
+    } else if constexpr (part.writable && part.kind == branch_kind::new_default_element) {
         return container_parse::part;
 
     } else if constexpr (

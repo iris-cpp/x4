@@ -69,7 +69,16 @@ struct alloy::adaptor<di_include>
     using getters_list = iris::constant_list<&di_include::FileName>;
 };
 
-struct undefined {};
+struct undefined
+{
+    bool operator==(undefined const&) const = default;
+};
+
+struct Object
+{
+    std::string name;
+    bool operator==(Object const&) const = default;
+};
 
 namespace declared_variant {
 
@@ -217,11 +226,6 @@ TEST_CASE("alternative")
             attr_type v;
             REQUIRE(parse("12345", lit("rock") | int_ | char_, v));
             CHECK(iris::get<int>(v) == 12345);
-        }
-        {
-            attr_type v;
-            REQUIRE(parse("rock", lit("rock") | int_ | char_, v));
-            CHECK(v.index() == 0);
         }
         {
             attr_type v;
@@ -410,18 +414,6 @@ TEST_CASE("alternative")
         x4_test::stationary st {0};
         REQUIRE(parse("{42}", p | eps | p, st));
         CHECK(st.val == 42);
-    }
-
-    {
-        // attributeless parsers must not insert values
-        std::vector<int> v;
-        REQUIRE(parse("1 2 3 - 5 - - 7 -", (int_ | '-') % ' ', v));
-        REQUIRE(v.size() == 5);
-        CHECK(v[0] == 1);
-        CHECK(v[1] == 2);
-        CHECK(v[2] == 3);
-        CHECK(v[3] == 5);
-        CHECK(v[4] == 7);
     }
 
     {
@@ -668,6 +660,152 @@ TEST_CASE("alternative attribute reuse")
         check_separate_branches<rvariant<int, std::string>>("a1", alpha_excl | a_int, alpha_excl, a_int);
     }
 
+}
+
+template<class Attr, class Parser>
+void check_root_and_slot(std::string_view input, Parser const& parser, Attr const& expected)
+{
+    CAPTURE(input);
+    {
+        Attr attr{};
+        REQUIRE(x4::parse(input, parser, attr).ok);
+        CHECK(attr == expected);
+    }
+    {
+        alloy::tuple<int, Attr> attr{};
+        std::string const slot_input = "1," + std::string{input};
+        REQUIRE(x4::parse(slot_input, x4::int_ >> ',' >> parser, attr).ok);
+        CHECK(alloy::get<1>(attr) == expected);
+    }
+}
+
+TEST_CASE("attributeless branch leaves the default")
+{
+    using x4::standard::alpha;
+    using x4::standard::digit;
+    using x4::standard::char_;
+    using x4::lit;
+    using x4::int_;
+    using x4::eps;
+    using x4::lexeme;
+    using x4::fixed_value;
+    using x4::default_value;
+    using iris::rvariant;
+
+    // The attribute is left in its default state, not in the part written by the other branches
+    // (nor by the failed branch)
+    constexpr auto five = (int_ >> 'x') | (lit('5') >> 'y');
+    check_root_and_slot("5y", five, 0);
+    check_root_and_slot("5y", five, std::optional<int>{});
+    check_root_and_slot("5y", five, rvariant<std::string, int>{});
+    check_root_and_slot("5y", lexeme[five], rvariant<std::string, int>{});
+    check_root_and_slot("<5y>", lit('<') >> five >> '>', rvariant<std::string, int>{});
+    check_root_and_slot("5y", lexeme[five] | +alpha, rvariant<std::string, int>{});
+    check_root_and_slot("5y", five - lit('q'), std::optional<int>{});
+    check_root_and_slot("5y", five - lit('q'), rvariant<std::string, int>{});
+
+    // Nor in the parts or the elements written by the failed branch
+    check_root_and_slot("1,2?", (int_ >> ',' >> int_ >> '!') | lit("1,2?"), alloy::tuple<int, int>{});
+    check_root_and_slot("ab?", (+alpha >> '!') | eps, std::string{});
+
+    using undefined_int_char = rvariant<undefined, int, char>;
+    check_root_and_slot("rock", lit("rock") | int_ | char_, undefined_int_char{});
+    check_root_and_slot("rock", lit("rock") | int_, undefined_int_char{});
+    check_root_and_slot("12", lit("rock") | int_, undefined_int_char{12});
+
+    constexpr auto timeout = (int_ >> lit("ms")) | lit("auto");
+    constexpr auto timeout_fixed = (int_ >> lit("ms")) | (lit("auto") >> fixed_value(std::optional<int>{}));
+    constexpr auto timeout_default = (int_ >> lit("ms")) | (lit("auto") >> default_value<std::optional<int>>);
+    check_root_and_slot("auto", timeout, std::optional<int>{});
+    check_root_and_slot("auto", timeout_fixed, std::optional<int>{});
+    check_root_and_slot("auto", timeout_default, std::optional<int>{});
+    check_root_and_slot("10ms", timeout, std::optional<int>{10});
+    check_root_and_slot("10ms", timeout_fixed, std::optional<int>{10});
+    check_root_and_slot("10ms", timeout_default, std::optional<int>{10});
+    {
+        std::optional<int> attr;
+        CHECK_FALSE(parse("", timeout, attr));
+    }
+
+    // `-p` keeps the attribute of `p` when it succeeds
+    check_root_and_slot("250ms", -timeout, std::optional<int>{250});
+    check_root_and_slot("0ms", -timeout, std::optional<int>{0});
+    check_root_and_slot("auto", -timeout, std::optional<int>{});
+    check_root_and_slot("", -timeout, std::optional<int>{});
+    check_root_and_slot("7", -int_, std::optional<int>{7});
+    check_root_and_slot("x", -int_, std::optional<int>{});
+
+    // An empty array is written only when the grammar says so
+    using Array = std::vector<int>;
+    constexpr auto array_parser = (lit('[') >> (int_ % ',') >> ']') | lit("[]");
+    constexpr auto explicit_array_parser = (lit('[') >> (int_ % ',') >> ']') | (lit("[]") >> default_value<Array>);
+    check_root_and_slot("[]", array_parser, Array{});
+    check_root_and_slot("[]", array_parser, std::optional<Array>{});
+    check_root_and_slot("[]", array_parser, rvariant<Object, Array>{});
+    check_root_and_slot("[]", explicit_array_parser, Array{});
+    check_root_and_slot("[]", explicit_array_parser, std::optional<Array>{Array{}});
+    check_root_and_slot("[]", explicit_array_parser, rvariant<Object, Array>{Array{}});
+    check_root_and_slot("[1,2]", array_parser, Array{1, 2});
+    check_root_and_slot("[1,2]", array_parser, std::optional<Array>{Array{1, 2}});
+    check_root_and_slot("[1,2]", array_parser, rvariant<Object, Array>{Array{1, 2}});
+    check_root_and_slot("[1,2]", explicit_array_parser, Array{1, 2});
+    check_root_and_slot("[1,2]", explicit_array_parser, std::optional<Array>{Array{1, 2}});
+    check_root_and_slot("[1,2]", explicit_array_parser, rvariant<Object, Array>{Array{1, 2}});
+
+    // Into a container, a branch without an attribute appends nothing
+    {
+        std::vector<Array> arrays;
+        REQUIRE(parse("[];[1,2];[]", explicit_array_parser % ';', arrays));
+        CHECK(arrays == std::vector<Array>{{}, {1, 2}, {}});
+    }
+    {
+        std::vector<Array> arrays;
+        REQUIRE(parse("[];[1,2];[]", lexeme[explicit_array_parser] % ';', arrays));
+        CHECK(arrays == std::vector<Array>{{}, {1, 2}, {}});
+    }
+    {
+        std::vector<Array> arrays;
+        REQUIRE(parse("<[]>;<[1,2]>;<[]>", (lit('<') >> explicit_array_parser >> '>') % ';', arrays));
+        CHECK(arrays == std::vector<Array>{{}, {1, 2}, {}});
+    }
+    {
+        // wrapped or not
+        std::vector<int> ints;
+        REQUIRE(parse("5y", *five, ints));
+        CHECK(ints.empty());
+        REQUIRE(parse("5y", *lexeme[five], ints));
+        CHECK(ints.empty());
+        REQUIRE(parse("<5y>", *(lit('<') >> five >> '>'), ints));
+        CHECK(ints.empty());
+        REQUIRE(parse("7x5y8x", *lexeme[five], ints));
+        CHECK(ints == std::vector<int>{7, 8});
+    }
+    {
+        // the elements of the failed repetition are not kept, and the preceding ones are
+        std::vector<int> ints;
+        auto const res = parse("<7x><5y><8x", *(lit('<') >> five >> '>'), ints);
+        REQUIRE(res.ok);
+        CHECK(res.remainder.size() == 3);
+        CHECK(ints == std::vector<int>{7});
+    }
+    {
+        std::vector<int> ints;
+        REQUIRE(parse("1 2 3 - 5 - - 7 -", (int_ | '-') % ' ', ints));
+        CHECK(ints == std::vector<int>{1, 2, 3, 5, 7});
+    }
+    {
+        std::string str;
+        REQUIRE(parse("xab", +(lit('x') | char_), str));
+        CHECK(str == "ab");
+    }
+    {
+        // the preceding elements are kept, and those of the failed branch are not
+        std::string str;
+        auto const res = parse("ab12?", +alpha >> ((+digit >> '!') | eps), str);
+        REQUIRE(res.ok);
+        CHECK(res.remainder.size() == 3);
+        CHECK(str == "ab");
+    }
 }
 
 TEST_CASE("declared variant")

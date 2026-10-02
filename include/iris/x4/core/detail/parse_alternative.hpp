@@ -57,7 +57,13 @@ struct parse_alternative_all_impl
     [[nodiscard]] static constexpr bool parse_branch(Try&& try_branch, ExposedAttr& exposed_attr)
     {
         using branch_attr = parser_traits<nary::parser_t<I, Ps...>>::attribute_type;
-        if constexpr (X4UnusedAttribute<branch_attr> || traits::detail::clearable_for<ExposedAttr, branch_attr>) {
+        if constexpr (!X4UnusedAttribute<branch_attr> && may_leave_attribute_unwritten_v<nary::parser_t<I, Ps...>>) {
+            // The branch may succeed without writing (e.g. an alternative wrapped in a directive):
+            // hand over the whole attribute, whose default state then remains
+            traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
+            return try_branch.template operator()<I>(exposed_attr);
+
+        } else if constexpr (X4UnusedAttribute<branch_attr> || traits::detail::clearable_for<ExposedAttr, branch_attr>) {
             auto&& alt_attr = detail::prepare_attribute<branch_attr>(exposed_attr);
             return try_branch.template operator()<I>(alt_attr);
 

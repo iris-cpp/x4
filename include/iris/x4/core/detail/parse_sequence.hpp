@@ -69,6 +69,12 @@ struct sequence_layout
 };
 
 template<class... Ps>
+    requires (sequence_layout<Ps...>::attributed_count == 1)
+struct may_leave_attribute_unwritten<sequence<Ps...>>
+    : may_leave_attribute_unwritten<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>
+{};
+
+template<class... Ps>
     requires
         (sequence_layout<Ps...>::attributed_count == 1) &&
         std::same_as<
@@ -76,7 +82,8 @@ template<class... Ps>
             typename get_attribute_type<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>::type
         >
 struct attribute_candidates<sequence<Ps...>>
-    : attribute_candidates<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>> {};
+    : attribute_candidates<nary::parser_t<sequence_layout<Ps...>::single_attributed_index, Ps...>>
+{};
 
 template<class P>
 struct sequence_passes_view : std::false_type {};
@@ -241,12 +248,18 @@ struct parse_into_container_impl<sequence<Ps...>>
             // The whole sequence yields one element when its value is written into a new element
             // (nothing is left behind when a later part fails); otherwise each element of the
             // sequence writes into the container on its own, as the value is written part by part.
+            //
+            // Note: A sequence that may succeed without writing its value does not yield a new element
+            //       (see `container_parse`).
             using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
             constexpr planner::node_write part = planner::node_write_of<
                 planner::parse_part_node<planner::storage_t<Attr>, value_type>
             >;
 
-            if constexpr (part.writable && part.kind == planner::branch_kind::new_default_element) {
+            if constexpr (
+                part.writable && part.kind == planner::branch_kind::new_default_element &&
+                !may_leave_attribute_unwritten_v<sequence<Ps...>>
+            ) {
                 return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
 
             } else {

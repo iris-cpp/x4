@@ -68,7 +68,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
     {
         if (this->subject.parse(
             first, last, ctx,
-            detail::prepare_attribute<typename parser_traits<Subject>::attribute_type>(attr)
+            detail::prepare_attribute_for<Subject>(attr)
         )) {
             return true;
         }

@@ -14,6 +14,7 @@
 
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/parser_traits.hpp>
 
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/alloy/tuple.hpp> // IWYU pragma: keep
@@ -300,6 +301,22 @@ template<X4NonUnusedAttribute ParserAttr, class ExposedAttr>
 {
     traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
     return exposed_attr;
+}
+
+// Prepares `exposed_attr` for `Parser`. A parser which may succeed without writing its attribute
+// is handed the whole attribute in its default state, rather than the part its attribute type is
+// written into.
+template<class Parser, class ExposedAttr>
+[[nodiscard]] constexpr decltype(auto)
+prepare_attribute_for(ExposedAttr& exposed_attr IRIS_LIFETIMEBOUND)
+{
+    if constexpr (may_leave_attribute_unwritten_v<Parser>) {
+        traits::attribute_traits<ExposedAttr>::reset(exposed_attr);
+        return (exposed_attr);
+
+    } else {
+        return detail::prepare_attribute<typename parser_traits<Parser>::attribute_type>(exposed_attr);
+    }
 }
 
 template<X4Attribute ExposedAttr>

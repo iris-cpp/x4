@@ -129,6 +129,12 @@ struct attribute_candidates<alternative<Ps...>>
     using type = alternative_layout<Ps...>::unique_attrs;
 };
 
+template<class... Ps>
+struct may_leave_attribute_unwritten<alternative<Ps...>> : std::bool_constant<
+    has_attribute_v<alternative<Ps...>> &&
+    ((!has_attribute_v<Ps> || may_leave_attribute_unwritten_v<Ps>) || ...)
+> {};
+
 } // detail
 
 template<class... Ps>

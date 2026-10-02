@@ -101,6 +101,24 @@ concept attribute_passing_proxy =
     requires { typename Parser::proxy_backend_type; } &&
     std::same_as<typename get_attribute_type<Parser>::type, typename get_attribute_type<typename Parser::proxy_backend_type>::type>;
 
+// Whether the parser may succeed without writing its attribute, i.e., an alternative with a
+// branch without an attribute, or a parser that passes its attribute to such an alternative.
+//
+// The attribute given to such a parser is NOT prepared for its attribute type (`prepare_attribute`),
+// as the part made for that type would remain even when nothing is written (e.g., `int` emplaced
+// into `rvariant<std::string, int>` by `int_ | lit("auto")`, left as `0` when "auto" matches).
+//
+// Instead, the attribute is handed over whole in its default state, which then remains when
+// the parser writes nothing.
+template<class Parser>
+struct may_leave_attribute_unwritten : std::false_type {};
+
+template<attribute_passing_proxy Parser>
+struct may_leave_attribute_unwritten<Parser> : may_leave_attribute_unwritten<typename Parser::proxy_backend_type> {};
+
+template<class Parser>
+inline constexpr bool may_leave_attribute_unwritten_v = may_leave_attribute_unwritten<Parser>::value;
+
 template<class Parser>
 struct attribute_candidates
 {

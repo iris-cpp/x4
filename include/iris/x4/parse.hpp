@@ -206,7 +206,7 @@ struct parse_fn
                 expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (ok) reset_guard.commit();
 
@@ -241,7 +241,7 @@ struct parse_fn
                 res.expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (res.ok) reset_guard.commit();
 
@@ -273,7 +273,7 @@ struct parse_fn
 
         attribute_reset_guard reset_guard{root_attr};
         bool ok = as_parser(std::forward<Parser>(p)).parse(
-            first, last, ctx, detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            first, last, ctx, detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
@@ -312,7 +312,7 @@ struct parse_fn
         attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last, ctx,
-            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (res.ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
@@ -341,7 +341,7 @@ struct parse_fn
                 expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (ok) reset_guard.commit();
 
@@ -367,7 +367,7 @@ struct parse_fn
                 res.expect_failure,
                 x4::make_context<contexts::skipper>(skipper_kind)
             ),
-            detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (res.ok) reset_guard.commit();
 
@@ -391,7 +391,7 @@ struct parse_fn
 
         attribute_reset_guard reset_guard{root_attr};
         bool ok = as_parser(std::forward<Parser>(p)).parse(
-            first, last, ctx, detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            first, last, ctx, detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);
@@ -421,7 +421,7 @@ struct parse_fn
 
         attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
-            first, last, ctx, detail::prepare_attribute<as_parser_attr_t<Parser>>(root_attr)
+            first, last, ctx, detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (res.ok && flag == root_skipper_flag::do_post_skip) {
             x4::skip_over(first, last, ctx);

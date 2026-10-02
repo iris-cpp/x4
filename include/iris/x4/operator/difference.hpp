@@ -64,6 +64,9 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
 namespace detail {
 
 template<class Left, class Right>
+struct may_leave_attribute_unwritten<difference<Left, Right>> : may_leave_attribute_unwritten<Left> {};
+
+template<class Left, class Right>
 struct attribute_candidates<difference<Left, Right>> : attribute_candidates<Left> {};
 
 } // detail
