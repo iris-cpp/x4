@@ -9,8 +9,6 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/rule.hpp>
-
 #include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/primitive/eps.hpp>
@@ -55,7 +53,6 @@ TEST_CASE("sequence")
     using x4::int_;
     using x4::float_;
     using x4::no_case;
-    using x4::rule;
     using x4::_attr;
     using x4::eps;
     using x4::as;
@@ -133,62 +130,22 @@ TEST_CASE("sequence")
     }
 
     {
-        // Make sure single-element tuple-likes get passed through if the rhs
-        // has a single-element tuple-like as its attribute. Edit JDG 2014:
-        // actually the issue here is that if the rhs in this case a rule
-        // (r), it should get it (i.e. the sequence parser should not
-        // unwrap it). It's odd that the RHS (r) does not really have a
-        // single-element tuple-like, so the original comment is not accurate.
+        using attr_type = std::tuple<char, int>;
+        attr_type tpl;
 
-        // rule version
-        {
-            using attr_type = std::tuple<char, int>;
-            attr_type tpl;
+        auto r = as<attr_type>(char_ >> ',' >> int_);
 
-            auto r = rule<struct r_id, attr_type>{} = char_ >> ',' >> int_;
-
-            REQUIRE(parse("test:x,1", "test:" >> r, tpl));
-            CHECK((tpl == attr_type('x', 1)));
-        }
-
-        // as version
-        {
-            using attr_type = std::tuple<char, int>;
-            attr_type tpl;
-
-            auto r = as<attr_type>(char_ >> ',' >> int_);
-
-            REQUIRE(parse("test:x,1", "test:" >> r, tpl));
-            CHECK((tpl == attr_type('x', 1)));
-        }
+        REQUIRE(parse("test:x,1", "test:" >> r, tpl));
+        CHECK((tpl == attr_type('x', 1)));
     }
-
     {
-        // make sure single-element tuple-likes get passed through if the rhs
-        // has a single-element tuple-like as its attribute. This is a correction
-        // of the test above.
+        using attr_type = std::tuple<int>;
+        attr_type tpl;
 
-        // rule version
-        {
-            using attr_type = std::tuple<int>;
-            attr_type tpl;
+        auto r = as<attr_type>(int_);
 
-            auto r = rule<struct r_id, attr_type>{} = int_;
-
-            REQUIRE(parse("test:1", "test:" >> r, tpl));
-            CHECK((tpl == attr_type(1)));
-        }
-
-        // as version
-        {
-            using attr_type = std::tuple<int>;
-            attr_type tpl;
-
-            auto r = as<attr_type>(int_);
-
-            REQUIRE(parse("test:1", "test:" >> r, tpl));
-            CHECK((tpl == attr_type(1)));
-        }
+        REQUIRE(parse("test:1", "test:" >> r, tpl));
+        CHECK((tpl == attr_type(1)));
     }
 
     // unused means we don't care about the attribute
@@ -301,33 +258,16 @@ TEST_CASE("sequence")
     }
 
     {
-        // rule version
-        {
-            std::vector<std::string> v;
+        std::vector<std::string> v;
 
-            auto e = rule<struct e_id, std::string>{} = *~char_(',');
-            auto l = rule<struct l_id, std::vector<std::string>>{} = e >> *(',' >> e);
+        constexpr auto e = as<std::string>(*~char_(','));
+        constexpr auto l = as<std::vector<std::string>>(e >> *(',' >> e));
 
-            REQUIRE(parse("abc1,abc2,abc3", l, v));
-            REQUIRE(v.size() == 3);
-            CHECK(v[0] == "abc1");
-            CHECK(v[1] == "abc2");
-            CHECK(v[2] == "abc3");
-        }
-
-        // as version
-        {
-            std::vector<std::string> v;
-
-            constexpr auto e = as<std::string>(*~char_(','));
-            constexpr auto l = as<std::vector<std::string>>(e >> *(',' >> e));
-
-            REQUIRE(parse("abc1,abc2,abc3", l, v));
-            REQUIRE(v.size() == 3);
-            CHECK(v[0] == "abc1");
-            CHECK(v[1] == "abc2");
-            CHECK(v[2] == "abc3");
-        }
+        REQUIRE(parse("abc1,abc2,abc3", l, v));
+        REQUIRE(v.size() == 3);
+        CHECK(v[0] == "abc1");
+        CHECK(v[1] == "abc2");
+        CHECK(v[2] == "abc3");
     }
 
     // do the same with a plain string object
@@ -338,25 +278,12 @@ TEST_CASE("sequence")
     }
 
     {
-        // rule version
-        {
-            std::string s;
-            auto e = rule<struct e_id, std::string>{} = *~char_(',');
-            auto l = rule<struct l_id, std::string>{} = e >> *(',' >> e);
+        std::string s;
+        auto e = as<std::string>(*~char_(','));
+        auto l = as<std::string>(e >> *(',' >> e));
 
-            REQUIRE(parse("abc1,abc2,abc3", l, s));
-            CHECK(s == "abc1abc2abc3");
-        }
-
-        // as version
-        {
-            std::string s;
-            auto e = as<std::string>(*~char_(','));
-            auto l = as<std::string>(e >> *(',' >> e));
-
-            REQUIRE(parse("abc1,abc2,abc3", l, s));
-            CHECK(s == "abc1abc2abc3");
-        }
+        REQUIRE(parse("abc1,abc2,abc3", l, s));
+        CHECK(s == "abc1abc2abc3");
     }
 
     {
@@ -453,8 +380,8 @@ TEST_CASE("sequence")
 
     {
         using Attr = iris::rvariant<int, float>;
-        constexpr auto term = rule<class term_id, Attr>("term") = int_ | float_;
-        constexpr auto expr = rule<class expr_id, Attr>("expr") = term | ('(' > term > ')');
+        constexpr auto term = as<Attr>(int_ | float_);
+        constexpr auto expr = as<Attr>(term | ('(' > term > ')')); // needs paren to suppress warning on GCC
         Attr var;
         CHECK(parse("(1)", expr, space, var));
     }
@@ -549,9 +476,7 @@ TEST_CASE("sequence")
         CHECK(s == "a");
     }
     {
-        constexpr x4::rule<struct optional_pair, std::string> r = "r";
-        (void)r;
-        constexpr auto char_opt_char2 = r = x4::standard::char_ >> -(x4::standard::char_ >> x4::standard::char_);
+        constexpr auto char_opt_char2 = as<std::string>(char_ >> -(char_ >> char_));
 
         std::string s;
         REQUIRE(parse("xa1", char_opt_char2, s));

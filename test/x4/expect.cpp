@@ -136,8 +136,11 @@
         CHECK(!"remove DEBUG_PRINT before commit!"); \
     } while (false)
 
+IRIS_X4_DECLARE(unused_rule, unused_type);
+constexpr auto unused_rule_def = x4::eps;
+IRIS_X4_DEFINE(unused_rule);
 
-TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
+TEST_CASE("expectation_failure context is uninstantiated in expect-less parse")
 {
     using x4::int_;
     using x4::eoi;
@@ -257,19 +260,9 @@ TEST_CASE("expectation_failure_context_uninstantiated_in_expect_less_parse")
     (void)(eps >> eps).parse(first, last, unused, unused);
     (void)(int_ >> int_).parse(first, last, unused, dummy_ints);
 
-    // `string/*` do not need to be tested, as they do not contain expectation failure related calls
+    (void)unused_rule.parse(first, last, unused, unused);
 
-    // rule
-    {
-        constexpr x4::rule<struct _, unused_type> r("r");
-        constexpr auto p = r = x4::lit('a') >> r;
-        (void)p.parse(first, last, unused, unused);
-    }
-    {
-        constexpr x4::rule<struct _, unused_type> r("r");
-        constexpr auto p = r %= x4::lit('a') >> r;
-        (void)p.parse(first, last, unused, unused);
-    }
+    // `string/*` do not need to be tested, as they do not contain expectation failure related calls
 
     // NOLINTEND(misc-redundant-expression)
 }

@@ -131,17 +131,17 @@ constexpr auto number_lit = x4::as<NumberLit>(x4::long_long);
 constexpr auto string_lit = x4::as<StringLit>(quoted);
 constexpr auto ident = x4::as<Ident>(x4::lexeme[x4::as<std::string>(x4::standard::alpha >> *x4::standard::alnum)]);
 
-constexpr x4::rule<struct literal_rule_id, Literal> literal_rule = "literal_rule";
-constexpr auto literal_rule_def = literal_rule = number_lit | string_lit;
-IRIS_X4_DEFINE(literal_rule)
+IRIS_X4_DECLARE(literal_rule, Literal);
+constexpr auto literal_rule_def =  number_lit | string_lit;
+IRIS_X4_DEFINE(literal_rule);
 
 constexpr auto literal_as = x4::as<Literal>(number_lit | string_lit);
 
 constexpr auto integer = x4::lexeme[x4::long_long >> !x4::lit('.')];
 
-constexpr x4::rule<struct scalar_rule_id, Scalar> scalar_rule = "scalar_rule";
-constexpr auto scalar_rule_def = scalar_rule = integer | x4::double_;
-IRIS_X4_DEFINE(scalar_rule)
+IRIS_X4_DECLARE(scalar_rule, Scalar);
+constexpr auto scalar_rule_def = integer | x4::double_;
+IRIS_X4_DEFINE(scalar_rule);
 
 constexpr auto scalar_as = x4::as<Scalar>(integer | x4::double_);
 
@@ -279,25 +279,6 @@ TEST_CASE("alternative")
         CHECK(s == "...");
     }
 
-    {   // make sure collapsing eps works as expected
-        // (compile check only)
-
-        using x4::rule;
-        using x4::_attr;
-        using x4::_rule_var;
-
-        rule<class r1, wchar_t> r1;
-        rule<class r2, wchar_t> r2;
-        rule<class r3, wchar_t> r3;
-
-        constexpr auto f = [&](auto& ctx){ _rule_var(ctx) = _attr(ctx); };
-
-        (void)(r3 = (eps >> r1).on_match(f));
-        (void)(r3 = (r1 | r2).on_match(f));
-        (void)(r3 = eps >> r1 | r2);
-        (void)r3;
-    }
-
     {
         // test having a variant<container, ...>
         std::string s;
@@ -329,28 +310,6 @@ TEST_CASE("alternative")
             CHECK(parse("abc", char_ >> char_ >> ((char_ % ',') | eps), s));
             CHECK(s == "abc");
         }
-    }
-
-    {
-        //compile test only (bug_march_10_2011_8_35_am)
-        using value_type = iris::rvariant<double, std::string>;
-
-        using x4::rule;
-
-        rule<class r1, value_type> r1;
-        [[maybe_unused]] auto r1_ = r1 = r1 | eps; // left recursive!
-    }
-
-    {
-        using x4::rule;
-        using d_line = iris::rvariant<di_ignore, di_include>;
-
-        rule<class ignore, di_ignore> ignore;
-        rule<class include, di_include> include;
-        rule<class line, d_line> line;
-
-        [[maybe_unused]] auto start = line = include | ignore;
-        (void)line;
     }
 
     // attribute is a variant containing container
@@ -825,7 +784,9 @@ TEST_CASE("declared variant")
     using Value = rvariant<int, std::string>;
     constexpr auto int_or_alpha = int_ | +alpha;
     constexpr auto hashed_double = '#' >> double_;
-    constexpr x4::rule<struct value_rule_id, Value> value_rule = "value_rule";
+
+    struct value_rule_id { using rule_attribute_type = Value; };
+    constexpr x4::rule<value_rule_id> value_rule{std::string_view{"value_rule"}};
 
     STATIC_CHECK(std::same_as<attribute_t<decltype(int_or_alpha)>, Value>);
     STATIC_CHECK(std::same_as<candidates_t<decltype(int_or_alpha)>, type_list<int, std::string>>);
@@ -835,7 +796,6 @@ TEST_CASE("declared variant")
     STATIC_CHECK(std::same_as<attribute_t<decltype((x4::as<Value>(int_or_alpha) | lit("null")) | hashed_double)>, rvariant<Value, double>>);
     STATIC_CHECK(std::same_as<attribute_t<decltype(value_rule | lit("null"))>, Value>);
     STATIC_CHECK(std::same_as<attribute_t<decltype(value_rule | hashed_double)>, rvariant<Value, double>>);
-    STATIC_CHECK(std::same_as<candidates_t<decltype(value_rule = int_or_alpha)>, type_list<Value>>);
     STATIC_CHECK(std::same_as<attribute_t<decltype(x4::fixed_value(rvariant<int, double>{1}) | +alpha)>, rvariant<rvariant<int, double>, std::string>>);
 
     STATIC_CHECK(std::same_as<candidates_t<decltype(lexeme[x4::as<Value>(int_or_alpha) | lit("null")])>, type_list<Value>>);

@@ -80,10 +80,8 @@ x4_define_tests(
     real3
     recursive
     repeat
-    rule1
-    rule2
+    rule
     rule3
-    rule4
     sequence
     skip
     smart_ptr

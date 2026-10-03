@@ -9,7 +9,6 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/rule.hpp>
 #include <iris/x4/directive/omit.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/char/char.hpp>
@@ -18,23 +17,6 @@
 #include <iris/x4/operator/sequence.hpp>
 
 #include <iris/alloy/tuple.hpp>
-
-#include <string>
-
-namespace {
-
-using x4::rule;
-
-constexpr rule<class direct_rule, int> direct_rule = "direct_rule";
-constexpr rule<class indirect_rule, int> indirect_rule = "indirect_rule";
-
-constexpr auto direct_rule_def = x4::int_;
-constexpr auto indirect_rule_def = direct_rule;
-
-IRIS_X4_DEFINE(direct_rule)
-IRIS_X4_DEFINE(indirect_rule)
-
-} // anonymous
 
 TEST_CASE("omit")
 {
@@ -123,10 +105,4 @@ TEST_CASE("omit")
         REQUIRE(parse("x 123 \"a string\"", (omit[char_] >> int_ >> "\"a string\"").on_match(f), space));
         CHECK(n == 123);
     }
-
-    // test with simple rule
-    CHECK(parse("123", omit[direct_rule], unused));
-
-    // test with complex rule
-    CHECK(parse("123", omit[indirect_rule], unused));
 }

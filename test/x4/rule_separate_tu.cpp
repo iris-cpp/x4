@@ -17,21 +17,21 @@ namespace {
 
 namespace sem_act {
 
-constexpr auto nop = [](auto const&) {};
+constexpr auto nop = [](auto&&) {};
 
-constexpr x4::rule<class used_attr1_r, int> used_attr1 = "used_attr1";
+IRIS_X4_DECLARE(used_attr1, int);
 constexpr auto used_attr1_def = used_attr::grammar.on_match(nop);
 IRIS_X4_DEFINE(used_attr1);
 
-constexpr x4::rule<class used_attr2_r, int> used_attr2 = "used_attr2";
+IRIS_X4_DECLARE(used_attr2, int);
 constexpr auto used_attr2_def = unused_attr::grammar.on_match(nop);
 IRIS_X4_DEFINE(used_attr2);
 
-constexpr x4::rule<class unused_attr1_r> unused_attr1 = "unused_attr1";
+IRIS_X4_DECLARE(unused_attr1, unused_type);
 constexpr auto unused_attr1_def = used_attr::grammar.on_match(nop);
 IRIS_X4_DEFINE(unused_attr1);
 
-constexpr x4::rule<class unused_attr2_r> unused_attr2 = "unused_attr2";
+IRIS_X4_DECLARE(unused_attr2, unused_type);
 constexpr auto unused_attr2_def = unused_attr::grammar.on_match(nop);
 IRIS_X4_DEFINE(unused_attr2);
 
@@ -43,18 +43,12 @@ TEST_CASE("rule_separate_tu")
 {
     {
         CHECK(parse("*", unused_attr::skipper));
-        CHECK(parse("#", unused_attr::skipper2));
         CHECK(parse("==", unused_attr::grammar));
         CHECK(parse("*=*=", unused_attr::grammar, unused_attr::skipper));
-        CHECK(parse("#=#=", unused_attr::grammar, unused_attr::skipper2));
     }
 
     {
         long l = 0;
-        static_assert(
-            !std::same_as<decltype(l), used_attr::grammar_type::attribute_type>,
-            "Ensure we have instantiated the rule with a different attribute type"
-        );
         REQUIRE(parse("123", used_attr::grammar, l));
         CHECK(l == 123);
         REQUIRE(parse(" 42", used_attr::grammar, used_attr::skipper, l));

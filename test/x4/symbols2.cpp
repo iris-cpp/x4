@@ -9,13 +9,11 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/rule.hpp>
 #include <iris/x4/symbols.hpp>
 
 TEST_CASE("symbols2")
 {
     using x4::shared_symbols;
-    using x4::rule;
 
     {
         // construction from symbol array

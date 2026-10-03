@@ -10,7 +10,6 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/operator/kleene.hpp>
-#include <iris/x4/rule.hpp>
 
 #include <iris/x4/core/unused.hpp>
 
@@ -19,7 +18,6 @@
 
 TEST_CASE("unused")
 {
-    namespace traits = x4::traits;
     using x4::unused_container_type;
     using x4::unused_container;
 
