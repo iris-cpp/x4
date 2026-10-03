@@ -57,20 +57,20 @@ struct Box
 IRIS_ALLOY_ADAPT_STRUCT(Paren, inner);
 IRIS_ALLOY_ADAPT_STRUCT(Box, value);
 
-constexpr x4::rule<struct int_rule_id, int> int_rule = "int_rule";
-constexpr x4::rule<struct ints_rule_id, std::vector<int>> ints_rule = "ints_rule";
-constexpr x4::rule<struct double_rule_id, double> double_rule = "double_rule";
-constexpr x4::rule<struct paren_rule_id, Paren> paren_rule = "paren_rule";
+IRIS_X4_DECLARE(int_rule, int);
+IRIS_X4_DECLARE(ints_rule, std::vector<int>);
+IRIS_X4_DECLARE(double_rule, double);
+IRIS_X4_DECLARE(paren_rule, Paren);
 
-constexpr auto int_rule_def = int_rule = x4::int_;
-constexpr auto ints_rule_def = ints_rule = x4::int_ % ',';
-constexpr auto double_rule_def = double_rule = x4::double_;
-constexpr auto paren_rule_def = paren_rule = '(' >> int_rule >> ')';
+constexpr auto int_rule_def = x4::int_;
+constexpr auto ints_rule_def = x4::int_ % ',';
+constexpr auto double_rule_def = x4::double_;
+constexpr auto paren_rule_def = '(' >> int_rule >> ')';
 
-IRIS_X4_DEFINE(int_rule)
-IRIS_X4_DEFINE(ints_rule)
-IRIS_X4_DEFINE(double_rule)
-IRIS_X4_DEFINE(paren_rule)
+IRIS_X4_DEFINE(int_rule);
+IRIS_X4_DEFINE(ints_rule);
+IRIS_X4_DEFINE(double_rule);
+IRIS_X4_DEFINE(paren_rule);
 
 // "The Spirit X3 rule problem" in Boost.Parser's documentation
 // https://www.boost.org/doc/libs/1_89_0/doc/html/boost_parser/this_library_s_relationship_to_boost_spirit.html#boost_parser.this_library_s_relationship_to_boost_spirit.the_spirit_x3_rule_problem

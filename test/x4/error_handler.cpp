@@ -22,10 +22,6 @@
 #include <string>
 #include <sstream>
 
-namespace {
-
-using enum x4::annotated_rule_kind;
-
 template<std::forward_iterator It>
 struct test_error_handler
 {
@@ -65,7 +61,22 @@ private:
     std::ostream& os_;
 };
 
-} // anonymous
+using enum x4::annotated_rule_kind;
+
+using x4::eps;
+using x4::expect;
+
+IRIS_X4_DECLARE(eps_success_rule, unused_type, x4::annotated_rule<annotate_success>);
+constexpr auto eps_success_rule_def = eps;
+IRIS_X4_DEFINE(eps_success_rule);
+
+IRIS_X4_DECLARE(expect_eps_false_rule, unused_type, x4::annotated_rule<annotate_expectation_failure>);
+constexpr auto expect_eps_false_rule_def = expect[eps(false)];
+IRIS_X4_DEFINE(expect_eps_false_rule);
+
+IRIS_X4_DECLARE(eps_trace_rule, unused_type, x4::annotated_rule<annotate_trace>);
+constexpr auto eps_trace_rule_def = eps;
+IRIS_X4_DEFINE(eps_trace_rule);
 
 TEST_CASE("error_handler")
 {
@@ -97,10 +108,7 @@ TEST_CASE("error_handler")
         std::ostringstream oss;
         test_error_handler error_handler{first, last, oss};
 
-        struct RuleID : x4::annotated_rule<annotate_success> {};
-        constexpr auto rule = x4::rule<RuleID, int>{} = x4::eps;
-        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[rule], unused);
-
+        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[eps_success_rule], unused);
         CHECK(oss.str() == "on_success");
     }
     {
@@ -111,13 +119,9 @@ TEST_CASE("error_handler")
         std::ostringstream oss;
         test_error_handler error_handler{first, last, oss};
 
-        struct RuleID : x4::annotated_rule<annotate_expectation_failure> {};
-        constexpr auto rule = x4::rule<RuleID, int>{} = x4::expect[x4::eps(false)];
-        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[rule], unused);
-
+        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[expect_eps_false_rule], unused);
         CHECK(oss.str() == "on_expectation_failure");
     }
-
     {
         std::string_view const input = "foo";
         auto first = input.begin();
@@ -126,10 +130,7 @@ TEST_CASE("error_handler")
         std::ostringstream oss;
         test_error_handler error_handler{first, last, oss};
 
-        struct RuleID : x4::annotated_rule<annotate_trace> {};
-        constexpr auto rule = x4::rule<RuleID, int>{} = x4::eps;
-        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[rule], unused);
-
+        (void)parse(first, last, x4::with<x4::contexts::error_handler>(error_handler)[eps_trace_rule], unused);
         CHECK(oss.str() == "trace");
     }
 }

@@ -39,8 +39,16 @@
 
 using namespace std::string_view_literals;
 
+namespace {
+
 using x4::eps;
 using x4::string;
+using x4::_attr;
+using x4::_rule_var;
+using x4::_as_var;
+using x4::fixed_value;
+
+} // anonymous
 
 using It = std::string_view::const_iterator;
 using Se = It;
@@ -54,10 +62,6 @@ char const* const empty_input_last = nullptr;
 
 TEST_CASE("as<T>(p)")
 {
-    using x4::_as_var;
-    using x4::_attr;
-    using x4::fixed_value;
-
     // result = int or long long
     // T = int
 
@@ -168,10 +172,6 @@ TEST_CASE("as<T>(p)")
 
 TEST_CASE("as<T>(as<T>(p))")
 {
-    using x4::_as_var;
-    using x4::_attr;
-    using x4::fixed_value;
-
     // result = int or long long
     // T = int
     // U = int
@@ -239,10 +239,6 @@ TEST_CASE("as<T>(as<T>(p))")
 
 TEST_CASE("as<T>(as<U>(p))")
 {
-    using x4::_as_var;
-    using x4::_attr;
-    using x4::fixed_value;
-
     // result = int or long long
     // T = int
     // U = short
@@ -330,10 +326,6 @@ TEST_CASE("as<T>(as<U>(p))")
 
 TEST_CASE("as (single type)")
 {
-    using x4::_attr;
-    using x4::_rule_var;
-    using x4::_as_var;
-
     // as<unused_type>
     {
         constexpr auto p = x4::as<unused_type>(eps);
@@ -388,111 +380,8 @@ TEST_CASE("as (single type)")
     }
 }
 
-TEST_CASE("as + rule")
-{
-    using x4::_attr;
-    using x4::_rule_var;
-    using x4::_as_var;
-
-    {
-        constexpr x4::rule<struct _, std::string> rule_maker{"rule_maker"};
-
-        // Non-forced attribute, `operator=`
-        {
-            // Attribute is disabled because the sub parser has semantic action and the operator is `=`
-            constexpr auto rule_without_attr = rule_maker = quoted_string >> disable_attr;
-            std::string str;
-            REQUIRE(parse("'foo'", rule_without_attr, str));
-            CHECK(str == ""sv); // Disabled attribute should yield default-constructed attribute
-        }
-        {
-            // Attribute is disabled because the sub parser has semantic action and the operator is `=`
-            constexpr auto rule_without_attr = rule_maker = x4::as<std::string>(quoted_string) >> disable_attr;
-            std::string str;
-            REQUIRE(parse("'foo'", rule_without_attr, str));
-            CHECK(str == ""sv); // Disabled attribute should yield default-constructed attribute
-        }
-        {
-            // Attribute is disabled because the sub parser has semantic action
-            constexpr auto rule_without_attr = rule_maker = x4::as<std::string>(quoted_string >> disable_attr);
-            std::string str;
-            REQUIRE(parse("'foo'", rule_without_attr, str));
-            CHECK(str == ""sv); // Disabled attribute should yield default-constructed attribute
-        }
-
-        // Forced attribute, `operator%=`
-        {
-            constexpr auto rule_with_forced_attr = rule_maker %= quoted_string >> disable_attr;
-            std::string str;
-            REQUIRE(parse("'foo'", rule_with_forced_attr, str));
-            CHECK(str == "foo"sv); // Forced attribute should hold the parsed value
-        }
-        {
-            constexpr auto rule_with_forced_attr = rule_maker %= x4::as<std::string>(quoted_string) >> disable_attr;
-            std::string str;
-            REQUIRE(parse("'foo'", rule_with_forced_attr, str));
-            CHECK(str == "foo"sv); // `as` should not create a temporary; it should directly parse into the exposed variable
-        }
-        {
-            constexpr auto rule_with_forced_attr = rule_maker %= x4::as<std::string>(quoted_string >> disable_attr);
-            std::string str;
-            REQUIRE(parse("'foo'", rule_with_forced_attr, str));
-            CHECK(str == ""sv); // Disabled attribute should yield default-constructed attribute
-        }
-    }
-}
-
 TEST_CASE("_as_var")
 {
-    using x4::_attr;
-    using x4::_rule_var;
-    using x4::_as_var;
-    using x4::fixed_value;
-
-    // `_as_var(ctx)` (with auto attribute propagation)
-    {
-        std::string result;
-
-        constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
-            x4::as<std::string>(
-                eps.on_match([](auto&& ctx) {
-                    _rule_var(ctx) = "default";
-                }) >>
-
-                eps.on_match([](auto&& ctx) {
-                    _as_var(ctx) = "foo";
-                })
-            );
-
-        std::string_view const input;
-        It first = input.begin();
-        Se const last = input.end();
-
-        REQUIRE(string_rule.parse(first, last, unused, result));
-        CHECK(result == "foo"sv);
-    }
-    // `_as_var(ctx)` (with disabled attribute)
-    {
-        std::string result;
-
-        constexpr auto string_rule = x4::rule<struct _, decltype(result)>{""} =
-            x4::as<std::string>(
-                eps.on_match([](auto&& ctx) {
-                    _rule_var(ctx) = "default";
-                }) >>
-
-                eps.on_match([]([[maybe_unused]] auto&& ctx) {
-                    static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
-                })
-            ) >> disable_attr; // <----------
-
-        std::string_view const input;
-        It first = input.begin();
-        Se const last = input.end();
-
-        REQUIRE(string_rule.parse(first, last, unused, result));
-        CHECK(result == "default"sv);
-    }
     // `_as_var(ctx)` (within `as<unused_type>(as<std::string>(...))`)
     {
         std::string result{"default"};
@@ -537,74 +426,133 @@ TEST_CASE("_as_var")
         REQUIRE(unused_rule.parse(first, last, unused, result));
         CHECK(result == ""sv);
     }
+}
 
-    // Use `_rule_var(ctx)` inside `as<T>(...)`
+IRIS_X4_DECLARE(default_foo, std::string);
+IRIS_X4_DECLARE(default_foo_inhibited, std::string);
+
+constexpr auto default_foo_def =
+    x4::as<std::string>(
+        eps.on_match([](auto&& ctx) {
+            _rule_var(ctx) = "default";
+        }) >>
+
+        eps.on_match([](auto&& ctx) {
+            _as_var(ctx) = "foo";
+        })
+    );
+
+constexpr auto default_foo_inhibited_def =
+    x4::as<std::string>(
+        eps.on_match([](auto&& ctx) {
+            _rule_var(ctx) = "default";
+        }) >>
+
+        eps.on_match([]([[maybe_unused]] auto&& ctx) {
+            static_assert(std::same_as<std::remove_cvref_t<decltype(_as_var(ctx))>, unused_type>);
+        })
+    ) >> disable_attr; // <----------
+
+IRIS_X4_DEFINE(default_foo);
+IRIS_X4_DEFINE(default_foo_inhibited);
+
+TEST_CASE("_as_var + rule (eps + eps)")
+{
+    // `_as_var(ctx)` (with attribute propagation)
     {
-        struct StringLiteral
-        {
-            bool is_quoted = false;
-            std::string text;
-        };
+        std::string result;
+        std::string_view const input;
+        It first = input.begin();
+        Se const last = input.end();
+        REQUIRE(default_foo.parse(first, last, unused, result));
+        CHECK(result == "foo"sv);
+    }
+    // `_as_var(ctx)` (with inhibited attribute)
+    {
+        std::string result;
+        std::string_view const input;
+        It first = input.begin();
+        Se const last = input.end();
+        REQUIRE(default_foo_inhibited.parse(first, last, unused, result));
+        CHECK(result == "default"sv);
+    }
+}
 
-        std::string_view const input = R"("foo")";
+struct StringLiteral
+{
+    bool is_quoted = false;
+    std::string text;
+};
 
-        {
-            constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-                eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
-                x4::as<std::string>(
-                    x4::lit('"').on_match([](auto&& ctx) {
-                        StringLiteral& rule_var = _rule_var(ctx);
-                        rule_var.is_quoted = true;
-                    }) >>
-                    *(~x4::char_('"')).on_match([](auto&& ctx) { _as_var(ctx).push_back(_attr(ctx)); }) >>
-                    '"'
-                ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); });
+IRIS_X4_DECLARE(quoted_string_with_push_back, StringLiteral);
+IRIS_X4_DECLARE(quoted_string_without_push_back, StringLiteral);
+IRIS_X4_DECLARE(quoted_string_naive, StringLiteral);
 
-            It first = input.begin();
-            Se const last = input.end();
+constexpr auto quoted_string_begin =
+    x4::lit('"').on_match([](auto&& ctx) {
+        StringLiteral& rule_var = _rule_var(ctx);
+        rule_var.is_quoted = true;
+    });
 
-            StringLiteral result;
-            REQUIRE(string_literal.parse(first, last, unused, result));
-            CHECK(result.is_quoted == true);
-            CHECK(result.text == "foo"sv);
-        }
-        {
-            constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-                eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
-                x4::as<std::string>(
-                    x4::lit('"').on_match([](auto&& ctx) {
-                        StringLiteral& rule_var = _rule_var(ctx);
-                        rule_var.is_quoted = true;
-                    }) >>
-                    *~x4::char_('"') >> // <----------------- attribute ignored
-                    '"'
-                ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); });
+constexpr auto quoted_string_with_push_back_def =
+    eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
+    x4::as<std::string>(
+        quoted_string_begin >>
+        *(~x4::char_('"')).on_match([](auto&& ctx) { _as_var(ctx).push_back(_attr(ctx)); }) >>
+        '"'
+    ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })
+;
 
-            It first = input.begin();
-            Se const last = input.end();
+constexpr auto quoted_string_without_push_back_def =
+    eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
+    x4::as<std::string>(
+        quoted_string_begin >>
+        *~x4::char_('"') >> // <----------------- attribute ignored
+        '"'
+    ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })
+;
 
-            StringLiteral result;
-            REQUIRE(string_literal.parse(first, last, unused, result));
-            CHECK(result.is_quoted == true);
-            CHECK(result.text == ""sv);
-        }
-        {
-            constexpr auto string_literal = x4::rule<struct _, StringLiteral>{"StringLiteral"} =
-                eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
-                x4::as<std::string>(
-                    x4::lit('"') >>     // <----------------- no semantic action
-                    *~x4::char_('"') >> // <----------------- attribute NOT ignored
-                    '"'
-                ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); });
+constexpr auto quoted_string_naive_def =
+    eps.on_match([](auto& ctx) { _rule_var(ctx).is_quoted = false; }) >>
+    x4::as<std::string>(
+        x4::lit('"') >>     // <----------------- no semantic action
+        *~x4::char_('"') >> // <----------------- attribute NOT ignored
+        '"'
+    ).on_match([](auto&& ctx) { _rule_var(ctx).text = std::move(_attr(ctx)); })
+;
 
-            It first = input.begin();
-            Se const last = input.end();
+IRIS_X4_DEFINE(quoted_string_with_push_back);
+IRIS_X4_DEFINE(quoted_string_without_push_back);
+IRIS_X4_DEFINE(quoted_string_naive);
 
-            StringLiteral result;
-            REQUIRE(string_literal.parse(first, last, unused, result));
-            CHECK(result.is_quoted == false);
-            CHECK(result.text == "foo"sv);
-        }
+TEST_CASE("_as_var + rule (quoted_string)")
+{
+    // Use `_rule_var(ctx)` inside `as<T>(...)`
+    std::string_view const input = R"("foo")";
+
+    {
+        It first = input.begin();
+        Se const last = input.end();
+        StringLiteral result;
+        REQUIRE(quoted_string_with_push_back.parse(first, last, unused, result));
+        CHECK(result.is_quoted == true);
+        CHECK(result.text == "foo"sv);
+    }
+    {
+        It first = input.begin();
+        Se const last = input.end();
+        StringLiteral result;
+        REQUIRE(quoted_string_without_push_back.parse(first, last, unused, result));
+        CHECK(result.is_quoted == true);
+        CHECK(result.text == ""sv);
+    }
+    {
+        It first = input.begin();
+        Se const last = input.end();
+        StringLiteral result;
+        REQUIRE(quoted_string_naive.parse(first, last, unused, result));
+        CHECK(result.is_quoted == false);
+        CHECK(result.text == "foo"sv);
     }
 }
 

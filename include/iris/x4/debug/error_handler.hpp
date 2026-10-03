@@ -42,10 +42,31 @@ struct annotated_rule_base {};
 
 } // detail
 
+// `T` is `RuleID` or some custom error handler type
+template<class T, class It, class Se, class Context, class Attr>
+struct has_on_success;
+
+// `T` is `RuleID` or some custom error handler type
+template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+struct has_on_success<T, It, Se, Context, Attr> : std::bool_constant<
+    requires(T id) {
+        id.on_success(
+            std::declval<It const&>(),
+            std::declval<Se const&>(),
+            std::declval<Context const&>(),
+            std::declval<Attr&>()
+        );
+    }
+>
+{};
+
+// `T` is `RuleID` or some custom error handler type
+template<class T, class It, class Se, class Context>
+struct has_on_expectation_failure;
 
 // `T` is `RuleID` or some custom error handler type
 template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-struct has_on_expectation_failure : std::false_type
+struct has_on_expectation_failure<T, It, Se, Context> : std::false_type
 {
     static_assert(
         !requires(T id) {
@@ -73,44 +94,34 @@ template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Cont
 struct has_on_expectation_failure<T, It, Se, Context> : std::true_type
 {
     static_assert(
-        std::is_void_v<decltype(
-            std::declval<T&>().on_expectation_failure(
+        !requires(T id) {
+            id.on_error(
                 std::declval<It const&>(),
                 std::declval<Se const&>(),
                 std::declval<Context const&>(),
                 std::declval<expectation_failure<It> const&>()
-            )
-        )>,
-        "`on_expectation_failure` should not return a value"
+            );
+        },
+        "`on_error` is obsolete due to its confusing name; use `on_expectation_failure` instead."
+    );
+    static_assert(
+        has_context_v<Context, contexts::expectation_failure>,
+        "[BUG] The `on_expectation_failure` callback on the user-provided error handler "
+        "is well-defined, but the actual `Context` passed to the `parse(...)` function "
+        "does not contain a reference bound to `x4::contexts::expectation_failure`. "
+        "This indicates that there's no place to save or restore the actual error, so "
+        "it is impossible to call `on_expectation_failure`."
     );
 };
 
+// `T` is `RuleID` or some custom error handler type
+template<class T, class It, class Se, class Context, class Attr>
+struct has_on_trace;
 
 // `T` is `RuleID` or some custom error handler type
 template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-struct has_on_success : std::false_type {};
-
-// `T` is `RuleID` or some custom error handler type
-template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires requires(T id) {
-        id.on_success(
-            std::declval<It const&>(),
-            std::declval<Se const&>(),
-            std::declval<Context const&>(),
-            std::declval<Attr&>()
-        );
-    }
-struct has_on_success<T, It, Se, Context, Attr> : std::true_type
-{};
-
-
-// `T` is `RuleID` or some custom error handler type
-template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-struct has_on_trace : std::false_type {};
-
-// `T` is `RuleID` or some custom error handler type
-template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    requires requires(T id) {
+struct has_on_trace<T, It, Se, Context, Attr> : std::bool_constant<
+    requires(T id) {
         id.on_trace(
             std::declval<It const&>(),
             std::declval<Se const&>(),
@@ -120,7 +131,7 @@ template<class T, std::forward_iterator It, std::sentinel_for<It> Se, class Cont
             std::declval<tracer_state>()
         );
     }
-struct has_on_trace<T, It, Se, Context, Attr> : std::true_type
+>
 {};
 
 

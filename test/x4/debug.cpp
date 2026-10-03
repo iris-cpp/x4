@@ -9,26 +9,15 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/rule.hpp>
 #include <iris/x4/debug/error_handler.hpp>
-#include <iris/x4/symbols.hpp>
 #include <iris/x4/numeric/int.hpp>
-#include <iris/x4/char/char_class.hpp>
-#include <iris/x4/char/char.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/directive/with.hpp>
-#include <iris/x4/operator/alternative.hpp>
 #include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/operator/kleene.hpp>
-
-#include <iris/alloy/tuple.hpp>
 
 #include <iterator>
-#include <vector>
 #include <string>
-#include <cstring>
 #include <iostream>
-
-namespace {
 
 struct my_error_handler
 {
@@ -45,102 +34,22 @@ struct my_error_handler
     }
 };
 
-struct my_attribute
-{
-    bool alive = true;
-
-    void access() const
-    {
-        CHECK(alive);
-    }
-    ~my_attribute()
-    {
-        alive = false;
-    }
-};
-
-} // anonymous
-
 TEST_CASE("debug")
 {
-    using namespace x4::standard;
-    using x4::rule;
     using x4::int_;
-
-    {
-        // basic tests
-
-        constexpr auto a = rule<class a_id>("a") = 'a';
-        constexpr auto b = rule<class b_id>("b") = 'b';
-        constexpr auto c = rule<class c_id>("c") = 'c';
-
-        {
-            auto start = *(a | b | c);
-            CHECK(parse("abcabcacb", start));
-        }
-
-        {
-            rule<class start> start("start");
-            auto start_def = start = (a | b) >> (start | b);
-
-            CHECK(parse("aaaabababaaabbb", start_def));
-            CHECK(parse("aaaabababaaabba", start_def).is_partial_match());
-        }
-    }
-
-    {
-        // basic tests w/ skipper
-
-        auto a = rule<class a_id>("a") = 'a';
-        auto b = rule<class b_id>("b") = 'b';
-        auto c = rule<class c_id>("c") = 'c';
-
-        {
-            auto start = *(a | b | c);
-            CHECK(parse(" a b c a b c a c b ", start, space));
-        }
-
-        {
-            rule<class start> start("start");
-            auto start_def = start = (a | b) >> (start | b);
-
-            CHECK(parse(" a a a a b a b a b a a a b b b ", start_def, space));
-            CHECK(parse(" a a a a b a b a b a a a b b a ", start_def, space).is_partial_match());
-        }
-    }
-
-    {
-        // std::container attributes
-
-        using tpl = alloy::tuple<int, char>;
-        rule<class start, std::vector<tpl>> start("start");
-        auto start_def = start = *(int_ >> alpha);
-
-        CHECK(parse("1 a 2 b 3 c", start_def, space));
-    }
 
     {
         // error handling
 
-        auto r_def = '(' > int_ > ',' > int_ > ')';
+        constexpr auto int_int = '(' > int_ > ',' > int_ > ')';  // NOLINT(bugprone-chained-comparison)
         my_error_handler error_handler;
 
-        auto parser = x4::with<x4::contexts::error_handler>(error_handler)[r_def];
+        auto parser = x4::with<x4::contexts::error_handler>(error_handler)[int_int];
 
         CHECK( parse("(123,456)", parser));
         CHECK(!parse("(abc,def)", parser));
         CHECK(!parse("(123,456]", parser));
         CHECK(!parse("(123;456)", parser));
         CHECK(!parse("[123,456]", parser));
-    }
-
-    {
-        x4::shared_symbols<my_attribute> a{{{ "a", my_attribute{} }}};
-
-        auto b = rule<struct b_id, my_attribute>("b") = a;
-
-        my_attribute attr;
-
-        CHECK(parse("a", b, attr));
     }
 }

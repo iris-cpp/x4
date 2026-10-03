@@ -188,8 +188,8 @@ These facilities commonly appear in production language grammars.
 | `p.on_match(f)`        | After `p` matches, invoke the semantic action `f`. The action may inspect or modify the parsing context and may reject the match.           |
 | `expect[p]`            | Parse `p`. If it fails, record an expectation failure that prevents ordinary backtracking and alternative recovery. Usually invoked indirectly via the `a > b` syntax. |
 | `lexeme[p]`            | Perform the normal pre-skip, then parse `p` with automatic skipping disabled inside it.                                                     |
-| `with<ID>(value)[p]`   | Bind `value` to the context id `ID` while parsing `p`.<br>The instance be fetched via `x4::get<ID>(ctx)` in semantic action.               |
-| `with_local<T, ID>[p]`     | Create a value-initialized local value of type `T` for each invocation of `p` and bind it to the context id `ID`. If `ID` is omitted, the default local-variable context id (`x4::contexts::local_var`) is used.<br>The instance be fetched via `x4::get<ID>(ctx)` or `x4::_local_var(ctx)`, respectively, in semantic action. |
+| `with<ID>(value)[p]`   | Bind `value` to the context id `ID` while parsing `p`.<br>The instance can be fetched via `x4::get<ID>(ctx)` in semantic action.<br>See also: `without<IDs...>[p]`. |
+| `with_local<T, ID>[p]`     | Create a value-initialized local value of type `T` for each invocation of `p` and bind it to the context id `ID`. If `ID` is omitted, the default local-variable context id (`x4::contexts::local_var`) is used.<br>The instance can be fetched via `x4::get<ID>(ctx)` or `x4::_local_var(ctx)`, respectively, in semantic action.<br>See also: `without<IDs...>[p]`. |
 
 ### Minor Directives
 
@@ -205,7 +205,7 @@ These facilities are used less frequently in ordinary language grammars.
 | `repeat(n)[p]`                   | Parse exactly `n` occurrences of `p`.                                                                                                                       |
 | `repeat(min, max)[p]`            | Parse between `min` and `max` occurrences of `p`, inclusive.                                                                                                |
 | `repeat(min, x4::repeat_inf)[p]` | Parse at least `min` occurrences of `p`, with no upper limit.                                                                                               |
-| `without<IDs...>[p]`             | Remove every context entry whose key is one of `IDs...` while parsing `p`.<br>Useful for sanitizing the context type correlated with the `x4::rule` type required by `IRIS_X4_INSTANTIATE`. |
+| `without<IDs...>[p]`             | Remove every context entry whose key is one of `IDs...` while parsing `p`.<br>Useful for sanitizing the context type to match the one given to `IRIS_X4_INSTANTIATE`. |
 
 ### Attribute Facilities
 

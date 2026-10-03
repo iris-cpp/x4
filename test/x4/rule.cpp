@@ -5,14 +5,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
-// such as names of functions and macros.
-// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#include "iris_x4_test.hpp"
 
-#define IRIS_ALLOY_ADAPT_STRUCT
+#include <iris/x4/rule.hpp>
 
-#define IRIS_X4_DECLARE
-#define IRIS_X4_DECLARE_PUBLIC
-#define IRIS_X4_DEFINE
-#define IRIS_X4_DEFINE_PUBLIC
-#define IRIS_X4_INSTANTIATE
+TEST_CASE("rule: constructible with incomplete type")
+{
+    struct incomplete_type;
+    [[maybe_unused]] constexpr x4::rule<struct incomplete_type_id, incomplete_type> incomplete_type_rule{};
+}

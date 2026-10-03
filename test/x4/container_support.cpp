@@ -73,14 +73,14 @@ struct from_char_only
 
 } // anonymous
 
-constexpr x4::rule<class pair_rule, std::pair<std::string, std::string>> pair_rule("pair");
-constexpr x4::rule<class string_rule, std::string> string_rule("string");
+IRIS_X4_DECLARE(pair_rule, (std::pair<std::string, std::string>));
+IRIS_X4_DECLARE(string_rule, std::string);
 
 constexpr auto string_rule_def = x4::lexeme[*x4::standard::alnum];
 constexpr auto pair_rule_def = string_rule >> x4::lit('=') >> string_rule;
 
-IRIS_X4_DEFINE(string_rule)
-IRIS_X4_DEFINE(pair_rule)
+IRIS_X4_DEFINE(string_rule);
+IRIS_X4_DEFINE(pair_rule);
 
 constexpr auto as_string_parser = x4::as<std::string>(x4::lexeme[*x4::standard::alnum]);
 constexpr auto as_pair_parser = x4::as<std::pair<std::string, std::string>>(as_string_parser >> x4::lit('=') >> as_string_parser);

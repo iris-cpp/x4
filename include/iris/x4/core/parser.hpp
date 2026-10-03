@@ -19,7 +19,6 @@
 
 #include <iris/string.hpp>
 
-#include <ranges>
 #include <string>
 #include <type_traits>
 #include <concepts>
@@ -406,10 +405,10 @@ struct get_info
 
     [[nodiscard]] static constexpr std::string operator()(Subject const& subject)
     {
-        if constexpr (requires {
-            { subject.get_x4_info() } -> std::convertible_to<std::string>;
+        if constexpr ( requires {
+            requires std::is_constructible_v<std::string, decltype(subject.get_x4_info())>;
         }) {
-            return subject.get_x4_info();
+            return std::string(subject.get_x4_info());
 
         } else {
             (void)subject;

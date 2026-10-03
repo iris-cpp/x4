@@ -134,22 +134,22 @@ IRIS_ALLOY_ADAPT_STRUCT(Pair, a, b);
 IRIS_ALLOY_ADAPT_STRUCT(SingleElement, n);
 
 // A rule whose value is assembled by an action, and a rule which fails after writing a part of its value
-constexpr iris::x4::rule<struct assembled_word_id, std::string> assembled_word = "assembled_word";
-constexpr iris::x4::rule<struct banged_word_id, std::string> banged_word = "banged_word";
-constexpr iris::x4::rule<struct letters_word_id, letters> letters_word = "letters_word";
-constexpr iris::x4::rule<struct shouted_word_id, shouted_letters> shouted_word = "shouted_word";
+IRIS_X4_DECLARE(assembled_word, std::string);
+IRIS_X4_DECLARE(banged_word, std::string);
+IRIS_X4_DECLARE(letters_word, letters);
+IRIS_X4_DECLARE(shouted_word, shouted_letters);
 
-constexpr auto assembled_word_def = assembled_word = (+iris::x4::standard::alpha).on_match([](auto&& ctx) {
+constexpr auto assembled_word_def = (+iris::x4::standard::alpha).on_match([](auto&& ctx) {
     iris::x4::_rule_var(ctx) = iris::x4::_attr(ctx);
 });
-constexpr auto banged_word_def = banged_word = +iris::x4::standard::alpha >> '!';
-constexpr auto letters_word_def = letters_word = +iris::x4::standard::alpha;
-constexpr auto shouted_word_def = shouted_word = +iris::x4::standard::alpha;
+constexpr auto banged_word_def = +iris::x4::standard::alpha >> '!';
+constexpr auto letters_word_def = +iris::x4::standard::alpha;
+constexpr auto shouted_word_def = +iris::x4::standard::alpha;
 
-IRIS_X4_DEFINE(assembled_word)
-IRIS_X4_DEFINE(banged_word)
-IRIS_X4_DEFINE(letters_word)
-IRIS_X4_DEFINE(shouted_word)
+IRIS_X4_DEFINE(assembled_word);
+IRIS_X4_DEFINE(banged_word);
+IRIS_X4_DEFINE(letters_word);
+IRIS_X4_DEFINE(shouted_word);
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -225,12 +225,6 @@ TEST_CASE("attribute contract: prior content does not influence the result")
         wide_t attr{3.5};
         REQUIRE(parse("", fixed_value(iris::rvariant<std::string, int>{42}), attr));
         CHECK(attr == wide_t{42});
-    }
-    {
-        // prepared to the first alternative, not the alternative held before
-        var_t attr{"poison"s};
-        REQUIRE(parse("", x4::rule<struct no_write_rule, var_t>{} = eps, attr));
-        CHECK(attr == var_t{});
     }
     {
         // a container is emptied by `clear()`, which keeps the allocated capacity (also on a failed parse)
@@ -376,7 +370,7 @@ TEST_CASE("attribute contract: parser depending on the previous result of the su
 // Accumulates the digits directly into its attribute, relying on the attribute being prepared to `int{}`
 struct accumulating_digits : x4::parser<accumulating_digits>
 {
-    using attribute_type = int;
+    using attribute_type [[maybe_unused]] = int;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
     [[nodiscard]] static constexpr bool parse(It& first, Se const& last, Context const&, Attr& attr)

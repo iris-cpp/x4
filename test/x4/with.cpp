@@ -9,16 +9,12 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/char/char.hpp>
-#include <iris/x4/rule.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/numeric/int.hpp>
-#include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/operator/delimited_list.hpp>
 
-#include <vector>
 #include <concepts>
-#include <iterator>
 #include <utility>
 #include <type_traits>
 
@@ -28,25 +24,6 @@ namespace {
 
 struct my_tag;
 
-template<x4::X4Attribute ExpectedAttr>
-struct match_counter_rule_id
-{
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, x4::X4Attribute Attr>
-    static void on_success(It const&, Se const&, Context const& ctx, Attr&)
-    {
-        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_var, ExpectedAttr>);
-        ++x4::get<my_tag>(ctx);
-    }
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    static void on_expectation_failure(It const&, Se const&, Context const& ctx, x4::expectation_failure<It> const&)
-    {
-        STATIC_CHECK(x4::has_context_of_v<Context, x4::contexts::rule_var, ExpectedAttr>);
-        ++x4::get<my_tag>(ctx);
-    }
-};
-
-using x4::rule;
 using x4::int_;
 using x4::with;
 using x4::_attr;
@@ -133,22 +110,6 @@ TEST_CASE("with")
     }
 
     {
-        // injecting data into the context in the grammar
-        int matched_count = 0;
-        auto r = rule<match_counter_rule_id<std::vector<int>>, std::vector<int>>{} =
-            '(' > int_ > ',' > int_ > ')';  // NOLINT(bugprone-chained-comparison)
-
-        auto start = with<my_tag>(std::ref(matched_count))[r];
-        std::vector<int> ints;
-
-        REQUIRE(parse("(123,456)", start, ints));
-        CHECK(matched_count == 1);
-        CHECK(ints == std::vector<int>{123, 456});
-        REQUIRE(!parse("(abc,def)", start, ints));
-        CHECK(ints == std::vector<int>{});
-    }
-
-    {
         // injecting non-const lvalue into the context
         int val = 0;
         auto const r = int_.on_match([](auto&& ctx){
@@ -156,59 +117,6 @@ TEST_CASE("with")
         });
         REQUIRE(parse("123,456", with<my_tag>(val)[r % ',']));
         CHECK(val == 579);
-    }
-
-    {
-        // injecting rvalue into the context
-        auto const r1 = int_.on_match([](auto&& ctx){
-            x4::get<my_tag>(ctx) += x4::_attr(ctx);
-        });
-        auto const r2 = rule<struct my_rvalue_rule_class, int>() =
-            x4::lit('(') >> (r1 % ',') >> x4::lit(')').on_match([](auto&& ctx){
-                x4::_rule_var(ctx) = x4::get<my_tag>(ctx);
-            });
-        int attr = 0;
-        REQUIRE(parse("(1,2,3)", with<my_tag>(100)[r2], attr));
-        CHECK(attr == 106);
-    }
-
-    {
-        // injecting const/non-const lvalue and rvalue into the context
-        struct functor
-        {
-            int operator()(int& val)
-            {
-                return val * 10; // non-const ref returns 10 * injected val
-            }
-            int operator()(int const& val)
-            {
-                return val; // const ref returns injected val
-            }
-        };
-
-        auto f = [](auto&& ctx){
-            x4::_rule_var(ctx) = x4::_attr(ctx) + functor()(x4::get<my_tag>(ctx));
-        };
-        auto const r = rule<struct my_rule_class2, int>() = int_.on_match(f);
-
-        {
-            int attr = 0;
-            int const cval = 10;
-            REQUIRE(parse("5", with<my_tag>(cval)[r], attr));
-            CHECK(attr == 15); // x4::get returns const ref to cval
-        }
-        {
-            int attr = 0;
-            int val = 10;
-            REQUIRE(parse("5", with<my_tag>(val)[r], attr));
-            CHECK(attr == 105); // x4::get returns ref to val
-        }
-        {
-            int attr = 0;
-            REQUIRE(parse("5", with<my_tag>(10)[r], attr));
-            // x4::get returns ref to member variable of with_directive
-            CHECK(attr == 105);
-        }
     }
 }
 

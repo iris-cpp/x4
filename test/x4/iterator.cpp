@@ -778,24 +778,16 @@ TEST_CASE("rollback on failed parse (operator)")
     // NOLINTEND(misc-redundant-expression)
 }
 
+IRIS_X4_DECLARE(infinite_a, unused_type);
+constexpr auto infinite_a_def = x4::lit('a') >> infinite_a;
+IRIS_X4_DEFINE(infinite_a);
+
 TEST_CASE("rollback on failed parse (rule)")
 {
-    using x4::lit;
-
     {
         constexpr auto input = " ab"sv;
         auto first = input.begin();
-        constexpr x4::rule<struct _, unused_type> r("r");
-        constexpr auto p = r = lit('a') >> r;
-        REQUIRE_FALSE(p.parse(first, input.end(), skipper_ctx, unused));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = " ab"sv;
-        auto first = input.begin();
-        constexpr x4::rule<struct _, unused_type> r("r");
-        constexpr auto p = r %= lit('a') >> r;
-        REQUIRE_FALSE(p.parse(first, input.end(), skipper_ctx, unused));
+        REQUIRE_FALSE(infinite_a.parse(first, input.end(), skipper_ctx, unused));
         CHECK(first == input.begin());
     }
 }

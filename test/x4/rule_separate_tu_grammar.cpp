@@ -19,21 +19,15 @@ namespace unused_attr {
 using iterator_type = std::string_view::const_iterator;
 
 constexpr auto skipper_def = x4::lit('*');
-IRIS_X4_DEFINE(skipper)
-IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::parse_context_for<iterator_type>)
-IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::skipper_parse_context_for<iterator_type>)
-
-constexpr auto skipper2_def = x4::lit('#');
-IRIS_X4_DEFINE(skipper2)
-IRIS_X4_INSTANTIATE(skipper2_type, iterator_type, x4::parse_context_for<iterator_type>)
-IRIS_X4_INSTANTIATE(skipper2_type, iterator_type, x4::skipper_parse_context_for<iterator_type>)
+IRIS_X4_DEFINE_PUBLIC(skipper)
+IRIS_X4_INSTANTIATE(skipper, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(skipper, iterator_type, x4::skipper_parse_context_for<iterator_type>)
 
 constexpr auto grammar_def = *x4::lit('=');
-IRIS_X4_DEFINE(grammar)
+IRIS_X4_DEFINE_PUBLIC(grammar)
 
-IRIS_X4_INSTANTIATE(grammar_type, iterator_type, x4::parse_context_for<iterator_type>)
-IRIS_X4_INSTANTIATE(grammar_type, iterator_type, x4::phrase_parse_context_for<skipper_type, iterator_type>)
-IRIS_X4_INSTANTIATE(grammar_type, iterator_type, x4::phrase_parse_context_for<skipper2_type, iterator_type>)
+IRIS_X4_INSTANTIATE(grammar, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(grammar, iterator_type, (x4::phrase_parse_context_for<rules::skipper_rule, iterator_type>))
 
 } // unused_attr
 
@@ -42,14 +36,14 @@ namespace used_attr {
 using iterator_type = std::string_view::const_iterator;
 
 constexpr auto skipper_def = x4::standard::space;
-IRIS_X4_DEFINE(skipper)
-IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::parse_context_for<iterator_type>)
-IRIS_X4_INSTANTIATE(skipper_type, iterator_type, x4::skipper_parse_context_for<iterator_type>)
+IRIS_X4_DEFINE_PUBLIC(skipper)
+IRIS_X4_INSTANTIATE(skipper, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_INSTANTIATE(skipper, iterator_type, x4::skipper_parse_context_for<iterator_type>)
 
 constexpr auto grammar_def = x4::int_;
-IRIS_X4_DEFINE(grammar)
-IRIS_X4_INSTANTIATE(grammar_type, iterator_type, x4::parse_context_for<iterator_type>)
+IRIS_X4_DEFINE_PUBLIC(grammar)
+IRIS_X4_INSTANTIATE(grammar, iterator_type, x4::parse_context_for<iterator_type>)
 
-IRIS_X4_INSTANTIATE(grammar_type, iterator_type, x4::phrase_parse_context_for<skipper_type, iterator_type>)
+IRIS_X4_INSTANTIATE(grammar, iterator_type, (x4::phrase_parse_context_for<rules::skipper_rule, iterator_type>))
 
 } // used_attr

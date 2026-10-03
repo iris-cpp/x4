@@ -755,12 +755,6 @@ TEST_CASE("new object")
         CHECK(v == std::vector<Port>{Port{1}, Port{2}});
     }
     {
-        constexpr auto ports = x4::rule<struct ports_rule, std::vector<Port>>{"ports"} = *(int_ >> ';');
-        std::vector<Port> v;
-        REQUIRE(parse("1;2;", ports, v));
-        CHECK(v == std::vector<Port>{Port{1}, Port{2}});
-    }
-    {
         // The failed parse adds nothing
         std::vector<Port> v;
         auto const result = parse("1;2", *(int_ >> ';'), v);

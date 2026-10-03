@@ -17,8 +17,6 @@
 
 namespace x4 = iris::x4;
 
-x4::rule<struct grammar_r, int> const grammar;
-using grammar_type = decltype(grammar);
-IRIS_X4_DECLARE(grammar_type)
+IRIS_X4_DECLARE_PUBLIC(grammar, int);
 
 #endif

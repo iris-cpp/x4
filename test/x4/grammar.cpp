@@ -14,9 +14,9 @@
 
 constexpr auto grammar_def = x4::int_;
 
-IRIS_X4_DEFINE(grammar)
+IRIS_X4_DEFINE_PUBLIC(grammar);
 IRIS_X4_INSTANTIATE(
-    grammar_type,
+    grammar,
     std::string_view::const_iterator,
     x4::parse_context_for<std::string_view::const_iterator>
-)
+);

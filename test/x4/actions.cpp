@@ -82,18 +82,18 @@ constexpr auto timeout = ((x4::int_ >> "ms") | x4::lit("auto")).on_match([](auto
 
 using Value = iris::rvariant<int, std::string>;
 
-constexpr x4::rule<struct value_rule_id, Value> value_rule = "value_rule";
-constexpr auto value_rule_def = value_rule = x4::int_ | +x4::standard::alpha;
-IRIS_X4_DEFINE(value_rule)
+IRIS_X4_DECLARE(value_rule, Value);
+constexpr auto value_rule_def = x4::int_ | +x4::standard::alpha;
+IRIS_X4_DEFINE(value_rule);
 
 constexpr auto quoted = x4::lexeme['"' >> *~x4::standard::char_('"') >> '"'];
 constexpr auto number_lit = x4::as<NumberLit>(x4::long_long);
 constexpr auto string_lit = x4::as<StringLit>(quoted);
 constexpr auto ident = x4::as<Ident>(x4::lexeme[x4::as<std::string>(x4::standard::alpha >> *x4::standard::alnum)]);
 
-constexpr x4::rule<struct literal_rule_id, Literal> literal_rule = "literal_rule";
-constexpr auto literal_rule_def = literal_rule = number_lit | string_lit;
-IRIS_X4_DEFINE(literal_rule)
+IRIS_X4_DECLARE(literal_rule, Literal);
+constexpr auto literal_rule_def = number_lit | string_lit;
+IRIS_X4_DEFINE(literal_rule);
 
 constexpr auto literal_as = x4::as<Literal>(number_lit | string_lit);
 

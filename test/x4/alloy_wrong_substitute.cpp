@@ -5,9 +5,10 @@
 #include <iris/x4/rule.hpp>
 
 #include <iris/alloy/adapt.hpp>
-#include <iris/alloy/tuple.hpp>
 
-#include <iris/rvariant.hpp>
+#include <iris/rvariant/rvariant.hpp>
+
+#include <iris/type_list.hpp>
 
 struct A
 {
@@ -49,29 +50,19 @@ using AorB = iris::rvariant<
     B
 >;
 
-using ARule = x4::rule<struct a_tag, A>;
-using BRule = x4::rule<struct b_tag, B>;
-using AorBRule = x4::rule<struct a_or_b_tag, AorB>;
-
-constexpr ARule a;
-constexpr BRule b;
-constexpr AorBRule a_or_b;
-
-IRIS_X4_DECLARE(ARule);
-IRIS_X4_DECLARE(BRule);
-IRIS_X4_DECLARE(AorBRule);
+IRIS_X4_DECLARE(a, A);
+IRIS_X4_DECLARE(b, B);
+IRIS_X4_DECLARE(a_or_b, AorB);
 
 constexpr auto a_def = x4::eps;
-
 constexpr auto b_def = x4::eps;
-
 constexpr auto a_or_b_def = a | b;
 
 IRIS_X4_DEFINE(a);
 IRIS_X4_DEFINE(b);
 IRIS_X4_DEFINE(a_or_b);
 
-IRIS_X4_INSTANTIATE(AorBRule, const char*, x4::unused_type);
+IRIS_X4_INSTANTIATE(a_or_b, const char*, x4::unused_type);
 
 TEST_CASE("alloy_wrong_substitute")
 {
