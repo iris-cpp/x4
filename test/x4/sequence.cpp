@@ -381,7 +381,7 @@ TEST_CASE("sequence")
     {
         using Attr = iris::rvariant<int, float>;
         constexpr auto term = as<Attr>(int_ | float_);
-        constexpr auto expr = as<Attr>(term | '(' > term > ')');
+        constexpr auto expr = as<Attr>(term | ('(' > term > ')')); // needs paren to suppress warning on GCC
         Attr var;
         CHECK(parse("(1)", expr, space, var));
     }
