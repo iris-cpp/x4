@@ -16,13 +16,12 @@
 
 #include <iris/x4/core/traits/write_rank.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
-#include <iris/x4/char/char.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/kleene.hpp>
 #include <iris/x4/operator/optional.hpp>
 #include <iris/x4/operator/sequence.hpp>
-#include <iris/x4/rule.hpp>
 
 #include <filesystem>
 #include <initializer_list>

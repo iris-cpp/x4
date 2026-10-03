@@ -9,9 +9,8 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/rule.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/char/char.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/operator/plus.hpp>
 
@@ -20,7 +19,6 @@ TEST_CASE("lexeme")
     using x4::standard::space;
     using x4::standard::digit;
     using x4::lexeme;
-    using x4::rule;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(lexeme['x']);
 
