@@ -11,6 +11,7 @@
 
 TEST_CASE("rule: constructible with incomplete type")
 {
-    struct incomplete_type;
-    [[maybe_unused]] constexpr x4::rule<struct incomplete_type_id, incomplete_type> incomplete_type_rule{};
+    struct incomplete_attr_type;
+    struct rule_id { using rule_attribute_type = incomplete_attr_type; };
+    [[maybe_unused]] constexpr x4::rule<rule_id> incomplete_type_rule{};
 }

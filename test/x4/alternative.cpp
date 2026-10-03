@@ -784,7 +784,9 @@ TEST_CASE("declared variant")
     using Value = rvariant<int, std::string>;
     constexpr auto int_or_alpha = int_ | +alpha;
     constexpr auto hashed_double = '#' >> double_;
-    constexpr x4::rule<struct value_rule_id, Value> value_rule{std::string_view{"value_rule"}};
+
+    struct value_rule_id { using rule_attribute_type = Value; };
+    constexpr x4::rule<value_rule_id> value_rule{std::string_view{"value_rule"}};
 
     STATIC_CHECK(std::same_as<attribute_t<decltype(int_or_alpha)>, Value>);
     STATIC_CHECK(std::same_as<candidates_t<decltype(int_or_alpha)>, type_list<int, std::string>>);

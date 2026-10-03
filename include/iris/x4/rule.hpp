@@ -30,7 +30,6 @@
 #include <iris/pp/stringize.hpp>
 #include <iris/pp/arg.hpp>
 
-#include <memory>
 #include <string_view>
 #include <concepts>
 #include <iterator>
@@ -41,36 +40,14 @@ namespace iris::x4 {
 
 namespace detail {
 
-template<class RuleID, class RuleAttr>
-struct rule_attr_ptr
-{
-    RuleAttr* ptr;
-};
-
-// When `IRIS_X4_INSTANTIATE` is missing for the exact signature being called,
-// the resulting link error names the parse function with all of its template
-// arguments, which can be enormously long. If `RuleID` provides
-// `::rule_attribute_type`, the attribute pointer type depends only on `RuleID`,
-// so `RuleAttr` no longer appears in the mangled name.
+// A link error for a missing `IRIS_X4_INSTANTIATE` shows the parameter types of the
+// undefined `parse_rule`. Passing the attribute through this wrapper shows only `RuleID`
+// there, instead of the whole attribute type.
 template<class RuleID>
-struct rule_attr_ptr<RuleID, void>
+struct rule_attr_ref
 {
-    RuleID::rule_attribute_type* ptr;
+    RuleID::rule_attribute_type& attr;
 };
-
-template<class RuleID, class RuleAttr>
-using rule_attr_ptr_t = std::conditional_t<
-    requires { typename RuleID::rule_attribute_type; },
-    rule_attr_ptr<RuleID, void>,
-    rule_attr_ptr<RuleID, RuleAttr>
->;
-
-template<class RuleID, class RuleAttr>
-[[nodiscard]] IRIS_FORCEINLINE constexpr rule_attr_ptr_t<RuleID, RuleAttr>
-make_rule_attr_ptr(RuleAttr& rule_attr) noexcept
-{
-    return rule_attr_ptr_t<RuleID, RuleAttr>{std::addressof(rule_attr)};
-}
 
 // Fallback selected when no `parse_rule` for this rule is visible at the point
 // where the rule's `parse` is instantiated.
@@ -83,9 +60,9 @@ make_rule_attr_ptr(RuleAttr& rule_attr) noexcept
 // - A rule declared with `IRIS_X4_DECLARE_PUBLIC` never reaches here, since that
 //   declaration is more specialized than this overload; a missing definition for
 //   it is left to the linker.
-template<class RuleID, class It, class Se, class Context, class RuleAttrPtrT>
+template<class RuleID, class It, class Se, class Context, class RuleAttrRefT>
 [[nodiscard]] constexpr bool
-parse_rule(RuleID, It&, Se const&, Context const&, RuleAttrPtrT)
+parse_rule(RuleID, It&, Se const&, Context const&, RuleAttrRefT)
 {
     static_assert(
         std::is_void_v<RuleID>,
@@ -98,28 +75,27 @@ parse_rule(RuleID, It&, Se const&, Context const&, RuleAttrPtrT)
 // A link error for a missing `IRIS_X4_INSTANTIATE` also names the caller of `parse_rule`.
 // Unless this function is inlined (it is not in Debug builds), the caller is this function
 // rather than `x4::rule<...>::parse`, whose name contains the whole `RuleAttr`.
-template<class RuleID, class It, class Se, class Context, class RuleAttrPtrT>
+template<class RuleID, class It, class Se, class Context, class RuleAttrRefT>
 [[nodiscard]] constexpr bool
-call_parse_rule(It& first, Se const& last, Context const& ctx, RuleAttrPtrT rule_attr_ptr)
+call_parse_rule(It& first, Se const& last, Context const& ctx, RuleAttrRefT attr_ref)
 {
-    return parse_rule(RuleID{}, first, last, ctx, rule_attr_ptr); // ADL
+    return parse_rule(RuleID{}, first, last, ctx, attr_ref); // ADL
 }
 
 } // detail
 
-template<class RuleID, class RuleAttr>
-struct rule : parser<rule<RuleID, RuleAttr>>
+template<class RuleID>
+struct rule : parser<rule<RuleID>>
 {
-    // This type MUST be constructible with incomplete types.
+    // This type MUST be constructible with incomplete attribute types.
     // Do NOT add `static_assert`s or other constructs that cause eager
-    // instantiation of `RuleAttr` within this class body.
+    // instantiation of `RuleID::rule_attribute_type` within class body.
+    // Note: `RuleID` must be complete regardless.
 
-    static_assert(!std::is_const_v<RuleAttr>);
+    using attribute_type = RuleID::rule_attribute_type;
+    static_assert(!std::is_const_v<attribute_type>);
 
-    using id = RuleID;
-    using attribute_type = RuleAttr;
-
-    static constexpr bool has_attribute = !std::is_same_v<RuleAttr, unused_type>;
+    static constexpr bool has_attribute = !std::is_same_v<attribute_type, unused_type>;
 
     std::string_view name = "unnamed_rule";
 
@@ -131,7 +107,6 @@ struct rule : parser<rule<RuleID, RuleAttr>>
         // Don't place `check_invariants()` here; rule must be able to construct with incomplete type
     }
 
-    // Primary overload
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, class ExposedAttr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, ExposedAttr& exposed_attr) const
@@ -150,30 +125,30 @@ struct rule : parser<rule<RuleID, RuleAttr>>
         // back whenever the definition or `RuleID` may use it.
         auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
 
-        if constexpr (std::same_as<std::remove_const_t<ExposedAttr>, RuleAttr>) {
-            if constexpr (traits::X4Container<RuleAttr>) {
+        if constexpr (std::same_as<std::remove_const_t<ExposedAttr>, attribute_type>) {
+            if constexpr (traits::X4Container<attribute_type>) {
                 if (!std::ranges::empty(exposed_attr)) {
                     // The container holds the preceding results, which the attribute of the rule
                     // is kept apart from; parse into a new attribute and append it on success.
-                    RuleAttr rule_attr{};
-                    if (!detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::make_rule_attr_ptr<RuleID, RuleAttr>(rule_attr))) {
+                    attribute_type rule_attr{};
+                    if (!detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{rule_attr})) {
                         return false;
                     }
                     planner::pass_declared_attribute(exposed_attr, std::move(rule_attr));
                     return true;
                 }
             }
-            return detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::make_rule_attr_ptr<RuleID, RuleAttr>(exposed_attr));
+            return detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{exposed_attr});
 
-        } else if constexpr (detail::holds_as_single_element<std::remove_const_t<ExposedAttr>, RuleAttr>) {
+        } else if constexpr (detail::holds_as_single_element<std::remove_const_t<ExposedAttr>, attribute_type>) {
             return this->parse(first, last, ctx, alloy::get<0>(exposed_attr));
 
         } else {
-            static_assert(X4StrictlyWritable<std::remove_const_t<ExposedAttr>&, unwrap_recursive_t<RuleAttr>&&>);
-            static_assert(!detail::dangles<std::remove_const_t<ExposedAttr>, unwrap_recursive_t<RuleAttr>&&>);
+            static_assert(X4StrictlyWritable<std::remove_const_t<ExposedAttr>&, unwrap_recursive_t<attribute_type>&&>);
+            static_assert(!detail::dangles<std::remove_const_t<ExposedAttr>, unwrap_recursive_t<attribute_type>&&>);
 
-            RuleAttr rule_attr{}; // value-initialize
-            if (!detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::make_rule_attr_ptr<RuleID, RuleAttr>(rule_attr))) {
+            attribute_type rule_attr{}; // value-initialize
+            if (!detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{rule_attr})) {
                 return false;
             }
             planner::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
@@ -188,12 +163,12 @@ struct rule : parser<rule<RuleID, RuleAttr>>
         check_invariants();
 
         // Make sure we pass exactly the rule attribute type to not break `IRIS_X4_INSTANTIATE` use case
-        RuleAttr unused_rule_attr{}; // value-initialize
+        attribute_type unused_rule_attr{}; // value-initialize
 
         // See the comments on the primary overload of `rule::parse(...)`
         auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
 
-        return detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::make_rule_attr_ptr<RuleID, RuleAttr>(unused_rule_attr));
+        return detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{unused_rule_attr});
     }
 
     [[nodiscard]] constexpr std::string_view get_x4_info() const noexcept
@@ -204,13 +179,11 @@ struct rule : parser<rule<RuleID, RuleAttr>>
 private:
     static constexpr void check_invariants() noexcept
     {
-        static_assert(X4Attribute<RuleAttr>);
-        if constexpr (X4NonUnusedAttribute<RuleAttr>) {
-            static_assert(X4ValueAttribute<RuleAttr>);
+        static_assert(X4Attribute<attribute_type>);
+        if constexpr (X4NonUnusedAttribute<attribute_type>) {
+            static_assert(X4ValueAttribute<attribute_type>);
         }
-        static_assert(!std::is_same_v<RuleAttr, unused_container_type>, "`rule` with `unused_container_type` is not supported");
-
-        static_assert(std::same_as<typename RuleID::rule_attribute_type, RuleAttr>);
+        static_assert(!std::is_same_v<attribute_type, unused_container_type>, "`rule` with `unused_container_type` is not supported");
     }
 };
 
@@ -318,7 +291,7 @@ call_rule_definition(
         IRIS_PP_CAT(rule_name, _id), \
         It& first, Se const& last, \
         Context const& ctx, \
-        ::iris::x4::detail::rule_attr_ptr_t<IRIS_PP_CAT(rule_name, _id), IRIS_PP_CAT(rule_name, _rule)::attribute_type> rule_attr_ptr \
+        ::iris::x4::detail::rule_attr_ref<IRIS_PP_CAT(rule_name, _id)> attr_ref \
     )
 
 // Declares a rule whose parse function is defined as constexpr by `IRIS_X4_DEFINE`.
@@ -327,7 +300,7 @@ call_rule_definition(
 #define IRIS_X4_DECLARE(rule_name, RuleAttr, ...) \
     namespace rules { \
     struct IRIS_PP_CAT(rule_name, _id) __VA_OPT__(:) __VA_ARGS__ { using rule_attribute_type = IRIS_PP_UNPAREN_IF_PAREN(RuleAttr); }; \
-    using IRIS_PP_CAT(rule_name, _rule) = ::iris::x4::rule<IRIS_PP_CAT(rule_name, _id), IRIS_PP_CAT(rule_name, _id)::rule_attribute_type>; \
+    using IRIS_PP_CAT(rule_name, _rule) = ::iris::x4::rule<IRIS_PP_CAT(rule_name, _id)>; \
     } /* rules */ \
     inline constexpr rules::IRIS_PP_CAT(rule_name, _rule) rule_name{IRIS_PP_STRINGIZE(rule_name)};
 
@@ -348,7 +321,7 @@ call_rule_definition(
     { \
         return ::iris::x4::detail::call_rule_definition<IRIS_PP_CAT(rule_name, _id)>( \
             IRIS_PP_CAT(rule_name, _def), rule_name.name, \
-            first, last, ctx, *rule_attr_ptr.ptr \
+            first, last, ctx, attr_ref.attr \
         ); \
     } \
     } /* rules */
@@ -370,7 +343,7 @@ call_rule_definition(
     template bool parse_rule<It, Se, Context>( \
         IRIS_PP_CAT(rule_name, _id), \
         It&, Se const&, Context const&, \
-        ::iris::x4::detail::rule_attr_ptr_t<IRIS_PP_CAT(rule_name, _id), IRIS_PP_CAT(rule_name, _rule)::attribute_type> \
+        ::iris::x4::detail::rule_attr_ref<IRIS_PP_CAT(rule_name, _id)> \
     ); \
     } /* rules */
 
