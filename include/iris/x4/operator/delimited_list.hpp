@@ -23,12 +23,14 @@
 
 namespace iris::x4 {
 
-// Not a `binary_parser`: the subject is the element that repeats, and the separator only delimits it.
-// The member is spelled `Subject` as in `unary_parser`, so that MSVC prints the type once in the frame
-// of `parse_into_container`, whose parameter is also named `Subject`.
+// a % b
 template<class Subject, class Separator>
 struct delimited_list : parser<delimited_list<Subject, Separator>>
 {
+    // Not a `binary_parser` due to MSVC QoL issue.
+    // The type of the member is spelled `Subject` as in `unary_parser`, so that MSVC prints it once in the
+    // frame of `parse_into_container`, whose parameter is also named `Subject`.
+
     using subject_type = Subject;
     using separator_type = Separator;
     using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;

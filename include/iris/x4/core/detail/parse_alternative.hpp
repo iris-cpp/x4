@@ -49,7 +49,7 @@ template<class Context>
     }
 }
 
-// This must be an independent struct to reduce compilation time.
+// Kept apart from `alternative::parse` to reduce compilation time.
 // For details, see notes on `parse_sequence_all`.
 template<class Alt>
 struct parse_alternative_all_impl

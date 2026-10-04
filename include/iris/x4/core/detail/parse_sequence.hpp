@@ -12,7 +12,6 @@
 
 #include <iris/config.hpp>
 
-#include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/traits/write_rank.hpp>
 
@@ -134,8 +133,8 @@ template<std::size_t I, class... Ps, class Attr>
     }
 }
 
-// A slice of the attribute is a temporary, and it lives until the end of the
-// full-expression that parses the element.
+// The attribute for an element refers into the attribute of the sequence, or is a temporary slice viewing it.
+// The slice lives until the end of the full-expression that parses the element.
 template<class T>
 [[nodiscard]] constexpr T& as_lvalue(T&& value) noexcept
 {
@@ -151,19 +150,6 @@ template<class SeqT>
     return named;
 }
 
-// The actual logic is isolated outside `sequence::parse`.
-//
-// Theoretically, this can be written directly inside a lambda in `sequence::parse`.
-// However, MSVC historically fails to optimize the compilation time of this kind
-// of logic when it is written directly inside a large function.
-//
-// MSVC has a bad behavior where it always reparses the entire tokens of large
-// function body when it needs to be "reinspected" for some arbitrary reason, like
-// different types of specialization, etc. This is NOT the matter of the template
-// instantiation cost; it is due to the function parsing and tokenization behavior.
-//
-// The result is about 50-80ms reduced compilation time (in realistic code) when
-// this is isolated like below.
 template<class Seq, std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
 [[nodiscard]] constexpr bool
 parse_sequence_all(Seq const& seq, std::index_sequence<Is...>, It& first, Se const& last, Context const& ctx, Attr& attr)
