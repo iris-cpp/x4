@@ -20,6 +20,7 @@
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/context.hpp>
+#include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/parser_traits.hpp>
@@ -183,11 +184,15 @@ struct action : proxy_parser<action<Subject, ActionF>, Subject>
     {
         It local_it = first;
         typename base_type::attribute_type attr_temp{}; // value-initialize
-        if (!this->subject.parse(local_it, last, ctx, attr_temp)) return false;
-
-        if (this->call_action(ctx, attr_temp)) {
-            first = local_it;
+        if (this->subject.parse(local_it, last, ctx, attr_temp) && this->call_action(ctx, attr_temp)) {
+            first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }
@@ -219,11 +224,15 @@ public:
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
         It local_it = first;
-        if (!this->subject.parse(local_it, last, ctx, attr)) return false;
-
-        if (this->call_action(ctx, attr)) {
-            first = local_it;
+        if (this->subject.parse(local_it, last, ctx, attr) && this->call_action(ctx, attr)) {
+            first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }
@@ -236,11 +245,15 @@ public:
     {
         typename base_type::attribute_type attr_temp{}; // value-initialize
         It local_it = first;
-        if (!this->subject.parse(local_it, last, ctx, attr_temp)) return false;
-
-        if (this->call_action(ctx, attr_temp)) {
-            first = local_it;
+        if (this->subject.parse(local_it, last, ctx, attr_temp) && this->call_action(ctx, attr_temp)) {
+            first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }

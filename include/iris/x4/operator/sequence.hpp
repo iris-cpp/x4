@@ -157,7 +157,7 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
-                return false;
+                first = std::move(local_it);
             }
         }
         return false;
@@ -177,6 +177,12 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
             if (detail::parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, *this, local_it, last, ctx, attr)) {
                 first = std::move(local_it);
                 return true;
+            }
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                if (x4::has_expectation_failure(ctx)) {
+                    // don't rollback iterator (mimicking exception-like behavior)
+                    first = std::move(local_it);
+                }
             }
             return false;
 
@@ -198,6 +204,12 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
                 first = std::move(local_it);
                 return true;
             }
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                if (x4::has_expectation_failure(ctx)) {
+                    // don't rollback iterator (mimicking exception-like behavior)
+                    first = std::move(local_it);
+                }
+            }
             return false;
         }
     }
@@ -211,6 +223,12 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
         if (detail::make_container_sequence_parser(this->elems, local_it, last, ctx, container_attr)(std::index_sequence_for<Ps...>{})) {
             first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }

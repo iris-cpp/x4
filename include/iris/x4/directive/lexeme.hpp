@@ -11,6 +11,7 @@
 =============================================================================*/
 
 #include <iris/x4/core/context.hpp>
+#include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 
@@ -50,8 +51,17 @@ struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
             detail::make_lexeme_context(ctx), // no skipper
             attr
         );
-        if (ok) first = it;
-        return ok;
+        if (ok) {
+            first = std::move(it);
+            return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(it);
+            }
+        }
+        return false;
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

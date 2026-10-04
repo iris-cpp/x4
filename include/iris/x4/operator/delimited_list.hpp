@@ -60,10 +60,13 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
             }
 
             if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-                return !x4::has_expectation_failure(ctx);
-            } else {
-                return true;
+                if (x4::has_expectation_failure(ctx)) {
+                    // don't rollback iterator (mimicking exception-like behavior)
+                    first = std::move(last_parse_it);
+                    return false;
+                }
             }
+            return true;
         }
     }
 
@@ -86,10 +89,13 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
         }
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !x4::has_expectation_failure(ctx);
-        } else {
-            return true;
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(last_parse_it);
+                return false;
+            }
         }
+        return true;
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
