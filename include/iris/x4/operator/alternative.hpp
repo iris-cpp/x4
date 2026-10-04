@@ -145,11 +145,8 @@ struct alternative : nary_parser<alternative<Ps...>, Ps...>
     parse(It& first, Se const& last, Context const& ctx, Attr& exposed_attr) const
     {
         return detail::parse_alternative_all(
-            detail::as_alternative(*this),
-            std::index_sequence_for<Ps...>{},
-            detail::make_alternative_branch_parser(this->elems, first, last, ctx),
-            ctx,
-            exposed_attr
+            detail::as_alternative(*this), std::index_sequence_for<Ps...>{},
+            first, last, ctx, exposed_attr
         );
     }
 
