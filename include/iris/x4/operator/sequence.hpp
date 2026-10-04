@@ -115,8 +115,10 @@ template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class 
 ) noexcept
 {
     return [&elems, &first, &last, &ctx, &container_attr]<std::size_t... Is>(std::index_sequence<Is...>) -> bool {
-        auto parse_elem = [&]<class P>(P const& parser) -> bool {
-            if constexpr (parser_traits<P>::sequence_size > 1) {
+        // Takes the index rather than the parser, so that diagnostics don't print the parser type here
+        auto parse_elem = [&]<std::size_t I>() -> bool {
+            auto const& parser = nary::get<I>(elems);
+            if constexpr (parser_traits<std::remove_cvref_t<decltype(parser)>>::sequence_size > 1) {
                 // Exposed attribute = container, Parser expects sequence attribute
                 return parser.parse(first, last, ctx, container_attr);
 
@@ -125,7 +127,7 @@ template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class 
                 return detail::parse_into_container(parser, first, last, ctx, container_attr);
             }
         };
-        return (parse_elem(nary::get<Is>(elems)) && ...);
+        return (parse_elem.template operator()<Is>() && ...);
     };
 }
 

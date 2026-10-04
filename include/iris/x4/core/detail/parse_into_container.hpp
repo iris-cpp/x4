@@ -212,13 +212,6 @@ struct parse_into_container_impl_default
         }
         return true;
     }
-
-    // pass `container` itself to the parser, which appends into it
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container Container>
-    static constexpr bool parse_container(Parser const& parser, It& first, Se const& last, Context& ctx, Container& container)
-    {
-        return parser.parse(first, last, ctx, container);
-    }
 };
 
 // Internal customization point. A specialization that has `call` replaces how `parse_into_container`
@@ -274,7 +267,7 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
             return parse_into_container_impl_default<Parser>::parse_written_part(parser, first, last, ctx, attr);
 
         } else if constexpr (strategy == container_parse_strategy::container_itself) {
-            return parse_into_container_impl_default<Parser>::parse_container(parser, first, last, ctx, attr);
+            return parser.parse(first, last, ctx, attr); // the parser appends into the container itself
 
         } else {
             return parse_into_container_impl_default<Parser>::parse_part(parser, first, last, ctx, attr);
