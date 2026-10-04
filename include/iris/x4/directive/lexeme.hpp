@@ -11,6 +11,7 @@
 =============================================================================*/
 
 #include <iris/x4/core/context.hpp>
+#include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 
@@ -19,6 +20,19 @@
 #include <utility>
 
 namespace iris::x4 {
+
+namespace detail {
+
+template<class Context>
+[[nodiscard]] constexpr decltype(auto) make_lexeme_context(Context const& ctx) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
+    return detail::named_context<T>(x4::remove_first_context<contexts::skipper>(ctx));
+}
+
+} // detail
 
 template<class Subject>
 struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
@@ -34,11 +48,20 @@ struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
 
         bool const ok = this->subject.parse(
             it, last,
-            x4::remove_first_context<contexts::skipper>(ctx), // no skipper
+            detail::make_lexeme_context(ctx), // no skipper
             attr
         );
-        if (ok) first = it;
-        return ok;
+        if (ok) {
+            first = std::move(it);
+            return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(it);
+            }
+        }
+        return false;
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

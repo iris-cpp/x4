@@ -70,7 +70,11 @@ constexpr void skip_over(It& first, Se const& last, Context const& ctx)
     // A custom skipper may require the context object as-is. However, we should omit the
     // `contexts::skipper` because not doing so would invoke infinite instantiation when
     // the skipper itself has a recursive skipper.
-    auto const local_ctx = x4::remove_first_context<contexts::skipper>(ctx);
+
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using SkipperOnlyContext = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
+    auto const& local_ctx = detail::named_context<SkipperOnlyContext>(x4::remove_first_context<contexts::skipper>(ctx));
 
     while (skipper.parse(first, last, local_ctx, unused))
         /* loop */;

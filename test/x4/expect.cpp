@@ -19,6 +19,7 @@
 
 #include <iris/x4/core/expectation.hpp>
 
+#include <iris/x4/attribute/as.hpp>
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/primitive/eoi.hpp>
 #include <iris/x4/primitive/eol.hpp>
@@ -139,6 +140,10 @@
 IRIS_X4_DECLARE(unused_rule, unused_type);
 constexpr auto unused_rule_def = x4::eps;
 IRIS_X4_DEFINE(unused_rule);
+
+IRIS_X4_DECLARE(expect_rule, int);
+constexpr auto expect_rule_def = x4::int_ > ';';
+IRIS_X4_DEFINE(expect_rule);
 
 TEST_CASE("expectation_failure context is uninstantiated in expect-less parse")
 {
@@ -736,6 +741,83 @@ TEST_CASE("expect")
             CHECK(where == "c"sv);
         });
     }
+}
+
+TEST_CASE("no rollback")
+{
+    using namespace std::string_view_literals;
+
+    using x4::standard::char_;
+    using x4::lit;
+    using x4::expect;
+    using x4::lexeme;
+    using x4::matches;
+    using x4::repeat;
+    using x4::int_;
+
+    // The iterator stays where the expectation failed, like an exception thrown from there
+    auto const rest = [](std::string_view input, auto const& parser, auto&... attr) {
+        auto const res = parse(input, parser, attr...);
+        REQUIRE(!res.ok);
+        REQUIRE(res.expect_failure.has_value());
+        CHECK(res.expect_failure.where() == res.remainder.begin());
+        return res.remainder_str();
+    };
+
+    {
+        int i = 0;
+        CHECK(rest("foo", expect[int_], i) == "foo"sv);
+        CHECK(rest("1x", expect_rule, i) == "x"sv);
+    }
+
+    {
+        std::string str;
+        char ch{};
+        alloy::tuple<char, char, char> chars;
+        CHECK(rest("abx", lit('a') >> 'b' >> expect['c']) == "x"sv);
+        CHECK(rest("abx", char_ >> 'b' >> expect['c'], ch) == "x"sv);
+        CHECK(rest("abx", char_ >> char_ >> expect[char_('c')], chars) == "x"sv);
+        CHECK(rest("abx", char_ >> char_ >> expect[char_('c')], str) == "x"sv);
+    }
+
+    {
+        int i = 0;
+        CHECK(rest("ax", (lit('a') > 'b').on_match([] {})) == "x"sv);
+        CHECK(rest("1x", (int_ > 'b').on_match([] {}), i) == "x"sv);
+
+        long l = 0; // differs from the attribute of `as<int>`
+        CHECK(rest("1x", x4::as<int>(int_ > 'b').on_match([] {}), l) == "x"sv);
+    }
+
+    {
+        std::string str;
+        CHECK(rest("abax", repeat(2)[lit('a') > 'b']) == "x"sv);
+        CHECK(rest("abax", repeat(2)[char_('a') > char_('b')], str) == "x"sv);
+    }
+
+    CHECK(rest("ax", lexeme[lit('a') > 'b']) == "x"sv);
+
+    {
+        bool b = false;
+        CHECK(rest("ax", matches[lit('a') > 'b'], b) == "x"sv);
+    }
+
+    CHECK(rest("ax", char_ - (lit('a') > 'b')) == "x"sv);
+    CHECK(rest("ax", (lit('a') > 'b') - 'z') == "x"sv);
+
+    {
+        std::string str;
+        CHECK(rest("ab,ax", (lit('a') > 'b') % ',') == "x"sv);
+        CHECK(rest("ab,ax", (char_('a') > char_('b')) % ',', str) == "x"sv);
+    }
+
+    CHECK(rest("ax", &(lit('a') > 'b')) == "x"sv);
+    CHECK(rest("ax", !(lit('a') > 'b')) == "x"sv);
+
+    CHECK(rest("abax", *(lit('a') > 'b')) == "x"sv);
+    CHECK(rest("abax", +(lit('a') > 'b')) == "x"sv);
+    CHECK(rest("ax", -(lit('a') > 'b')) == "x"sv);
+    CHECK(rest("ax", (lit('a') > 'b') | 'c') == "x"sv);
 }
 
 // NOLINTEND(bugprone-chained-comparison)

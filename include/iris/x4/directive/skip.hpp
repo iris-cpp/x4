@@ -32,6 +32,19 @@ template<class Tag>
 struct unicode_char_class;
 #endif
 
+namespace detail {
+
+template<class Context, class Skipper>
+[[nodiscard]] constexpr decltype(auto) make_skipper_context(Context const& ctx, Skipper const& skipper) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, skipper))>;
+    return detail::named_context<T>(x4::replace_first_context<contexts::skipper>(ctx, skipper));
+}
+
+} // detail
+
 template<class Subject, class Skipper>
 struct skip_directive : proxy_parser<skip_directive<Subject, Skipper>, Subject>
 {
@@ -49,7 +62,7 @@ struct skip_directive : proxy_parser<skip_directive<Subject, Skipper>, Subject>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return this->subject.parse(first, last, x4::replace_first_context<contexts::skipper>(ctx, skipper_), attr);
+        return this->subject.parse(first, last, detail::make_skipper_context(ctx, skipper_), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const
@@ -59,14 +72,21 @@ struct skip_directive : proxy_parser<skip_directive<Subject, Skipper>, Subject>
     }
 
 private:
-    template<class Context>
-    using context_t = std::remove_cvref_t<decltype(
-        x4::replace_first_context<contexts::skipper>(std::declval<Context const&>(), std::declval<Skipper&>())
-    )>;
-
     Skipper skipper_;
 };
 
+namespace detail {
+
+template<class Context>
+[[nodiscard]] constexpr decltype(auto) make_builtin_skipper_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, skipper_kind))>;
+    return detail::named_context<T>(x4::replace_first_context<contexts::skipper>(ctx, skipper_kind));
+}
+
+} // detail
 
 template<builtin_skipper_kind Kind, class Subject>
 struct builtin_skip_directive : proxy_parser<builtin_skip_directive<Kind, Subject>, Subject>
@@ -99,7 +119,8 @@ struct builtin_skip_directive : proxy_parser<builtin_skip_directive<Kind, Subjec
     {
         // This value could be reset by some nested parsers, so it can't be const
         /* constexpr */ builtin_skipper_kind skipper_kind = Kind;
-        return this->subject.parse(first, last, x4::replace_first_context<contexts::skipper>(ctx, skipper_kind), attr);
+
+        return this->subject.parse(first, last, detail::make_builtin_skipper_context(ctx, skipper_kind), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

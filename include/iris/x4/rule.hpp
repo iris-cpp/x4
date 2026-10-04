@@ -82,6 +82,15 @@ call_parse_rule(It& first, Se const& last, Context const& ctx, RuleAttrRefT attr
     return parse_rule(RuleID{}, first, last, ctx, attr_ref); // ADL
 }
 
+template<class Context>
+[[nodiscard]] constexpr decltype(auto) make_rule_agnostic_context(Context const& ctx) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::rule_var>(ctx))>;
+    return detail::named_context<T>(x4::remove_first_context<contexts::rule_var>(ctx));
+}
+
 } // detail
 
 template<class RuleID>
@@ -123,7 +132,7 @@ struct rule : parser<rule<RuleID>>
         //
         // This removal is safe because `call_rule_definition` puts the `_rule_var` context
         // back whenever the definition or `RuleID` may use it.
-        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
+        auto&& rule_agnostic_ctx = detail::make_rule_agnostic_context(ctx);
 
         if constexpr (std::same_as<std::remove_const_t<ExposedAttr>, attribute_type>) {
             if constexpr (traits::X4Container<attribute_type>) {
@@ -166,7 +175,7 @@ struct rule : parser<rule<RuleID>>
         attribute_type unused_rule_attr{}; // value-initialize
 
         // See the comments on the primary overload of `rule::parse(...)`
-        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
+        auto&& rule_agnostic_ctx = detail::make_rule_agnostic_context(ctx);
 
         return detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{unused_rule_attr});
     }
@@ -197,16 +206,18 @@ namespace detail {
 
 template<
     class RuleID,
-    class RuleDefParserT, std::forward_iterator It, std::sentinel_for<It> Se,
+    std::forward_iterator It, std::sentinel_for<It> Se,
     class Context, X4Attribute ExposedAttr
 >
 [[nodiscard]] constexpr bool
 call_rule_definition(
-    RuleDefParserT const& rule_def_parser, [[maybe_unused]] std::string_view const rule_name,
+    [[maybe_unused]] std::string_view const rule_name,
     It& first, Se const& last,
     Context const& ctx, ExposedAttr& exposed_attr
 )
 {
+    auto const& rule_def_parser = get_rule_definition(RuleID{}); // ADL
+    using RuleDefParserT = std::remove_cvref_t<decltype(rule_def_parser)>;
     static_assert(X4Subject<RuleDefParserT>);
 
     bool ok = false;
@@ -230,7 +241,7 @@ call_rule_definition(
     }();
     using MaterializedAttr = std::remove_cvref_t<decltype(attr)>;
 
-    auto&& rcontext = [&] noexcept -> decltype(auto) {
+    auto const make_rcontext = [&] noexcept -> decltype(auto) {
         if constexpr (
             RuleDefParserT::need_rcontext ||
             has_on_success<RuleID, It, It /* NOT `Se` */, Context, MaterializedAttr>::value ||
@@ -240,12 +251,12 @@ call_rule_definition(
         } else {
             return (ctx);
         }
-    }();
+    };
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using RContext = std::remove_cvref_t<decltype(make_rcontext())>;
+    RContext const& rcontext = make_rcontext();
 
-    // NOTE: The branches below are intentionally written verbosely to make sure
-    // we have the minimal call stack. DON'T extract these procedures into a
-    // separate function. That would make the compilation error significantly
-    // longer in complex scenario.
     if constexpr (has_on_success<RuleID, It, It /* NOT `Se` */, Context, MaterializedAttr>::value) {
         It start = first; // backup
 
@@ -317,11 +328,15 @@ call_rule_definition(
 
 #define IRIS_ZZ_X4_DEFINE_I(constexpr_, rule_name) \
     namespace rules { \
+    [[nodiscard]] inline constexpr_ auto const& get_rule_definition(IRIS_PP_CAT(rule_name, _id)) noexcept \
+    { \
+        return IRIS_PP_CAT(rule_name, _def); \
+    } \
+    \
     IRIS_ZZ_X4_PARSE_RULE_SIGNATURE(constexpr_, rule_name) \
     { \
         return ::iris::x4::detail::call_rule_definition<IRIS_PP_CAT(rule_name, _id)>( \
-            IRIS_PP_CAT(rule_name, _def), rule_name.name, \
-            first, last, ctx, attr_ref.attr \
+            rule_name.name, first, last, ctx, attr_ref.attr \
         ); \
     } \
     } /* rules */

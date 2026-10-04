@@ -12,8 +12,6 @@
 
 #include "iris_x4_test.hpp"
 
-#include <iris/x4/core/expectation.hpp>
-
 #include <iris/x4/attribute/value.hpp>
 #include <iris/x4/primitive/eoi.hpp>
 #include <iris/x4/primitive/eol.hpp>
@@ -26,7 +24,6 @@
 #include <iris/x4/symbols.hpp>
 
 #include <iris/x4/directive/with.hpp>
-#include <iris/x4/directive/expect.hpp>
 #include <iris/x4/directive/lexeme.hpp>
 #include <iris/x4/directive/matches.hpp>
 #include <iris/x4/directive/no_case.hpp>
@@ -63,6 +60,8 @@ using namespace std::string_view_literals;
 //   - The `first` iterator shall point to the previous position, and
 //   - The attribute is left in a valid but unspecified state when `parse` of a parser is
 //     called directly, as the tests below do (`x4::parse` resets it to its default state).
+//
+// On expectation failure, the `first` iterator is not rolled back (see "no rollback" in expect.cpp).
 
 // NOLINTBEGIN(readability-container-size-empty)
 
@@ -265,14 +264,11 @@ TEST_CASE("rollback on failed parse (primitive)")
 
 TEST_CASE("rollback on failed parse (directive)")
 {
-    using It = std::string_view::const_iterator;
-
     using x4::int_;
     using x4::true_;
     using x4::eps;
     using x4::standard::space;
 
-    using x4::expect;
     using x4::lexeme;
     using x4::matches;
     using x4::no_case;
@@ -281,42 +277,6 @@ TEST_CASE("rollback on failed parse (directive)")
     using x4::repeat;
     using x4::skip;
     using x4::with;
-
-    {
-        constexpr auto input = " foo"sv;
-        auto first = input.begin();
-        x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
-        REQUIRE_FALSE(expect[eps(false)].parse(first, input.end(), ctx, unused));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = " foo"sv;
-        auto first = input.begin();
-        x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
-        int dummy_int = -1;
-        REQUIRE_FALSE(expect[int_].parse(first, input.end(), ctx, dummy_int));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = " 42!"sv;
-        auto first = input.begin();
-        x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
-        int dummy_int = -1;
-        REQUIRE_FALSE((int_ >> expect['i']).parse(first, input.end(), ctx, dummy_int));
-        CHECK(first == input.begin());
-    }
-    {
-        constexpr auto input = " 42"sv;
-        auto first = input.begin();
-        x4::expectation_failure<It> failure;
-        auto const ctx = x4::make_context<x4::contexts::expectation_failure>(failure, skipper_ctx);
-        std::vector<int> dummy_ints;
-        REQUIRE_FALSE((int_ >> expect[','] >> int_).parse(first, input.end(), ctx, dummy_ints));
-        CHECK(first == input.begin());
-    }
 
     {
         constexpr auto input = " foo"sv;

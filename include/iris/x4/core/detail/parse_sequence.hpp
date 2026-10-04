@@ -12,8 +12,6 @@
 
 #include <iris/config.hpp>
 
-#include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/core/traits/attribute_category.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/traits/write_rank.hpp>
 
@@ -96,142 +94,64 @@ template<class P>
 struct sequence_passes_view<P> : sequence_passes_view<typename P::proxy_backend_type> {};
 
 
-// A helper to isolate the actual logic inside a single struct.
-//
-// Theoretically, this can be written directly inside a lambda in `parse_sequence`.
-// However, MSVC historically fails to optimize the compilation time of this kind
-// of logic when it is written directly inside a large function.
-//
-// MSVC has a bad behavior where it always reparses the entire tokens of large
-// function body when it needs to be "reinspected" for some arbitrary reason, like
-// different types of specialization, etc. This is NOT the matter of the template
-// instantiation cost; it is due to the function parsing and tokenization behavior.
-//
-// The result is about 50-80ms reduced compilation time (in realistic code) when
-// this is isolated in a struct like below.
-template<class Attr, class... Ps>
-struct parse_sequence_tuple
+// Selects the attribute for the `I`-th element of the sequence. This returns before
+// the element is parsed, so it does not stay in the call stack.
+template<std::size_t I, class... Ps, class Attr>
+[[nodiscard]] constexpr decltype(auto) sequence_attribute_for(sequence<Ps...> const&, Attr& attr) noexcept
 {
     using layout = sequence_layout<Ps...>;
+    using parser_type = nary::parser_t<I, Ps...>;
+    constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
+    constexpr std::size_t offset = layout::elem_offsets[I];
 
-    template<std::size_t I, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    [[nodiscard]] static constexpr bool
-    parse_element(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
-    {
-        using parser_type = nary::parser_t<I, Ps...>;
-        auto const& elem = nary::get<I>(seq.elems);
-        constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
-        constexpr std::size_t offset = layout::elem_offsets[I];
+    if constexpr (X4UnusedAttribute<Attr>) {
+        return (unused);
 
-        if constexpr (layout::attributed_count == 1) {
-            if constexpr (I != layout::single_attributed_index) {
-                return elem.parse(first, last, ctx, unused);
+    } else if constexpr (layout::attributed_count == 1) {
+        if constexpr (I != layout::single_attributed_index) {
+            return (unused);
 
-            } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
-                return elem.parse(first, last, ctx, alloy::get<0>(attr));
-
-            } else {
-                return elem.parse(first, last, ctx, attr);
-            }
+        } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
+            return alloy::get<0>(attr);
 
         } else {
-            if constexpr (sequence_size == 0) {
-                return elem.parse(first, last, ctx, unused);
-
-            } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
-                return elem.parse(first, last, ctx, alloy::get<offset>(attr));
-
-            } else {
-                auto slice = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-                    return alloy::tuple<alloy::tuple_element_t<offset + Is, Attr>&...>(
-                        alloy::get<offset + Is>(attr)...
-                    );
-                }(std::make_index_sequence<sequence_size>{});
-                return elem.parse(first, last, ctx, slice);
-            }
+            return (attr);
         }
-    }
 
-    template<std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    [[nodiscard]] static constexpr bool
-    parse_all(std::index_sequence<Is...>, sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
-    {
-        return (parse_sequence_tuple::parse_element<Is>(seq, first, last, ctx, attr) && ...);
-    }
-};
+    } else if constexpr (sequence_size == 0) {
+        return (unused);
 
-
-// Default overload; attribute is NOT a container
-template<class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
-[[nodiscard]] constexpr bool
-parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
-{
-    static_assert(X4Attribute<Attr>);
-    static_assert(!CategorizedAttr<Attr, container_tag>);
-
-    using layout = sequence_layout<Ps...>;
-
-    // Intentionally verbose branches for avoiding instantiation of erroneous grammar stem,
-    // significantly reducing the amount of compilation error.
-
-    if constexpr (layout::attributed_count < 2) {
-        It local_it = first;
-        if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
-            first = std::move(local_it);
-            return true;
-        }
-        return false;
-
-    } else if constexpr (!CategorizedAttr<Attr, tuple_tag>) {
-        static_assert(false, "The attribute of a sequence with >=2 attributed elements must be tuple-like.");
-        return false;
-
-    } else if constexpr (alloy::tuple_size_v<Attr> < layout::total_sequence_size) {
-        static_assert(false, "Sequence size of the passed attribute is less than expected.");
-        return false;
-
-    } else if constexpr (alloy::tuple_size_v<Attr> > layout::total_sequence_size) {
-        static_assert(false, "Sequence size of the passed attribute is greater than expected.");
-        return false;
+    } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
+        return alloy::get<offset>(attr);
 
     } else {
-        It local_it = first;
-        if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
-            first = std::move(local_it);
-            return true;
-        }
-        return false;
+        return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return alloy::tuple<alloy::tuple_element_t<offset + Is, Attr>&...>(
+                alloy::get<offset + Is>(attr)...
+            );
+        }(std::make_index_sequence<sequence_size>{});
     }
 }
 
-// Attribute is a container
-template<
-    class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-    CategorizedAttr<container_tag> ContainerAttr
->
-[[nodiscard]] constexpr bool
-parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
+// The attribute for an element refers into the attribute of the sequence, or is a temporary slice viewing it.
+// The slice lives until the end of the full-expression that parses the element.
+template<class T>
+[[nodiscard]] constexpr T& to_lvalue(T&& attr IRIS_LIFETIMEBOUND) noexcept
 {
-    It local_it = first;
-    bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) -> bool {
-        auto parse_sequence_impl = [&]<class P>(P const& parser) -> bool {
-            if constexpr (parser_traits<P>::sequence_size > 1) {
-                // Exposed attribute = container, Parser expects sequence attribute
-                return parser.parse(local_it, last, ctx, container_attr);
+    static_assert(
+        std::is_lvalue_reference_v<T> || alloy::TupleLikeView<T>,
+        "Only a slice viewing the attribute of the sequence can be a temporary; a value written into any other temporary is lost."
+    );
+    return static_cast<T&>(attr);
+}
 
-            } else {
-                // Exposed attribute = container, Parser expects non-sequence attribute
-                return detail::parse_into_container(parser, local_it, last, ctx, container_attr);
-            }
-        };
-        return (parse_sequence_impl(nary::get<Is>(seq.elems)) && ...);
-    }(std::index_sequence_for<Ps...>{});
-
-    if (ok) {
-        first = std::move(local_it);
-        return true;
-    }
-    return false;
+template<class Seq, std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
+[[nodiscard]] constexpr bool
+parse_sequence_all(Seq const& seq, std::index_sequence<Is...>, It& first, Se const& last, Context const& ctx, Attr& attr)
+{
+    return (nary::get<Is>(seq.elems).parse(
+        first, last, ctx, detail::to_lvalue(detail::sequence_attribute_for<Is>(seq, attr))
+    ) && ...);
 }
 
 template<class... Ps>
@@ -244,34 +164,29 @@ struct parse_into_container_impl<sequence<Ps...>>
         Context const& ctx, Attr& attr
     )
     {
-        if constexpr (traits::X4Container<Attr>) {
-            // The whole sequence yields one element when its value is written into a new element
-            // (nothing is left behind when a later part fails); otherwise each element of the
-            // sequence writes into the container on its own, as the value is written part by part.
-            //
-            // Note: A sequence that may succeed without writing its value does not yield a new element
-            //       (see `container_parse_strategy`).
-            using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
-            constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
-                planner::sequence_part_node<planner::storage_t<Attr>, value_type>
-            >;
+        // The whole sequence yields one element when its value is written into a new element
+        // (nothing is left behind when a later part fails); otherwise each element of the
+        // sequence writes into the container on its own, as the value is written part by part.
+        //
+        // Note: A sequence that may succeed without writing its value does not yield a new element
+        //       (see `container_parse_strategy`).
+        using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
+        constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
+            planner::sequence_part_node<planner::storage_t<Attr>, value_type>
+        >;
 
-            if constexpr (
-                strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
-                !may_leave_attribute_unwritten_v<sequence<Ps...>>
-            ) {
-                return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
-
-            } else {
-                static_assert(
-                    parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
-                    "No element of this sequence can write into the container, nor can the sequence as a whole"
-                );
-                return detail::parse_sequence(seq, first, last, ctx, attr);
-            }
+        if constexpr (
+            strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
+            !may_leave_attribute_unwritten_v<sequence<Ps...>>
+        ) {
+            return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
 
         } else {
-            return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
+            static_assert(
+                parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
+                "No element of this sequence can write into the container, nor can the sequence as a whole"
+            );
+            return seq.parse(first, last, ctx, attr);
         }
     }
 };

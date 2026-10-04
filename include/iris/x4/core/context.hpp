@@ -610,6 +610,22 @@ replace_first_context(
 template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
 void replace_first_context(context<ID, T, Next> const&, NewVal const&&) = delete; // dangling
 
+namespace detail {
+
+// Passes a context as `T`, the alias which a factory declares so that MSVC prints its name.
+// An existing context (an lvalue) is referred to as it is; a new one (a prvalue, possibly const) is returned by value.
+template<class T, class ContextT>
+[[nodiscard]] constexpr decltype(auto) named_context(ContextT&& ctx) noexcept
+{
+    if constexpr (std::is_lvalue_reference_v<ContextT>) {
+        return static_cast<T const&>(ctx);
+    } else {
+        return T(std::forward<ContextT>(ctx));
+    }
+}
+
+} // detail
+
 } // iris::x4
 
 #endif

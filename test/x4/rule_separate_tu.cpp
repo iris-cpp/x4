@@ -48,6 +48,12 @@ TEST_CASE("rule_separate_tu")
     }
 
     {
+        int i = 0;
+        REQUIRE(parse("7", header_defined::grammar, i));
+        CHECK(i == 7);
+    }
+
+    {
         long l = 0;
         REQUIRE(parse("123", used_attr::grammar, l));
         CHECK(l == 123);

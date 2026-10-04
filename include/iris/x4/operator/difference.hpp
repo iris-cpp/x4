@@ -47,6 +47,7 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
             // the whole difference expression (*this) should also yield error.
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(it);
                 return false;
             }
         }
@@ -55,9 +56,17 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
         // Try `Left` on the original position, effectively reverting the amount
         // skipped by `Right`'s skipper (`x4::skip_over(...)`).
         it = first;
-        bool const ok = this->left.parse(it, last, ctx, attr);
-        if (ok) first = it;
-        return ok;
+        if (this->left.parse(it, last, ctx, attr)) {
+            first = std::move(it);
+            return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(it);
+            }
+        }
+        return false;
     }
 };
 

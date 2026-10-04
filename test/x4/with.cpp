@@ -9,10 +9,13 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/rule.hpp>
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/directive/with.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/delimited_list.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/optional.hpp>
 
 #include <concepts>
 #include <utility>
@@ -36,6 +39,10 @@ constexpr auto value_equals = int_.on_match([](auto&& ctx) {
 });
 
 } // anonymous
+
+IRIS_X4_DECLARE(with_recursive, x4::unused_type);
+constexpr auto with_recursive_def = x4::lit('(') >> -with<my_tag>(0)[with_recursive] >> ')';
+IRIS_X4_DEFINE(with_recursive);
 
 TEST_CASE("with")
 {
@@ -117,6 +124,15 @@ TEST_CASE("with")
         });
         REQUIRE(parse("123,456", with<my_tag>(val)[r % ',']));
         CHECK(val == 579);
+    }
+
+    {
+        // the inner `with` hides the outer one with the same ID
+        CHECK(parse("2", with<my_tag>(1)[with<my_tag>(2)[value_equals<int&>]]));
+        CHECK(!parse("1", with<my_tag>(1)[with<my_tag>(2)[value_equals<int&>]]));
+
+        // a recursive rule reenters `with`
+        CHECK(parse("((()))", with_recursive));
     }
 }
 

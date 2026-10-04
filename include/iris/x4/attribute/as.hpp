@@ -29,19 +29,14 @@ namespace iris::x4 {
 
 namespace detail {
 
-template<bool SubjectHasAction, class Context, X4Attribute OuterAttr>
-struct as_type_parser_ctx_impl // false
+template<class Context, class Attr>
+[[nodiscard]] constexpr decltype(auto) make_as_context(Context const& ctx, Attr& attr) noexcept
 {
-    using type = Context;
-};
-template<class Context, X4Attribute OuterAttr>
-struct as_type_parser_ctx_impl<true, Context, OuterAttr>
-{
-    using type = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::as_var>(
-        std::declval<Context const&>(),
-        std::declval<OuterAttr&>()
-    ))>;
-};
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::as_var>(ctx, attr))>;
+    return detail::named_context<T>(x4::replace_first_context<contexts::as_var>(ctx, attr));
+}
 
 } // detail
 
@@ -88,12 +83,21 @@ public:
                 // The container holds the preceding results, which the attribute of `as<T>`
                 // is kept apart from: parse into a new attribute and append it on success
                 T attr_{};
-                if (!this->parse_subject(first, last, ctx, attr_)) return false;
+                if constexpr (Subject::has_action) {
+                    if (!this->subject.parse(first, last, detail::make_as_context(ctx, attr_), unused)) return false;
+                } else {
+                    if (!this->subject.parse(first, last, ctx, attr_)) return false;
+                }
                 planner::pass_declared_attribute(outer_attr, std::move(attr_));
                 return true;
             }
         }
-        return this->parse_subject(first, last, ctx, outer_attr);
+
+        if constexpr (Subject::has_action) {
+            return this->subject.parse(first, last, detail::make_as_context(ctx, outer_attr), unused);
+        } else {
+            return this->subject.parse(first, last, ctx, outer_attr);
+        }
     }
 
     // `outer_parser<unused_type>(as<T>(subject))` forwards `unused` for the subject
@@ -104,7 +108,7 @@ public:
     parse(It& first, Se const& last, Context const& ctx, OuterAttr&) const
     {
         if constexpr (Subject::has_action) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, unused), unused);
+            return this->subject.parse(first, last, detail::make_as_context(ctx, unused), unused);
         } else {
             return this->subject.parse(first, last, ctx, unused);
         }
@@ -131,8 +135,11 @@ public:
             static_assert(!detail::dangles<std::remove_const_t<OuterAttr>, unwrap_recursive_t<T>&&>);
 
             T attr_{}; // value-initialize
-
-            if (!this->parse_subject(first, last, ctx, attr_)) return false;
+            if constexpr (Subject::has_action) {
+                if (!this->subject.parse(first, last, detail::make_as_context(ctx, attr_), unused)) return false;
+            } else {
+                if (!this->subject.parse(first, last, ctx, attr_)) return false;
+            }
             planner::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
             return true;
         }
@@ -142,19 +149,6 @@ public:
     {
         return std::string("as<") + typeid(T).name() + ">("
             + get_info<Subject>{}(this->subject) + ')';
-    }
-
-private:
-    // Parses the subject into `attr`, the attribute of `as<T>`; an action in the subject refers to it as `_as_var`
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    parse_subject(It& first, Se const& last, Context const& ctx, Attr& attr) const
-    {
-        if constexpr (Subject::has_action) {
-            return this->subject.parse(first, last, x4::replace_first_context<contexts::as_var>(ctx, attr), unused);
-        } else {
-            return this->subject.parse(first, last, ctx, attr);
-        }
     }
 };
 

@@ -20,12 +20,12 @@
 #include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/context.hpp>
+#include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/action_context.hpp>
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/write_attribute.hpp>
 
-#include <iris/rvariant/recursive_wrapper.hpp>
 #include <iris/rvariant/variant_helper.hpp>
 
 #include <iris/type_traits.hpp>
@@ -117,20 +117,18 @@ constexpr void visit_attr(Context const& ctx, Fs&&... fs)
 
 namespace detail {
 
-template<class Context, X4Attribute Attr>
-struct action_context;
-
-template<class Context, X4NonUnusedAttribute Attr>
-struct action_context<Context, Attr>
+template<class Context, class Attr>
+[[nodiscard]] constexpr decltype(auto) make_action_context(Context const& ctx, Attr& attr) noexcept
 {
-    using type = context<contexts::attr, Attr, canonical_context_t<Context const&>>;
-};
-
-template<class Context, X4UnusedAttribute Attr>
-struct action_context<Context, Attr>
-{
-    using type = Context const&;
-};
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    if constexpr (X4UnusedAttribute<Attr>) {
+        return (ctx);
+    } else {
+        using T = std::remove_cvref_t<decltype(x4::make_context<contexts::attr>(attr, ctx))>;
+        return T{x4::make_context<contexts::attr>(attr, ctx)};
+    }
+}
 
 } // detail
 
@@ -186,11 +184,15 @@ struct action : proxy_parser<action<Subject, ActionF>, Subject>
     {
         It local_it = first;
         typename base_type::attribute_type attr_temp{}; // value-initialize
-        if (!this->subject.parse(local_it, last, ctx, attr_temp)) return false;
-
-        if (this->call_action(ctx, attr_temp)) {
-            first = local_it;
+        if (this->subject.parse(local_it, last, ctx, attr_temp) && this->call_action(ctx, attr_temp)) {
+            first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }
@@ -222,11 +224,15 @@ public:
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
         It local_it = first;
-        if (!this->subject.parse(local_it, last, ctx, attr)) return false;
-
-        if (this->call_action(ctx, attr)) {
-            first = local_it;
+        if (this->subject.parse(local_it, last, ctx, attr) && this->call_action(ctx, attr)) {
+            first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }
@@ -239,11 +245,15 @@ public:
     {
         typename base_type::attribute_type attr_temp{}; // value-initialize
         It local_it = first;
-        if (!this->subject.parse(local_it, last, ctx, attr_temp)) return false;
-
-        if (this->call_action(ctx, attr_temp)) {
-            first = local_it;
+        if (this->subject.parse(local_it, last, ctx, attr_temp) && this->call_action(ctx, attr_temp)) {
+            first = std::move(local_it);
             return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
         }
         return false;
     }
@@ -315,79 +325,31 @@ private:
         }
     }
 
-    // Semantic action with no parameter: `p[([] { /* ... */ })]`
     template<class Context, X4Attribute Attr>
-    [[nodiscard]] constexpr bool
-    call_action(Context const&, Attr&) const
-    {
-        // Explicitly make this hard error instead of emitting "no matching overload".
-        // This provides much more human-friendly errors.
-        static_assert(
-            directly_invocable<ActionF const&>,
-            "Neither `f(ctx)` nor `f()` is well-formed for your semantic action. "
-            "Check your function signature. Note that some functors might need "
-            "`const` qualifier to satisfy the constraints."
-        );
-
-        using action_return_type = directly_invoke_result_t<ActionF const&>;
-        constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
-        static_assert(
-            action_returns_bool || std::same_as<action_return_type, void>,
-            "Semantic action should not return value other than `bool`. Check your function signature."
-        );
-
-        if constexpr (action_returns_bool) {
-            return this->f_();
-        } else {
-            this->f_();
-            return true;
-        }
-    }
-
-    // Semantic action with parameter: `p[([](auto&& ctx) { /* ... */ })]`
-    template<class Context, X4Attribute Attr>
-        requires directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>
     [[nodiscard]] constexpr bool
     call_action(Context const& ctx, Attr& attr) const
     {
-        using action_return_type = directly_invoke_result_t<ActionF const&, typename detail::action_context<Context, Attr>::type>;
-        constexpr bool action_returns_bool = std::same_as<action_return_type, bool>;
-        static_assert(
-            action_returns_bool || std::same_as<action_return_type, void>,
-            "Semantic action should not return value other than `bool`. Check your function signature."
-        );
-
-        // Inject `_attr` only when `Attr` is not `unused_type`
-        if constexpr (X4UnusedAttribute<Attr>) {
-            if constexpr (action_returns_bool) {
-                return this->f_(ctx);
+        if constexpr (directly_invocable<ActionF const&>) {
+            using action_return_type = decltype(this->f_());
+            if constexpr (std::same_as<action_return_type, bool>) {
+                return this->f_();
             } else {
-                this->f_(ctx);
+                static_assert(std::same_as<action_return_type, void>, "Semantic action should return either `bool` or `void`");
+                this->f_();
                 return true;
             }
 
         } else {
-            if constexpr (action_returns_bool) {
-                return this->f_(x4::make_context<contexts::attr>(attr, ctx));
+            // Inject `_attr` only when `Attr` is not `unused_type`
+            using action_return_type = decltype(this->f_(detail::make_action_context(ctx, attr)));
+            if constexpr (std::same_as<action_return_type, bool>) {
+                return this->f_(detail::make_action_context(ctx, attr));
             } else {
-                this->f_(x4::make_context<contexts::attr>(attr, ctx));
+                static_assert(std::same_as<action_return_type, void>, "Semantic action should return either `bool` or `void`");
+                this->f_(detail::make_action_context(ctx, attr));
                 return true;
             }
         }
-    }
-
-    template<class Context, X4Attribute Attr>
-        requires
-            (!directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>) &&
-            directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type const&>
-    static constexpr bool
-    call_action(Context const&, Attr&)
-    {
-        static_assert(
-            directly_invocable<ActionF const&, typename detail::action_context<Context, Attr>::type>,
-            "Semantic action expecting non-const lvalue reference context is obsolete. Use `auto&& ctx` and avoid using `auto& ctx`."
-        );
-        return false; // dummy
     }
 
 private:

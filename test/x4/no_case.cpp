@@ -9,10 +9,17 @@
 
 #include "iris_x4_test.hpp"
 
+#include <iris/x4/rule.hpp>
 #include <iris/x4/directive/no_case.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/optional.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/char_string_literal.hpp>
+
+IRIS_X4_DECLARE(no_case_recursive, x4::unused_type);
+constexpr auto no_case_recursive_def = x4::lit('a') >> -x4::no_case[no_case_recursive];
+IRIS_X4_DEFINE(no_case_recursive);
 
 TEST_CASE("no_case")
 {
@@ -93,5 +100,11 @@ TEST_CASE("no_case")
     {
         using namespace x4::standard;
         CHECK(!parse("ą", no_case['a']));
+    }
+
+    {
+        // a recursive rule reenters `no_case`
+        CHECK(parse("aAA", no_case_recursive));
+        CHECK(!parse("A", no_case_recursive));
     }
 }

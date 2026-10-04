@@ -12,12 +12,11 @@
 =============================================================================*/
 
 #include <iris/x4/core/detail/parse_sequence.hpp>
+#include <iris/x4/core/traits/attribute_category.hpp>
 #include <iris/x4/core/expectation.hpp>
 #include <iris/x4/core/nary_parser.hpp>
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser_traits.hpp>
-
-#include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/x4/directive/expect.hpp>
 
@@ -26,7 +25,6 @@
 #include <iris/type_list.hpp>
 #include <iris/bits/specialization_of.hpp>
 
-#include <concepts>
 #include <iterator>
 #include <string>
 #include <type_traits>
@@ -110,32 +108,60 @@ struct get_attribute_type<sequence<Ps...>>
     >::type;
 };
 
+// Make this independent function to reduce lambda's type name in compilation errors
+template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class ContainerAttr>
+[[nodiscard]] constexpr auto make_container_sequence_parser(
+    Elems const& elems, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr
+) noexcept
+{
+    return [&elems, &first, &last, &ctx, &container_attr]<std::size_t... Is>(std::index_sequence<Is...>) -> bool {
+        // Takes the index rather than the parser, so that diagnostics don't print the parser type here
+        auto parse_elem = [&]<std::size_t I>() -> bool {
+            auto const& parser = nary::get<I>(elems);
+            if constexpr (parser_traits<std::remove_cvref_t<decltype(parser)>>::sequence_size > 1) {
+                // Exposed attribute = container, Parser expects sequence attribute
+                return parser.parse(first, last, ctx, container_attr);
+
+            } else {
+                // Exposed attribute = container, Parser expects non-sequence attribute
+                return detail::parse_into_container(parser, first, last, ctx, container_attr);
+            }
+        };
+        return (parse_elem.template operator()<Is>() && ...);
+    };
+}
+
+template<class SeqT>
+[[nodiscard]] constexpr auto const& as_sequence(SeqT const& seq) noexcept
+{
+    // Diagnostics shows this name only, excluding the template parameters from the caller
+    using T = SeqT;
+    T const& named = seq;
+    return named;
+}
+
 } // detail
 
+// -------------------------------------------------------------
 
 template<class... Ps>
 struct sequence : nary_parser<sequence<Ps...>, Ps...>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
+    parse(It& first, Se const& last, Context const& ctx, UnusedAttr const& unused_attr) const
     {
-        It const first_saved = first;
-
-        bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return (nary::get<Is>(this->elems).parse(first, last, ctx, unused) && ...);
-        }(std::index_sequence_for<Ps...>{});
-        if (ok) {
+        It local_it = first;
+        if (detail::parse_sequence_all(detail::as_sequence(*this), std::index_sequence_for<Ps...>{}, local_it, last, ctx, unused_attr)) {
+            first = std::move(local_it);
             return true;
         }
-
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
-                return false;
+                first = std::move(local_it);
             }
         }
-        first = first_saved;
         return false;
     }
 
@@ -143,7 +169,70 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return detail::parse_sequence(*this, first, last, ctx, attr);
+        using layout = detail::sequence_layout<Ps...>;
+
+        // Intentionally verbose branches for avoiding instantiation of erroneous grammar stem,
+        // significantly reducing the amount of compilation error.
+
+        if constexpr (layout::attributed_count < 2) {
+            It local_it = first;
+            if (detail::parse_sequence_all(detail::as_sequence(*this), std::index_sequence_for<Ps...>{}, local_it, last, ctx, attr)) {
+                first = std::move(local_it);
+                return true;
+            }
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                if (x4::has_expectation_failure(ctx)) {
+                    // don't rollback iterator (mimicking exception-like behavior)
+                    first = std::move(local_it);
+                }
+            }
+            return false;
+
+        } else if constexpr (!CategorizedAttr<Attr, tuple_tag>) {
+            static_assert(false, "The attribute of a sequence with >=2 attributed elements must be tuple-like.");
+            return false;
+
+        } else if constexpr (alloy::tuple_size_v<Attr> < layout::total_sequence_size) {
+            static_assert(false, "Sequence size of the passed attribute is less than expected.");
+            return false;
+
+        } else if constexpr (alloy::tuple_size_v<Attr> > layout::total_sequence_size) {
+            static_assert(false, "Sequence size of the passed attribute is greater than expected.");
+            return false;
+
+        } else {
+            It local_it = first;
+            if (detail::parse_sequence_all(detail::as_sequence(*this), std::index_sequence_for<Ps...>{}, local_it, last, ctx, attr)) {
+                first = std::move(local_it);
+                return true;
+            }
+            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                if (x4::has_expectation_failure(ctx)) {
+                    // don't rollback iterator (mimicking exception-like behavior)
+                    first = std::move(local_it);
+                }
+            }
+            return false;
+        }
+    }
+
+    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute ContainerAttr>
+        requires CategorizedAttr<ContainerAttr, container_tag>
+    [[nodiscard]] constexpr bool
+    parse(It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr) const
+    {
+        It local_it = first;
+        if (detail::make_container_sequence_parser(this->elems, local_it, last, ctx, container_attr)(std::index_sequence_for<Ps...>{})) {
+            first = std::move(local_it);
+            return true;
+        }
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_it);
+            }
+        }
+        return false;
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

@@ -334,6 +334,10 @@ struct write_attribute_fn
         using root = write_node<storage_t<S>, model_value_t<V>>;
         write_plan<graph_of<root>, root>::apply(iris::unwrap_recursive(s), iris::unwrap_recursive(std::forward<V>(v)));
     }
+
+    template<class S, class V>
+        requires (!X4UnusedAttribute<S> && !X4UnusedAttribute<std::remove_reference_t<V>>) && (write_rank_v<S&, V> == write_rank::none)
+    static constexpr void operator()(S&, V&&) = delete; // The value of type `V` cannot be written into the attribute of type `S`
 };
 
 } // detail
