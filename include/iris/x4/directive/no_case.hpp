@@ -28,8 +28,8 @@ template<class Context>
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using T = std::remove_cvref_t<decltype(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case))>;
-    return detail::named_context<T>(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case));
+    using T = std::remove_cvref_t<decltype(x4::replace_first_or_prepend_context<case_compare_tag>(ctx, case_compare_no_case))>;
+    return detail::named_context<T>(x4::replace_first_or_prepend_context<case_compare_tag>(ctx, case_compare_no_case));
 }
 
 } // detail

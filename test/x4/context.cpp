@@ -62,7 +62,7 @@ TEST_CASE("context")
             STATIC_CHECK(std::same_as<decltype(ctx), context<existent_tag, int, context<next_tag, double> const&>>);
 
             int replaced_i = 43;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, replaced_i);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, replaced_i);
 
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, int, context<next_tag, double> const&>&&>);
         }
@@ -75,7 +75,7 @@ TEST_CASE("context")
             STATIC_CHECK(std::same_as<decltype(ctx), context<existent_tag, int, context<next_tag, double>>>);
 
             int replaced_i = 43;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, replaced_i); // Should not create copy of `Next`
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, replaced_i); // Should not create copy of `Next`
 
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, int, context<next_tag, double> const&>&&>);
         }
@@ -105,7 +105,7 @@ TEST_CASE("context")
             }
             {
                 double d = 3.14;
-                auto&& mono_replaced_ctx = x4::replace_first_context<non_existent_tag>(removed_ctx, d);
+                auto&& mono_replaced_ctx = x4::replace_first_or_prepend_context<non_existent_tag>(removed_ctx, d);
                 STATIC_CHECK(std::same_as<decltype(mono_replaced_ctx), context<non_existent_tag, double>&&>);
                 CHECK(x4::get<existent_tag>(ctx) == 42);
                 CHECK(x4::get<non_existent_tag>(mono_replaced_ctx) == 3.14);
@@ -119,14 +119,14 @@ TEST_CASE("context")
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, d);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, double>&&>);
             CHECK(x4::get<existent_tag>(ctx) == 42);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 3.14);
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<non_existent_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<non_existent_tag>(ctx, d);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<non_existent_tag, double, context<existent_tag, int> const&>&&>);
             CHECK(x4::get<existent_tag>(ctx) == 42);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 42);
@@ -181,7 +181,7 @@ TEST_CASE("context")
 
         {
             int j = 999;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, j);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, j);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, int>&&>);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 999);
             CHECK(std::addressof(ctx.val) == std::addressof(i));
@@ -205,7 +205,7 @@ TEST_CASE("context")
                     STATIC_CHECK(std::same_as<decltype(new_ctx), context<existent_tag, int>&&>);
                 }
                 {
-                    auto&& new_ctx = x4::replace_first_context<existent_tag>(removed_ctx, i);
+                    auto&& new_ctx = x4::replace_first_or_prepend_context<existent_tag>(removed_ctx, i);
                     STATIC_CHECK(std::same_as<decltype(new_ctx), context<existent_tag, int>&&>);
                     CHECK(std::addressof(new_ctx.val) == std::addressof(i));
                 }
@@ -213,7 +213,7 @@ TEST_CASE("context")
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, d);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, double>&&>);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 3.14);
             CHECK(std::addressof(ctx.val) == std::addressof(i));
@@ -221,7 +221,7 @@ TEST_CASE("context")
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<non_existent_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<non_existent_tag>(ctx, d);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<non_existent_tag, double, context<existent_tag, int> const&>&&>);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 42);
             CHECK(std::addressof(ctx.val) == std::addressof(i));
@@ -249,7 +249,7 @@ TEST_CASE("context")
 
         {
             int j = 999;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, j);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, j);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, int, dummy_ctx_t const&>&&>);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 999);
             CHECK(std::addressof(ctx.val) == std::addressof(i));
@@ -269,7 +269,7 @@ TEST_CASE("context")
                     STATIC_CHECK(std::same_as<decltype(new_ctx), context<non_existent_tag, int, context<existent_tag, int, dummy_ctx_t const&> const&>>);
                 }
                 {
-                    auto&& new_ctx = x4::replace_first_context<existent_tag>(removed_ctx, i);
+                    auto&& new_ctx = x4::replace_first_or_prepend_context<existent_tag>(removed_ctx, i);
                     STATIC_CHECK(std::same_as<decltype(new_ctx), context<existent_tag, int, dummy_ctx_t const&>&&>);
                     CHECK(std::addressof(new_ctx.val) == std::addressof(i));
                 }
@@ -277,7 +277,7 @@ TEST_CASE("context")
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<existent_tag>(ctx, d);
             STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, double, dummy_ctx_t const&>&&>);
             CHECK(x4::get<existent_tag>(replaced_ctx) == 3.14);
             CHECK(std::addressof(ctx.val) == std::addressof(i));
@@ -285,7 +285,7 @@ TEST_CASE("context")
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<dummy_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<dummy_tag>(ctx, d);
             STATIC_CHECK(std::same_as<
                 decltype(replaced_ctx),
                 context<
@@ -301,7 +301,7 @@ TEST_CASE("context")
         }
         {
             double d = 3.14;
-            auto&& replaced_ctx = x4::replace_first_context<non_existent_tag>(ctx, d);
+            auto&& replaced_ctx = x4::replace_first_or_prepend_context<non_existent_tag>(ctx, d);
             STATIC_CHECK(std::same_as<
                 decltype(replaced_ctx),
                 context<

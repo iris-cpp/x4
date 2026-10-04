@@ -39,8 +39,8 @@ template<class Context, class Skipper>
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, skipper))>;
-    return detail::named_context<T>(x4::replace_first_context<contexts::skipper>(ctx, skipper));
+    using T = std::remove_cvref_t<decltype(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper))>;
+    return detail::named_context<T>(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper));
 }
 
 } // detail
@@ -72,7 +72,7 @@ struct skip_directive : proxy_parser<skip_directive<Subject, Skipper>, Subject>
     }
 
 private:
-    Skipper skipper_;
+    IRIS_NO_UNIQUE_ADDRESS Skipper skipper_;
 };
 
 namespace detail {
@@ -82,8 +82,8 @@ template<class Context>
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, skipper_kind))>;
-    return detail::named_context<T>(x4::replace_first_context<contexts::skipper>(ctx, skipper_kind));
+    using T = std::remove_cvref_t<decltype(x4::replace_first_or_prepend_context<contexts::skipper>(ctx, skipper_kind))>;
+    return detail::named_context<T>(x4::replace_first_or_prepend_context<contexts::skipper>(ctx, skipper_kind));
 }
 
 } // detail

@@ -29,8 +29,8 @@ template<class ID, class Context, class ValueT>
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, val))>;
-    return detail::named_context<T>(x4::replace_first_context<ID>(ctx, val));
+    using T = std::remove_cvref_t<decltype(x4::replace_first_or_prepend_context<ID>(ctx, val))>;
+    return detail::named_context<T>(x4::replace_first_or_prepend_context<ID>(ctx, val));
 }
 
 template<class Subject, class ID, class T>

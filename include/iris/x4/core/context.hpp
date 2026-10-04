@@ -480,6 +480,7 @@ remove_all_contexts(unused_type const&) noexcept
 template<class... IDs_To_Remove, class ID, class T, class Next>
 void remove_all_contexts(context<ID, T, Next> const&&) = delete; // dangling
 
+namespace detail {
 
 // Replaces the contained reference of the leftmost context
 // having the id `ID_To_Replace`. If no such context exists,
@@ -493,9 +494,9 @@ void remove_all_contexts(context<ID, T, Next> const&&) = delete; // dangling
 // operation is `x4::locals`. Without this helper, it would
 // inevitably trigger infinite instantiation when binding
 // a local variable instance to the context.
-template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
+template<bool IsAppend, class ID_To_Replace, class ID, class T, class Next, class NewVal>
 [[nodiscard]] constexpr decltype(auto)
-replace_first_context(
+replace_first_context_impl(
     context<ID, T, Next> const& ctx,
     NewVal& new_val IRIS_LIFETIMEBOUND
 ) noexcept
@@ -510,7 +511,7 @@ replace_first_context(
         (void)new_val; // == unused
         return x4::remove_first_context<ID_To_Replace>(ctx);
 
-    } else if constexpr (!has_context_v<context<ID, T, Next>, ID_To_Replace>) {
+    } else if constexpr (!IsAppend && !has_context_v<context<ID, T, Next>, ID_To_Replace>) {
         return context<ID_To_Replace, NewVal, context<ID, T, Next> const&>{new_val, ctx};
 
     } else if constexpr (std::same_as<ID, ID_To_Replace>) { // Match
@@ -523,21 +524,46 @@ replace_first_context(
             return context<ID, NewVal, Next const&>{new_val, ctx.next};
         }
 
+    } else if constexpr (IsAppend && std::same_as<Next, unused_type>) {
+        return context<ID, T, context<ID_To_Replace, NewVal>>{ctx.val, context<ID_To_Replace, NewVal>{new_val}};
+
     } else { // Not match
         static_assert(
             !std::same_as<Next, unused_type>,
-            "[BUG] `replace_first_context` reached its end without finding an existing context to replace"
+            "[BUG] `replace_first_or_prepend_context` reached its end without finding an existing context to replace"
         );
         // Continue the replacement recursively
-        return context<ID, T, decltype(x4::replace_first_context<ID_To_Replace>(ctx.next, new_val))>{
-            ctx.val, x4::replace_first_context<ID_To_Replace>(ctx.next, new_val)
+        return context<ID, T, decltype(detail::replace_first_context_impl<IsAppend, ID_To_Replace>(ctx.next, new_val))>{
+            ctx.val, detail::replace_first_context_impl<IsAppend, ID_To_Replace>(ctx.next, new_val)
         };
     }
 }
 
+} // detail
+
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
+[[nodiscard]] constexpr decltype(auto)
+replace_first_or_prepend_context(
+    context<ID, T, Next> const& ctx,
+    NewVal& new_val IRIS_LIFETIMEBOUND
+) noexcept
+{
+    return detail::replace_first_context_impl<false, ID_To_Replace>(ctx, new_val);
+}
+
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
+[[nodiscard]] constexpr decltype(auto)
+replace_first_or_append_context(
+    context<ID, T, Next> const& ctx,
+    NewVal& new_val IRIS_LIFETIMEBOUND
+) noexcept
+{
+    return detail::replace_first_context_impl<true, ID_To_Replace>(ctx, new_val);
+}
+
 template<class ID_To_Replace, class NewVal>
 [[nodiscard]] constexpr decltype(auto)
-replace_first_context(
+replace_first_or_prepend_context(
     unused_type const&,
     NewVal& new_val IRIS_LIFETIMEBOUND
 ) noexcept
@@ -557,11 +583,27 @@ replace_first_context(
     }
 }
 
-template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
-void replace_first_context(context<ID, T, Next> const&, NewVal const&&) = delete; // dangling
+template<class ID_To_Replace, class NewVal>
+[[nodiscard]] constexpr decltype(auto)
+replace_first_or_append_context(
+    unused_type const&,
+    NewVal& new_val IRIS_LIFETIMEBOUND
+) noexcept
+{
+    return x4::replace_first_or_prepend_context<ID_To_Replace>(unused, new_val);
+}
 
 template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
-void replace_first_context(context<ID, T, Next> const&&, NewVal const&) = delete; // dangling
+void replace_first_or_prepend_context(context<ID, T, Next> const&, NewVal const&&) = delete; // dangling
+
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
+void replace_first_or_prepend_context(context<ID, T, Next> const&&, NewVal const&) = delete; // dangling
+
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
+void replace_first_or_append_context(context<ID, T, Next> const&, NewVal const&&) = delete; // dangling
+
+template<class ID_To_Replace, class ID, class T, class Next, class NewVal>
+void replace_first_or_append_context(context<ID, T, Next> const&&, NewVal const&) = delete; // dangling
 
 namespace detail {
 

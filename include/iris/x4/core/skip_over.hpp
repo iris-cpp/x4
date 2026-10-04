@@ -35,7 +35,7 @@ struct skipper
 using skipper_tag [[deprecated("Use `x4::contexts::skipper`")]] = contexts::skipper;
 
 
-enum struct builtin_skipper_kind : char
+enum struct builtin_skipper_kind : unsigned char
 {
     no_skip,
     blank,
