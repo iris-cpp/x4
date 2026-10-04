@@ -77,7 +77,7 @@ TEST_CASE("context")
             int replaced_i = 43;
             auto&& replaced_ctx = x4::replace_first_context<existent_tag>(ctx, replaced_i); // Should not create copy of `Next`
 
-            STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, int, context<next_tag, double> /* not reference */>&&>);
+            STATIC_CHECK(std::same_as<decltype(replaced_ctx), context<existent_tag, int, context<next_tag, double> const&>&&>);
         }
     }
 
