@@ -29,20 +29,6 @@ namespace iris::x4 {
 
 namespace detail {
 
-template<bool SubjectHasAction, class Context, X4Attribute OuterAttr>
-struct as_type_parser_ctx_impl // false
-{
-    using type = Context;
-};
-template<class Context, X4Attribute OuterAttr>
-struct as_type_parser_ctx_impl<true, Context, OuterAttr>
-{
-    using type = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::as_var>(
-        std::declval<Context const&>(),
-        std::declval<OuterAttr&>()
-    ))>;
-};
-
 template<class Context, class Attr>
 [[nodiscard]] constexpr auto make_as_context(Context const& ctx, Attr& attr) noexcept
 {
