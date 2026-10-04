@@ -45,12 +45,19 @@ struct local_var_fn
     }
 };
 
+template<class ID, class Context, class LocalVarT>
+[[nodiscard]] constexpr auto make_with_local_context(Context const& ctx, LocalVarT& local_var) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, local_var))>;
+    return T{x4::replace_first_context<ID>(ctx, local_var)};
+}
+
 } // detail
 
 inline namespace cpos {
-
 [[maybe_unused]] inline constexpr detail::local_var_fn _local_var{};
-
 } // cpos
 
 
@@ -71,7 +78,7 @@ struct with_local_directive : proxy_parser<with_local_directive<Subject, ID, T>,
         // `x4::make_context(...)` cannot be used here as it invokes infinite recursive instantiation.
 
         T local_var{}; // value-initialize
-        return this->subject.parse(first, last, x4::replace_first_context<ID>(ctx, local_var), attr);
+        return this->subject.parse(first, last, detail::make_with_local_context<ID>(ctx, local_var), attr);
     }
 };
 

@@ -22,6 +22,19 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+template<class Context>
+[[nodiscard]] constexpr auto make_no_skip_context(Context const& ctx) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
+    return T{x4::remove_first_context<contexts::skipper>(ctx)};
+}
+
+} // detail
+
 // Same as `lexeme[...]`, but does not pre-skip
 template<class Subject>
 struct no_skip_directive : proxy_parser<no_skip_directive<Subject>, Subject>
@@ -32,15 +45,8 @@ struct no_skip_directive : proxy_parser<no_skip_directive<Subject>, Subject>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        //
         // No pre-skip here, in contrast to `lexeme`
-        //
-
-        return this->subject.parse(
-            first, last,
-            x4::remove_first_context<contexts::skipper>(ctx),
-            attr
-        );
+        return this->subject.parse(first, last, detail::make_no_skip_context(ctx), attr);
     }
 };
 
