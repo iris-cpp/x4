@@ -36,8 +36,14 @@ struct not_predicate : unary_parser<not_predicate<Subject>, Subject>
         It local_first = first;
 
         if constexpr (has_context_v<Context, contexts::expectation_failure>) {
-            return !this->subject.parse(local_first, last, ctx, unused) &&
-                !x4::has_expectation_failure(ctx);
+            bool const matched = this->subject.parse(local_first, last, ctx, unused);
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(local_first);
+                return false;
+            }
+            return !matched;
+
         } else {
             return !this->subject.parse(local_first, last, ctx, unused);
         }

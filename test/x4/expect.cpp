@@ -811,6 +811,9 @@ TEST_CASE("no rollback")
         CHECK(rest("ab,ax", (char_('a') > char_('b')) % ',', str) == "x"sv);
     }
 
+    CHECK(rest("ax", &(lit('a') > 'b')) == "x"sv);
+    CHECK(rest("ax", !(lit('a') > 'b')) == "x"sv);
+
     CHECK(rest("abax", *(lit('a') > 'b')) == "x"sv);
     CHECK(rest("abax", +(lit('a') > 'b')) == "x"sv);
     CHECK(rest("ax", -(lit('a') > 'b')) == "x"sv);

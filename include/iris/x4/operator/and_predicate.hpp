@@ -11,6 +11,7 @@
 =============================================================================*/
 
 #include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/expectation.hpp>
 
 #include <iterator>
 #include <type_traits>
@@ -32,7 +33,15 @@ struct and_predicate : unary_parser<and_predicate<Subject>, Subject>
     parse(It& first, Se const& last, Context const& ctx, Attr& /*attr*/) const
     {
         auto it = first;
-        return this->subject.parse(it, last, ctx, unused);
+        if (this->subject.parse(it, last, ctx, unused)) return true;
+
+        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if (x4::has_expectation_failure(ctx)) {
+                // don't rollback iterator (mimicking exception-like behavior)
+                first = std::move(it);
+            }
+        }
+        return false;
     }
 };
 
