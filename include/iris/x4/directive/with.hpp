@@ -24,6 +24,22 @@ struct with_directive;
 
 namespace detail {
 
+template<class ID, class Context, class ValueT>
+[[nodiscard]] constexpr auto make_with_context(Context const& ctx, ValueT& val) noexcept
+{
+    // Replace an existing one instead of prepending another; otherwise the context grows each
+    // time a recursive rule reenters `with`, and the instantiation never ends.
+    // The aliases make MSVC print their names instead of the whole context type.
+    if constexpr (has_context_v<Context, ID>) {
+        using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, val))>;
+        return T{x4::replace_first_context<ID>(ctx, val)};
+
+    } else {
+        using T = decltype(x4::make_context<ID>(val, ctx));
+        return T{x4::make_context<ID>(val, ctx)};
+    }
+}
+
 template<class Subject, class ID, class T>
 struct with_directive_impl
     : proxy_parser<with_directive<Subject, ID, T>, Subject>
@@ -118,11 +134,7 @@ struct with_directive : detail::with_directive_impl<Subject, ID, T>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return this->subject.parse(
-            first, last,
-            x4::make_context<ID>(this->val_, ctx),
-            attr
-        );
+        return this->subject.parse(first, last, detail::make_with_context<ID>(ctx, this->val_), attr);
     }
 
     [[nodiscard]] std::string get_x4_info() const

@@ -21,6 +21,26 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+template<class Context>
+[[nodiscard]] constexpr auto make_no_case_context(Context const& ctx) noexcept
+{
+    // Replace an existing one instead of prepending another; otherwise the context grows each
+    // time a recursive rule reenters `no_case`, and the instantiation never ends.
+    // The aliases make MSVC print their names instead of the whole context type.
+    if constexpr (has_context_v<Context, case_compare_tag>) {
+        using T = std::remove_cvref_t<decltype(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case))>;
+        return T{x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case)};
+
+    } else {
+        using T = decltype(x4::make_context<case_compare_tag>(case_compare_no_case, ctx));
+        return T{x4::make_context<case_compare_tag>(case_compare_no_case, ctx)};
+    }
+}
+
+} // detail
+
 // propagate no_case information through the context
 template<class Subject>
 struct no_case_directive : proxy_parser<no_case_directive<Subject>, Subject>
@@ -31,11 +51,7 @@ struct no_case_directive : proxy_parser<no_case_directive<Subject>, Subject>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return this->subject.parse(
-            first, last,
-            x4::make_context<detail::case_compare_tag>(detail::case_compare_no_case, ctx),
-            attr
-        );
+        return this->subject.parse(first, last, detail::make_no_case_context(ctx), attr);
     }
 };
 
