@@ -219,49 +219,12 @@ struct parse_into_container_impl_default
     {
         return parser.parse(first, last, ctx, container);
     }
-
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
-    static constexpr bool call(Parser const& parser, It& first, Se const& last, Context& ctx, Attr& attr)
-    {
-        using unwrapped_attribute_type = iris::unwrap_recursive_t<Attr>;
-        auto& unwrapped_attr = iris::unwrap_recursive(attr);
-
-        if constexpr (traits::X4Container<unwrapped_attribute_type>) { // Attr is a container
-            constexpr container_parse_strategy strategy = container_parse_strategy_for<Parser, unwrapped_attribute_type>;
-            static_assert(
-                strategy != container_parse_strategy::none,
-                "The value of this parser cannot be added to the container, as a new element, part by part, or as a range. "
-                "A new element of a plain type must be constructible from the value. Note: a default constructor and an assignment "
-                "are not enough."
-            );
-            if constexpr (strategy == container_parse_strategy::as_part_if_written) {
-                return parse_into_container_impl_default::parse_written_part(parser, first, last, ctx, unwrapped_attr);
-
-            } else if constexpr (strategy == container_parse_strategy::container_itself) {
-                return parse_into_container_impl_default::parse_container(parser, first, last, ctx, unwrapped_attr);
-
-            } else {
-                return parse_into_container_impl_default::parse_part(parser, first, last, ctx, unwrapped_attr);
-            }
-
-        } else {
-            if constexpr (SingleElementTupleLike<unwrapped_attribute_type>) {
-                // Unwrap and try again
-                return parse_into_container_impl_default::call(parser, first, last, ctx, alloy::get<0>(unwrapped_attr));
-
-            } else {
-                static_assert(false, "[BUG] parse_into_container accepts a container, a variant of container or a single-element tuple-like of container");
-                return false;
-            }
-        }
-    }
 };
 
-// Internal customization point
+// Internal customization point. A specialization that has `call` replaces how `parse_into_container`
+// parses the parser into a container; otherwise `parse_into_container` uses the strategy of the parser.
 template<class Parser>
-struct parse_into_container_impl
-    : parse_into_container_impl_default<Parser>
-{};
+struct parse_into_container_impl {};
 
 template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 [[nodiscard]] constexpr bool
@@ -291,11 +254,31 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
         constexpr std::size_t alt_index = variant_alternative_for_v<Attr, container_type>;
         auto* const existing_alt = iris::get_if<alt_index>(&attr);
         auto& variant_alt = existing_alt ? *existing_alt : attr.template emplace<alt_index>();
-        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, variant_alt);
+        return detail::parse_into_container(parser, first, last, ctx, variant_alt);
 
-    } else {
+    } else if constexpr (requires { parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr); }) {
         static_assert(traits::X4Container<Attr>);
         return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
+
+    } else {
+        // Choose the strategy here rather than in a function of its own, to keep the call stack short
+        static_assert(traits::X4Container<Attr>);
+        constexpr container_parse_strategy strategy = container_parse_strategy_for<Parser, Attr>;
+        static_assert(
+            strategy != container_parse_strategy::none,
+            "The value of this parser cannot be added to the container, as a new element, part by part, or as a range. "
+            "A new element of a plain type must be constructible from the value. Note: a default constructor and an assignment "
+            "are not enough."
+        );
+        if constexpr (strategy == container_parse_strategy::as_part_if_written) {
+            return parse_into_container_impl_default<Parser>::parse_written_part(parser, first, last, ctx, attr);
+
+        } else if constexpr (strategy == container_parse_strategy::container_itself) {
+            return parse_into_container_impl_default<Parser>::parse_container(parser, first, last, ctx, attr);
+
+        } else {
+            return parse_into_container_impl_default<Parser>::parse_part(parser, first, last, ctx, attr);
+        }
     }
 }
 

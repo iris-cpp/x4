@@ -183,34 +183,29 @@ struct parse_into_container_impl<sequence<Ps...>>
         Context const& ctx, Attr& attr
     )
     {
-        if constexpr (traits::X4Container<Attr>) {
-            // The whole sequence yields one element when its value is written into a new element
-            // (nothing is left behind when a later part fails); otherwise each element of the
-            // sequence writes into the container on its own, as the value is written part by part.
-            //
-            // Note: A sequence that may succeed without writing its value does not yield a new element
-            //       (see `container_parse_strategy`).
-            using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
-            constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
-                planner::sequence_part_node<planner::storage_t<Attr>, value_type>
-            >;
+        // The whole sequence yields one element when its value is written into a new element
+        // (nothing is left behind when a later part fails); otherwise each element of the
+        // sequence writes into the container on its own, as the value is written part by part.
+        //
+        // Note: A sequence that may succeed without writing its value does not yield a new element
+        //       (see `container_parse_strategy`).
+        using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
+        constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
+            planner::sequence_part_node<planner::storage_t<Attr>, value_type>
+        >;
 
-            if constexpr (
-                strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
-                !may_leave_attribute_unwritten_v<sequence<Ps...>>
-            ) {
-                return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
-
-            } else {
-                static_assert(
-                    parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
-                    "No element of this sequence can write into the container, nor can the sequence as a whole"
-                );
-                return seq.parse(first, last, ctx, attr);
-            }
+        if constexpr (
+            strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
+            !may_leave_attribute_unwritten_v<sequence<Ps...>>
+        ) {
+            return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
 
         } else {
-            return parse_into_container_impl_default<sequence<Ps...>>::call(seq, first, last, ctx, attr);
+            static_assert(
+                parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
+                "No element of this sequence can write into the container, nor can the sequence as a whole"
+            );
+            return seq.parse(first, last, ctx, attr);
         }
     }
 };
