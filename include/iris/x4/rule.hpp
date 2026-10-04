@@ -332,7 +332,7 @@ call_rule_definition(
 
 #define IRIS_ZZ_X4_DEFINE_I(constexpr_, rule_name) \
     namespace rules { \
-    [[nodiscard]] constexpr_ auto const& get_rule_definition(IRIS_PP_CAT(rule_name, _id)) noexcept \
+    [[nodiscard]] inline constexpr_ auto const& get_rule_definition(IRIS_PP_CAT(rule_name, _id)) noexcept \
     { \
         return IRIS_PP_CAT(rule_name, _def); \
     } \

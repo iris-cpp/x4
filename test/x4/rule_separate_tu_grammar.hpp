@@ -13,6 +13,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
+#include <iris/x4/numeric/int.hpp>
 
 // Check that `IRIS_X4_INSTANTIATE` instantiates `parse_rule` with proper
 // types when the rule has no attribute.
@@ -35,5 +36,16 @@ IRIS_X4_DECLARE_PUBLIC(skipper, unused_type);
 IRIS_X4_DECLARE_PUBLIC(grammar, int);
 
 } // used_attr
+
+// Check that a header which more than one translation unit includes can contain
+// `IRIS_X4_DEFINE_PUBLIC`.
+
+namespace header_defined {
+
+IRIS_X4_DECLARE_PUBLIC(grammar, int);
+constexpr auto grammar_def = x4::int_;
+IRIS_X4_DEFINE_PUBLIC(grammar)
+
+} // header_defined
 
 #endif
