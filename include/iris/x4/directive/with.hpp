@@ -27,17 +27,10 @@ namespace detail {
 template<class ID, class Context, class ValueT>
 [[nodiscard]] constexpr decltype(auto) make_with_context(Context const& ctx, ValueT& val) noexcept
 {
-    // Replace an existing one instead of prepending another; otherwise the context grows each
-    // time a recursive rule reenters `with`, and the instantiation never ends.
-    // The aliases make MSVC print their names instead of the whole context type.
-    if constexpr (has_context_v<Context, ID>) {
-        using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, val))>;
-        return detail::named_context<T>(x4::replace_first_context<ID>(ctx, val));
-
-    } else {
-        using T = decltype(x4::make_context<ID>(val, ctx));
-        return T{x4::make_context<ID>(val, ctx)};
-    }
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, val))>;
+    return detail::named_context<T>(x4::replace_first_context<ID>(ctx, val));
 }
 
 template<class Subject, class ID, class T>

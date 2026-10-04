@@ -26,17 +26,10 @@ namespace detail {
 template<class Context>
 [[nodiscard]] constexpr decltype(auto) make_no_case_context(Context const& ctx) noexcept
 {
-    // Replace an existing one instead of prepending another; otherwise the context grows each
-    // time a recursive rule reenters `no_case`, and the instantiation never ends.
-    // The aliases make MSVC print their names instead of the whole context type.
-    if constexpr (has_context_v<Context, case_compare_tag>) {
-        using T = std::remove_cvref_t<decltype(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case))>;
-        return detail::named_context<T>(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case));
-
-    } else {
-        using T = decltype(x4::make_context<case_compare_tag>(case_compare_no_case, ctx));
-        return T{x4::make_context<case_compare_tag>(case_compare_no_case, ctx)};
-    }
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case))>;
+    return detail::named_context<T>(x4::replace_first_context<case_compare_tag>(ctx, case_compare_no_case));
 }
 
 } // detail

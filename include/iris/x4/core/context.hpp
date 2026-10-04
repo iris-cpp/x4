@@ -11,7 +11,6 @@
 =============================================================================*/
 
 #include <iris/config.hpp>
-#include <iris/type_traits.hpp>
 #include <iris/type_list.hpp>
 
 #include <iris/x4/core/unused.hpp>
@@ -303,7 +302,6 @@ public:
     using next_type = Next;
 
     using storage_type::storage_type;
-    // TODO: ^^^ Why is clang-tidy complaining about `Rvalue reference parameter "" is never moved`?
 };
 
 template<class ID, class T, class Next>
@@ -393,43 +391,41 @@ remove_first_context(context<ID, T, Next> const& ctx) noexcept
             return ctx.next;
         }
 
-    } else { // No match
-        if constexpr (std::same_as<Next, unused_type>) {
-            // No match at all. Return as-is.
+    } else  if constexpr (std::same_as<Next, unused_type>) {
+        // No match at all. Return as-is.
+        return ctx;
+
+    } else {
+        // No match. Continue the replacement recursively.
+        using NewNext_ = decltype(x4::remove_first_context<ID_To_Remove>(ctx.next));
+        using NewNext = std::conditional_t<
+            std::is_reference_v<NewNext_>,
+            NewNext_,
+            std::remove_const_t<NewNext_>
+        >;
+
+        if constexpr (std::same_as<std::remove_cvref_t<NewNext>, std::remove_cvref_t<Next>>) {
+            // Avoid creating copy on exact same type
             return ctx;
 
         } else {
-            // No match. Continue the replacement recursively.
-            using NewNext_ = decltype(x4::remove_first_context<ID_To_Remove>(ctx.next));
-            using NewNext = std::conditional_t<
-                std::is_reference_v<NewNext_>,
-                NewNext_,
-                std::remove_const_t<NewNext_>
-            >;
+            // If the recursive replacement resulted in a monostate context,
+            // prevent appending it; return the context without `next`.
+            if constexpr (std::same_as<std::remove_cvref_t<NewNext>, unused_type>) {
+                return context<ID, T>{ctx.val};
 
-            if constexpr (std::same_as<std::remove_cvref_t<NewNext>, std::remove_cvref_t<Next>>) {
-                // Avoid creating copy on exact same type
-                return ctx;
+            } else if constexpr (std::is_reference_v<NewNext>) {
+                // Assert `decltype(auto)` is working as intended; i.e., no dangling reference
+                static_assert(std::is_lvalue_reference_v<NewNext>);
 
-            } else {
-                // If the recursive replacement resulted in a monostate context,
-                // prevent appending it; return the context without `next`.
-                if constexpr (std::same_as<std::remove_cvref_t<NewNext>, unused_type>) {
-                    return context<ID, T>{ctx.val};
+                return context<ID, T, NewNext>{
+                    ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
+                };
 
-                } else if constexpr (std::is_reference_v<NewNext>) {
-                    // Assert `decltype(auto)` is working as intended; i.e., no dangling reference
-                    static_assert(std::is_lvalue_reference_v<NewNext>);
-
-                    return context<ID, T, NewNext>{
-                        ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
-                    };
-
-                } else { // prvalue context
-                    return context<ID, T, NewNext>{
-                        ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
-                    };
-                }
+            } else { // prvalue context
+                return context<ID, T, NewNext>{
+                    ctx.val, x4::remove_first_context<ID_To_Remove>(ctx.next)
+                };
             }
         }
     }
@@ -464,43 +460,41 @@ remove_all_contexts(context<ID, T, Next> const& ctx) noexcept
             return x4::remove_all_contexts<IDs_To_Remove...>(ctx.next);
         }
 
-    } else { // No match
-        if constexpr (std::same_as<Next, unused_type>) {
-            // No match at all. Return as-is.
+    } else if constexpr (std::same_as<Next, unused_type>) {
+        // No match at all. Return as-is.
+        return ctx;
+
+    } else {
+        // No match. Continue the replacement recursively.
+        using NewNext_ = decltype(x4::remove_all_contexts<IDs_To_Remove...>(ctx.next));
+        using NewNext = std::conditional_t<
+            std::is_reference_v<NewNext_>,
+            NewNext_,
+            std::remove_const_t<NewNext_>
+        >;
+
+        if constexpr (std::same_as<std::remove_cvref_t<NewNext>, std::remove_cvref_t<Next>>) {
+            // Avoid creating copy on exact same type
             return ctx;
 
         } else {
-            // No match. Continue the replacement recursively.
-            using NewNext_ = decltype(x4::remove_all_contexts<IDs_To_Remove...>(ctx.next));
-            using NewNext = std::conditional_t<
-                std::is_reference_v<NewNext_>,
-                NewNext_,
-                std::remove_const_t<NewNext_>
-            >;
+            // If the recursive replacement resulted in a monostate context,
+            // prevent appending it; return the context without `next`.
+            if constexpr (std::same_as<std::remove_cvref_t<NewNext>, unused_type>) {
+                return context<ID, T>{ctx.val};
 
-            if constexpr (std::same_as<std::remove_cvref_t<NewNext>, std::remove_cvref_t<Next>>) {
-                // Avoid creating copy on exact same type
-                return ctx;
+            } else if constexpr (std::is_reference_v<NewNext>) {
+                // Assert `decltype(auto)` is working as intended; i.e., no dangling reference
+                static_assert(std::is_lvalue_reference_v<NewNext>);
 
-            } else {
-                // If the recursive replacement resulted in a monostate context,
-                // prevent appending it; return the context without `next`.
-                if constexpr (std::same_as<std::remove_cvref_t<NewNext>, unused_type>) {
-                    return context<ID, T>{ctx.val};
+                return context<ID, T, NewNext>{
+                    ctx.val, x4::remove_all_contexts<IDs_To_Remove...>(ctx.next)
+                };
 
-                } else if constexpr (std::is_reference_v<NewNext>) {
-                    // Assert `decltype(auto)` is working as intended; i.e., no dangling reference
-                    static_assert(std::is_lvalue_reference_v<NewNext>);
-
-                    return context<ID, T, NewNext>{
-                        ctx.val, x4::remove_all_contexts<IDs_To_Remove...>(ctx.next)
-                    };
-
-                } else { // prvalue context
-                    return context<ID, T, NewNext>{
-                        ctx.val, x4::remove_all_contexts<IDs_To_Remove...>(ctx.next)
-                    };
-                }
+            } else { // prvalue context
+                return context<ID, T, NewNext>{
+                    ctx.val, x4::remove_all_contexts<IDs_To_Remove...>(ctx.next)
+                };
             }
         }
     }
@@ -519,7 +513,7 @@ void remove_all_contexts(context<ID, T, Next> const&&) = delete; // dangling
 
 // Replaces the contained reference of the leftmost context
 // having the id `ID_To_Replace`. If no such context exists,
-// append a new one.
+// prepend a new one.
 //
 // This helper makes it possible to dynamically update the
 // reference bound to the (runtime) context, while avoiding
@@ -539,49 +533,43 @@ replace_first_context(
     static_assert(!is_ttp_specialization_of_v<std::remove_const_t<NewVal>, context>, "context's value type cannot be context");
 
     if constexpr (
+        std::same_as<std::remove_const_t<NewVal>, unused_type> &&
         detail::UniqueContextID<ID_To_Replace> &&
-        !detail::AllowUnusedContextID<ID_To_Replace> &&
-        std::same_as<std::remove_const_t<NewVal>, unused_type>
+        !detail::AllowUnusedContextID<ID_To_Replace>
     ) {
         (void)new_val; // == unused
         return x4::remove_first_context<ID_To_Replace>(ctx);
 
-    } else {
-        if constexpr (std::same_as<ID, ID_To_Replace>) { // Match
-            if constexpr (std::same_as<Next, unused_type>) {
-                // Existing context found; replace it and end the search.
-                return context<ID, NewVal, Next>{new_val};
+    } else if constexpr (!has_context_v<context<ID, T, Next>, ID_To_Replace>) {
+        return context<ID_To_Replace, NewVal, context<ID, T, Next> const&>{new_val, ctx};
 
-            } else {
-                // Existing context found; replace it and end the search.
-                //
-                // Current implementation does not replace succeeding (duplicate) entries,
-                // because it is essentially `replace_*first*_context`.
+    } else if constexpr (std::same_as<ID, ID_To_Replace>) { // Match
+        if constexpr (std::same_as<Next, unused_type>) {
+            // Existing context found; replace it and end the search.
+            return context<ID, NewVal, Next>{new_val};
 
-                // Copy construction of `Next` itself is always cheap, as it holds only the
-                // reference. So we simply copy `Next` here, instead of `decltype((ctx.next))`.
-                static_assert(std::is_nothrow_copy_constructible_v<Next>);
+        } else {
+            // Existing context found; replace it and end the search.
+            //
+            // Current implementation does not replace succeeding (duplicate) entries,
+            // because it is essentially `replace_*first*_context`.
 
-                return context<ID, NewVal, Next>{new_val, ctx.next};
-            }
+            // Copy construction of `Next` itself is always cheap, as it holds only the
+            // reference. So we simply copy `Next` here, instead of `decltype((ctx.next))`.
+            static_assert(std::is_nothrow_copy_constructible_v<Next>);
 
-        } else { // No match
-            if constexpr (std::same_as<Next, unused_type>) {
-                // No match at all. Append a new one and return.
-                // Since we're doing the search from left to right,
-                // this branch means there was no existing context
-                // for `ID_To_Replace`.
-                return context<ID, T, context<ID_To_Replace, NewVal>>{
-                    ctx.val, context<ID_To_Replace, NewVal>{new_val}
-                };
-
-            } else {
-                // No match. Continue the replacement recursively.
-                return context<ID, T, decltype(x4::replace_first_context<ID_To_Replace>(ctx.next, new_val))>{
-                    ctx.val, x4::replace_first_context<ID_To_Replace>(ctx.next, new_val)
-                };
-            }
+            return context<ID, NewVal, Next>{new_val, ctx.next};
         }
+
+    } else { // No match
+        static_assert(
+            !std::same_as<Next, unused_type>,
+            "[BUG] `replace_first_context` reached its end without finding an existing context to replace"
+        );
+        // Continue the replacement recursively
+        return context<ID, T, decltype(x4::replace_first_context<ID_To_Replace>(ctx.next, new_val))>{
+            ctx.val, x4::replace_first_context<ID_To_Replace>(ctx.next, new_val)
+        };
     }
 }
 
