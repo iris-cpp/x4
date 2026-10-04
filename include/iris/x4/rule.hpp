@@ -175,7 +175,7 @@ struct rule : parser<rule<RuleID>>
         attribute_type unused_rule_attr{}; // value-initialize
 
         // See the comments on the primary overload of `rule::parse(...)`
-        auto&& rule_agnostic_ctx = x4::remove_first_context<contexts::rule_var>(ctx);
+        auto&& rule_agnostic_ctx = detail::make_rule_agnostic_context(ctx);
 
         return detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{unused_rule_attr});
     }

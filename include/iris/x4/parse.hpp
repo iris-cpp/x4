@@ -178,6 +178,15 @@ template<std::ranges::forward_range R>
 template<std::ranges::forward_range R>
 using as_parse_range_t = decltype(detail::as_parse_range(std::declval<R const&>()));
 
+template<class It, class SkipperT>
+[[nodiscard]] constexpr auto make_root_context(expectation_failure<It>& failure, SkipperT& skipper) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = decltype(x4::make_context<contexts::expectation_failure>(failure, x4::make_context<contexts::skipper>(skipper)));
+    return T{x4::make_context<contexts::expectation_failure>(failure, x4::make_context<contexts::skipper>(skipper))};
+}
+
 struct parse_fn
 {
     // --------------------------------------------
@@ -202,10 +211,7 @@ struct parse_fn
         attribute_reset_guard reset_guard{root_attr};
         bool const ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(
-                expect_failure,
-                x4::make_context<contexts::skipper>(skipper_kind)
-            ),
+            detail::make_root_context(expect_failure, skipper_kind),
             detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (ok) reset_guard.commit();
@@ -237,10 +243,7 @@ struct parse_fn
         attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(
-                res.expect_failure,
-                x4::make_context<contexts::skipper>(skipper_kind)
-            ),
+            detail::make_root_context(res.expect_failure, skipper_kind),
             detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (res.ok) reset_guard.commit();
@@ -267,9 +270,7 @@ struct parse_fn
         expectation_failure<It> expect_failure;
         auto&& maybe_builtin_skipper = to_builtin(s);
 
-        auto const ctx = x4::make_context<contexts::expectation_failure>(
-            expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
-        );
+        auto const ctx = detail::make_root_context(expect_failure, maybe_builtin_skipper);
 
         attribute_reset_guard reset_guard{root_attr};
         bool ok = as_parser(std::forward<Parser>(p)).parse(
@@ -305,9 +306,7 @@ struct parse_fn
         res.expect_failure.clear();
         auto&& maybe_builtin_skipper = to_builtin(s);
 
-        auto const ctx = x4::make_context<contexts::expectation_failure>(
-            res.expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
-        );
+        auto const ctx = detail::make_root_context(res.expect_failure, maybe_builtin_skipper);
 
         attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
@@ -337,10 +336,7 @@ struct parse_fn
         attribute_reset_guard reset_guard{root_attr};
         bool const ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(
-                expect_failure,
-                x4::make_context<contexts::skipper>(skipper_kind)
-            ),
+            detail::make_root_context(expect_failure, skipper_kind),
             detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (ok) reset_guard.commit();
@@ -363,10 +359,7 @@ struct parse_fn
         attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
             first, last,
-            x4::make_context<contexts::expectation_failure>(
-                res.expect_failure,
-                x4::make_context<contexts::skipper>(skipper_kind)
-            ),
+            detail::make_root_context(res.expect_failure, skipper_kind),
             detail::prepare_attribute_for<as_parser_plain_t<Parser>>(root_attr)
         );
         if (res.ok) reset_guard.commit();
@@ -385,9 +378,7 @@ struct parse_fn
         expectation_failure<It> expect_failure;
         auto&& maybe_builtin_skipper = to_builtin(s);
 
-        auto const ctx = x4::make_context<contexts::expectation_failure>(
-            expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
-        );
+        auto const ctx = detail::make_root_context(expect_failure, maybe_builtin_skipper);
 
         attribute_reset_guard reset_guard{root_attr};
         bool ok = as_parser(std::forward<Parser>(p)).parse(
@@ -415,9 +406,7 @@ struct parse_fn
         res.expect_failure.clear();
         auto&& maybe_builtin_skipper = to_builtin(s);
 
-        auto const ctx = x4::make_context<contexts::expectation_failure>(
-            res.expect_failure, x4::make_context<contexts::skipper>(maybe_builtin_skipper)
-        );
+        auto const ctx = detail::make_root_context(res.expect_failure, maybe_builtin_skipper);
 
         attribute_reset_guard reset_guard{root_attr};
         res.ok = as_parser(std::forward<Parser>(p)).parse(
