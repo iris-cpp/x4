@@ -53,6 +53,10 @@ using parser_t = decltype(detail::deduce_nary_parser_element<I>(
     std::declval<detail::parser_storage<std::index_sequence_for<Ps...>, Ps...> const&>()
 ));
 
+template<std::size_t I, class NaryParser>
+using element_parser_t = decltype(detail::deduce_nary_parser_element<I>(
+    std::declval<NaryParser const&>().elems
+));
 
 template<std::size_t I, class P>
 [[nodiscard]] constexpr P const&

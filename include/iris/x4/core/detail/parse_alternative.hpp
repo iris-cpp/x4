@@ -51,7 +51,7 @@ template<class Context>
 
 // This must be an independent struct to reduce compilation time.
 // For details, see notes on `parse_sequence_tuple`.
-template<class... Ps>
+template<class Alt>
 struct parse_alternative_all_impl
 {
     template<std::size_t I, class Try, X4NonUnusedAttribute ExposedAttr>
@@ -61,23 +61,23 @@ struct parse_alternative_all_impl
         // Visual Studio often hides the real type when it is wrapped in a local alias.
 
         if constexpr (
-            may_leave_attribute_unwritten_v<nary::parser_t<I, Ps...>> ||
-            X4UnusedAttribute<typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type> ||
-            traits::detail::clearable_for<ExposedAttr, typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type>
+            may_leave_attribute_unwritten_v<nary::element_parser_t<I, Alt>> ||
+            X4UnusedAttribute<typename parser_traits<nary::element_parser_t<I, Alt>>::attribute_type> ||
+            traits::detail::clearable_for<ExposedAttr, typename parser_traits<nary::element_parser_t<I, Alt>>::attribute_type>
         ) {
-            auto&& attr = detail::prepare_attribute_for<nary::parser_t<I, Ps...>>(exposed_attr);
+            auto&& attr = detail::prepare_attribute_for<nary::element_parser_t<I, Alt>>(exposed_attr);
             return try_branch.template operator()<I>(attr);
 
         } else {
             static_assert(
-                requires(typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type&& value) {
+                requires(typename parser_traits<nary::element_parser_t<I, Alt>>::attribute_type&& value) {
                     x4::write_attribute(exposed_attr, std::move(value));
                 },
                 "The attribute of this branch cannot be converted into the attribute of the alternative."
             );
             // The branch yields a whole value of an unrelated shape (e.g. a narrower variant);
             // parse it into a temporary and convert on success.
-            typename parser_traits<nary::parser_t<I, Ps...>>::attribute_type temp{};
+            typename parser_traits<nary::element_parser_t<I, Alt>>::attribute_type temp{};
 
             if (!try_branch.template operator()<I>(temp)) return false;
 
@@ -94,7 +94,7 @@ struct parse_alternative_all_impl
     template<std::size_t I, class Try, class Slot>
     [[nodiscard]] static constexpr bool parse_slot_branch(Try&& try_branch, Slot& slot)
     {
-        using branch_parser = nary::parser_t<I, Ps...>;
+        using branch_parser = nary::element_parser_t<I, Alt>;
         using attribute_type = Slot::attribute_type;
 
         if constexpr (!has_attribute_v<branch_parser>) {
@@ -119,100 +119,137 @@ struct parse_alternative_all_impl
     }
 };
 
+// Make this independent function to reduce lambda's type name in compilation errors
+template<class Alt, class Try, class ContainerAttr>
+[[nodiscard]] constexpr auto make_branch_parser_into_empty_container(Try& try_branch, ContainerAttr& container_attr) noexcept
+{
+    return [&try_branch, &container_attr]<std::size_t I>() -> bool {
+        if constexpr (!has_attribute_v<nary::element_parser_t<I, Alt>>) {
+            return try_branch.template operator()<I>(unused);
+
+        } else {
+            if (try_branch.template operator()<I>(container_attr)) return true;
+            iris::container::clear(container_attr);
+            return false;
+        }
+    };
+}
+
+// Make this independent function to reduce lambda's type name in compilation errors
+template<class Alt, class Try, class ContainerAttr>
+[[nodiscard]] constexpr auto make_branch_parser_into_buffer(Try& try_branch, ContainerAttr& buffer, ContainerAttr& container_attr) noexcept
+{
+    return [&try_branch, &buffer, &container_attr]<std::size_t I>() -> bool {
+        if constexpr (!has_attribute_v<nary::element_parser_t<I, Alt>>) {
+            return try_branch.template operator()<I>(unused);
+
+        } else {
+            if (try_branch.template operator()<I>(buffer)) {
+                iris::container::append_range(container_attr, buffer | std::views::as_rvalue);
+                return true;
+            }
+            iris::container::clear(buffer);
+            return false;
+        }
+    };
+}
+
+template<class AltT>
+[[nodiscard]] constexpr auto const& as_alternative(AltT const& alt) noexcept
+{
+    // Diagnostics show this name in place of the whole alternative
+    using T = AltT;
+    T const& named = alt;
+    return named;
+}
+
 // Tries the branches in order; stops at the first match, or at an expectation
 // failure raised inside a branch.
-template<class... Ps>
-struct parse_alternative_all
+template<class Alt, std::size_t... Is, class Try, class Context, X4UnusedAttribute UnusedAttr>
+[[nodiscard]] constexpr bool
+parse_alternative_all(Alt const&, std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, UnusedAttr const& unused_attr)
 {
-    template<std::size_t... Is, class Try, class Context, X4UnusedAttribute UnusedAttr>
-    [[nodiscard]] static constexpr bool
-    call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, UnusedAttr const& unused_attr)
-    {
-        bool matched = false;
-        (void)((((matched = try_branch.template operator()<Is>(unused_attr))) || detail::alternative_should_stop(ctx)) || ...);
-        return matched;
-    }
+    bool matched = false;
+    (void)((((matched = try_branch.template operator()<Is>(unused_attr))) || detail::alternative_should_stop(ctx)) || ...);
+    return matched;
+}
 
-    template<std::size_t... Is, class Try, class Context, X4NonUnusedAttribute ExposedAttr>
-        requires (!traits::X4Container<ExposedAttr>) && (!is_action_slot_v<ExposedAttr>)
-    [[nodiscard]] static constexpr bool
-    call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, ExposedAttr& exposed_attr)
-    {
-        static_assert(!std::is_const_v<ExposedAttr>);
-        bool matched = false;
-        (void)((((matched = parse_alternative_all_impl<Ps...>::template parse_branch<Is>(try_branch, exposed_attr))) || detail::alternative_should_stop(ctx)) || ...);
-        return matched;
-    }
+template<class Alt, std::size_t... Is, class Try, class Context, X4NonUnusedAttribute ExposedAttr>
+    requires (!traits::X4Container<ExposedAttr>) && (!is_action_slot_v<ExposedAttr>)
+[[nodiscard]] constexpr bool
+parse_alternative_all(Alt const&, std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, ExposedAttr& exposed_attr)
+{
+    static_assert(!std::is_const_v<ExposedAttr>);
+    bool matched = false;
+    (void)((((matched = parse_alternative_all_impl<Alt>::template parse_branch<Is>(try_branch, exposed_attr))) || detail::alternative_should_stop(ctx)) || ...);
+    return matched;
+}
 
-    template<std::size_t... Is, class Try, class Context, class Slot>
-        requires is_action_slot_v<Slot>
-    [[nodiscard]] static constexpr bool
-    call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, Slot& slot)
-    {
-        bool matched = false;
-        (void)((((matched = parse_alternative_all_impl<Ps...>::template parse_slot_branch<Is>(try_branch, slot))) || detail::alternative_should_stop(ctx)) || ...);
-        return matched;
-    }
+template<class Alt, std::size_t... Is, class Try, class Context, class Slot>
+    requires is_action_slot_v<Slot>
+[[nodiscard]] constexpr bool
+parse_alternative_all(Alt const&, std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, Slot& slot)
+{
+    bool matched = false;
+    (void)((((matched = parse_alternative_all_impl<Alt>::template parse_slot_branch<Is>(try_branch, slot))) || detail::alternative_should_stop(ctx)) || ...);
+    return matched;
+}
 
-    template<std::size_t... Is, class Try, class Context, X4NonUnusedAttribute ContainerAttr>
-        requires traits::X4Container<ContainerAttr>
-    [[nodiscard]] static constexpr bool
-    call(std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, ContainerAttr& container_attr)
-    {
-        static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_type>);
-        static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_container_type>);
-        static_assert(!std::is_const_v<ContainerAttr>);
+template<class Alt, std::size_t... Is, class Try, class Context, X4NonUnusedAttribute ContainerAttr>
+    requires traits::X4Container<ContainerAttr>
+[[nodiscard]] constexpr bool
+parse_alternative_all(Alt const&, std::index_sequence<Is...>, Try&& try_branch, Context const& ctx, ContainerAttr& container_attr)
+{
+    static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_type>);
+    static_assert(!std::same_as<std::remove_const_t<ContainerAttr>, unused_container_type>);
+    static_assert(!std::is_const_v<ContainerAttr>);
 
-        // Same logic as in `x4::optional`
+    // Same logic as in `x4::optional`
 
-        // We can (ab)use the exposed attribute as the temporary workspace
-        // if and only if the modification or rollback of the exposed attribute
-        // does not change the semantic state of the exposed container instance.
-        //
-        // The only situation we can guarantee such condition is when the container
-        // is empty; assuming that the "empty" state of any user-provided container
-        // class is monostate.
-        if (std::ranges::empty(container_attr)) {
-            auto parse_branch = [&]<std::size_t I>() -> bool {
-                if constexpr (!has_attribute_v<nary::parser_t<I, Ps...>>) {
-                    return try_branch.template operator()<I>(unused);
-
-                } else {
-                    if (try_branch.template operator()<I>(container_attr)) return true;
-                    iris::container::clear(container_attr);
-                    return false;
-                }
-            };
-            bool matched = false;
-            (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
-            return matched;
-        }
-
-        // ---------------------------------------------------------------
-        // The container already holds elements
-
-        // A failed branch must not touch the existing elements, and there is no general
-        // way to undo appends. So each branch parses into a buffer that is appended only
-        // on success.
-        ContainerAttr buffer;
-        auto parse_branch = [&]<std::size_t I>() -> bool {
-            if constexpr (!has_attribute_v<nary::parser_t<I, Ps...>>) {
-                return try_branch.template operator()<I>(unused);
-
-            } else {
-                if (try_branch.template operator()<I>(buffer)) {
-                    iris::container::append_range(container_attr, buffer | std::views::as_rvalue);
-                    return true;
-                }
-                iris::container::clear(buffer);
-                return false;
-            }
-        };
+    // We can (ab)use the exposed attribute as the temporary workspace
+    // if and only if the modification or rollback of the exposed attribute
+    // does not change the semantic state of the exposed container instance.
+    //
+    // The only situation we can guarantee such condition is when the container
+    // is empty; assuming that the "empty" state of any user-provided container
+    // class is monostate.
+    if (std::ranges::empty(container_attr)) {
+        auto const parse_branch = detail::make_branch_parser_into_empty_container<Alt>(try_branch, container_attr);
         bool matched = false;
         (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
         return matched;
     }
-};
+
+    // ---------------------------------------------------------------
+    // The container already holds elements
+
+    // A failed branch must not touch the existing elements, and there is no general
+    // way to undo appends. So each branch parses into a buffer that is appended only
+    // on success.
+    ContainerAttr buffer;
+    auto const parse_branch = detail::make_branch_parser_into_buffer<Alt>(try_branch, buffer, container_attr);
+    bool matched = false;
+    (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
+    return matched;
+}
+
+// Make this independent function to reduce lambda's type name in compilation errors
+template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+[[nodiscard]] constexpr auto make_alternative_branch_parser(Elems const& elems, It& first, Se const& last, Context const& ctx) noexcept
+{
+    return [&elems, &first, &last, &ctx]<std::size_t I>(auto&& alt_attr) {
+        return nary::get<I>(elems).parse(first, last, ctx, alt_attr);
+    };
+}
+
+// Make this independent function to reduce lambda's type name in compilation errors
+template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
+[[nodiscard]] constexpr auto make_alternative_container_branch_parser(Elems const& elems, It& first, Se const& last, Context const& ctx) noexcept
+{
+    return [&elems, &first, &last, &ctx]<std::size_t I>(auto& container_attr) {
+        return detail::parse_into_container(nary::get<I>(elems), first, last, ctx, container_attr);
+    };
+}
 
 template<class... Ps>
 struct parse_into_container_impl<alternative<Ps...>>
@@ -228,11 +265,10 @@ struct parse_into_container_impl<alternative<Ps...>>
     {
         static_assert(traits::X4Container<ExposedAttr>);
 
-        return parse_alternative_all<Ps...>::call(
+        return detail::parse_alternative_all(
+            detail::as_alternative(parser),
             std::index_sequence_for<Ps...>{},
-            [&]<std::size_t I>(auto& container_attr) {
-                return detail::parse_into_container(nary::get<I>(parser.elems), first, last, ctx, container_attr);
-            },
+            detail::make_alternative_container_branch_parser(parser.elems, first, last, ctx),
             ctx,
             exposed_attr
         );

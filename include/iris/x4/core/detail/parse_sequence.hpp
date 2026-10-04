@@ -13,7 +13,6 @@
 #include <iris/config.hpp>
 
 #include <iris/x4/traits/container_traits.hpp>
-#include <iris/x4/core/traits/attribute_category.hpp>
 #include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/traits/write_rank.hpp>
 
@@ -98,7 +97,7 @@ struct sequence_passes_view<P> : sequence_passes_view<typename P::proxy_backend_
 
 // A helper to isolate the actual logic inside a single struct.
 //
-// Theoretically, this can be written directly inside a lambda in `parse_sequence`.
+// Theoretically, this can be written directly inside a lambda in `sequence::parse`.
 // However, MSVC historically fails to optimize the compilation time of this kind
 // of logic when it is written directly inside a large function.
 //
@@ -160,80 +159,6 @@ struct parse_sequence_tuple
     }
 };
 
-
-// Default overload; attribute is NOT a container
-template<class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
-[[nodiscard]] constexpr bool
-parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
-{
-    static_assert(X4Attribute<Attr>);
-    static_assert(!CategorizedAttr<Attr, container_tag>);
-
-    using layout = sequence_layout<Ps...>;
-
-    // Intentionally verbose branches for avoiding instantiation of erroneous grammar stem,
-    // significantly reducing the amount of compilation error.
-
-    if constexpr (layout::attributed_count < 2) {
-        It local_it = first;
-        if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
-            first = std::move(local_it);
-            return true;
-        }
-        return false;
-
-    } else if constexpr (!CategorizedAttr<Attr, tuple_tag>) {
-        static_assert(false, "The attribute of a sequence with >=2 attributed elements must be tuple-like.");
-        return false;
-
-    } else if constexpr (alloy::tuple_size_v<Attr> < layout::total_sequence_size) {
-        static_assert(false, "Sequence size of the passed attribute is less than expected.");
-        return false;
-
-    } else if constexpr (alloy::tuple_size_v<Attr> > layout::total_sequence_size) {
-        static_assert(false, "Sequence size of the passed attribute is greater than expected.");
-        return false;
-
-    } else {
-        It local_it = first;
-        if (parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, seq, local_it, last, ctx, attr)) {
-            first = std::move(local_it);
-            return true;
-        }
-        return false;
-    }
-}
-
-// Attribute is a container
-template<
-    class... Ps, std::forward_iterator It, std::sentinel_for<It> Se, class Context,
-    CategorizedAttr<container_tag> ContainerAttr
->
-[[nodiscard]] constexpr bool
-parse_sequence(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr)
-{
-    It local_it = first;
-    bool const ok = [&]<std::size_t... Is>(std::index_sequence<Is...>) -> bool {
-        auto parse_sequence_impl = [&]<class P>(P const& parser) -> bool {
-            if constexpr (parser_traits<P>::sequence_size > 1) {
-                // Exposed attribute = container, Parser expects sequence attribute
-                return parser.parse(local_it, last, ctx, container_attr);
-
-            } else {
-                // Exposed attribute = container, Parser expects non-sequence attribute
-                return detail::parse_into_container(parser, local_it, last, ctx, container_attr);
-            }
-        };
-        return (parse_sequence_impl(nary::get<Is>(seq.elems)) && ...);
-    }(std::index_sequence_for<Ps...>{});
-
-    if (ok) {
-        first = std::move(local_it);
-        return true;
-    }
-    return false;
-}
-
 template<class... Ps>
 struct parse_into_container_impl<sequence<Ps...>>
 {
@@ -267,7 +192,7 @@ struct parse_into_container_impl<sequence<Ps...>>
                     parser_traits<sequence<Ps...>>::template accepts_container<Attr>,
                     "No element of this sequence can write into the container, nor can the sequence as a whole"
                 );
-                return detail::parse_sequence(seq, first, last, ctx, attr);
+                return seq.parse(first, last, ctx, attr);
             }
 
         } else {

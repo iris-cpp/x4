@@ -144,11 +144,10 @@ struct alternative : nary_parser<alternative<Ps...>, Ps...>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& exposed_attr) const
     {
-        return detail::parse_alternative_all<Ps...>::call(
+        return detail::parse_alternative_all(
+            detail::as_alternative(*this),
             std::index_sequence_for<Ps...>{},
-            [&]<std::size_t I>(auto&& alt_attr) {
-                return nary::get<I>(this->elems).parse(first, last, ctx, alt_attr);
-            },
+            detail::make_alternative_branch_parser(this->elems, first, last, ctx),
             ctx,
             exposed_attr
         );

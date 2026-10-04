@@ -20,6 +20,19 @@
 
 namespace iris::x4 {
 
+namespace detail {
+
+template<class Context>
+[[nodiscard]] constexpr auto make_lexeme_context(Context const& ctx) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
+    return T{x4::remove_first_context<contexts::skipper>(ctx)};
+}
+
+} // detail
+
 template<class Subject>
 struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
 {
@@ -34,7 +47,7 @@ struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
 
         bool const ok = this->subject.parse(
             it, last,
-            x4::remove_first_context<contexts::skipper>(ctx), // no skipper
+            detail::make_lexeme_context(ctx), // no skipper
             attr
         );
         if (ok) first = it;
