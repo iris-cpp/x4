@@ -35,12 +35,12 @@ struct unicode_char_class;
 namespace detail {
 
 template<class Context, class Skipper>
-[[nodiscard]] constexpr auto make_skipper_context(Context const& ctx, Skipper const& skipper) noexcept
+[[nodiscard]] constexpr decltype(auto) make_skipper_context(Context const& ctx, Skipper const& skipper) noexcept
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
     using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, skipper))>;
-    return T{x4::replace_first_context<contexts::skipper>(ctx, skipper)};
+    return detail::named_context<T>(x4::replace_first_context<contexts::skipper>(ctx, skipper));
 }
 
 } // detail
@@ -78,12 +78,12 @@ private:
 namespace detail {
 
 template<class Context>
-[[nodiscard]] constexpr auto make_builtin_skipper_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
+[[nodiscard]] constexpr decltype(auto) make_builtin_skipper_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
     using T = std::remove_cvref_t<decltype(x4::replace_first_context<contexts::skipper>(ctx, skipper_kind))>;
-    return T{x4::replace_first_context<contexts::skipper>(ctx, skipper_kind)};
+    return detail::named_context<T>(x4::replace_first_context<contexts::skipper>(ctx, skipper_kind));
 }
 
 } // detail

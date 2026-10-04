@@ -136,18 +136,13 @@ template<std::size_t I, class... Ps, class Attr>
 // The attribute for an element refers into the attribute of the sequence, or is a temporary slice viewing it.
 // The slice lives until the end of the full-expression that parses the element.
 template<class T>
-[[nodiscard]] constexpr T& as_lvalue(T&& value) noexcept
+[[nodiscard]] constexpr T& to_lvalue(T&& attr IRIS_LIFETIMEBOUND) noexcept
 {
-    return static_cast<T&>(value); // `return value;` is an xvalue since C++23
-}
-
-template<class SeqT>
-[[nodiscard]] constexpr auto const& as_sequence(SeqT const& seq) noexcept
-{
-    // Diagnostics show this name in place of the whole sequence
-    using T = SeqT;
-    T const& named = seq;
-    return named;
+    static_assert(
+        std::is_lvalue_reference_v<T> || alloy::TupleLikeView<T>,
+        "Only a slice viewing the attribute of the sequence can be a temporary; a value written into any other temporary is lost."
+    );
+    return static_cast<T&>(attr);
 }
 
 template<class Seq, std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
@@ -155,7 +150,7 @@ template<class Seq, std::size_t... Is, std::forward_iterator It, std::sentinel_f
 parse_sequence_all(Seq const& seq, std::index_sequence<Is...>, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
     return (nary::get<Is>(seq.elems).parse(
-        first, last, ctx, detail::as_lvalue(detail::sequence_attribute_for<Is>(seq, attr))
+        first, last, ctx, detail::to_lvalue(detail::sequence_attribute_for<Is>(seq, attr))
     ) && ...);
 }
 

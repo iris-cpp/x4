@@ -25,14 +25,14 @@ struct with_directive;
 namespace detail {
 
 template<class ID, class Context, class ValueT>
-[[nodiscard]] constexpr auto make_with_context(Context const& ctx, ValueT& val) noexcept
+[[nodiscard]] constexpr decltype(auto) make_with_context(Context const& ctx, ValueT& val) noexcept
 {
     // Replace an existing one instead of prepending another; otherwise the context grows each
     // time a recursive rule reenters `with`, and the instantiation never ends.
     // The aliases make MSVC print their names instead of the whole context type.
     if constexpr (has_context_v<Context, ID>) {
         using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, val))>;
-        return T{x4::replace_first_context<ID>(ctx, val)};
+        return detail::named_context<T>(x4::replace_first_context<ID>(ctx, val));
 
     } else {
         using T = decltype(x4::make_context<ID>(val, ctx));
@@ -235,6 +235,19 @@ using parsers::directive::with;
 // --------------------------------------------------------
 
 
+namespace detail {
+
+template<class... IDs, class Context>
+[[nodiscard]] constexpr decltype(auto) make_without_context(Context const& ctx) noexcept
+{
+    // Declare a concrete alias type; MSVC prints the alias instead of actual type,
+    // which makes the compilation error significantly shorter.
+    using T = std::remove_cvref_t<decltype(x4::remove_all_contexts<IDs...>(ctx))>;
+    return detail::named_context<T>(x4::remove_all_contexts<IDs...>(ctx));
+}
+
+} // detail
+
 template<class Subject, class... IDs>
 struct without_directive : proxy_parser<without_directive<Subject, IDs...>, Subject>
 {
@@ -246,7 +259,7 @@ struct without_directive : proxy_parser<without_directive<Subject, IDs...>, Subj
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        return this->subject.parse(first, last, x4::remove_all_contexts<IDs...>(ctx), attr);
+        return this->subject.parse(first, last, detail::make_without_context<IDs...>(ctx), attr);
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

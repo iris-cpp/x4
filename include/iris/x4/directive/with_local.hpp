@@ -46,12 +46,12 @@ struct local_var_fn
 };
 
 template<class ID, class Context, class LocalVarT>
-[[nodiscard]] constexpr auto make_with_local_context(Context const& ctx, LocalVarT& local_var) noexcept
+[[nodiscard]] constexpr decltype(auto) make_with_local_context(Context const& ctx, LocalVarT& local_var) noexcept
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
     using T = std::remove_cvref_t<decltype(x4::replace_first_context<ID>(ctx, local_var))>;
-    return T{x4::replace_first_context<ID>(ctx, local_var)};
+    return detail::named_context<T>(x4::replace_first_context<ID>(ctx, local_var));
 }
 
 } // detail

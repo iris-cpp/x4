@@ -83,12 +83,12 @@ call_parse_rule(It& first, Se const& last, Context const& ctx, RuleAttrRefT attr
 }
 
 template<class Context>
-[[nodiscard]] constexpr auto make_rule_agnostic_context(Context const& ctx) noexcept
+[[nodiscard]] constexpr decltype(auto) make_rule_agnostic_context(Context const& ctx) noexcept
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
     using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::rule_var>(ctx))>;
-    return T{x4::remove_first_context<contexts::rule_var>(ctx)};
+    return detail::named_context<T>(x4::remove_first_context<contexts::rule_var>(ctx));
 }
 
 } // detail
@@ -255,12 +255,8 @@ call_rule_definition(
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
     using RContext = std::remove_cvref_t<decltype(make_rcontext())>;
-    RContext rcontext = make_rcontext();
+    RContext const& rcontext = make_rcontext();
 
-    // NOTE: The branches below are intentionally written verbosely to make sure
-    // we have the minimal call stack. DON'T extract these procedures into a
-    // separate function. That would make the compilation error significantly
-    // longer in complex scenario.
     if constexpr (has_on_success<RuleID, It, It /* NOT `Se` */, Context, MaterializedAttr>::value) {
         It start = first; // backup
 

@@ -24,12 +24,12 @@ namespace iris::x4 {
 namespace detail {
 
 template<class Context>
-[[nodiscard]] constexpr auto make_lexeme_context(Context const& ctx) noexcept
+[[nodiscard]] constexpr decltype(auto) make_lexeme_context(Context const& ctx) noexcept
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
     using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
-    return T{x4::remove_first_context<contexts::skipper>(ctx)};
+    return detail::named_context<T>(x4::remove_first_context<contexts::skipper>(ctx));
 }
 
 } // detail

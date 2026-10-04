@@ -131,6 +131,15 @@ template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class 
     };
 }
 
+template<class SeqT>
+[[nodiscard]] constexpr auto const& as_sequence(SeqT const& seq) noexcept
+{
+    // Diagnostics shows this name only, excluding the template parameters from the caller
+    using T = SeqT;
+    T const& named = seq;
+    return named;
+}
+
 } // detail
 
 // -------------------------------------------------------------
