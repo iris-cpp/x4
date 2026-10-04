@@ -174,15 +174,15 @@ concept parses_into_new_element =
         planner::write_node<planner::storage_t<iris::container::element_t<S>>, V>
     >::solution.result.rank >= write_rank::structural;
 
-template<class Parser>
+template<class Subject>
 struct parse_into_container_impl_default
 {
     // parse the value and write it into `container` as a part: into a new element directly
     // where the element takes the value by its shape, else through a temporary
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container ContainerAttr>
-    static constexpr bool parse_part(Parser const& parser, It& first, Se const& last, Context& ctx, ContainerAttr& container)
+    static constexpr bool parse_part(Subject const& parser, It& first, Se const& last, Context& ctx, ContainerAttr& container)
     {
-        using attribute_type = parser_traits<Parser>::attribute_type;
+        using attribute_type = parser_traits<Subject>::attribute_type;
         using container_type = planner::storage_t<ContainerAttr>;
         using element_type = iris::container::element_t<container_type>;
 
@@ -200,13 +200,13 @@ struct parse_into_container_impl_default
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, traits::X4Container ContainerAttr>
-    static constexpr bool parse_written_part(Parser const& parser, It& first, Se const& last, Context& ctx, ContainerAttr& container)
+    static constexpr bool parse_written_part(Subject const& parser, It& first, Se const& last, Context& ctx, ContainerAttr& container)
     {
-        detail::action_slot<typename parser_traits<Parser>::attribute_type> slot;
+        detail::action_slot<typename parser_traits<Subject>::attribute_type> slot;
         if (!parser.parse(first, last, ctx, slot)) return false;
 
         if (slot.is_generated()) {
-            detail::write_slot_value<attribute_candidates_t<Parser>::size >= 2>(slot, [&container]<class V>(V&& value) {
+            detail::write_slot_value<attribute_candidates_t<Subject>::size >= 2>(slot, [&container]<class V>(V&& value) {
                 planner::write_part(container, std::forward<V>(value));
             });
         }
@@ -216,14 +216,14 @@ struct parse_into_container_impl_default
 
 // Internal customization point. A specialization that has `call` replaces how `parse_into_container`
 // parses the parser into a container; otherwise `parse_into_container` uses the strategy of the parser.
-template<class Parser>
+template<class Subject>
 struct parse_into_container_impl {};
 
-template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
+template<class Subject, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
 [[nodiscard]] constexpr bool
-parse_into_container(Parser const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
+parse_into_container(Subject const& parser, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
-    if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Parser>) {
+    if constexpr (X4UnusedAttribute<Attr> || !has_attribute_v<Subject>) {
         return parser.parse(first, last, ctx, unused);
 
     } else if constexpr (is_recursive_wrapper_v<Attr>) {
@@ -235,7 +235,7 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
 
     } else if constexpr (is_variant_v<Attr>) {
          // e.g. `char` when the caller is `+char_`
-        using attribute_type = parser_traits<Parser>::attribute_type;
+        using attribute_type = parser_traits<Subject>::attribute_type;
 
         // e.g. `std::string` when the attribute_type is `char`
         using container_type = traits::default_container<attribute_type>::type;
@@ -249,14 +249,14 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
         auto& variant_alt = existing_alt ? *existing_alt : attr.template emplace<alt_index>();
         return detail::parse_into_container(parser, first, last, ctx, variant_alt);
 
-    } else if constexpr (requires { parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr); }) {
+    } else if constexpr (requires { parse_into_container_impl<Subject>::call(parser, first, last, ctx, attr); }) {
         static_assert(traits::X4Container<Attr>);
-        return parse_into_container_impl<Parser>::call(parser, first, last, ctx, attr);
+        return parse_into_container_impl<Subject>::call(parser, first, last, ctx, attr);
 
     } else {
         // Choose the strategy here rather than in a function of its own, to keep the call stack short
         static_assert(traits::X4Container<Attr>);
-        constexpr container_parse_strategy strategy = container_parse_strategy_for<Parser, Attr>;
+        constexpr container_parse_strategy strategy = container_parse_strategy_for<Subject, Attr>;
         static_assert(
             strategy != container_parse_strategy::none,
             "The value of this parser cannot be added to the container, as a new element, part by part, or as a range. "
@@ -264,13 +264,13 @@ parse_into_container(Parser const& parser, It& first, Se const& last, Context co
             "are not enough."
         );
         if constexpr (strategy == container_parse_strategy::as_part_if_written) {
-            return parse_into_container_impl_default<Parser>::parse_written_part(parser, first, last, ctx, attr);
+            return parse_into_container_impl_default<Subject>::parse_written_part(parser, first, last, ctx, attr);
 
         } else if constexpr (strategy == container_parse_strategy::container_itself) {
             return parser.parse(first, last, ctx, attr); // the parser appends into the container itself
 
         } else {
-            return parse_into_container_impl_default<Parser>::parse_part(parser, first, last, ctx, attr);
+            return parse_into_container_impl_default<Subject>::parse_part(parser, first, last, ctx, attr);
         }
     }
 }

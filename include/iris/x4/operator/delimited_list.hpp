@@ -16,21 +16,42 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/expectation.hpp>
 
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 
 namespace iris::x4 {
 
-template<class Left, class Right>
-struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
+// Not a `binary_parser`: the subject is the element that repeats, and the separator only delimits it.
+// The member is spelled `Subject` as in `unary_parser`, so that MSVC prints the type once in the frame
+// of `parse_into_container`, whose parameter is also named `Subject`.
+template<class Subject, class Separator>
+struct delimited_list : parser<delimited_list<Subject, Separator>>
 {
-    using attribute_type = traits::default_container<typename parser_traits<Left>::attribute_type>::type;
+    using subject_type = Subject;
+    using separator_type = Separator;
+    using attribute_type = traits::default_container<typename parser_traits<Subject>::attribute_type>::type;
+
+    static constexpr bool has_action = Subject::has_action || Separator::has_action;
+    static constexpr bool need_rcontext = Subject::need_rcontext || Separator::need_rcontext;
 
     template<class Container>
-    static constexpr bool accepts_container = writes_into_container<Left, Container>;
+    static constexpr bool accepts_container = writes_into_container<Subject, Container>;
 
-    using binary_parser<delimited_list, Left, Right>::binary_parser;
+    constexpr delimited_list() = default;
+
+    template<class SubjectT, class SeparatorT>
+        requires std::same_as<std::remove_cvref_t<SubjectT>, Subject> && std::same_as<std::remove_cvref_t<SeparatorT>, Separator>
+    constexpr delimited_list(SubjectT&& subject, SeparatorT&& separator)
+        noexcept(std::is_nothrow_constructible_v<Subject, SubjectT> && std::is_nothrow_constructible_v<Separator, SeparatorT>)
+        : subject(std::forward<SubjectT>(subject))
+        , separator(std::forward<SeparatorT>(separator))
+    {}
+
+    // Empty instance elimination technique: please read the comment on `unary_parser`.
+    IRIS_NO_UNIQUE_ADDRESS Subject subject;
+    IRIS_NO_UNIQUE_ADDRESS Separator separator;
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4NonUnusedAttribute Attr>
     [[nodiscard]] constexpr bool
@@ -44,7 +65,7 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
             list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
 
             // In order to succeed, we need to match at least one element
-            if (detail::parse_into_container(this->left, first, last, ctx, chunk_buf)) {
+            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
                 list_like_parser::successful_merge_into(chunk_buf, container_attr);
             } else {
                 return false;
@@ -52,8 +73,8 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
 
             It last_parse_it = first;
             while (
-                this->right.parse(last_parse_it, last, ctx, unused) &&
-                detail::parse_into_container(this->left, last_parse_it, last, ctx, chunk_buf)
+                this->separator.parse(last_parse_it, last, ctx, unused) &&
+                detail::parse_into_container(this->subject, last_parse_it, last, ctx, chunk_buf)
             ) {
                 list_like_parser::successful_merge_into(chunk_buf, container_attr);
                 first = last_parse_it;
@@ -75,14 +96,14 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
     parse(It& first, Se const& last, Context const& ctx, UnusedAttr& unused_attr) const
     {
         // In order to succeed we need to match at least one element
-        if (!detail::parse_into_container(this->left, first, last, ctx, x4::assume_container(unused_attr))) {
+        if (!detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr))) {
             return false;
         }
 
         It last_parse_it = first;
         while (
-            this->right.parse(last_parse_it, last, ctx, unused) &&
-            detail::parse_into_container(this->left, last_parse_it, last, ctx, x4::assume_container(unused_attr))
+            this->separator.parse(last_parse_it, last, ctx, unused) &&
+            detail::parse_into_container(this->subject, last_parse_it, last, ctx, x4::assume_container(unused_attr))
         ) {
             // TODO: can we reduce this copy assignment?
             first = last_parse_it;
@@ -100,7 +121,7 @@ struct delimited_list : binary_parser<delimited_list<Left, Right>, Left, Right>
 
     [[nodiscard]] constexpr std::string get_x4_info() const
     {
-        return '(' + get_info<Left>{}(this->left) + " % " + get_info<Right>{}(this->right);
+        return '(' + get_info<Subject>{}(this->subject) + " % " + get_info<Separator>{}(this->separator);
     }
 };
 

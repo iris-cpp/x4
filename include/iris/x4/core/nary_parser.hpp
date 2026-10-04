@@ -58,17 +58,19 @@ using element_parser_t = decltype(detail::deduce_nary_parser_element<I>(
     std::declval<NaryParser const&>().elems
 ));
 
-template<std::size_t I, class P>
-[[nodiscard]] constexpr P const&
-get(detail::parser_element<I, P> const& elems IRIS_LIFETIMEBOUND) noexcept
+// The parameter is named `Subject`, the same as in `parse_into_container` and `unary_parser`; MSVC
+// spells a deduced type by the name of the parameter it came from, and prints it only once if the names match.
+template<std::size_t I, class Subject>
+[[nodiscard]] constexpr Subject const&
+get(detail::parser_element<I, Subject> const& elems IRIS_LIFETIMEBOUND) noexcept
 {
     return elems;
 }
-template<std::size_t I, class P>
-[[nodiscard]] constexpr P&&
-get(detail::parser_element<I, P>&& elems IRIS_LIFETIMEBOUND) noexcept
+template<std::size_t I, class Subject>
+[[nodiscard]] constexpr Subject&&
+get(detail::parser_element<I, Subject>&& elems IRIS_LIFETIMEBOUND) noexcept
 {
-    return static_cast<P&&>(elems);
+    return static_cast<Subject&&>(elems);
 }
 
 // -------------------------------------------------------
