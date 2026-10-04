@@ -109,15 +109,6 @@ struct get_attribute_type<sequence<Ps...>>
 };
 
 // Make this independent function to reduce lambda's type name in compilation errors
-template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-[[nodiscard]] constexpr auto make_unused_sequence_parser(Elems const& elems, It& first, Se const& last, Context const& ctx) noexcept
-{
-    return [&elems, &first, &last, &ctx]<std::size_t... Is>(std::index_sequence<Is...>) {
-        return (nary::get<Is>(elems).parse(first, last, ctx, unused) && ...);
-    };
-}
-
-// Make this independent function to reduce lambda's type name in compilation errors
 template<class Elems, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class ContainerAttr>
 [[nodiscard]] constexpr auto make_container_sequence_parser(
     Elems const& elems, It& first, Se const& last, Context const& ctx, ContainerAttr& container_attr
@@ -147,10 +138,10 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
 {
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4UnusedAttribute UnusedAttr>
     [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, UnusedAttr const&) const
+    parse(It& first, Se const& last, Context const& ctx, UnusedAttr const& unused_attr) const
     {
         It local_it = first;
-        if (detail::make_unused_sequence_parser(this->elems, local_it, last, ctx)(std::index_sequence_for<Ps...>{})) {
+        if (detail::parse_sequence_all(detail::as_sequence(*this), std::index_sequence_for<Ps...>{}, local_it, last, ctx, unused_attr)) {
             first = std::move(local_it);
             return true;
         }
@@ -174,7 +165,7 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
 
         if constexpr (layout::attributed_count < 2) {
             It local_it = first;
-            if (detail::parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, *this, local_it, last, ctx, attr)) {
+            if (detail::parse_sequence_all(detail::as_sequence(*this), std::index_sequence_for<Ps...>{}, local_it, last, ctx, attr)) {
                 first = std::move(local_it);
                 return true;
             }
@@ -200,7 +191,7 @@ struct sequence : nary_parser<sequence<Ps...>, Ps...>
 
         } else {
             It local_it = first;
-            if (detail::parse_sequence_tuple<Attr, Ps...>::parse_all(std::index_sequence_for<Ps...>{}, *this, local_it, last, ctx, attr)) {
+            if (detail::parse_sequence_all(detail::as_sequence(*this), std::index_sequence_for<Ps...>{}, local_it, last, ctx, attr)) {
                 first = std::move(local_it);
                 return true;
             }

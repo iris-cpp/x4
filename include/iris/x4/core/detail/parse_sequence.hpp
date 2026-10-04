@@ -95,7 +95,63 @@ template<class P>
 struct sequence_passes_view<P> : sequence_passes_view<typename P::proxy_backend_type> {};
 
 
-// A helper to isolate the actual logic inside a single struct.
+// Selects the attribute for the `I`-th element of the sequence. This returns before
+// the element is parsed, so it does not stay in the call stack.
+template<std::size_t I, class... Ps, class Attr>
+[[nodiscard]] constexpr decltype(auto) sequence_attribute_for(sequence<Ps...> const&, Attr& attr) noexcept
+{
+    using layout = sequence_layout<Ps...>;
+    using parser_type = nary::parser_t<I, Ps...>;
+    constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
+    constexpr std::size_t offset = layout::elem_offsets[I];
+
+    if constexpr (X4UnusedAttribute<Attr>) {
+        return (unused);
+
+    } else if constexpr (layout::attributed_count == 1) {
+        if constexpr (I != layout::single_attributed_index) {
+            return (unused);
+
+        } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
+            return alloy::get<0>(attr);
+
+        } else {
+            return (attr);
+        }
+
+    } else if constexpr (sequence_size == 0) {
+        return (unused);
+
+    } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
+        return alloy::get<offset>(attr);
+
+    } else {
+        return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return alloy::tuple<alloy::tuple_element_t<offset + Is, Attr>&...>(
+                alloy::get<offset + Is>(attr)...
+            );
+        }(std::make_index_sequence<sequence_size>{});
+    }
+}
+
+// A slice of the attribute is a temporary, and it lives until the end of the
+// full-expression that parses the element.
+template<class T>
+[[nodiscard]] constexpr T& as_lvalue(T&& value) noexcept
+{
+    return static_cast<T&>(value); // `return value;` is an xvalue since C++23
+}
+
+template<class SeqT>
+[[nodiscard]] constexpr auto const& as_sequence(SeqT const& seq) noexcept
+{
+    // Diagnostics show this name in place of the whole sequence
+    using T = SeqT;
+    T const& named = seq;
+    return named;
+}
+
+// The actual logic is isolated outside `sequence::parse`.
 //
 // Theoretically, this can be written directly inside a lambda in `sequence::parse`.
 // However, MSVC historically fails to optimize the compilation time of this kind
@@ -107,57 +163,15 @@ struct sequence_passes_view<P> : sequence_passes_view<typename P::proxy_backend_
 // instantiation cost; it is due to the function parsing and tokenization behavior.
 //
 // The result is about 50-80ms reduced compilation time (in realistic code) when
-// this is isolated in a struct like below.
-template<class Attr, class... Ps>
-struct parse_sequence_tuple
+// this is isolated like below.
+template<class Seq, std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context, class Attr>
+[[nodiscard]] constexpr bool
+parse_sequence_all(Seq const& seq, std::index_sequence<Is...>, It& first, Se const& last, Context const& ctx, Attr& attr)
 {
-    using layout = sequence_layout<Ps...>;
-
-    template<std::size_t I, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    [[nodiscard]] static constexpr bool
-    parse_element(sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
-    {
-        using parser_type = nary::parser_t<I, Ps...>;
-        auto const& elem = nary::get<I>(seq.elems);
-        constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
-        constexpr std::size_t offset = layout::elem_offsets[I];
-
-        if constexpr (layout::attributed_count == 1) {
-            if constexpr (I != layout::single_attributed_index) {
-                return elem.parse(first, last, ctx, unused);
-
-            } else if constexpr (SingleElementTupleLikeView<Attr> && !sequence_passes_view<parser_type>::value) {
-                return elem.parse(first, last, ctx, alloy::get<0>(attr));
-
-            } else {
-                return elem.parse(first, last, ctx, attr);
-            }
-
-        } else {
-            if constexpr (sequence_size == 0) {
-                return elem.parse(first, last, ctx, unused);
-
-            } else if constexpr (sequence_size == 1 && !sequence_passes_view<parser_type>::value) {
-                return elem.parse(first, last, ctx, alloy::get<offset>(attr));
-
-            } else {
-                auto slice = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-                    return alloy::tuple<alloy::tuple_element_t<offset + Is, Attr>&...>(
-                        alloy::get<offset + Is>(attr)...
-                    );
-                }(std::make_index_sequence<sequence_size>{});
-                return elem.parse(first, last, ctx, slice);
-            }
-        }
-    }
-
-    template<std::size_t... Is, std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    [[nodiscard]] static constexpr bool
-    parse_all(std::index_sequence<Is...>, sequence<Ps...> const& seq, It& first, Se const& last, Context const& ctx, Attr& attr)
-    {
-        return (parse_sequence_tuple::parse_element<Is>(seq, first, last, ctx, attr) && ...);
-    }
-};
+    return (nary::get<Is>(seq.elems).parse(
+        first, last, ctx, detail::as_lvalue(detail::sequence_attribute_for<Is>(seq, attr))
+    ) && ...);
+}
 
 template<class... Ps>
 struct parse_into_container_impl<sequence<Ps...>>
