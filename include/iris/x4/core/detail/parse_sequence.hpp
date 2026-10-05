@@ -21,7 +21,6 @@
 
 #include <iris/alloy/tuple.hpp>
 
-#include <array>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -42,23 +41,22 @@ struct sequence_layout
 {
     static constexpr std::size_t parser_count = sizeof...(Ps);
 
-    static constexpr std::array<std::size_t, parser_count> elem_sequence_sizes{parser_traits<Ps>::sequence_size...};
+    static constexpr std::size_t elem_sequence_sizes[parser_count]{parser_traits<Ps>::sequence_size...};
     static constexpr std::size_t total_sequence_size = (std::size_t{0} + ... + parser_traits<Ps>::sequence_size);
 
-    static constexpr std::array<std::size_t, parser_count> elem_offsets = [] {
-        std::array<std::size_t, parser_count> result{};
+    [[nodiscard]] static constexpr std::size_t elem_offset(std::size_t const index) noexcept
+    {
         std::size_t offset = 0;
-        for (std::size_t i = 0; i < parser_count; ++i) {
-            result[i] = offset;
+        for (std::size_t i = 0; i < index; ++i) {
             offset += elem_sequence_sizes[i];
         }
-        return result;
-    }();
+        return offset;
+    }
 
     static constexpr std::size_t attributed_count = (std::size_t{0} + ... + std::size_t{has_attribute_v<Ps>});
 
     static constexpr std::size_t single_attributed_index = [] {
-        std::array<bool, parser_count> const is_attributed{has_attribute_v<Ps>...};
+        bool const is_attributed[parser_count]{has_attribute_v<Ps>...};
         for (std::size_t i = 0; i < parser_count; ++i) {
             if (is_attributed[i]) return i;
         }
@@ -102,7 +100,7 @@ template<std::size_t I, class... Ps, class Attr>
     using layout = sequence_layout<Ps...>;
     using parser_type = nary::parser_t<I, Ps...>;
     constexpr std::size_t sequence_size = layout::elem_sequence_sizes[I];
-    constexpr std::size_t offset = layout::elem_offsets[I];
+    constexpr std::size_t offset = layout::elem_offset(I);
 
     if constexpr (X4UnusedAttribute<Attr>) {
         return (unused);

@@ -34,7 +34,6 @@
 #include <iris/type_traits.hpp>
 #include <iris/type_list.hpp>
 
-#include <array>
 #include <concepts>
 #include <ranges>
 #include <type_traits>
@@ -1112,18 +1111,18 @@ private:
 template<std::size_t NodeCount>
 struct graph_solution
 {
-    std::array<branch_selection, NodeCount> selections{};
-    std::array<bool, NodeCount> needs_extension{};
+    branch_selection selections[NodeCount]{};
+    bool needs_extension[NodeCount]{};
     solver_result result;
 };
 
-// The indices in the graph `Nodes` of the children of a node, in the order of its edges (and one
-// more element: MSVC rejects an array of no element in a constant evaluation)
+// The indices in the graph `Nodes` of the children of a node, in the order of its edges, and one more
+// element so that the array is not empty
 template<class Nodes, class Children>
-inline constexpr std::array<std::size_t, 1> child_indices{};
+inline constexpr std::size_t child_indices[1]{};
 
 template<class Nodes, class... Children>
-inline constexpr std::array<std::size_t, sizeof...(Children) + 1> child_indices<Nodes, type_list<Children...>>{find_index_exactly_once_v<Children, Nodes>..., 0};
+inline constexpr std::size_t child_indices<Nodes, type_list<Children...>>[sizeof...(Children) + 1]{find_index_exactly_once_v<Children, Nodes>..., 0};
 
 template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
 [[nodiscard]] constexpr graph_solution<sizeof...(Nodes)> solve_nodes(type_list<Nodes...>, constant_list<Prefixes...>, std::index_sequence<Is...>)
@@ -1131,48 +1130,48 @@ template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
     constexpr std::size_t item_count = (node_shape_t<Nodes>::items_before(Prefixes) + ... + 0);
     constexpr std::size_t edge_count = (node_shape_t<Nodes>::edges_before(Prefixes) + ... + 0);
 
-    std::array<std::size_t, sizeof...(Nodes) + 1> first_item{};
-    std::array<graph_item, item_count> items{};
-    std::array<graph_edge, edge_count> edges{};
-    std::array<bool, sizeof...(Nodes)> const complete{(Prefixes == node_shape_t<Nodes>::branch_count)...};
+    std::size_t first_item[sizeof...(Nodes) + 1]{};
+    graph_item items[item_count + 1]{};
+    graph_edge edges[edge_count + 1]{};
+    bool const complete[sizeof...(Nodes)]{(Prefixes == node_shape_t<Nodes>::branch_count)...};
 
-    graph_output out{items.data(), edges.data()};
+    graph_output out{items, edges};
     (
         (
             first_item[Is] = out.item_index,
-            out.children = child_indices<type_list<Nodes...>, typename explored_children<Nodes, Prefixes>::type>.data(),
+            out.children = child_indices<type_list<Nodes...>, typename explored_children<Nodes, Prefixes>::type>,
             node_shape_t<Nodes>::template fill<Prefixes>(out)
         ),
         ...
     );
     first_item[sizeof...(Nodes)] = out.item_index;
 
-    std::array<node_state, sizeof...(Nodes) + 1> nodes{};
-    std::array<bool, item_count> applies{};
-    std::array<std::size_t, edge_count> children{};
-    std::array<std::size_t, sizeof...(Nodes)> stack{};
-    std::array<std::size_t, sizeof...(Nodes)> calls{};
-    std::array<std::size_t, sizeof...(Nodes)> pending{};
+    node_state nodes[sizeof...(Nodes) + 1]{};
+    bool applies[item_count + 1]{};
+    std::size_t children[edge_count + 1]{};
+    std::size_t stack[sizeof...(Nodes)]{};
+    std::size_t calls[sizeof...(Nodes)]{};
+    std::size_t pending[sizeof...(Nodes)]{};
 
     graph_solution<sizeof...(Nodes)> solution;
     solution.result = graph_solver(
         graph_view{
             .node_count = sizeof...(Nodes),
-            .first_item = first_item.data(),
-            .items = items.data(),
-            .edges = edges.data(),
-            .edge_count = edges.size(),
-            .complete = complete.data(),
+            .first_item = first_item,
+            .items = items,
+            .edges = edges,
+            .edge_count = edge_count,
+            .complete = complete,
         },
         graph_workspace{
-            .nodes = nodes.data(),
-            .applies = applies.data(),
-            .children = children.data(),
-            .stack = stack.data(),
-            .calls = calls.data(),
-            .pending = pending.data(),
+            .nodes = nodes,
+            .applies = applies,
+            .children = children,
+            .stack = stack,
+            .calls = calls,
+            .pending = pending,
         }
-    ).solve(solution.selections.data(), solution.needs_extension.data());
+    ).solve(solution.selections, solution.needs_extension);
     return solution;
 }
 
@@ -1248,6 +1247,228 @@ struct explore<type_list<Known...>, constant_list<Prefixes...>>
     >
 {};
 
+struct node_view
+{
+    graph_item const* items = nullptr; // the edges of an item are in `edges`
+    std::size_t item_count = 0;
+    graph_edge const* edges = nullptr; // `child` is the index in `children`
+    node_view const* const* children = nullptr;
+    std::size_t edge_count = 0;
+    bool is_complete = false;
+};
+
+// GCC does not compare the addresses of two instantiated variables in a constant evaluation with
+// `-fno-delete-null-pointer-checks`, which `-fsanitize=undefined` implies. It still compares an
+// address with itself, so two addresses that do not compare there are of two different nodes.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71962
+[[nodiscard]] constexpr bool is_same_node(node_view const* a, node_view const* b) noexcept
+{
+#if defined(__GNUC__) && !defined(__clang__)
+    if consteval {
+        return __builtin_constant_p(a == b) ? a == b : false;
+    }
+#endif
+    return a == b;
+}
+
+template<class Node>
+constexpr node_view make_node_view() noexcept;
+
+template<class Node>
+inline constexpr node_view node_view_v = detail::make_node_view<Node>();
+
+// One for each node, not for each list of children: two nodes with the same children may be on a cycle,
+// where only the addresses of the nodes being initialized can be read
+template<class Node, class Children>
+inline constexpr node_view const* child_views[1]{};
+
+template<class Node, class... Children>
+inline constexpr node_view const* child_views<Node, type_list<Children...>>[sizeof...(Children) + 1]{&node_view_v<Children>..., nullptr};
+
+template<std::size_t ItemCount, std::size_t EdgeCount>
+struct node_arrays
+{
+    graph_item items[ItemCount + 1]{};
+    graph_edge edges[EdgeCount + 1]{};
+};
+
+template<class Node, std::size_t Prefix>
+inline constexpr auto node_arrays_v = [] {
+    using shape = node_shape_t<Node>;
+    node_arrays<shape::items_before(Prefix), shape::edges_before(Prefix)> arrays;
+    std::size_t slots[shape::edges_before(Prefix) + 1]{};
+    for (std::size_t e = 0; e != shape::edges_before(Prefix) + 1; ++e) {
+        slots[e] = e;
+    }
+    graph_output out{arrays.items, arrays.edges};
+    out.children = slots;
+    shape::template fill<Prefix>(out);
+    return arrays;
+}();
+
+template<class Node>
+constexpr node_view make_node_view() noexcept
+{
+    using shape = node_shape_t<Node>;
+    constexpr std::size_t prefix = shape::next_prefix(0);
+    return node_view{
+        .items = node_arrays_v<Node, prefix>.items,
+        .item_count = shape::items_before(prefix),
+        .edges = node_arrays_v<Node, prefix>.edges,
+        .children = child_views<Node, typename explored_children<Node, prefix>::type>,
+        .edge_count = shape::edges_before(prefix),
+        .is_complete = prefix == shape::branch_count,
+    };
+}
+
+// The selections of the nodes reachable from a root, the root first, solved over at most `Capacity` nodes
+template<std::size_t Capacity>
+struct shared_solution
+{
+    node_view const* nodes[Capacity]{};
+    branch_selection selections[Capacity]{};
+    std::size_t node_count = 0;
+    solver_result result;
+    bool is_overflowed = false; // more nodes are reachable than `Capacity`
+    bool is_exact = false; // the first prefixes decide every node, so no further exploration is needed
+
+    [[nodiscard]] constexpr branch_selection selection_of(node_view const* node) const noexcept
+    {
+        std::size_t index = 0;
+        while (!detail::is_same_node(nodes[index], node)) {
+            ++index;
+        }
+        return selections[index];
+    }
+};
+
+template<std::size_t Capacity>
+[[nodiscard]] constexpr shared_solution<Capacity> solve_shared(node_view const* root)
+{
+    shared_solution<Capacity> solution;
+    node_view const** const nodes = solution.nodes;
+
+    // the nodes reachable from the root, and the edges to the indices of their children, node by node
+    std::size_t node_count = 1;
+    std::size_t item_count = 0;
+    std::size_t edge_count = 0;
+    std::size_t edge_capacity = Capacity * 4;
+    graph_edge* edges = new graph_edge[edge_capacity];
+    nodes[0] = root;
+    for (std::size_t k = 0; k != node_count; ++k) {
+        node_view const& node = *nodes[k];
+        item_count += node.item_count;
+        for (std::size_t e = 0; e != node.edge_count; ++e) {
+            node_view const* const child = node.children[node.edges[e].child];
+            std::size_t index = 0;
+            while (index != node_count && !detail::is_same_node(nodes[index], child)) {
+                ++index;
+            }
+            if (index == node_count) {
+                if (node_count == Capacity) {
+                    delete[] edges;
+                    solution.is_overflowed = true;
+                    return solution;
+                }
+                nodes[node_count++] = child;
+            }
+            if (edge_count == edge_capacity) {
+                graph_edge* const grown = new graph_edge[edge_capacity * 2];
+                for (std::size_t i = 0; i != edge_count; ++i) {
+                    grown[i] = edges[i];
+                }
+                delete[] edges;
+                edges = grown;
+                edge_capacity *= 2;
+            }
+            edges[edge_count++] = graph_edge{index, node.edges[e].descent};
+        }
+    }
+    solution.node_count = node_count;
+
+    std::size_t first_item[Capacity + 1]{};
+    graph_item* const items = new graph_item[item_count + 1];
+    bool complete[Capacity]{};
+    bool is_complete = true;
+    std::size_t item_index = 0;
+    std::size_t edge_index = 0;
+    for (std::size_t k = 0; k != node_count; ++k) {
+        node_view const& node = *nodes[k];
+        first_item[k] = item_index;
+        complete[k] = node.is_complete;
+        is_complete = is_complete && node.is_complete;
+        for (std::size_t i = 0; i != node.item_count; ++i) {
+            graph_item& item = items[item_index++];
+            item = node.items[i];
+            item.first_edge += edge_index;
+            item.last_edge += edge_index;
+        }
+        edge_index += node.edge_count;
+    }
+    first_item[node_count] = item_index;
+
+    node_state states[Capacity + 1]{};
+    bool* const applies = new bool[item_count + 1]{};
+    std::size_t* const children = new std::size_t[edge_count + 1];
+    std::size_t stack[Capacity]{};
+    std::size_t calls[Capacity]{};
+    std::size_t pending[Capacity]{};
+    bool extend[Capacity]{};
+
+    solution.result = graph_solver(
+        graph_view{
+            .node_count = node_count,
+            .first_item = first_item,
+            .items = items,
+            .edges = edges,
+            .edge_count = edge_count,
+            .complete = complete,
+        },
+        graph_workspace{
+            .nodes = states,
+            .applies = applies,
+            .children = children,
+            .stack = stack,
+            .calls = calls,
+            .pending = pending,
+        }
+    ).solve(solution.selections, extend);
+
+    delete[] children;
+    delete[] applies;
+    delete[] items;
+    delete[] edges;
+
+    solution.is_exact = !solution.result.needs_extension && !(solution.result.has_zero_cycle && !is_complete);
+    return solution;
+}
+
+template<class Root, std::size_t Capacity>
+struct shared_graph
+{
+    static constexpr shared_solution<Capacity> solution = detail::solve_shared<Capacity>(&node_view_v<Root>);
+
+    template<class Node>
+    static constexpr branch_selection selection_of = solution.selection_of(&node_view_v<Node>);
+};
+
+template<
+    class Root,
+    std::size_t Capacity = 64,
+    bool IsOverflowed = shared_graph<Root, Capacity>::solution.is_overflowed,
+    bool IsShared = !IsOverflowed && shared_graph<Root, Capacity>::solution.is_exact
+>
+struct graph_of_impl
+{
+    using type = shared_graph<Root, Capacity>;
+};
+
+template<class Root, std::size_t Capacity, bool IsShared>
+struct graph_of_impl<Root, Capacity, true, IsShared> : graph_of_impl<Root, Capacity * 8> {};
+
+template<class Root, std::size_t Capacity>
+struct graph_of_impl<Root, Capacity, false, false> : explore<type_list<Root>, constant_list<node_shape_t<Root>::next_prefix(0)>> {};
+
 } // detail
 
 // The write the selection of a node performs, which the parse side follows (the part a parser
@@ -1267,7 +1488,7 @@ struct node_write_strategy
 
 // The graph of the nodes reachable from `Root`, the first of them, explored as far as the selections need
 template<class Root>
-using graph_of = detail::explore<type_list<Root>, constant_list<detail::node_shape_t<Root>::next_prefix(0)>>::type;
+using graph_of = detail::graph_of_impl<Root>::type;
 
 template<class Node>
 inline constexpr node_write_strategy node_write_strategy_of{
