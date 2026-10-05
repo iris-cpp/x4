@@ -14,6 +14,7 @@
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
+#include <iris/x4/core/skipper.hpp>
 
 #include <iris/x4/char/char_class_tags.hpp>
 

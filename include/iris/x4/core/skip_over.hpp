@@ -16,6 +16,7 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/parser.hpp>
+#include <iris/x4/core/skipper.hpp>
 
 #include <concepts>
 #include <iterator>
@@ -23,6 +24,8 @@
 namespace iris::x4 {
 
 namespace contexts {
+
+struct error_handler;
 
 // Tag used to find the skipper from the context
 struct skipper
@@ -33,14 +36,6 @@ struct skipper
 } // contexts
 
 using skipper_tag [[deprecated("Use `x4::contexts::skipper`")]] = contexts::skipper;
-
-
-enum struct builtin_skipper_kind : unsigned char
-{
-    no_skip,
-    blank,
-    space,
-};
 
 namespace detail {
 
@@ -76,8 +71,17 @@ constexpr void skip_over(It& first, Se const& last, Context const& ctx)
     using SkipperOnlyContext = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
     auto const& local_ctx = detail::named_context<SkipperOnlyContext>(x4::remove_first_context<contexts::skipper>(ctx));
 
-    while (skipper.parse(first, last, local_ctx, unused))
-        /* loop */;
+    if constexpr (x4::has_context_v<Context, contexts::error_handler>) {
+        auto& error_handler = x4::get<contexts::error_handler>(ctx);
+        error_handler.on_skip(skipper_state::pre_skip);
+
+        while (skipper.parse(first, last, local_ctx, unused)) { /* loop */ }
+
+        error_handler.on_skip(skipper_state::post_skip);
+
+    } else {
+        while (skipper.parse(first, last, local_ctx, unused)) { /* loop */ }
+    }
 }
 
 // Implemented in `char_class.hpp`

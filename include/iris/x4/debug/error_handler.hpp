@@ -29,7 +29,7 @@ struct error_handler
 
 using error_handler_tag [[deprecated("Use `x4::contexts::error_handler`")]] = contexts::error_handler;
 
-enum class tracer_state : char
+enum class tracer_state : unsigned char
 {
     pre_parse,
     parse_succeeded,
@@ -134,7 +134,6 @@ struct has_on_trace<T, It, Se, Context, Attr> : std::bool_constant<
 >
 {};
 
-
 namespace detail {
 
 template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
@@ -154,12 +153,10 @@ constexpr bool is_rule_id_derived_from_annotated_rule = requires (RuleID const& 
 template<class RuleID, std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     requires
         has_on_trace<RuleID, It, Se, Context, Attr>::value ||
-
-        // If `RuleID` is not derived from `x4::annotated_rule<...>`, always enable tracing.
-        // This is required because not doing so would make simple `rule<...> r;` declarations
-        // never emit any sort of useful information even when invoked from `x4::parse_debug(...)`.
-        (!is_rule_id_derived_from_annotated_rule<RuleID>)
-
+        (
+            !is_rule_id_derived_from_annotated_rule<RuleID> &&
+            has_on_trace<get_context_plain_t<contexts::error_handler, Context>, It, Se, Context, Attr>::value
+        )
 struct [[nodiscard]] scoped_tracer<RuleID, It, Se, Context, Attr>
 {
     constexpr scoped_tracer(
@@ -177,42 +174,41 @@ struct [[nodiscard]] scoped_tracer<RuleID, It, Se, Context, Attr>
         , parse_ok_(parse_ok)
     {
         if constexpr (is_rule_id_derived_from_annotated_rule<RuleID>) {
-            if constexpr (has_on_trace<RuleID, It, Se, Context, Attr>::value) {
-                RuleID{}.on_trace(first, last, ctx, attr_, rule_name, tracer_state::pre_parse);
-            }
+            RuleID{}.on_trace(first, last, ctx, attr_, rule_name, tracer_state::pre_parse);
 
-        } else if constexpr (has_on_trace<get_context_plain_t<contexts::error_handler, Context>, It, Se, Context, Attr>::value) {
+        } else {
             auto&& error_handler = x4::get<contexts::error_handler>(ctx);
+            is_default_trace_enabled_ = error_handler.is_default_trace_enabled();
+            if (!is_default_trace_enabled_) return;
             error_handler.on_trace(first, last, ctx, attr_, rule_name, tracer_state::pre_parse);
         }
     }
 
     constexpr ~scoped_tracer()
     {
-        if constexpr (is_rule_id_derived_from_annotated_rule<RuleID>) {
-            if constexpr (has_on_trace<RuleID, It, Se, Context, Attr>::value) {
-                RuleID{}.on_trace(
-                    first_, last_, ctx_, attr_, rule_name_,
-                    *parse_ok_ ? tracer_state::parse_succeeded : tracer_state::parse_failed
-                );
-            }
+        auto const state = *parse_ok_ ? tracer_state::parse_succeeded : tracer_state::parse_failed;
 
-        } else if constexpr (has_on_trace<get_context_plain_t<contexts::error_handler, Context>, It, Se, Context, Attr>::value) {
+        if constexpr (is_rule_id_derived_from_annotated_rule<RuleID>) {
+            RuleID{}.on_trace(first_, last_, ctx_, attr_, rule_name_, state);
+
+        } else {
+            if (!is_default_trace_enabled_) return;
             auto&& error_handler = x4::get<contexts::error_handler>(ctx_);
-            error_handler.on_trace(
-                first_, last_, ctx_, attr_, rule_name_,
-                *parse_ok_ ? tracer_state::parse_succeeded : tracer_state::parse_failed
-            );
+            error_handler.on_trace(first_, last_, ctx_, attr_, rule_name_, state);
         }
     }
 
 private:
+    using error_handler_type = get_context_plain_t<contexts::error_handler, Context>;
+
     It const& first_;
     Se const& last_;
     Context const& ctx_;
     Attr const& attr_;
     std::string_view rule_name_;
     bool const* parse_ok_ = nullptr;
+
+    bool is_default_trace_enabled_ = true;
 };
 
 } // detail

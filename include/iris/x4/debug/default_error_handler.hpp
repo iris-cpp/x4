@@ -10,10 +10,11 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/unused.hpp>
-
 #include <iris/x4/debug/error_handler.hpp>
 #include <iris/x4/debug/print_attribute.hpp>
+
+#include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/skipper.hpp>
 
 #include <iris/colorize_format.hpp>
 
@@ -87,11 +88,11 @@ public:
 
     template<class Context, X4Attribute Attr>
     void on_trace(
-        It first,
-        std::sentinel_for<It> auto const last,
+        It const& first,
+        std::sentinel_for<It> auto const& last,
         Context const& /*ctx*/,
         Attr const& attr,
-        std::string_view rule_name,
+        std::string_view const& rule_name,
         tracer_state const state
     )
     {
@@ -153,7 +154,25 @@ public:
         }
     }
 
-    void print_line_highlight(std::ranges::subrange<It> const line, It const err_pos) const
+    void on_skip(skipper_state const state) noexcept
+    {
+        switch (state) {
+        case skipper_state::pre_skip:
+            ++tracer_skip_depth_;
+            break;
+
+        case skipper_state::post_skip:
+            --tracer_skip_depth_;
+            break;
+        }
+    }
+
+    [[nodiscard]] bool is_default_trace_enabled() const noexcept
+    {
+        return trace_out_ && tracer_skip_depth_ == 0;
+    }
+
+    void print_line_highlight(std::ranges::subrange<It> const line, It const& err_pos) const
     {
         if (!error_out_) return;
 
@@ -201,7 +220,7 @@ private:
         }
     }
 
-    void print_some(char const* tag, It first, It const last) const
+    void print_some(char const* tag, It const& first, It const& last) const
     {
         this->print_indent(tracer_indent_);
 
@@ -252,6 +271,7 @@ private:
     std::filesystem::path file_path_;
 
     int tracer_internal_rule_stack_ = 0;
+    int tracer_skip_depth_ = 0;
     int tracer_indent_ = 0;
 };
 
