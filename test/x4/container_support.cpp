@@ -448,9 +448,10 @@ TEST_CASE("container_support")
         constexpr auto int_pair = x4::as<std::pair<int, int>>(x4::int_ >> '=' >> x4::int_);
         counting_resource resource;
         std::pmr::map<int, int> container(&resource);
+        int const allocations_before_parse = resource.allocations; // MSVC allocates the sentinel node on construction
         REQUIRE(parse("1=1;2=2,3=3", int_pair >> -(';' >> int_pair % ','), container));
         CHECK(container == std::pmr::map<int, int>{{1, 1}, {2, 2}, {3, 3}});
-        CHECK(resource.allocations == 3);
+        CHECK(resource.allocations - allocations_before_parse == 3);
     }
 
     {
