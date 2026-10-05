@@ -9,6 +9,15 @@
 #include "iris_x4_test_parse_debug.hpp"
 
 #include <iris/x4/debug/default_error_handler.hpp>
+#include <iris/x4/debug/annotate.hpp>
+#include <iris/x4/rule.hpp>
+#include <iris/x4/char/char.hpp>
+#include <iris/x4/numeric/int.hpp>
+#include <iris/x4/operator/sequence.hpp>
+#include <iris/x4/operator/plus.hpp>
+#include <iris/x4/directive/with.hpp>
+
+#include <iris/alloy/tuple.hpp>
 
 #include <iris/unicode/string.hpp>
 #include <iris/colorize_format.hpp>
@@ -23,8 +32,11 @@
 #include <string>
 #include <string_view>
 #include <sstream>
+#include <type_traits>
 
 namespace x4_test {
+
+using enum x4::annotated_rule_kind;
 
 // ' ' is U+1680 'OGHAM SPACE MARK'
 // https://www.fileformat.info/info/unicode/char/1680/
@@ -161,6 +173,87 @@ TEST_CASE("print_line_highlight")
             error_out.str({});
             error_out.clear();
         }
+    }
+}
+
+IRIS_X4_DECLARE(blank_rule, unused_type);
+constexpr auto blank_rule_def = +x4::lit(' ');
+IRIS_X4_DEFINE(blank_rule);
+
+IRIS_X4_DECLARE(blank_in_traced_rule, unused_type);
+constexpr auto blank_in_traced_rule_def = x4::lit(' ');
+IRIS_X4_DEFINE(blank_in_traced_rule);
+
+IRIS_X4_DECLARE(traced_blank_rule, unused_type, x4::annotated_rule<annotate_trace>);
+constexpr auto traced_blank_rule_def = +blank_in_traced_rule;
+IRIS_X4_DEFINE(traced_blank_rule);
+
+IRIS_X4_DECLARE(number_rule, int);
+constexpr auto number_rule_def = x4::int_;
+IRIS_X4_DEFINE(number_rule);
+
+TEST_CASE("trace")
+{
+    using It = std::string_view::const_iterator;
+    using error_handler_type = x4::default_error_handler<It>;
+    using Context = x4::context<x4::contexts::error_handler, error_handler_type, unused_type>;
+
+    // Non-annotated rules are traced only when the error handler is capable of tracing
+    STATIC_CHECK(std::is_empty_v<x4::detail::scoped_tracer<rules::number_rule_id, It, It, unused_type, int>>);
+    STATIC_CHECK(!std::is_empty_v<x4::detail::scoped_tracer<rules::number_rule_id, It, It, Context, int>>);
+
+    constexpr std::string_view input = "1  2";
+
+    // Rules invoked as the skipper are excluded from the default tracing
+    {
+        std::ostringstream error_out, trace_out;
+        error_handler_type error_handler{input.begin(), input.end(), &error_out, &trace_out};
+        alloy::tuple<int, int> numbers;
+        auto const res = x4::parse(
+            input,
+            x4::with<x4::contexts::error_handler>(error_handler)[number_rule >> number_rule],
+            blank_rule,
+            numbers
+        );
+        REQUIRE(res.completed());
+        CHECK(numbers == alloy::tuple<int, int>{1, 2});
+        CHECK(trace_out.str().contains("<number_rule>"));
+        CHECK(!trace_out.str().contains("blank_rule"));
+        CHECK(error_handler.is_default_trace_enabled());
+    }
+
+    // ... unless explicitly annotated, in which case its non-annotated subrules are still excluded
+    {
+        std::ostringstream error_out, trace_out;
+        error_handler_type error_handler{input.begin(), input.end(), &error_out, &trace_out};
+        alloy::tuple<int, int> numbers;
+        auto const res = x4::parse(
+            input,
+            x4::with<x4::contexts::error_handler>(error_handler)[number_rule >> number_rule],
+            traced_blank_rule,
+            numbers
+        );
+        REQUIRE(res.completed());
+        CHECK(trace_out.str().contains("<number_rule>"));
+        CHECK(trace_out.str().contains("<traced_blank_rule>"));
+        CHECK(!trace_out.str().contains("blank_in_traced_rule"));
+        CHECK(error_handler.is_default_trace_enabled());
+    }
+
+    // No trace output
+    {
+        std::ostringstream error_out;
+        error_handler_type error_handler{input.begin(), input.end(), &error_out, nullptr};
+        CHECK(!error_handler.is_default_trace_enabled());
+        alloy::tuple<int, int> numbers;
+        auto const res = x4::parse(
+            input,
+            x4::with<x4::contexts::error_handler>(error_handler)[number_rule >> number_rule],
+            blank_rule,
+            numbers
+        );
+        REQUIRE(res.completed());
+        CHECK(numbers == alloy::tuple<int, int>{1, 2});
     }
 }
 
