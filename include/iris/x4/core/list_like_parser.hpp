@@ -59,8 +59,7 @@ public:
     constexpr void merge()
     {
         if constexpr (is_buffered) {
-            // This can't use `transfer_from` since it loses the capacity
-            iris::container::append_range(container_attr_, buffer_ | std::views::as_rvalue);
+            iris::container::transfer_from(container_attr_, buffer_);
             iris::container::clear(buffer_);
         }
     }
