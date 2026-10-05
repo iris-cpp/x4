@@ -108,13 +108,12 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
             return list_like_parser::parse_as_one_element(*this, first, last, ctx, attr);
 
         } else {
-            auto& container_attr = detail::ref_or_init_attribute_for<attribute_type>(attr);
-            list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+            list_like_parser::chunk_buffer<Subject, attribute_type, Attr> chunk_buf(detail::ref_or_init_attribute_for<attribute_type>(attr));
 
             It local_it = first;
             typename Bounds::value_type i{};
             for (; !bounds_.got_min(i); ++i) {
-                if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf)) {
+                if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf.container())) {
                     // We can't merge here; it will lead to partial status
                 } else {
                     if constexpr (has_context_v<Context, contexts::expectation_failure>) {
@@ -126,13 +125,13 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
                     return false;
                 }
             }
-            list_like_parser::successful_merge_into(chunk_buf, container_attr);
+            chunk_buf.merge();
 
             first = local_it;
             // parse some more up to the maximum specified
             for (; !bounds_.got_max(i); ++i) {
-                if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
-                    list_like_parser::successful_merge_into(chunk_buf, container_attr);
+                if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf.container())) {
+                    chunk_buf.merge();
                 } else {
                     break;
                 }

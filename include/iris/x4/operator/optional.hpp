@@ -22,6 +22,8 @@
 #include <iris/x4/core/parser_traits.hpp>
 #include <iris/x4/core/expectation.hpp>
 
+#include <iris/container_traits.hpp>
+
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -100,7 +102,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
         } else {
             Attr buffer;
             if (detail::parse_into_container(this->subject, first, last, ctx, buffer)) {
-                iris::container::append_range(attr, buffer | std::views::as_rvalue);
+                iris::container::transfer_from(attr, std::move(buffer));
                 return true;
             }
         }

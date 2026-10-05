@@ -65,6 +65,9 @@ using parsers::directive::expect;
 
 namespace iris::x4::detail {
 
+template<class Subject, traits::X4Container Container>
+inline constexpr bool needs_chunk_buffer<expect_directive<Subject>, Container> = needs_chunk_buffer<Subject, Container>;
+
 // Special case handling for expect expressions.
 template<class Subject>
 struct parse_into_container_impl<expect_directive<Subject>>

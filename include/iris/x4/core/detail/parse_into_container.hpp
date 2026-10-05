@@ -23,6 +23,8 @@
 
 #include <iris/alloy/tuple.hpp>
 #include <iris/rvariant/rvariant.hpp>
+
+#include <iris/container_traits.hpp>
 #include <iris/type_list.hpp>
 
 #include <iterator>
@@ -98,6 +100,20 @@ inline constexpr container_parse_strategy container_parse_strategy_for = [] {
 
     } else {
         return container_parse_strategy::none;
+    }
+}();
+
+// Whether a repetition of `Parser` parses into a buffer and moves its elements into `Container` after
+// each successful parse. A parser that writes its value only after it succeeds is parsed into
+// `Container` directly.
+template<class Parser, traits::X4Container Container>
+inline constexpr bool needs_chunk_buffer = [] {
+    if constexpr (!has_attribute_v<Parser>) {
+        return false;
+
+    } else {
+        constexpr container_parse_strategy strategy = container_parse_strategy_for<Parser, Container>;
+        return strategy != container_parse_strategy::as_part && strategy != container_parse_strategy::as_part_if_written;
     }
 }();
 

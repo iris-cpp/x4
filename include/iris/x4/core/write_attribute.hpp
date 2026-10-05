@@ -15,6 +15,8 @@
 
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/alloy/traits.hpp>
+
+#include <iris/container_traits.hpp>
 #include <iris/type_list.hpp>
 
 #include <concepts>
@@ -352,7 +354,7 @@ constexpr void pass_declared_attribute(S& s, V&& v)
         if (!std::ranges::empty(s)) {
             S assigned{};
             assigned = std::forward<V>(v);
-            iris::container::append_range(s, assigned | std::views::as_rvalue);
+            iris::container::transfer_from(s, std::move(assigned));
             return;
         }
     }
