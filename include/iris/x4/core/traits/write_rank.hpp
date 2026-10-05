@@ -1267,28 +1267,28 @@ inline constexpr node_view node_view_v = detail::make_node_view<Node>();
 // One for each node, not for each list of children: two nodes with the same children may be on a cycle,
 // where only the addresses of the nodes being initialized can be read
 template<class Node, class Children>
-inline constexpr std::array<node_view const*, 1> child_views{};
+inline constexpr node_view const* child_views[1]{};
 
 template<class Node, class... Children>
-inline constexpr std::array<node_view const*, sizeof...(Children) + 1> child_views<Node, type_list<Children...>>{&node_view_v<Children>..., nullptr};
+inline constexpr node_view const* child_views<Node, type_list<Children...>>[sizeof...(Children) + 1]{&node_view_v<Children>..., nullptr};
 
 template<std::size_t ItemCount, std::size_t EdgeCount>
 struct node_arrays
 {
-    std::array<graph_item, ItemCount + 1> items{};
-    std::array<graph_edge, EdgeCount + 1> edges{};
+    graph_item items[ItemCount + 1]{};
+    graph_edge edges[EdgeCount + 1]{};
 };
 
 template<class Node, std::size_t Prefix>
 inline constexpr auto node_arrays_v = [] {
     using shape = node_shape_t<Node>;
     node_arrays<shape::items_before(Prefix), shape::edges_before(Prefix)> arrays;
-    std::array<std::size_t, shape::edges_before(Prefix) + 1> slots{};
-    for (std::size_t e = 0; e != slots.size(); ++e) {
+    std::size_t slots[shape::edges_before(Prefix) + 1]{};
+    for (std::size_t e = 0; e != shape::edges_before(Prefix) + 1; ++e) {
         slots[e] = e;
     }
-    graph_output out{arrays.items.data(), arrays.edges.data()};
-    out.children = slots.data();
+    graph_output out{arrays.items, arrays.edges};
+    out.children = slots;
     shape::template fill<Prefix>(out);
     return arrays;
 }();
@@ -1299,10 +1299,10 @@ constexpr node_view make_node_view() noexcept
     using shape = node_shape_t<Node>;
     constexpr std::size_t prefix = shape::next_prefix(0);
     return node_view{
-        .items = node_arrays_v<Node, prefix>.items.data(),
+        .items = node_arrays_v<Node, prefix>.items,
         .item_count = shape::items_before(prefix),
-        .edges = node_arrays_v<Node, prefix>.edges.data(),
-        .children = child_views<Node, typename explored_children<Node, prefix>::type>.data(),
+        .edges = node_arrays_v<Node, prefix>.edges,
+        .children = child_views<Node, typename explored_children<Node, prefix>::type>,
         .edge_count = shape::edges_before(prefix),
         .is_complete = prefix == shape::branch_count,
     };
@@ -1312,8 +1312,8 @@ constexpr node_view make_node_view() noexcept
 template<std::size_t Capacity>
 struct shared_solution
 {
-    std::array<node_view const*, Capacity> nodes{};
-    std::array<branch_selection, Capacity> selections{};
+    node_view const* nodes[Capacity]{};
+    branch_selection selections[Capacity]{};
     std::size_t node_count = 0;
     solver_result result;
     bool is_overflowed = false; // more nodes are reachable than `Capacity`
@@ -1333,7 +1333,7 @@ template<std::size_t Capacity>
 [[nodiscard]] constexpr shared_solution<Capacity> solve_shared(node_view const* root)
 {
     shared_solution<Capacity> solution;
-    node_view const** const nodes = solution.nodes.data();
+    node_view const** const nodes = solution.nodes;
 
     // the nodes reachable from the root, and the edges to the indices of their children, node by node
     std::size_t node_count = 1;
@@ -1373,9 +1373,9 @@ template<std::size_t Capacity>
     }
     solution.node_count = node_count;
 
-    std::array<std::size_t, Capacity + 1> first_item{};
+    std::size_t first_item[Capacity + 1]{};
     graph_item* const items = new graph_item[item_count + 1];
-    std::array<bool, Capacity> complete{};
+    bool complete[Capacity]{};
     bool is_complete = true;
     std::size_t item_index = 0;
     std::size_t edge_index = 0;
@@ -1394,32 +1394,32 @@ template<std::size_t Capacity>
     }
     first_item[node_count] = item_index;
 
-    std::array<node_state, Capacity + 1> states{};
+    node_state states[Capacity + 1]{};
     bool* const applies = new bool[item_count + 1]{};
     std::size_t* const children = new std::size_t[edge_count + 1];
-    std::array<std::size_t, Capacity> stack{};
-    std::array<std::size_t, Capacity> calls{};
-    std::array<std::size_t, Capacity> pending{};
-    std::array<bool, Capacity> extend{};
+    std::size_t stack[Capacity]{};
+    std::size_t calls[Capacity]{};
+    std::size_t pending[Capacity]{};
+    bool extend[Capacity]{};
 
     solution.result = graph_solver(
         graph_view{
             .node_count = node_count,
-            .first_item = first_item.data(),
+            .first_item = first_item,
             .items = items,
             .edges = edges,
             .edge_count = edge_count,
-            .complete = complete.data(),
+            .complete = complete,
         },
         graph_workspace{
-            .nodes = states.data(),
+            .nodes = states,
             .applies = applies,
             .children = children,
-            .stack = stack.data(),
-            .calls = calls.data(),
-            .pending = pending.data(),
+            .stack = stack,
+            .calls = calls,
+            .pending = pending,
         }
-    ).solve(solution.selections.data(), extend.data());
+    ).solve(solution.selections, extend);
 
     delete[] children;
     delete[] applies;
