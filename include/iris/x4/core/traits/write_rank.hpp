@@ -1257,6 +1257,20 @@ struct node_view
     bool is_complete = false;
 };
 
+// GCC does not compare the addresses of two instantiated variables in a constant evaluation with
+// `-fno-delete-null-pointer-checks`, which `-fsanitize=undefined` implies. It still compares an
+// address with itself, so two addresses that do not compare there are of two different nodes.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71962
+[[nodiscard]] constexpr bool is_same_node(node_view const* a, node_view const* b) noexcept
+{
+#if defined(__GNUC__) && !defined(__clang__)
+    if consteval {
+        return __builtin_constant_p(a == b) ? a == b : false;
+    }
+#endif
+    return a == b;
+}
+
 template<class Node>
 constexpr node_view make_node_view() noexcept;
 
@@ -1321,7 +1335,7 @@ struct shared_solution
     [[nodiscard]] constexpr branch_selection selection_of(node_view const* node) const noexcept
     {
         std::size_t index = 0;
-        while (nodes[index] != node) {
+        while (!detail::is_same_node(nodes[index], node)) {
             ++index;
         }
         return selections[index];
@@ -1347,7 +1361,7 @@ template<std::size_t Capacity>
         for (std::size_t e = 0; e != node.edge_count; ++e) {
             node_view const* const child = node.children[node.edges[e].child];
             std::size_t index = 0;
-            while (index != node_count && nodes[index] != child) {
+            while (index != node_count && !detail::is_same_node(nodes[index], child)) {
                 ++index;
             }
             if (index == node_count) {
