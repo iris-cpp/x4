@@ -9,6 +9,9 @@
 
 #include "rule_separate_tu_grammar.hpp"
 
+#include <iris/x4/directive/lexeme.hpp>
+#include <iris/x4/directive/skip.hpp>
+
 #include <concepts>
 #include <utility>
 #include <type_traits>
@@ -58,6 +61,11 @@ TEST_CASE("rule_separate_tu")
         REQUIRE(parse("123", used_attr::grammar, l));
         CHECK(l == 123);
         REQUIRE(parse(" 42", used_attr::grammar, used_attr::skipper, l));
+        CHECK(l == 42);
+
+        // `skip` must append the custom skipper to the end of the context. Otherwise, the
+        // context type differs from the instantiated one, which results in a linker error.
+        REQUIRE(parse(" 42", x4::lexeme[x4::skip(used_attr::skipper)[used_attr::grammar]], used_attr::skipper, l));
         CHECK(l == 42);
     }
 
