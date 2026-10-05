@@ -247,7 +247,7 @@ call_rule_definition(
             has_on_success<RuleID, It, It /* NOT `Se` */, Context, MaterializedAttr>::value ||
             has_on_expectation_failure<RuleID, It, Se, Context>::value
         ) {
-            return x4::replace_first_context<contexts::rule_var>(ctx, exposed_attr);
+            return x4::replace_first_or_prepend_context<contexts::rule_var>(ctx, exposed_attr);
         } else {
             return (ctx);
         }
