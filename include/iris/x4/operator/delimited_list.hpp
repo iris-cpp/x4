@@ -63,12 +63,11 @@ struct delimited_list : parser<delimited_list<Subject, Separator>>
             return list_like_parser::parse_as_one_element(*this, first, last, ctx, attr);
 
         } else {
-            auto& container_attr = detail::ref_or_init_attribute_for<attribute_type>(attr);
-            list_like_parser::chunk_buffer<attribute_type, Attr> chunk_buf;
+            list_like_parser::chunk_buffer<Subject, attribute_type, Attr> chunk_buf(detail::ref_or_init_attribute_for<attribute_type>(attr));
 
             // In order to succeed, we need to match at least one element
-            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf)) {
-                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+            if (detail::parse_into_container(this->subject, first, last, ctx, chunk_buf.container())) {
+                chunk_buf.merge();
             } else {
                 return false;
             }
@@ -76,9 +75,9 @@ struct delimited_list : parser<delimited_list<Subject, Separator>>
             It last_parse_it = first;
             while (
                 this->separator.parse(last_parse_it, last, ctx, unused) &&
-                detail::parse_into_container(this->subject, last_parse_it, last, ctx, chunk_buf)
+                detail::parse_into_container(this->subject, last_parse_it, last, ctx, chunk_buf.container())
             ) {
-                list_like_parser::successful_merge_into(chunk_buf, container_attr);
+                chunk_buf.merge();
                 first = last_parse_it;
             }
 

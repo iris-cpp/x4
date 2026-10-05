@@ -3,18 +3,11 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/traits/variant_traits.hpp>
-
 #include <iris/x4/core/detail/parse_into_container.hpp> // export
 #include <iris/x4/core/parser.hpp> // IWYU pragma: export
 #include <iris/x4/core/attribute.hpp>
 
-#include <iris/rvariant/rvariant.hpp>
-#include <iris/rvariant/variant_helper.hpp>
-
-#include <iris/alloy/tuple.hpp>
-#include <iris/alloy/traits.hpp>
+#include <iris/container_traits.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -39,10 +32,43 @@ struct chunk_buffer_impl
 } // detail
 
 
-// The container which a list-like parser yielding `ParserAttr` appends into, as
-// `x4::detail::ref_or_init_attribute_for` refers to it in `ExposedAttr`
-template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
-using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
+// The container which a list-like parser yielding `ParserAttr` writes each parse of `Subject` into.
+// The container that `x4::detail::ref_or_init_attribute_for` refers to in `ExposedAttr` is written
+// into directly when the parse leaves it unchanged on failure, and through a buffer otherwise.
+template<class Subject, X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
+class chunk_buffer
+{
+    using container_type = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
+    static constexpr bool is_buffered = x4::detail::needs_chunk_buffer<Subject, container_type>;
+
+public:
+    explicit constexpr chunk_buffer(container_type& container_attr) noexcept
+        : container_attr_(container_attr)
+    {}
+
+    [[nodiscard]] constexpr container_type& container() noexcept
+    {
+        if constexpr (is_buffered) {
+            return buffer_;
+        } else {
+            return container_attr_;
+        }
+    }
+
+    // Moves the elements of the successful parses into the container
+    constexpr void merge()
+    {
+        if constexpr (is_buffered) {
+            // This can't use `transfer_from` since it loses the capacity
+            iris::container::append_range(container_attr_, buffer_ | std::views::as_rvalue);
+            iris::container::clear(buffer_);
+        }
+    }
+
+private:
+    container_type& container_attr_;
+    std::conditional_t<is_buffered, container_type, unused_type> buffer_{};
+};
 
 // A repetition writes its whole value as one new element when the container takes it as-is
 // (e.g., the value of `*char_` into `vector<string>` is one string).
@@ -50,7 +76,7 @@ using chunk_buffer = detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type;
 // Otherwise, each parse of the subject is written into the container as a part.
 template<X4NonUnusedAttribute ParserAttr, X4NonUnusedAttribute ExposedAttr>
 inline constexpr bool writes_as_one_element = [] {
-    using container_type = planner::storage_t<chunk_buffer<ParserAttr, ExposedAttr>>;
+    using container_type = planner::storage_t<typename detail::chunk_buffer_impl<ParserAttr, ExposedAttr>::type>;
     constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
         planner::write_node<container_type, planner::model_value_t<ParserAttr>>
     >;
@@ -62,13 +88,6 @@ template<class Parser, std::forward_iterator It, std::sentinel_for<It> Se, class
 {
     auto& container_attr = x4::detail::ref_or_init_attribute_for<typename parser_traits<Parser>::attribute_type>(attr);
     return x4::detail::parse_into_container_impl_default<Parser>::parse_part(parser, first, last, ctx, container_attr);
-}
-
-template<traits::X4Container ChunkBuf, traits::X4Container ExposedAttr>
-constexpr void successful_merge_into(ChunkBuf& chunk_buf, ExposedAttr& container_attr)
-{
-    iris::container::append_range(container_attr, chunk_buf | std::views::as_rvalue);
-    iris::container::clear(chunk_buf);
 }
 
 } // list_like_parser

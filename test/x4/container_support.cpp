@@ -20,6 +20,9 @@
 #include <iris/x4/operator/delimited_list.hpp>
 #include <iris/x4/operator/plus.hpp>
 #include <iris/x4/operator/kleene.hpp>
+#include <iris/x4/operator/optional.hpp>
+#include <iris/x4/operator/alternative.hpp>
+#include <iris/x4/numeric/int.hpp>
 #include <iris/x4/core/detail/parse_into_container.hpp>
 
 #include <iris/alloy/adapted/std_pair.hpp>
@@ -27,6 +30,7 @@
 #include <iris/rvariant.hpp>
 
 #include <map>
+#include <memory_resource>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -36,6 +40,8 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+#include <cstddef> // IWYU pragma: keep
 
 namespace x4 = iris::x4;
 
@@ -52,6 +58,27 @@ struct converted
 
     converted& operator=(std::vector<char_pair> const&) { ++from_pairs; return *this; }
     converted& operator=(char) { ++from_char; return *this; }
+};
+
+struct counting_resource : std::pmr::memory_resource
+{
+    int allocations = 0;
+
+    void* do_allocate(std::size_t bytes, std::size_t alignment) override
+    {
+        ++allocations;
+        return std::pmr::new_delete_resource()->allocate(bytes, alignment);
+    }
+
+    void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
+    {
+        std::pmr::new_delete_resource()->deallocate(p, bytes, alignment);
+    }
+
+    bool do_is_equal(std::pmr::memory_resource const& other) const noexcept override
+    {
+        return this == &other;
+    }
 };
 
 template<class Container>
@@ -129,6 +156,13 @@ void test_map_support()
         Container container;
         CHECK(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
     }
+    {
+        // the elements parsed into the buffer of an optional or an alternative keep the first value of a key
+        constexpr auto rule = pair_rule >> -(';' >> pair_rule % ',') >> (';' >> pair_rule | ',' >> pair_rule);
+        Container container;
+        REQUIRE(parse("k1=v1;k1=v2,k2=v3;k2=v4", rule, container));
+        CHECK(container == Container{{"k1", "v1"}, {"k2", "v3"}});
+    }
 }
 
 template<class Container>
@@ -174,6 +208,12 @@ void test_multimap_support()
         constexpr auto cic_rule = as_pair_parser >> +(',' >> as_pair_parser);
         Container container;
         CHECK(parse("k1=v1,k2=v2,k2=v3", cic_rule, container));
+    }
+    {
+        constexpr auto rule = pair_rule >> -(';' >> pair_rule % ',') >> (';' >> pair_rule | ',' >> pair_rule);
+        Container container;
+        REQUIRE(parse("k1=v1;k1=v2,k2=v3;k2=v4", rule, container));
+        CHECK(container == Container{{"k1", "v1"}, {"k1", "v2"}, {"k2", "v3"}, {"k2", "v4"}});
     }
 }
 
@@ -402,6 +442,17 @@ TEST_CASE("container_support")
 
     test_multimap_support<std::multimap<std::string, std::string>>();
     test_multimap_support<std::unordered_multimap<std::string, std::string>>();
+
+    {
+        // the nodes of a buffer that has another allocator are not merged
+        constexpr auto int_pair = x4::as<std::pair<int, int>>(x4::int_ >> '=' >> x4::int_);
+        counting_resource resource;
+        std::pmr::map<int, int> container(&resource);
+        int const allocations_before_parse = resource.allocations; // MSVC allocates the sentinel node on construction
+        REQUIRE(parse("1=1;2=2,3=3", int_pair >> -(';' >> int_pair % ','), container));
+        CHECK(container == std::pmr::map<int, int>{{1, 1}, {2, 2}, {3, 3}});
+        CHECK(resource.allocations - allocations_before_parse == 3);
+    }
 
     {
         // the container held by a variant is appended to, not replaced

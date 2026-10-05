@@ -24,7 +24,7 @@
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/parser.hpp>
 
-#include <iris/alloy/tuple.hpp> // IWYU pragma: keep
+#include <iris/container_traits.hpp>
 
 #include <concepts>
 #include <iterator>
@@ -166,7 +166,7 @@ template<class Alt, bool IntoContainer, std::forward_iterator It, std::sentinel_
                 matched = branch.parse(first, last, ctx, buffer);
             }
             if (matched) {
-                iris::container::append_range(container_attr, buffer | std::views::as_rvalue);
+                iris::container::transfer_from(container_attr, std::move(buffer));
                 return true;
             }
             iris::container::clear(buffer);
@@ -260,6 +260,12 @@ parse_alternative_all(
     (void)((((matched = parse_branch.template operator()<Is>())) || detail::alternative_should_stop(ctx)) || ...);
     return matched;
 }
+
+// An alternative writes nothing into the container when it fails, but it parses into a container that
+// already holds elements through a new buffer of its own. The buffer of a repetition is given instead,
+// which is empty on every parse and is reused.
+template<class... Ps, traits::X4Container Container>
+inline constexpr bool needs_chunk_buffer<alternative<Ps...>, Container> = true;
 
 template<class... Ps>
 struct parse_into_container_impl<alternative<Ps...>>

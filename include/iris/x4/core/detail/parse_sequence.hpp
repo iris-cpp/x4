@@ -154,6 +154,27 @@ parse_sequence_all(Seq const& seq, std::index_sequence<Is...>, It& first, Se con
     ) && ...);
 }
 
+// The whole sequence yields one element when its value is written into a new element (nothing is
+// left behind when a later part fails); otherwise each element of the sequence writes into the
+// container on its own, as the value is written part by part.
+//
+// Note: A sequence that may succeed without writing its value does not yield a new element
+//       (see `container_parse_strategy`).
+template<traits::X4Container Container, class... Ps>
+inline constexpr bool sequence_parses_as_new_element = [] {
+    using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
+    constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
+        planner::sequence_part_node<planner::storage_t<Container>, value_type>
+    >;
+    return
+        strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
+        !may_leave_attribute_unwritten_v<sequence<Ps...>>;
+}();
+
+// A sequence written part by part leaves the parts before a failed one in the container
+template<class... Ps, traits::X4Container Container>
+inline constexpr bool needs_chunk_buffer<sequence<Ps...>, Container> = !sequence_parses_as_new_element<Container, Ps...>;
+
 template<class... Ps>
 struct parse_into_container_impl<sequence<Ps...>>
 {
@@ -164,21 +185,7 @@ struct parse_into_container_impl<sequence<Ps...>>
         Context const& ctx, Attr& attr
     )
     {
-        // The whole sequence yields one element when its value is written into a new element
-        // (nothing is left behind when a later part fails); otherwise each element of the
-        // sequence writes into the container on its own, as the value is written part by part.
-        //
-        // Note: A sequence that may succeed without writing its value does not yield a new element
-        //       (see `container_parse_strategy`).
-        using value_type = planner::model_value_t<typename parser_traits<sequence<Ps...>>::attribute_type>;
-        constexpr planner::node_write_strategy strategy = planner::node_write_strategy_of<
-            planner::sequence_part_node<planner::storage_t<Attr>, value_type>
-        >;
-
-        if constexpr (
-            strategy.is_writable && strategy.kind == planner::branch_kind::new_element &&
-            !may_leave_attribute_unwritten_v<sequence<Ps...>>
-        ) {
+        if constexpr (sequence_parses_as_new_element<Attr, Ps...>) {
             return parse_into_container_impl_default<sequence<Ps...>>::parse_part(seq, first, last, ctx, attr);
 
         } else {
