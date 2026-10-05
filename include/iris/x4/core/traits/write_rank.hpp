@@ -34,7 +34,6 @@
 #include <iris/type_traits.hpp>
 #include <iris/type_list.hpp>
 
-#include <array>
 #include <concepts>
 #include <ranges>
 #include <type_traits>
@@ -1112,18 +1111,18 @@ private:
 template<std::size_t NodeCount>
 struct graph_solution
 {
-    std::array<branch_selection, NodeCount> selections{};
-    std::array<bool, NodeCount> needs_extension{};
+    branch_selection selections[NodeCount]{};
+    bool needs_extension[NodeCount]{};
     solver_result result;
 };
 
-// The indices in the graph `Nodes` of the children of a node, in the order of its edges (and one
-// more element: MSVC rejects an array of no element in a constant evaluation)
+// The indices in the graph `Nodes` of the children of a node, in the order of its edges, and one more
+// element so that the array is not empty
 template<class Nodes, class Children>
-inline constexpr std::array<std::size_t, 1> child_indices{};
+inline constexpr std::size_t child_indices[1]{};
 
 template<class Nodes, class... Children>
-inline constexpr std::array<std::size_t, sizeof...(Children) + 1> child_indices<Nodes, type_list<Children...>>{find_index_exactly_once_v<Children, Nodes>..., 0};
+inline constexpr std::size_t child_indices<Nodes, type_list<Children...>>[sizeof...(Children) + 1]{find_index_exactly_once_v<Children, Nodes>..., 0};
 
 template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
 [[nodiscard]] constexpr graph_solution<sizeof...(Nodes)> solve_nodes(type_list<Nodes...>, constant_list<Prefixes...>, std::index_sequence<Is...>)
@@ -1131,48 +1130,48 @@ template<class... Nodes, std::size_t... Prefixes, std::size_t... Is>
     constexpr std::size_t item_count = (node_shape_t<Nodes>::items_before(Prefixes) + ... + 0);
     constexpr std::size_t edge_count = (node_shape_t<Nodes>::edges_before(Prefixes) + ... + 0);
 
-    std::array<std::size_t, sizeof...(Nodes) + 1> first_item{};
-    std::array<graph_item, item_count> items{};
-    std::array<graph_edge, edge_count> edges{};
-    std::array<bool, sizeof...(Nodes)> const complete{(Prefixes == node_shape_t<Nodes>::branch_count)...};
+    std::size_t first_item[sizeof...(Nodes) + 1]{};
+    graph_item items[item_count + 1]{};
+    graph_edge edges[edge_count + 1]{};
+    bool const complete[sizeof...(Nodes)]{(Prefixes == node_shape_t<Nodes>::branch_count)...};
 
-    graph_output out{items.data(), edges.data()};
+    graph_output out{items, edges};
     (
         (
             first_item[Is] = out.item_index,
-            out.children = child_indices<type_list<Nodes...>, typename explored_children<Nodes, Prefixes>::type>.data(),
+            out.children = child_indices<type_list<Nodes...>, typename explored_children<Nodes, Prefixes>::type>,
             node_shape_t<Nodes>::template fill<Prefixes>(out)
         ),
         ...
     );
     first_item[sizeof...(Nodes)] = out.item_index;
 
-    std::array<node_state, sizeof...(Nodes) + 1> nodes{};
-    std::array<bool, item_count> applies{};
-    std::array<std::size_t, edge_count> children{};
-    std::array<std::size_t, sizeof...(Nodes)> stack{};
-    std::array<std::size_t, sizeof...(Nodes)> calls{};
-    std::array<std::size_t, sizeof...(Nodes)> pending{};
+    node_state nodes[sizeof...(Nodes) + 1]{};
+    bool applies[item_count + 1]{};
+    std::size_t children[edge_count + 1]{};
+    std::size_t stack[sizeof...(Nodes)]{};
+    std::size_t calls[sizeof...(Nodes)]{};
+    std::size_t pending[sizeof...(Nodes)]{};
 
     graph_solution<sizeof...(Nodes)> solution;
     solution.result = graph_solver(
         graph_view{
             .node_count = sizeof...(Nodes),
-            .first_item = first_item.data(),
-            .items = items.data(),
-            .edges = edges.data(),
-            .edge_count = edges.size(),
-            .complete = complete.data(),
+            .first_item = first_item,
+            .items = items,
+            .edges = edges,
+            .edge_count = edge_count,
+            .complete = complete,
         },
         graph_workspace{
-            .nodes = nodes.data(),
-            .applies = applies.data(),
-            .children = children.data(),
-            .stack = stack.data(),
-            .calls = calls.data(),
-            .pending = pending.data(),
+            .nodes = nodes,
+            .applies = applies,
+            .children = children,
+            .stack = stack,
+            .calls = calls,
+            .pending = pending,
         }
-    ).solve(solution.selections.data(), solution.needs_extension.data());
+    ).solve(solution.selections, solution.needs_extension);
     return solution;
 }
 
