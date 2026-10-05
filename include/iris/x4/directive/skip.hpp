@@ -39,6 +39,10 @@ template<class Context, class Skipper>
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
+
+    // Note: we must use "append" here since the position of the skipper should be
+    // super stable in the context as the exact type is often referenced by
+    // `IRIS_X4_INSTANTIATE`.
     using T = std::remove_cvref_t<decltype(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper))>;
     return detail::named_context<T>(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper));
 }
@@ -82,8 +86,12 @@ template<class Context>
 {
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using T = std::remove_cvref_t<decltype(x4::replace_first_or_prepend_context<contexts::skipper>(ctx, skipper_kind))>;
-    return detail::named_context<T>(x4::replace_first_or_prepend_context<contexts::skipper>(ctx, skipper_kind));
+
+    // Note: we must use "append" here since the position of the skipper should be
+    // super stable in the context as the exact type is often referenced by
+    // `IRIS_X4_INSTANTIATE`.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper_kind))>;
+    return detail::named_context<T>(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper_kind));
 }
 
 } // detail

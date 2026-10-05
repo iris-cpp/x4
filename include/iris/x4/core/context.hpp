@@ -15,6 +15,8 @@
 
 #include <iris/x4/core/unused.hpp>
 
+#include <iris/bits/specialization_of.hpp>
+
 #include <concepts>
 #include <type_traits>
 #include <utility>
@@ -396,7 +398,7 @@ remove_first_context(context<ID, T, Next> const& ctx) noexcept
         return ctx;
 
     } else {
-        // No match. Continue the replacement recursively.
+        // Not match. Continue the replacement recursively.
         using NewNext = decltype(x4::remove_first_context<ID_To_Remove>(ctx.next));
 
         if constexpr (std::same_as<std::remove_cvref_t<NewNext>, std::remove_cvref_t<Next>>) {
@@ -484,14 +486,14 @@ namespace detail {
 
 // Replaces the contained reference of the leftmost context
 // having the id `ID_To_Replace`. If no such context exists,
-// prepend a new one.
+// append or prepend a new one.
 //
 // This helper makes it possible to dynamically update the
 // reference bound to the (runtime) context, while avoiding
 // infinite instantiation in recursive grammars.
 //
 // The most notable example of a parser that requires this
-// operation is `x4::locals`. Without this helper, it would
+// operation is `x4::with_local`. Without this helper, it would
 // inevitably trigger infinite instantiation when binding
 // a local variable instance to the context.
 template<bool IsAppend, class ID_To_Replace, class ID, class T, class Next, class NewVal>
@@ -528,10 +530,6 @@ replace_first_context_impl(
         return context<ID, T, context<ID_To_Replace, NewVal>>{ctx.val, context<ID_To_Replace, NewVal>{new_val}};
 
     } else { // Not match
-        static_assert(
-            !std::same_as<Next, unused_type>,
-            "[BUG] `replace_first_or_prepend_context` reached its end without finding an existing context to replace"
-        );
         // Continue the replacement recursively
         return context<ID, T, decltype(detail::replace_first_context_impl<IsAppend, ID_To_Replace>(ctx.next, new_val))>{
             ctx.val, detail::replace_first_context_impl<IsAppend, ID_To_Replace>(ctx.next, new_val)
