@@ -2,9 +2,6 @@
 #define IRIS_ZZ_X4_CHAR_DETAIL_CHSET_HPP
 
 /*=============================================================================
-    Copyright (c) 2001-2011 Joel de Guzman
-    Copyright (c) 2001-2009 Daniel Nuffer
-    Copyright (c) 2025 Nana Sakisaka
     Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
