@@ -408,6 +408,7 @@ TEST_CASE("container_support")
     // ------------------------------------------------------------------
 
     STATIC_CHECK(X4Container<std::string>);
+    STATIC_CHECK(!X4Container<std::string_view>);
     STATIC_CHECK(X4Container<std::vector<int>>);
     STATIC_CHECK(X4Container<std::deque<int>>);
     STATIC_CHECK(X4Container<std::list<int>>);

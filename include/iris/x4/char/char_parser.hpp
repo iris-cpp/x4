@@ -72,8 +72,8 @@ struct char_parser : parser<char_parser<Derived, Encoding>>
 
 private:
     template<class Context>
-    static constexpr bool has_static_test = requires(classify_type classify_ch, Context const& ctx) {
-        { Derived::test(classify_ch, ctx) } -> std::same_as<bool>;
+    static constexpr bool has_static_test = requires(char_type const ch, Context const& ctx) {
+        { Derived::test(ch, ctx) } -> std::same_as<bool>;
     };
 
 public:
@@ -85,16 +85,18 @@ public:
         static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
         static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
 
-        auto it = first;
-        x4::skip_over(it, last, ctx);
+        auto local_it = first;
+        x4::skip_over(local_it, last, ctx);
 
-        if (it != last && Derived::test(static_cast<classify_type>(*it), ctx)) {
-            if constexpr (x4::has_attribute_v<Derived>) {
-                x4::write_attribute(attr, std::iter_value_t<It>{*it});
+        if (local_it != last) {
+            if (auto const ch = *local_it; Derived::test(ch, ctx)) {
+                if constexpr (x4::has_attribute_v<Derived>) {
+                    x4::write_attribute(attr, ch);
+                }
+                ++local_it;
+                first = local_it;
+                return true;
             }
-            ++it;
-            first = it;
-            return true;
         }
         return false;
     }
@@ -107,16 +109,18 @@ public:
         static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
         static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
 
-        auto it = first;
-        x4::skip_over(it, last, ctx);
+        auto local_it = first;
+        x4::skip_over(local_it, last, ctx);
 
-        if (it != last && self.test(static_cast<classify_type>(*it), ctx)) {
-            if constexpr (x4::has_attribute_v<Derived>) {
-                x4::write_attribute(attr, std::iter_value_t<It>{*it});
+        if (local_it != last) {
+            if (auto const ch = *local_it; self.test(ch, ctx)) {
+                if constexpr (x4::has_attribute_v<Derived>) {
+                    x4::write_attribute(attr, ch);
+                }
+                ++local_it;
+                first = local_it;
+                return true;
             }
-            ++it;
-            first = it;
-            return true;
         }
         return false;
     }

@@ -12,6 +12,8 @@
 
 #include <iris/x4/string/detail/string_parse.hpp>
 
+#include <iris/x4/char/detail/check_char.hpp>
+
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/unused.hpp>
@@ -47,10 +49,13 @@ struct literal_string : parser<literal_string<StoredStringT, Encoding, Attr>>
 
     template<class... Args>
         requires std::is_constructible_v<StoredStringT, Args...>
-    constexpr /*explicit*/ literal_string(Args&&... args)
-        noexcept(std::is_nothrow_constructible_v<StoredStringT, Args...>)
+    constexpr explicit literal_string(Args&&... args)
         : str_(std::forward<Args>(args)...)
-    {}
+    {
+        for (char_type const ch : str_) {
+            detail::check_char<Encoding>(ch);
+        }
+    }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute ExposedAttr>
     [[nodiscard]] constexpr bool

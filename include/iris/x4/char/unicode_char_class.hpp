@@ -15,6 +15,8 @@
 #include <iris/x4/char/detail/cast_char.hpp>
 #include <iris/x4/char_encoding/unicode.hpp>
 
+#include <concepts>
+
 namespace iris::x4 {
 
 namespace char_classes::unicode {
@@ -539,16 +541,18 @@ struct unicode_char_class_base
 template<class Tag>
 struct unicode_char_class : char_parser<unicode_char_class<Tag>, char_encoding::unicode>
 {
-    using encoding_type = char_encoding::unicode;
     using tag = Tag;
+    using encoding_type = char_encoding::unicode;
     using char_type = encoding_type::char_type;
+    using classify_type = encoding_type::classify_type;
     using attribute_type = char_type;
 
     static constexpr bool has_attribute = true;
 
     [[nodiscard]] static constexpr bool
-    test(char_encoding::unicode::classify_type const classify_ch, auto const& /* ctx */) noexcept
+    test(std::same_as<char_type> auto const ch, auto const& /* ctx */) noexcept
     {
+        auto const classify_ch = static_cast<classify_type>(ch);
         static_assert(noexcept(encoding_type::ischar(classify_ch) && detail::unicode_char_class_base::is(tag{}, classify_ch)));
         return encoding_type::ischar(classify_ch) && detail::unicode_char_class_base::is(tag{}, classify_ch);
     }
