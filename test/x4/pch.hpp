@@ -8,6 +8,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/config.hpp>
+
 #include <iris/alloy/tuple.hpp>
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/type_list.hpp>
