@@ -11,7 +11,8 @@
 ==============================================================================*/
 
 #include <iris/x4/char/char_parser.hpp>
-#include <iris/x4/char/detail/basic_chset.hpp>
+#include <iris/x4/char/detail/check_char.hpp>
+#include <iris/x4/char/detail/chset.hpp>
 #include <iris/x4/string/case_compare.hpp>
 
 #include <iris/x4/core/traits/char_traits.hpp>
@@ -19,83 +20,74 @@
 #include <iris/unicode/string.hpp>
 
 #include <string_view>
-#include <ranges>
 #include <type_traits>
+
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4 {
 
 // Parser for a character range
-template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
+template<class Encoding, class Attr = typename Encoding::char_type>
 struct char_range : char_parser<char_range<Encoding, Attr>, Encoding>
 {
-    using char_type = Encoding::char_type;
+    static_assert(X4Attribute<Attr>);
+
     using encoding_type = Encoding;
+    using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
     using attribute_type = Attr;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
-    constexpr char_range(char_type from_, char_type to_) noexcept
-        : from(from_), to(to_)
-    {}
-
-    template<class Char, class Context>
-        requires (std::is_convertible_v<std::remove_cvref_t<Char>, char_type>)
-    [[nodiscard]] constexpr bool test(Char ch_, Context const& ctx) const noexcept
+    constexpr char_range(std::same_as<char_type> auto const from, std::same_as<char_type> auto const to)
+        : from_(static_cast<classify_type>(from)), to_(static_cast<classify_type>(to))
     {
-        char_type ch = static_cast<char_type>(ch_);  // optimize for token based parsing
-        static_assert(noexcept(x4::get_case_compare<encoding_type>(ctx)(ch, from)));
-
-        return x4::get_case_compare<encoding_type>(ctx)(ch, from) >= 0
-            && x4::get_case_compare<encoding_type>(ctx)(ch , to) <= 0;
+        detail::check_char_range<Encoding>(from, to);
     }
 
-    char_type from, to;
+    template<class Context>
+    [[nodiscard]] constexpr bool test(std::same_as<char_type> auto const ch, Context const& ctx) const noexcept
+    {
+        auto const classify_ch = static_cast<classify_type>(ch);
+        static_assert(noexcept(x4::get_case_compare<encoding_type>(ctx)(classify_ch, from_)));
+
+        return x4::get_case_compare<encoding_type>(ctx)(classify_ch, from_) >= 0 &&
+            x4::get_case_compare<encoding_type>(ctx)(classify_ch, to_) <= 0;
+    }
 
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape
         return std::string("char_(\"")
-            + iris::unicode::transcode<char>(typename Encoding::string_type(1, this->from))
-            + '-' + iris::unicode::transcode<char>(typename Encoding::string_type(1, this->to))
+            + iris::unicode::transcode<char>(typename Encoding::string_type(1, static_cast<char_type>(from_)))
+            + '-' + iris::unicode::transcode<char>(typename Encoding::string_type(1, static_cast<char_type>(to_)))
             + "\")";
     }
+
+private:
+    classify_type from_, to_;
 };
 
 // Parser for a character set
-template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
-struct char_set : char_parser<char_set<Encoding, Attr>, Encoding>
+template<class Encoding, class Chset, X4Attribute Attr = typename Encoding::char_type>
+struct char_set : char_parser<char_set<Encoding, Chset, Attr>, Encoding>
 {
     using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
     using encoding_type = Encoding;
     using attribute_type = Attr;
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
-    constexpr explicit char_set(std::basic_string_view<char_type> const str)
+    constexpr explicit char_set(std::basic_string_view<char_type> const definition)
     {
-        for (auto definition = std::ranges::begin(str); definition != std::ranges::end(str);) {
-            auto const ch = *definition;
-            auto next_definition = std::next(definition);
-            if (next_definition == std::ranges::end(str)) {
-                chset_.set(ch);
-                break;
-            }
-
-            auto next_ch = *next_definition;
-            if (next_ch == detail::char_tokens<char_type>::hyphen) {
-                next_definition = std::next(next_definition);
-                if (next_definition == std::ranges::end(str)) {
-                    chset_.set(ch);
-                    chset_.set(detail::char_tokens<char_type>::hyphen);
-                    break;
-                }
-                chset_.set(ch, *next_definition);
-
-            } else {
-                chset_.set(ch);
-            }
-
-            definition = next_definition;
+        for (std::size_t i = 0; i < definition.size();) {
+            bool const is_range = i + 2 < definition.size() && definition[i + 1] == hyphen;
+            char_type const from = definition[i];
+            char_type const to = definition[is_range ? i + 2 : i];
+            detail::check_char_range<Encoding>(from, to);
+            chset_.set(static_cast<classify_type>(from), static_cast<classify_type>(to));
+            i += is_range ? 3 : 1;
         }
     }
 
@@ -109,11 +101,29 @@ struct char_set : char_parser<char_set<Encoding, Attr>, Encoding>
     [[nodiscard]] std::string get_x4_info() const
     {
         // TODO: escape
-        return "char-set"; // TODO: make more user-friendly
+        typename Encoding::string_type definition;
+        bool has_hyphen = false;
+        chset_.for_each_range([&](classify_type const first, classify_type const last) {
+            if (first == last && static_cast<char_type>(first) == hyphen) {
+                has_hyphen = true;
+                return;
+            }
+            definition += static_cast<char_type>(first);
+            if (first != last) {
+                definition += hyphen;
+                definition += static_cast<char_type>(last);
+            }
+        });
+        if (has_hyphen) {
+            definition += hyphen;
+        }
+        return "char_(\"" + iris::unicode::transcode<char>(definition) + "\")";
     }
 
 private:
-    detail::basic_chset<char_type> chset_;
+    static constexpr char_type hyphen = detail::char_tokens<char_type>::hyphen;
+
+    Chset chset_;
 };
 
 } // iris::x4

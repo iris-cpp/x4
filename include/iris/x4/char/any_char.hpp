@@ -34,29 +34,29 @@ struct any_char : char_parser<any_char<Encoding>, Encoding>
 
     template<std::same_as<char_type> CharT>
     [[nodiscard]] static constexpr literal_char<Encoding>
-    operator()(CharT ch) noexcept
+    operator()(CharT ch)
     {
-        return {ch};
+        return literal_char<Encoding>{ch};
     }
 
     template<std::same_as<char_type> CharT>
     [[nodiscard]] static constexpr literal_char<Encoding>
-    operator()(CharT const (&ch)[2]) noexcept
+    operator()(CharT const (&ch)[2])
     {
-        return {ch[0]};
+        return literal_char<Encoding>{ch[0]};
     }
 
     template<std::same_as<char_type> CharT, std::size_t N>
-    [[nodiscard]] static constexpr char_set<Encoding>
-    operator()(CharT const (&ch)[N])
+    [[nodiscard]] static constexpr char_set<Encoding, detail::chset_for<classify_type, N - 1>>
+    operator()(CharT const (&str)[N])
     {
-        static_assert(N >= 3);
-        return char_set<Encoding>{ch};
+        static_assert(N >= 3, "x4::char_: the character set is empty");
+        return char_set<Encoding, detail::chset_for<classify_type, N - 1>>{std::basic_string_view<char_type>(str, N - 1)};
     }
 
     template<std::same_as<char_type> CharT>
     [[nodiscard]] static constexpr char_range<Encoding>
-    operator()(CharT from, CharT to) noexcept
+    operator()(CharT from, CharT to)
     {
         return {from, to};
     }
@@ -64,12 +64,6 @@ struct any_char : char_parser<any_char<Encoding>, Encoding>
     template<class From, std::size_t FromN, class To, std::size_t ToN>
     static constexpr void
     operator()(From const (&)[FromN], To const (&)[ToN]) = delete; // Use single character literal to define character range
-
-    [[nodiscard]] static char_set<Encoding>
-    operator()(std::basic_string_view<char_type> sv)
-    {
-        return char_set<Encoding>{std::move(sv)};
-    }
 };
 
 } // iris::x4

@@ -44,9 +44,12 @@ struct char_parser_fn
         char_encoding_for<CharT>,
         typename AttrSelectorTT<CharT>::type
     >
-    operator()(CharT ch) noexcept
+    operator()(CharT ch)
     {
-        return {ch};
+        return literal_char<
+            char_encoding_for<CharT>,
+            typename AttrSelectorTT<CharT>::type
+        >{ch};
     }
 };
 
@@ -58,9 +61,12 @@ struct char_array_parser_fn
         char_encoding_for<CharT>,
         typename AttrSelectorTT<CharT>::type
     >
-    operator()(CharT const (&str)[2]) noexcept
+    operator()(CharT const (&str)[2])
     {
-        return {str[0]};
+        return literal_char<
+            char_encoding_for<CharT>,
+            typename AttrSelectorTT<CharT>::type
+        >{str[0]};
     }
 
     template<CharLike CharT, std::size_t N>
@@ -69,12 +75,16 @@ struct char_array_parser_fn
         char_encoding_for<CharT>,
         typename AttrSelectorTT<std::basic_string<CharT>>::type
     >
-    operator()(CharT const (&str)[N]) noexcept
+    operator()(CharT const (&str)[N])
         requires (N >= 3) && x4::detail::is_string_parser_sso_eligible<CharT, N>
     {
         std::array<CharT, N - 1> arr;
         std::ranges::copy_n(str, N - 1, arr.data());
-        return {arr};
+        return literal_string<
+            std::array<CharT, N - 1>,
+            char_encoding_for<CharT>,
+            typename AttrSelectorTT<std::basic_string<CharT>>::type
+        >{arr};
     }
 
     template<CharLike CharT, std::size_t N>
@@ -83,11 +93,15 @@ struct char_array_parser_fn
         char_encoding_for<CharT>,
         typename AttrSelectorTT<std::basic_string<CharT>>::type
     >
-    operator()(CharT const (&str)[N]) noexcept
+    operator()(CharT const (&str)[N])
         requires (N >= 3) && (!x4::detail::is_string_parser_sso_eligible<CharT, N>)
     {
         static_assert(N >= 2);
-        return {std::basic_string_view<CharT>(str, N - 1)};
+        return literal_string<
+            std::basic_string_view<CharT>,
+            char_encoding_for<CharT>,
+            typename AttrSelectorTT<std::basic_string<CharT>>::type
+        >{std::basic_string_view<CharT>(str, N - 1)};
     }
 };
 
@@ -100,7 +114,7 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
         char_encoding_for<CharT>,
         std::basic_string<CharT>
     >
-    operator()(CharT const (&str)[2]) noexcept
+    operator()(CharT const (&str)[2])
     {
         return literal_string<
             std::array<CharT, 1>,
@@ -115,12 +129,16 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
         char_encoding_for<CharT>,
         std::basic_string<CharT>
     >
-    operator()(CharT const (&str)[N]) noexcept
+    operator()(CharT const (&str)[N])
         requires (N >= 3) && x4::detail::is_string_parser_sso_eligible<CharT, N>
     {
         std::array<CharT, N - 1> arr;
         std::ranges::copy_n(str, N - 1, arr.data());
-        return {arr};
+        return literal_string<
+            std::array<CharT, N - 1>,
+            char_encoding_for<CharT>,
+            std::basic_string<CharT>
+        >{arr};
     }
 
     template<CharLike CharT, std::size_t N>
@@ -129,28 +147,17 @@ struct char_array_parser_fn<true, attribute_identity_switcher>
         char_encoding_for<CharT>,
         std::basic_string<CharT>
     >
-    operator()(CharT const (&str)[N]) noexcept
+    operator()(CharT const (&str)[N])
         requires (N >= 3) && (!x4::detail::is_string_parser_sso_eligible<CharT, N>)
     {
         static_assert(N >= 2);
-        return {std::basic_string_view<CharT>(str, N - 1)};
+        return literal_string<
+            std::basic_string_view<CharT>,
+            char_encoding_for<CharT>,
+            std::basic_string<CharT>
+        >{std::basic_string_view<CharT>(str, N - 1)};
     }
 };
-
-//template<template<class> class AttrSelectorTT>
-//struct char_pointer_parser_fn
-//{
-//    template<CharLike CharT>
-//    [[nodiscard]] static constexpr literal_string<
-//        std::basic_string_view<CharT>,
-//        char_encoding_for<CharT>,
-//        typename AttrSelectorTT<std::basic_string<CharT>>::type
-//    >
-//    operator()(CharT const* s) noexcept
-//    {
-//        return {std::basic_string_view{s}};
-//    }
-//};
 
 template<template<class> class AttrSelectorTT>
 struct string_parser_fn
@@ -172,7 +179,11 @@ struct string_parser_fn
             StringLikeT
         >)
     {
-        return {std::forward<StringLikeT>(str)};
+        return literal_string<
+            std::basic_string<char_type_for<StringLikeT>>,
+            char_encoding_for<char_type_for<StringLikeT>>,
+            typename AttrSelectorTT<std::basic_string<char_type_for<StringLikeT>>>::type
+        >{std::forward<StringLikeT>(str)};
     }
 };
 
@@ -196,7 +207,11 @@ struct string_view_parser_fn
             StringLikeT
         >)
     {
-        return {std::forward<StringLikeT>(str)};
+        return literal_string<
+            std::basic_string_view<char_type_for<StringLikeT>>,
+            char_encoding_for<char_type_for<StringLikeT>>,
+            typename AttrSelectorTT<std::basic_string<char_type_for<StringLikeT>>>::type
+        >{std::forward<StringLikeT>(str)};
     }
 };
 
@@ -214,11 +229,6 @@ template<>
 struct as_parser<x4::detail::as_parser_char_array_tag>
     : x4::detail::char_array_parser_fn<false, x4::detail::attribute_unused_switcher>
 {};
-
-//template<CharLike CharT>
-//struct as_parser<CharT const*>
-//    : x4::detail::char_pointer_parser_fn<x4::detail::attribute_unused_switcher>
-//{};
 
 template<class CharT>
 struct as_parser<std::basic_string<CharT>>
@@ -239,7 +249,6 @@ template<bool NeedAttribute /* false */>
 struct lit_string_fn
     : char_parser_fn<attribute_unused_switcher>
     , char_array_parser_fn<false, attribute_unused_switcher>
-    //, char_pointer_parser_fn<attribute_unused_switcher>
     , string_parser_fn<attribute_unused_switcher>
     , string_view_parser_fn<attribute_unused_switcher>
 {
@@ -253,7 +262,6 @@ template<>
 struct lit_string_fn<true>
     : char_parser_fn<attribute_identity_switcher>
     , char_array_parser_fn<true, attribute_identity_switcher>
-    //, char_pointer_parser_fn<attribute_identity_switcher>
     , string_parser_fn<attribute_identity_switcher>
     , string_view_parser_fn<attribute_identity_switcher>
 {

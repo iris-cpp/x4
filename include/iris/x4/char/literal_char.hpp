@@ -11,18 +11,21 @@
 ==============================================================================*/
 
 #include <iris/x4/char/char_parser.hpp>
+#include <iris/x4/char/detail/check_char.hpp>
 #include <iris/x4/string/case_compare.hpp>
 
 #include <iris/unicode/string.hpp>
 
-#include <type_traits>
 #include <concepts>
+#include <type_traits>
 
 namespace iris::x4 {
 
-template<class Encoding, X4Attribute Attr = typename Encoding::char_type>
+template<class Encoding, class Attr = typename Encoding::char_type>
 struct literal_char : char_parser<literal_char<Encoding, Attr>, Encoding>
 {
+    static_assert(X4Attribute<Attr>);
+
     using encoding_type = Encoding;
     using attribute_type = Attr;
     using char_type = Encoding::char_type;
@@ -30,21 +33,18 @@ struct literal_char : char_parser<literal_char<Encoding, Attr>, Encoding>
 
     static constexpr bool has_attribute = !std::is_same_v<unused_type, attribute_type>;
 
-    template<class Char>
-        requires
-            (!std::is_same_v<std::remove_cvref_t<Char>, literal_char>) &&
-            std::convertible_to<Char, classify_type>
-    constexpr /*explicit*/ literal_char(Char ch) noexcept
+    template<std::same_as<char_type> Char>
+    constexpr explicit literal_char(Char const ch)
         : classify_ch_(static_cast<classify_type>(ch))
     {
-        static_assert(std::same_as<Char, char_type>, "Mixing incompatible character types is not allowed");
+        detail::check_char<Encoding>(ch);
     }
 
     [[nodiscard]] constexpr bool
-    test(classify_type const test_classify_ch, auto const& ctx) const noexcept
+    test(std::same_as<char_type> auto const ch, auto const& ctx) const noexcept
     {
-        static_assert(noexcept(x4::get_case_compare<encoding_type>(ctx)(classify_ch_, test_classify_ch)));
-        return x4::get_case_compare<encoding_type>(ctx)(classify_ch_, test_classify_ch) == 0;
+        static_assert(noexcept(x4::get_case_compare<encoding_type>(ctx)(classify_ch_, static_cast<classify_type>(ch))));
+        return x4::get_case_compare<encoding_type>(ctx)(classify_ch_, static_cast<classify_type>(ch)) == 0;
     }
 
     constexpr void

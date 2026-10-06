@@ -73,12 +73,15 @@ struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encodin
     using encoding_type = Encoding;
     using tag = Tag;
     using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
     using attribute_type = char_type;
+
     static constexpr bool has_attribute = true;
 
     [[nodiscard]] static constexpr bool
-    test(Encoding::classify_type const classify_ch) noexcept
+    test(std::same_as<char_type> auto const ch) noexcept
     {
+        auto const classify_ch = static_cast<classify_type>(ch);
         return encoding_type::ischar(classify_ch)
             && detail::char_class_base<Encoding>::is(
                 tag{},
@@ -87,8 +90,9 @@ struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encodin
     }
 
     [[nodiscard]] static constexpr bool
-    test(Encoding::classify_type const classify_ch, auto const& ctx) noexcept
+    test(std::same_as<typename Encoding::char_type> auto const ch, auto const& ctx) noexcept
     {
+        auto const classify_ch = static_cast<Encoding::classify_type>(ch);
         return encoding_type::ischar(classify_ch)
             && detail::char_class_base<Encoding>::is(
                 x4::get_case_compare<Encoding>(ctx).get_char_class_tag(tag{}),
@@ -172,7 +176,7 @@ constexpr void builtin_skip_over(It& first, Se const& last) noexcept
     using Encoding = char_encoding_for<CharT>;
     using Parser = char_class_parser<Encoding, CharClassTag>;
 
-    while (first != last && Parser::test(static_cast<Encoding::classify_type>(*first))) {
+    while (first != last && Parser::test(*first)) {
         ++first;
     }
 }

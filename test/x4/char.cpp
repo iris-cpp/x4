@@ -1,8 +1,4 @@
 /*=============================================================================
-    Copyright (c) 2001-2015 Joel de Guzman
-    Copyright (c) 2001-2011 Hartmut Kaiser
-    Copyright (c) 2019 Christian Mazakas
-    Copyright (c) 2025 Nana Sakisaka
     Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -16,49 +12,17 @@
 #include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
-#include <iris/x4/char/unicode_char_class.hpp>
-#include <iris/x4/operator/plus.hpp>
 
-#include <string>
+#include <concepts>
+#include <stdexcept>
 #include <string_view>
-#include <vector>
-#include <algorithm>
+#include <type_traits>
 
 TEST_CASE("char")
 {
-    static_assert(x4::traits::X4Container<std::string>);
-    static_assert(x4::CategorizedAttr<std::string, x4::container_tag>);
-
-    static_assert(!x4::traits::X4Container<std::string_view>);
-    static_assert(x4::CategorizedAttr<std::string_view, x4::plain_tag>);
-
     namespace standard = x4::standard;
     namespace standard_wide = x4::standard_wide;
     namespace unicode = x4::unicode;
-
-    {
-        std::string_view sv;
-        auto first = sv.begin();
-        auto const last = sv.end();
-
-        constexpr auto parser = standard::char_('x');
-        char ch{};
-        (void)parser.parse(first, last, unused, ch);
-
-        // Make sure this is static
-        (void)std::remove_const_t<decltype(standard::alnum)>::parse(first, last, unused, ch);
-    }
-    {
-        std::u32string_view sv;
-        auto first = sv.begin();
-        auto const last = sv.end();
-        constexpr auto parser = unicode::char_(U'x');
-        char32_t ch{};
-        (void)parser.parse(first, last, unused, ch);
-
-        // Make sure this is static
-        (void)std::remove_const_t<decltype(unicode::alnum)>::parse(first, last, unused, ch);
-    }
 
     {
         using namespace x4::standard;
@@ -66,168 +30,80 @@ TEST_CASE("char")
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_);
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_('x'));
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_('a', 'z'));
+        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_("a-z"));
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_('x'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_('a', 'z'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_('x'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_('a', 'z'));
-
-        CHECK(parse("x", 'x'));
-        CHECK(parse(L"x", L'x'));
-        CHECK(!parse("y", 'x'));
-        CHECK(!parse(L"y", L'x'));
 
         CHECK(parse("x", char_));
+        CHECK(parse("x", 'x'));
+        CHECK(!parse("y", 'x'));
         CHECK(parse("x", char_('x')));
-        CHECK(!parse("x", char_('y')));
-        CHECK(parse("x", char_('a', 'z')));
-        CHECK(!parse("x", char_('0', '9')));
+        CHECK(!parse("y", char_('x')));
 
         CHECK(parse("0", char_('0', '9')));
         CHECK(parse("9", char_('0', '9')));
-        CHECK(!parse("0", ~char_('0', '9')));
-        CHECK(!parse("9", ~char_('0', '9')));
+        CHECK(!parse("/", char_('0', '9')));
+        CHECK(!parse(":", char_('0', '9')));
 
         CHECK(!parse("x", ~char_));
         CHECK(!parse("x", ~char_('x')));
-        CHECK(parse(" ", ~char_('x')));
-        CHECK(parse("X", ~char_('x')));
-        CHECK(!parse("x", ~char_('b', 'y')));
-        CHECK(parse("a", ~char_('b', 'y')));
-        CHECK(parse("z", ~char_('b', 'y')));
+        CHECK(parse("y", ~char_('x')));
+        CHECK(!parse("0", ~char_('0', '9')));
+        CHECK(parse("/", ~char_('0', '9')));
 
-        CHECK(parse("x", ~~char_));
-        CHECK(parse("x", ~~char_('x')));
-        CHECK(!parse(" ", ~~char_('x')));
-        CHECK(!parse("X", ~~char_('x')));
-        CHECK(parse("x", ~~char_('b', 'y')));
-        CHECK(!parse("a", ~~char_('b', 'y')));
-        CHECK(!parse("z", ~~char_('b', 'y')));
-    }
-    {
-        using namespace x4::standard_wide;
-
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_(L'x'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(char_(L'a', L'z'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'x'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~char_(L'a', L'z'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'x'));
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(~~char_(L'a', L'z'));
-
-        CHECK(parse(L"x", char_));
-        CHECK(parse(L"x", char_(L'x')));
-        CHECK(!parse(L"x", char_(L'y')));
-        CHECK(parse(L"x", char_(L'a', L'z')));
-        CHECK(!parse(L"x", char_(L'0', L'9')));
-
-        CHECK(!parse(L"x", ~char_));
-        CHECK(!parse(L"x", ~char_(L'x')));
-        CHECK(parse(L" ", ~char_(L'x')));
-        CHECK(parse(L"X", ~char_(L'x')));
-        CHECK(!parse(L"x", ~char_(L'b', L'y')));
-        CHECK(parse(L"a", ~char_(L'b', L'y')));
-        CHECK(parse(L"z", ~char_(L'b', L'y')));
-
-        CHECK(parse(L"x", ~~char_));
-        CHECK(parse(L"x", ~~char_(L'x')));
-        CHECK(!parse(L" ", ~~char_(L'x')));
-        CHECK(!parse(L"X", ~~char_(L'x')));
-        CHECK(parse(L"x", ~~char_(L'b', L'y')));
-        CHECK(!parse(L"a", ~~char_(L'b', L'y')));
-        CHECK(!parse(L"z", ~~char_(L'b', L'y')));
-    }
-
-    {
-        using namespace x4::standard;
-
-        CHECK(parse("   x", 'x', space));
-        CHECK(parse("   x", char_, space));
         CHECK(parse("   x", char_('x'), space));
-        CHECK(!parse("   x", char_('y'), space));
-        CHECK(parse("   x", char_('a', 'z'), space));
-        CHECK(!parse("   x", char_('0', '9'), space));
-    }
-    {
-        using namespace x4::standard_wide;
-
-        CHECK(parse(L"   x", L'x', space));
-        CHECK(parse(L"   x", char_, space));
-        CHECK(parse(L"   x", char_(L'x'), space));
-        CHECK(!parse(L"   x", char_(L'y'), space));
-        CHECK(parse(L"   x", char_(L'a', L'z'), space));
-        CHECK(!parse(L"   x", char_(L'0', L'9'), space));
     }
 
-    // unicode (normal ASCII)
+    STATIC_CHECK(std::same_as<decltype(standard::char_("x")), decltype(standard::char_('x'))>);
+    STATIC_CHECK(std::same_as<decltype(x4::lit("x")), decltype(x4::lit('x'))>);
+    STATIC_CHECK(std::same_as<std::remove_cvref_t<decltype(~~standard::char_('x'))>, decltype(standard::char_('x'))>);
+
+    STATIC_CHECK(requires(std::string_view::iterator it, char ch) {
+        std::remove_const_t<decltype(standard::char_)>::parse(it, it, unused, ch);
+        std::remove_const_t<decltype(standard::alnum)>::parse(it, it, unused, ch);
+    });
+
     {
-        using namespace x4::unicode;
+        constexpr auto set = unicode::char_(U"-a-c-e0-9");
+        STATIC_CHECK(set.test(U'a', unused) && set.test(U'c', unused) && !set.test(U'd', unused));
+        STATIC_CHECK(set.test(U'0', unused) && set.test(U'9', unused) && !set.test(U'/', unused) && !set.test(U':', unused));
+        STATIC_CHECK(set.test(U'-', unused) && set.test(U'e', unused) && unicode::char_(U"a-").test(U'-', unused));
 
-        CHECK(parse(U"abcd", +char_(U"abcd")));
-        CHECK(!parse(U"abcd", +char_(U"qwer")));
+        STATIC_CHECK(unicode::char_(U"a\0b").test(U'\0', unused) && unicode::char_(U"a\0b").test(U'b', unused));
+        STATIC_CHECK(!unicode::char_(U"ab").test(U'\0', unused));
 
-        auto const sub_delims = char_(U"!$&'()*+,;=");
+        STATIC_CHECK(standard::char_("\x7f-\x80").test('\x80', unused));
+        STATIC_CHECK(standard::char_('\x7f', '\x80').test('\x80', unused));
 
-        auto const delims = std::vector<std::u32string_view>{
-            U"!", U"$", U"&", U"'", U"(", U")", U"*", U"+", U",", U";", U"="
+        CHECK(x4::what(unicode::char_(U"x-zda-cb")) == R"(char_("a-dx-z"))");
+        CHECK(x4::what(unicode::char_(U"acegb-f")) == R"(char_("a-g"))");
+        CHECK(x4::what(standard::char_("acegb-f")) == R"(char_("a-g"))");
+        CHECK(x4::what(standard::char_("+/-")) == R"(char_("+/-"))");
+
+        char32_t ch{};
+        CHECK(x4::parse(std::u32string_view(U"q"), unicode::char_(U"a-z"), ch));
+        CHECK(ch == U'q');
+    }
+
+    {
+        auto const is_rejected = [](auto const make_parser) {
+            try {
+                (void)make_parser();
+            }
+            catch (std::invalid_argument const&) {
+                return true;
+            }
+            return false;
         };
-
-        auto const matched_all_sub_delims =
-            std::ranges::all_of(delims, [&](auto const delim) -> bool {
-                return parse(delim, sub_delims).completed();
-            });
-
-        CHECK(matched_all_sub_delims);
-    }
-
-    // unicode (escaped Unicode char literals)
-    {
-        using namespace x4::unicode;
-
-        auto const chars = char_(U"\u0024\u00a2\u0939\u20ac\U00010348");
-
-        auto const test_strings = std::vector<std::u32string_view>{
-            U"\u0024", U"\u00a2", U"\u0939", U"\u20ac", U"\U00010348"
-        };
-
-        auto const bad_test_strings = std::vector<std::u32string_view>{
-            U"a", U"B", U"c", U"\u0409"
-        };
-
-        auto const all_matched =
-            std::ranges::all_of(test_strings, [&](auto const test_str) -> bool {
-                return parse(test_str, chars).completed();
-            });
-
-        auto const none_matched =
-            std::ranges::all_of(bad_test_strings, [&](auto const bad_test_str) -> bool {
-                return !parse(bad_test_str, chars).completed();
-            });
-
-        CHECK(all_matched);
-        CHECK(none_matched);
-    }
-
-    // single char strings
-    {
-        CHECK(parse("x", "x"));
-        CHECK(parse(L"x", L"x"));
-        CHECK(parse("x", standard::char_("x")));
-        CHECK(parse(L"x", standard_wide::char_(L"x")));
-
-        CHECK(parse("x", standard::char_('a', 'z')));
-        CHECK(parse(L"x", standard_wide::char_(L'a', L'z')));
-    }
-
-    // chsets
-    {
-        CHECK(parse("x", standard::char_("a-z")));
-        CHECK(!parse("1", standard::char_("a-z")));
-        CHECK(parse("1", standard::char_("a-z0-9")));
-
-        CHECK(parse(L"x", standard_wide::char_(L"a-z")));
-        CHECK(!parse(L"1", standard_wide::char_(L"a-z")));
-        CHECK(parse(L"1", standard_wide::char_(L"a-z0-9")));
-
-        CHECK(parse("x", standard::char_(std::string("a-z0-9"))));
+        CHECK(is_rejected([] { return standard_wide::char_(L"a-cz-x"); }));
+        CHECK(is_rejected([] { return standard_wide::char_(L'z', L'x'); }));
+        CHECK(is_rejected([] { return unicode::char_(U"a\x110000"); }));
+        CHECK(is_rejected([] { return unicode::char_(U'a', U'\x110000'); }));
+        CHECK(is_rejected([] { return unicode::char_(U'\x110000'); }));
+        CHECK(is_rejected([] { return x4::lit(U'\x110000'); }));
+        CHECK(is_rejected([] { return x4::lit(U"\x110000"); }));
+        CHECK(is_rejected([] { return x4::string(U"\x110000"); }));
+        CHECK(is_rejected([] { return x4::lit(U"a\x110000"); }));
+        CHECK(is_rejected([] { return x4::lit(U"abcdefg\x110000"); }));
+        CHECK(!is_rejected([] { return unicode::char_(U'\0', U'\x10FFFF'); }));
     }
 }
