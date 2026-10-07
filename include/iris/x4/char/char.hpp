@@ -10,7 +10,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/char_string_literal.hpp> // IWYU pragma: export
 #include <iris/x4/char/any_char.hpp> // IWYU pragma: export
 
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
@@ -33,11 +32,9 @@ namespace standard {
 
 using standard::char_;
 
-#ifdef IRIS_X4_UNICODE
 namespace unicode {
 [[maybe_unused]] inline constexpr x4::detail::any_char_fn<char32_t> char_{};
 } // unicode
-#endif // IRIS_X4_UNICODE
 
 } // parsers
 
@@ -48,11 +45,9 @@ namespace standard {
 using x4::parsers::standard::char_;
 } // standard
 
-#ifdef IRIS_X4_UNICODE
 namespace unicode {
 using x4::parsers::unicode::char_;
 } // unicode
-#endif // IRIS_X4_UNICODE
 
 } // iris::x4
 

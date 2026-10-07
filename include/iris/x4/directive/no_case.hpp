@@ -11,6 +11,10 @@
 =============================================================================*/
 
 #include <iris/x4/char/case_compare.hpp>
+#include <iris/x4/char/no_case_compare.hpp>
+
+#include <iris/x4/char_encoding/standard/char_properties.hpp> // IWYU pragma: keep
+#include <iris/x4/char_encoding/unicode/char_properties.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/parser.hpp>

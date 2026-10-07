@@ -5,8 +5,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#define IRIS_X4_UNICODE
-
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/char_string_literal.hpp>

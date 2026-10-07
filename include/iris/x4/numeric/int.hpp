@@ -29,11 +29,7 @@ template<
 >
 struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
 {
-    // check template parameter 'Radix' for validity
-    static_assert(
-        Radix == 2 || Radix == 8 || Radix == 10 || Radix == 16,
-        "Unsupported Radix"
-    );
+    static_assert(2 <= Radix && Radix <= 36);
 
     using attribute_type = T;
     static constexpr bool has_attribute = true;

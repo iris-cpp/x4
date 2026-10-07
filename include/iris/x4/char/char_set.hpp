@@ -28,7 +28,7 @@ namespace iris::x4 {
 
 // Parser for a character range
 template<class Encoding, class Attr = typename Encoding::char_type>
-struct char_range : char_parser<char_range<Encoding, Attr>, Encoding>
+struct char_range : char_parser<char_range<Encoding, Attr>, typename Encoding::char_type>
 {
     static_assert(X4Attribute<Attr>);
 
@@ -70,7 +70,7 @@ private:
 
 // Parser for a character set
 template<class Encoding, class Chset, X4Attribute Attr = typename Encoding::char_type>
-struct char_set : char_parser<char_set<Encoding, Chset, Attr>, Encoding>
+struct char_set : char_parser<char_set<Encoding, Chset, Attr>, typename Encoding::char_type>
 {
     using char_type = Encoding::char_type;
     using classify_type = Encoding::classify_type;

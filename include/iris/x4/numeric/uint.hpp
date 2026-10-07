@@ -30,8 +30,7 @@ template<
 >
 struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 {
-    // check template parameter 'Radix' for validity
-    static_assert((Radix >= 2 && Radix <= 36), "Unsupported Radix");
+    static_assert(2 <= Radix && Radix <= 36);
 
     using attribute_type = T;
 

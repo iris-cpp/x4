@@ -15,8 +15,6 @@
 ==============================================================================*/
 
 #include <iris/x4/core/traits/numeric_traits.hpp>
-#include <iris/x4/core/traits/char_encoding_traits.hpp>
-
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/write_attribute.hpp>
 
@@ -94,27 +92,27 @@ struct digits_traits<T, 10>
     static constexpr int value = std::numeric_limits<T>::digits10;
 };
 
-// Traits class for radix specific number conversion
 template<unsigned Radix>
 struct radix_traits
 {
+    static_assert(2 <= Radix && Radix <= 36);
+
     template<class CharT>
     [[nodiscard]] static constexpr bool is_valid(CharT ch) noexcept
     {
         using token_def = numeric_token<CharT>;
         return (ch >= token_def::_0 && ch <= (Radix > 10 ? token_def::_9 : static_cast<CharT>(token_def::_0 + Radix -1)))
-            || (Radix > 10 && ch >= token_def::a && ch <= static_cast<CharT>(token_def::a + Radix -10 -1))
-            || (Radix > 10 && ch >= token_def::A && ch <= static_cast<CharT>(token_def::A + Radix -10 -1));
+            || (Radix > 10 && ch >= token_def::a && ch <= static_cast<CharT>(token_def::a + Radix - 10 - 1))
+            || (Radix > 10 && ch >= token_def::A && ch <= static_cast<CharT>(token_def::A + Radix - 10 - 1));
     }
 
     template<class CharT>
-    [[nodiscard]] static constexpr unsigned digit(CharT ch)
-        noexcept(noexcept(char_encoding_for<CharT>::tolower(ch)))
+    [[nodiscard]] static constexpr unsigned digit(CharT ch) noexcept
     {
         using token_def = numeric_token<CharT>;
         return (Radix <= 10 || (ch >= token_def::_0 && ch <= token_def::_9))
             ? ch - token_def::_0
-            : char_encoding_for<CharT>::tolower(ch) - token_def::a + 10;
+            : (ch >= token_def::a ? ch - token_def::a : ch - token_def::A) + 10;
     }
 };
 

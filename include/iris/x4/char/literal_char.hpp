@@ -22,7 +22,7 @@
 namespace iris::x4 {
 
 template<class Encoding, class Attr = typename Encoding::char_type>
-struct literal_char : char_parser<literal_char<Encoding, Attr>, Encoding>
+struct literal_char : char_parser<literal_char<Encoding, Attr>, typename Encoding::char_type>
 {
     static_assert(X4Attribute<Attr>);
 

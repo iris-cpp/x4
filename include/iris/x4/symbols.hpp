@@ -11,12 +11,11 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/char/case_compare.hpp>
+#include <iris/x4/char/no_case_compare.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
-
-#ifdef IRIS_X4_UNICODE
-# include <iris/x4/char_encoding/unicode.hpp>
-#endif
+#include <iris/x4/char_encoding/unicode.hpp>
+#include <iris/x4/char_encoding/char_properties.hpp>
 
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
@@ -197,10 +196,10 @@ private:
 
         if constexpr (IsNoCase) {
             using classify_type = Encoding::classify_type;
-            auto const lower = static_cast<char_type>(Encoding::tolower(static_cast<classify_type>(ch)));
-            auto const upper = static_cast<char_type>(Encoding::toupper(static_cast<classify_type>(ch)));
-            bool const can_be_lower = Encoding::islower(static_cast<classify_type>(lower));
-            bool const can_be_upper = !Encoding::islower(static_cast<classify_type>(upper));
+            auto const lower = static_cast<char_type>(char_encoding::char_properties<Encoding>::tolower(static_cast<classify_type>(ch)));
+            auto const upper = static_cast<char_type>(char_encoding::char_properties<Encoding>::toupper(static_cast<classify_type>(ch)));
+            bool const can_be_lower = char_encoding::char_properties<Encoding>::islower(static_cast<classify_type>(lower));
+            bool const can_be_upper = !char_encoding::char_properties<Encoding>::islower(static_cast<classify_type>(upper));
 
             if (ch == upper) {
                 if (can_be_upper) try_char(upper);
@@ -235,7 +234,6 @@ symbols(std::string_view parser_name, std::string_view const (&keys)[N])
     return {parser_name, keys};
 }
 
-#ifdef IRIS_X4_UNICODE
 template<class T = unused_type, std::size_t N>
 [[nodiscard]] constexpr symbols_parser<char_encoding::unicode, T, N>
 symbols(std::string_view parser_name, symbols_entry<char32_t, T> const (&entries)[N])
@@ -249,7 +247,6 @@ symbols(std::string_view parser_name, std::u32string_view const (&keys)[N])
 {
     return {parser_name, keys};
 }
-#endif
 
 
 template<std::size_t N, std::ranges::forward_range R>

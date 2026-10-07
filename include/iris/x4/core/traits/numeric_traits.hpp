@@ -60,11 +60,9 @@ struct numeric_token;
 IRIS_X4_DEF(char, IRIS_X4_XSTR_char)
 #undef IRIS_X4_XSTR_char
 
-#ifdef IRIS_X4_UNICODE
-# define IRIS_X4_XSTR_u32(str) U##str
+#define IRIS_X4_XSTR_u32(str) U##str
 IRIS_X4_DEF(char32_t, IRIS_X4_XSTR_u32)
-# undef IRIS_X4_XSTR_u32
-#endif
+#undef IRIS_X4_XSTR_u32
 
 #undef IRIS_X4_DEF
 

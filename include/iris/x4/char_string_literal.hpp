@@ -287,12 +287,10 @@ namespace standard {
 [[maybe_unused]] inline constexpr auto const& string [[deprecated("use `x4::string`")]] = x4::string;
 } // standard
 
-#ifdef IRIS_X4_UNICODE
 namespace unicode {
 [[maybe_unused]] inline constexpr auto const& lit [[deprecated("use `x4::lit`")]] = x4::lit;
 [[maybe_unused]] inline constexpr auto const& string [[deprecated("use `x4::string`")]] = x4::string;
 } // unicode
-#endif // IRIS_X4_UNICODE
 
 } // iris::x4
 

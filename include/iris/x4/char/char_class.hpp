@@ -17,7 +17,11 @@
 #include <iris/x4/char/char_class_tags.hpp>
 #include <iris/x4/char/case_compare.hpp>
 
+#include <iris/x4/char_encoding/standard/char_properties.hpp>
 #include <iris/x4/char_encoding/standard.hpp>
+
+#include <iris/x4/char_encoding/unicode/char_properties.hpp>
+#include <iris/x4/char_encoding/unicode.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
@@ -42,10 +46,16 @@ struct char_class_base
     is(char_classes::name##_tag, Char ch) noexcept \
     { \
         static_assert(std::same_as<Char, classify_type>); \
-        return (Encoding::is##name)(detail::cast_char<classify_type>(ch)); \
+        return (char_encoding::char_properties<Encoding>::is##name)(detail::cast_char<classify_type>(ch)); \
     }
 
-    IRIS_X4_CLASSIFY(char)
+    template<class Char>
+    [[nodiscard]] static constexpr bool is(char_classes::char_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, classify_type>);
+        return Encoding::ischar(detail::cast_char<classify_type>(ch));
+    }
+
     IRIS_X4_CLASSIFY(alnum)
     IRIS_X4_CLASSIFY(alpha)
     IRIS_X4_CLASSIFY(digit)
@@ -65,7 +75,7 @@ struct char_class_base
 } // detail
 
 template<class Encoding, class Tag>
-struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encoding>
+struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, typename Encoding::char_type>
 {
     using encoding_type = Encoding;
     using tag = Tag;
