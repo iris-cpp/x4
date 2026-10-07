@@ -85,10 +85,7 @@ x4_define_tests(
     sequence
     skip
     smart_ptr
-    symbols1
-    symbols2
-    symbols3
-    tst
+    symbols
     tuple_like
     uint
     uint_radix

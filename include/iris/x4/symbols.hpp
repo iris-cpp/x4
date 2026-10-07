@@ -2,9 +2,6 @@
 #define IRIS_ZZ_X4_SYMBOLS_HPP
 
 /*=============================================================================
-    Copyright (c) 2001-2014 Joel de Guzman
-    Copyright (c) 2013 Carl Barron
-    Copyright (c) 2025 Nana Sakisaka
     Copyright (c) 2026 The Iris Project Contributors
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -13,431 +10,295 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/string/case_compare.hpp>
+
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/unused.hpp>
+#include <iris/x4/core/attribute.hpp>
 #include <iris/x4/core/write_attribute.hpp>
-
-#include <iris/x4/string/tst.hpp>
-#include <iris/x4/string/case_compare.hpp>
+#include <iris/x4/core/traits/char_traits.hpp>
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
-#include <iris/x4/char_encoding/standard_wide.hpp>
+
+#ifndef IRIS_X4_NO_STANDARD_WIDE
+# include <iris/x4/char_encoding/standard_wide.hpp>
+#endif
 
 #ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
 
+#include <iris/error/throwf.hpp>
+#include <iris/bits/specialization_of.hpp>
+
+#include <algorithm>
+#include <ranges>
+#include <array>
+#include <concepts>
+#include <iterator>
 #include <string>
 #include <string_view>
-#include <ranges>
-#include <iterator>
-#include <initializer_list>
-#include <memory>
 #include <type_traits>
 #include <utility>
 
-#define IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING(old_api) \
-    "Use `unique_" old_api "` instead. `" old_api "` has had a " \
-    "*implicit* trait where the underlying storage is shared via " \
-    "`std::shared_ptr`. This disallows `constexpr` usage in generic " \
-    "scenarios where the sharing is not actually needed at all. Even " \
-    "for non-`constexpr` usage, the old name `" old_api "` does not " \
-    "represent this trait, so the usage of the old API is strongly " \
-    "discouraged."
+#include <cstddef> // IWYU pragma: keep
 
 namespace iris::x4 {
 
-namespace detail {
-
-template<bool IsShared, class Encoding, class T, class Lookup>
-struct symbols_parser_impl : parser<symbols_parser_impl<IsShared, Encoding, T, Lookup>>
+// Non-owning key + owning value
+template<class CharT, class T>
+struct symbols_entry
 {
-    static_assert(!std::is_same_v<T, unused_container_type>, "symbols parser with `unused_container_type` is not supported");
+    using char_type = CharT;
+    using value_type = T;
 
-    using char_type = typename Encoding::char_type; // the character type
-    using encoding = Encoding;
-    using value_type = T; // the value associated with each entry
-    using attribute_type = value_type;
+    std::basic_string_view<CharT> key;
+    IRIS_NO_UNIQUE_ADDRESS T value{};
+};
 
-    static constexpr bool has_attribute = !std::is_same_v<attribute_type, unused_type>;
+// Matches the longest key that is a prefix of the input.
+// Note: This class holds the keys by reference.
+template<class Encoding, class T, std::size_t N>
+struct symbols_parser : parser<symbols_parser<Encoding, T, N>>
+{
+    static_assert(N >= 1);
+    static_assert(X4Attribute<T>);
 
-    constexpr symbols_parser_impl(std::string_view name = "symbols")
-        requires(IsShared)
-        : add{*this}
-        , remove{*this}
-        , lookup(std::make_shared<Lookup>())
-        , name_(name)
+    using encoding_type = Encoding;
+    using char_type = Encoding::char_type;
+    using value_type = T;
+    using entry_type = symbols_entry<char_type, T>;
+
+    using attribute_type = T;
+
+    static constexpr bool has_attribute = !std::same_as<attribute_type, unused_type>;
+
+    constexpr symbols_parser(std::string_view parser_name, entry_type const (&entries)[N])
+        : symbols_parser(std::in_place, parser_name, std::to_array(entries))
     {
     }
 
-    constexpr symbols_parser_impl(std::string_view name = "symbols")
-        requires(!IsShared)
-        : add{*this}
-        , remove{*this}
-        , lookup(std::make_unique<Lookup>())
-        , name_(name)
+    constexpr symbols_parser(std::string_view parser_name, std::basic_string_view<char_type> const (&keys)[N])
+        requires (!has_attribute)
+        : symbols_parser(
+            std::in_place,
+            parser_name,
+            [&]<std::size_t... I>(std::index_sequence<I...>) {
+                return std::array<entry_type, N>{entry_type{keys[I], T{}}...};
+            }(std::make_index_sequence<N>{})
+        )
     {
     }
 
-    constexpr symbols_parser_impl(symbols_parser_impl const& syms)
-        requires(IsShared)
-        : add{*this}
-        , remove{*this}
-        , lookup(syms.lookup)
-        , name_(syms.name_)
+    // Exact match, case-sensitive
+    [[nodiscard]] constexpr value_type const* find(std::basic_string_view<char_type> const key) const noexcept
     {
+        auto const it = std::lower_bound(
+            entries_.begin(), entries_.end(), key,
+            [](entry_type const& entry, std::basic_string_view<char_type> const k) { return entry.key < k; }
+        );
+        return it != entries_.end() && it->key == key ? &it->value : nullptr;
     }
 
-    constexpr symbols_parser_impl(symbols_parser_impl const& syms)
-        requires(!IsShared)
-        : add{*this}
-        , remove{*this}
-        , lookup(std::make_unique<Lookup>(*syms.lookup))
-        , name_(syms.name_)
+    // Longest match, case-sensitive. Advances `first` past the matched key on success.
+    template<std::forward_iterator It, std::sentinel_for<It> Se>
+    [[nodiscard]] constexpr value_type const* prefix_find(It& first, Se const& last) const noexcept
     {
-    }
-
-    constexpr symbols_parser_impl(symbols_parser_impl&&) noexcept = default;
-
-    template<std::ranges::forward_range Symbols>
-        requires std::convertible_to<std::ranges::range_value_t<Symbols>, std::basic_string_view<char_type>>
-    constexpr symbols_parser_impl(Symbols const& syms, std::string const& name = "symbols")
-        : symbols_parser_impl(name)
-    {
-        for (auto const& sym : syms) {
-            this->add(sym);
-        }
-    }
-
-    template<std::ranges::forward_range Symbols, std::ranges::forward_range Data>
-        requires
-            std::convertible_to<std::ranges::range_value_t<Symbols>, std::basic_string_view<char_type>> &&
-            std::convertible_to<std::ranges::range_value_t<Data>, T>
-    constexpr symbols_parser_impl(
-        Symbols const& syms, Data const& data, std::string const& name = "symbols"
-    )
-        : symbols_parser_impl(name)
-    {
-        auto di = std::ranges::begin(data);
-        for (auto const& sym : syms) {
-            this->add(sym, *di++);
-        }
-    }
-
-    constexpr symbols_parser_impl(
-        std::initializer_list<std::pair<char_type const*, T>> syms,
-        std::string const & name="symbols"
-    )
-        : symbols_parser_impl(name)
-    {
-        for (auto const& sym : syms) {
-            add(sym.first, sym.second);
-        }
-    }
-
-    constexpr symbols_parser_impl(
-        std::initializer_list<char_type const*> syms,
-        std::string const &name="symbols"
-    )
-        : symbols_parser_impl(name)
-    {
-        for (auto const& str : syms) {
-            add(str);
-        }
-    }
-
-    constexpr symbols_parser_impl& operator=(symbols_parser_impl const& rhs)
-    {
-        name_ = rhs.name_;
-        if constexpr (IsShared) {
-            lookup = rhs.lookup;
-        } else {
-            *lookup = *rhs.lookup;
-        }
-        return *this;
-    }
-
-    constexpr symbols_parser_impl& operator=(symbols_parser_impl&&) = default;
-
-    constexpr void clear() noexcept
-    {
-        lookup->clear();
-    }
-
-    struct adder;
-    struct remover;
-
-    constexpr symbols_parser_impl& operator=(std::initializer_list<char_type const*> const& syms)
-    {
-        lookup->clear();
-
-        for (auto const& sym : syms) {
-            this->add(sym);
-        }
-
-        return *this;
-    }
-
-    constexpr adder const&
-    operator=(std::basic_string_view<char_type> const s)
-    {
-        lookup->clear();
-        return this->add(s);
-    }
-
-    friend constexpr adder const&
-    operator+=(symbols_parser_impl& sym, std::basic_string_view<char_type> const s)
-    {
-        return sym.add(s);
-    }
-
-    friend constexpr remover const&
-    operator-=(symbols_parser_impl& sym, std::basic_string_view<char_type> const s)
-    {
-        return sym.remove(s);
-    }
-
-    template<class F>
-    constexpr void for_each(F&& f) const
-    {
-        lookup->for_each(std::forward<F>(f));
-    }
-
-    template<class F>
-    constexpr void for_each(F&& f)
-    {
-        lookup->for_each(std::forward<F>(f));
-    }
-
-    [[nodiscard]] constexpr value_type& at(std::basic_string_view<char_type> const s)
-    {
-        return *lookup->add(s.begin(), s.end(), T{});
-    }
-
-    template<std::forward_iterator Iterator>
-    [[nodiscard]] constexpr value_type* prefix_find(Iterator& first, Iterator const& last) noexcept
-    {
-        return lookup->find(first, last, case_compare<Encoding>());
-    }
-
-    template<std::forward_iterator Iterator>
-    [[nodiscard]] constexpr value_type const* prefix_find(Iterator& first, Iterator const& last) const noexcept
-    {
-        return lookup->find(first, last, case_compare<Encoding>());
-    }
-
-    [[nodiscard]] constexpr value_type* find(std::basic_string_view<char_type> const s) noexcept
-    {
-        return this->find_impl(s.begin(), s.end());
-    }
-
-    [[nodiscard]] constexpr value_type const* find(std::basic_string_view<char_type> const s) const noexcept
-    {
-        return this->find_impl(s.begin(), s.end());
+        entry_type const* entry = this->template longest_match<false>(first, last);
+        return entry ? &entry->value : nullptr;
     }
 
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        auto it = first;
+        It it = first;
         x4::skip_over(it, last, ctx);
 
-        if (value_type const* val_ptr = lookup->find(it, last, x4::get_case_compare<Encoding>(ctx))) {
-            x4::write_attribute(attr, *val_ptr);
+        constexpr bool is_no_case = std::same_as<decltype(x4::get_case_compare<Encoding>(ctx)), no_case_compare<Encoding>>;
+        if (entry_type const* entry = this->template longest_match<is_no_case>(it, last)) {
+            x4::write_attribute(attr, entry->value);
             first = it;
             return true;
         }
         return false;
     }
 
-    constexpr void name(std::string const &str)
+    [[nodiscard]] constexpr std::string_view name() const noexcept
     {
-        name_ = str;
-    }
-    [[nodiscard]] constexpr std::string const& name() const noexcept
-    {
-        return name_;
+        return parser_name_;
     }
 
-    struct [[maybe_unused]] adder
+    [[nodiscard]] constexpr std::string_view get_x4_info() const noexcept
     {
-        template<std::forward_iterator Iterator>
-        [[maybe_unused]] constexpr adder const&
-        operator()(Iterator first, Iterator last, T const& val) const
-        {
-            sym.lookup->add(first, last, val);
-            return *this;
-        }
-
-        [[maybe_unused]] constexpr adder const&
-        operator()(std::basic_string_view<char_type> const s, T const& val = T{}) const
-        {
-            sym.lookup->add(s.begin(), s.end(), val);
-            return *this;
-        }
-
-        symbols_parser_impl& sym;
-    };
-
-    struct [[maybe_unused]] remover
-    {
-        template<std::forward_iterator Iterator>
-        [[maybe_unused]] constexpr remover const&
-        operator()(Iterator const& first, Iterator const& last) const
-        {
-            sym.lookup->remove(first, last);
-            return *this;
-        }
-
-        [[maybe_unused]] constexpr remover const&
-        operator()(std::basic_string_view<char_type> const s) const
-        {
-            sym.lookup->remove(s.begin(), s.end());
-            return *this;
-        }
-
-        symbols_parser_impl& sym;
-    };
-
-    [[maybe_unused]] adder add;
-    [[maybe_unused]] remover remove;
+        return parser_name_;
+    }
 
 private:
-    template<std::forward_iterator Iterator>
-    [[nodiscard]] constexpr value_type* find_impl(Iterator begin, Iterator end) noexcept
+    constexpr symbols_parser(std::in_place_t, std::string_view const parser_name, std::array<entry_type, N>&& entries)
+        : parser_name_(parser_name)
+        , entries_(std::move(entries))
     {
-        value_type* r = lookup->find(begin, end, case_compare<Encoding>());
-        return begin == end ? r : nullptr;
+        std::sort(entries_.begin(), entries_.end(), [](entry_type const& a, entry_type const& b) { return a.key < b.key; });
+        if (entries_.front().key.empty()) {
+            iris::throwf<std::invalid_argument>("symbols parser cannot have an empty key");
+        }
+        auto const duplicate = std::adjacent_find(
+            entries_.begin(), entries_.end(),
+            [](entry_type const& a, entry_type const& b) { return a.key == b.key; }
+        );
+        if (duplicate != entries_.end()) {
+            iris::throwf<std::invalid_argument>("symbols parser cannot have duplicate keys");
+        }
     }
 
-    template<std::forward_iterator Iterator>
-    [[nodiscard]] constexpr value_type const* find_impl(Iterator begin, Iterator end) const noexcept
+    template<bool IsNoCase, std::forward_iterator It, std::sentinel_for<It> Se>
+    [[nodiscard]] constexpr entry_type const* longest_match(It& first, Se const& last) const noexcept
     {
-        value_type const* r = lookup->find(begin, end, case_compare<Encoding>());
-        return begin == end ? r : nullptr;
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
+
+        It match_end = first;
+        entry_type const* entry = symbols_parser::match_keys<IsNoCase>(entries_.data(), entries_.data() + N, 0, first, last, match_end);
+        if (entry) first = match_end;
+        return entry;
     }
 
-    std::conditional_t<IsShared, std::shared_ptr<Lookup>, std::unique_ptr<Lookup>> lookup;
-    std::string name_;
-};
-
-} // detail
-
-template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
-struct shared_symbols_parser
-    : detail::symbols_parser_impl<true, Encoding, T, Lookup>
-{
-    using base_type = detail::symbols_parser_impl<true, Encoding, T, Lookup>;
-    using base_type::base_type;
-    using base_type::operator=;
-};
-
-template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
-struct [[deprecated(IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols_parser"))]]
-symbols_parser : shared_symbols_parser<Encoding, T, Lookup>
-{
-    using base_type = shared_symbols_parser<Encoding, T, Lookup>;
-    using base_type::base_type;
-    using base_type::operator=;
-};
-
-template<class Encoding, class T = unused_type, class Lookup = tst<typename Encoding::char_type, T>>
-struct unique_symbols_parser
-    : detail::symbols_parser_impl<false, Encoding, T, Lookup>
-{
-    using base_type = detail::symbols_parser_impl<false, Encoding, T, Lookup>;
-    using base_type::base_type;
-    using base_type::operator=;
-};
-
-template<class Encoding, class T, class Lookup>
-struct get_info<shared_symbols_parser<Encoding, T, Lookup>>
-{
-    using result_type = std::string const&;
-
-    [[nodiscard]] constexpr result_type operator()(shared_symbols_parser<Encoding, T, Lookup> const& symbols) const noexcept
+    // [lo, hi) is a non-empty range of the sorted keys that share their first
+    // `depth` characters with the input before `it`
+    template<bool IsNoCase, std::forward_iterator It, std::sentinel_for<It> Se>
+    [[nodiscard]] static constexpr entry_type const*
+    match_keys(entry_type const* lo, entry_type const* hi, std::size_t const depth, It it, Se const& last, It& match_end) noexcept
     {
-        return symbols.name();
+        entry_type const* found = nullptr;
+        if (lo->key.size() == depth) {
+            found = lo;
+            match_end = it;
+            ++lo;
+        }
+        if (lo == hi || it == last) return found;
+
+        auto const ch = static_cast<char_type>(*it);
+        ++it;
+
+        auto const try_char = [&](char_type const key_ch) {
+            entry_type const* sub_lo = std::lower_bound(lo, hi, key_ch, [depth](entry_type const& entry, char_type const c) {
+                return std::char_traits<char_type>::lt(entry.key[depth], c);
+            });
+            entry_type const* sub_hi = std::upper_bound(sub_lo, hi, key_ch, [depth](char_type const c, entry_type const& entry) {
+                return std::char_traits<char_type>::lt(c, entry.key[depth]);
+            });
+            if (sub_lo == sub_hi) return;
+
+            It sub_end = it;
+            entry_type const* sub = symbols_parser::match_keys<IsNoCase>(sub_lo, sub_hi, depth + 1, it, last, sub_end);
+            if (sub && (!found || sub->key.size() > found->key.size())) {
+                found = sub;
+                match_end = sub_end;
+            }
+        };
+
+        if constexpr (IsNoCase) {
+            using classify_type = Encoding::classify_type;
+            auto const lower = static_cast<char_type>(Encoding::tolower(static_cast<classify_type>(ch)));
+            auto const upper = static_cast<char_type>(Encoding::toupper(static_cast<classify_type>(ch)));
+            bool const can_be_lower = Encoding::islower(static_cast<classify_type>(lower));
+            bool const can_be_upper = !Encoding::islower(static_cast<classify_type>(upper));
+
+            if (ch == upper) {
+                if (can_be_upper) try_char(upper);
+                if (can_be_lower) try_char(lower);
+
+            } else {
+                if (can_be_lower) try_char(lower);
+                if (can_be_upper) try_char(upper);
+            }
+
+        } else {
+            try_char(ch);
+        }
+        return found;
     }
+
+    std::string_view parser_name_;
+    std::array<entry_type, N> entries_;
 };
 
-template<class Encoding, class T, class Lookup>
-struct get_info<unique_symbols_parser<Encoding, T, Lookup>>
+template<class T = unused_type, std::size_t N>
+[[nodiscard]] constexpr symbols_parser<char_encoding::standard, T, N>
+symbols(std::string_view parser_name, symbols_entry<char, T> const (&entries)[N])
 {
-    using result_type = std::string const&;
+    return {parser_name, entries};
+}
 
-    [[nodiscard]] constexpr result_type operator()(unique_symbols_parser<Encoding, T, Lookup> const& symbols) const noexcept
-    {
-        return symbols.name();
-    }
-};
-
-namespace standard {
-
-template<class T = unused_type>
-using symbols [[deprecated(IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-    = shared_symbols_parser<char_encoding::standard, T>;
-
-template<class T = unused_type>
-using shared_symbols = shared_symbols_parser<char_encoding::standard, T>;
-
-template<class T = unused_type>
-using unique_symbols = unique_symbols_parser<char_encoding::standard, T>;
-
-} // standard
-
-using standard::symbols;
-using standard::shared_symbols;
-using standard::unique_symbols;
-
-
-namespace parsers::standard {
-using x4::standard::shared_symbols;
-using x4::standard::unique_symbols;
-} // parsers::standard
+template<std::size_t N>
+[[nodiscard]] constexpr symbols_parser<char_encoding::standard, unused_type, N>
+symbols(std::string_view parser_name, std::string_view const (&keys)[N])
+{
+    return {parser_name, keys};
+}
 
 #ifndef IRIS_X4_NO_STANDARD_WIDE
-namespace standard_wide {
+template<class T = unused_type, std::size_t N>
+[[nodiscard]] constexpr symbols_parser<char_encoding::standard_wide, T, N>
+symbols(std::string_view parser_name, symbols_entry<wchar_t, T> const (&entries)[N])
+{
+    return {parser_name, entries};
+}
 
-template<class T = unused_type>
-using symbols [[deprecated(IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING("symbols"))]]
-    = shared_symbols_parser<char_encoding::standard_wide, T>;
-
-template<class T = unused_type>
-using shared_symbols = shared_symbols_parser<char_encoding::standard_wide, T>;
-
-template<class T = unused_type>
-using unique_symbols = unique_symbols_parser<char_encoding::standard_wide, T>;
-
-} // standard_wide
-
-namespace parsers::standard_wide {
-using x4::standard_wide::shared_symbols;
-using x4::standard_wide::unique_symbols;
-} // parsers::standard_wide
+template<std::size_t N>
+[[nodiscard]] constexpr symbols_parser<char_encoding::standard_wide, unused_type, N>
+symbols(std::string_view parser_name, std::wstring_view const (&keys)[N])
+{
+    return {parser_name, keys};
+}
 #endif
 
 #ifdef IRIS_X4_UNICODE
-namespace unicode {
+template<class T = unused_type, std::size_t N>
+[[nodiscard]] constexpr symbols_parser<char_encoding::unicode, T, N>
+symbols(std::string_view parser_name, symbols_entry<char32_t, T> const (&entries)[N])
+{
+    return {parser_name, entries};
+}
 
-template<class T = unused_type>
-using shared_symbols = shared_symbols_parser<char_encoding::unicode, T>;
-
-template<class T = unused_type>
-using unique_symbols = unique_symbols_parser<char_encoding::unicode, T>;
-
-} // unicode
-
-namespace parsers::unicode {
-using x4::unicode::shared_symbols;
-using x4::unicode::unique_symbols;
-} // parsers::unicode
+template<std::size_t N>
+[[nodiscard]] constexpr symbols_parser<char_encoding::unicode, unused_type, N>
+symbols(std::string_view parser_name, std::u32string_view const (&keys)[N])
+{
+    return {parser_name, keys};
+}
 #endif
 
-} // iris::x4
 
-#undef IRIS_X4_IMPLICIT_SHARED_SYMBOLS_WARNING
+template<std::size_t N, std::ranges::forward_range R>
+    requires
+        std::ranges::sized_range<R> &&
+        is_ttp_specialization_of_v<std::ranges::range_value_t<R>, symbols_entry>
+[[nodiscard]] constexpr symbols_parser<
+    char_encoding_for<typename std::ranges::range_value_t<R>::char_type>,
+    typename std::ranges::range_value_t<R>::value_type,
+    N
+>
+symbols(std::string_view parser_name, R&& r)
+{
+    if (std::ranges::size(r) != N) {
+        iris::throwf<std::length_error>("input range's size does not match N");
+    }
+
+    symbols_entry<typename std::ranges::range_value_t<R>::char_type, typename std::ranges::range_value_t<R>::value_type>
+    entries[N];
+
+    std::ranges::copy(std::forward<R>(r), entries);
+    return {parser_name, entries};
+}
+
+
+namespace parsers {
+using x4::symbols;
+} // parsers
+
+} // iris::x4
 
 #endif

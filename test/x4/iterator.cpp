@@ -169,7 +169,6 @@ TEST_CASE("rollback on failed parse (string)")
 {
     using x4::string;
     using x4::lit;
-    using x4::unique_symbols;
 
     {
         constexpr auto input = " x"sv;
@@ -185,7 +184,7 @@ TEST_CASE("rollback on failed parse (string)")
         CHECK(first == input.begin());
     }
     {
-        unique_symbols<int> syms{{"foo", 0}, {"bar", 1}};
+        constexpr auto syms = x4::symbols<int>("symbol", {{"foo", 0}, {"bar", 1}});
         constexpr auto input = " baz"sv;
         auto first = input.begin();
         int dummy_int = -1;
