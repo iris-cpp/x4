@@ -28,12 +28,11 @@ struct char_parser;
 
 // `negated_char_parser` handles `~cp`, where `cp` is a `char_parser`
 template<class Positive>
-struct negated_char_parser : char_parser<negated_char_parser<Positive>, typename Positive::encoding_type>
+struct negated_char_parser : char_parser<negated_char_parser<Positive>, typename Positive::char_type>
 {
     static_assert(X4ExplicitSubject<Positive>);
 
     using attribute_type = parser_traits<Positive>::attribute_type;
-    using encoding_type = Positive::encoding_type;
 
     template<class PositiveT>
         requires
@@ -63,16 +62,14 @@ private:
     Positive positive_; // TODO: EBO
 };
 
-template<class Derived, class Encoding>
-struct char_parser : parser<char_parser<Derived, Encoding>>
+template<class Derived, class CharT>
+struct char_parser : parser<char_parser<Derived, CharT>>
 {
-    using encoding_type = Encoding;
-    using char_type = Encoding::char_type;
-    using classify_type = Encoding::classify_type;
+    using char_type = CharT;
 
 private:
     template<class Context>
-    static constexpr bool has_static_test = requires(char_type const ch, Context const& ctx) {
+    static constexpr bool has_static_test = requires(CharT const ch, Context const& ctx) {
         { Derived::test(ch, ctx) } -> std::same_as<bool>;
     };
 
@@ -82,8 +79,8 @@ public:
     [[nodiscard]] static constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr)
     {
-        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
-        static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, CharT>, "Mixing incompatible char types is not allowed");
 
         auto local_it = first;
         x4::skip_over(local_it, last, ctx);
@@ -106,8 +103,8 @@ public:
     [[nodiscard]] constexpr bool
     parse(this Self const& self /* require const& */, It& first, Se const& last, Context const& ctx, Attr& attr)
     {
-        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, char_type>, "Mixing incompatible char types is not allowed");
-        static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, char_type>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharIncompatibleWith<std::iter_value_t<It>, CharT>, "Mixing incompatible char types is not allowed");
+        static_assert(!CharLike<Attr> || !CharIncompatibleWith<Attr, CharT>, "Mixing incompatible char types is not allowed");
 
         auto local_it = first;
         x4::skip_over(local_it, last, ctx);

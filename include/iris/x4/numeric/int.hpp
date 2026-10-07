@@ -14,7 +14,10 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/numeric/utils/extract_int.hpp>
 
+#include <limits>
 #include <iterator>
+#include <string>
+
 #include <cstdint>
 
 // TODO: use `std::from_chars`
@@ -29,11 +32,7 @@ template<
 >
 struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
 {
-    // check template parameter 'Radix' for validity
-    static_assert(
-        Radix == 2 || Radix == 8 || Radix == 10 || Radix == 16,
-        "Unsupported Radix"
-    );
+    static_assert(2 <= Radix && Radix <= 36);
 
     using attribute_type = T;
     static constexpr bool has_attribute = true;
@@ -56,23 +55,7 @@ struct int_parser : parser<int_parser<T, Radix, MinDigits, MaxDigits>>
 
     [[nodiscard]] static std::string get_x4_info()
     {
-        if constexpr (Radix == 10 && MinDigits == 1 && MaxDigits == -1) {
-            if constexpr (sizeof(T) == 1) {
-                return "`int8`";
-            } else if constexpr (sizeof(T) == 2) {
-                return "`int16`";
-            } else if constexpr (sizeof(T) == 4) {
-                return "`int32`";
-            } else if constexpr (sizeof(T) == 8) {
-                return "`int64`";
-            } else {
-                static_assert(false, "sorry; unimplemented");
-                return {};
-            }
-        } else {
-            static_assert(false, "sorry; unimplemented");
-            return {};
-        }
+        return numeric::detail::integer_info<Radix, MinDigits, MaxDigits>("int" + std::to_string(std::numeric_limits<T>::digits + 1));
     }
 };
 

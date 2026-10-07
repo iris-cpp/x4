@@ -13,6 +13,7 @@
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/sequence.hpp>
 #include <iris/x4/char/char.hpp>
+#include <iris/x4/char_string_literal.hpp>
 
 #include <iris/alloy/adapted/std_pair.hpp>
 
@@ -59,9 +60,9 @@ TEST_CASE("attr")
         {
             constexpr auto result = [&](std::string_view expected_str) consteval {
                 std::string str;
-                std::string_view const input;
+                constexpr std::string_view input;
                 auto it = input.begin();
-                auto const se = input.end();
+                constexpr auto se = input.end();
                 bool const ok = attr_p.parse(it, se, unused, str);
                 return std::make_pair(ok, str == expected_str);
             }("foo");
@@ -70,9 +71,9 @@ TEST_CASE("attr")
         }
         {
             std::string str;
-            std::string_view const input;
+            constexpr std::string_view input;
             auto it = input.begin();
-            auto const se = input.end();
+            constexpr auto se = input.end();
             REQUIRE(attr_p.parse(it, se, unused, str));
             CHECK(str == "foo");
         }

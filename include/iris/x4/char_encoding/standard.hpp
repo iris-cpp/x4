@@ -11,16 +11,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-#include <string>
+#include <iris/config.hpp> // IWYU pragma: keep
 
-#include <cassert>
-#include <cstdint>
-#include <cctype>
-#include <climits>
+#include <string>
 
 namespace iris::x4::char_encoding {
 
-// Test characters for specified conditions (using std functions)
 struct standard
 {
     using char_type = char;
@@ -41,124 +37,26 @@ struct standard
         return (0 == (ch & ~0xff) || ~0 == (ch | 0xff)) != 0;
     }
 
-    // *** Note on assertions: The precondition is that the calls to
-    // these functions do not violate the required range of ch (int)
-    // which is that strict_ischar(ch) should be true. It is the
-    // responsibility of the caller to make sure this precondition is not
-    // violated.
-
     [[nodiscard]] static constexpr bool
-    strict_ischar(int ch) noexcept
+    isspace(unsigned char const ch) noexcept
     {
-        // ch should be representable as an unsigned char
-        return ch >= 0 && ch <= UCHAR_MAX;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isalnum(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isalnum(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isalpha(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isalpha(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isdigit(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isdigit(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isxdigit(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isxdigit(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    iscntrl(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::iscntrl(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isgraph(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isgraph(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    islower(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::islower(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isprint(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isprint(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    ispunct(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::ispunct(ch) != 0;
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isspace(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isspace(ch) != 0;
+        switch (ch) {
+        case ' ': case '\t': case '\n': case '\v': case '\f': case '\r':
+            return true;
+        default:
+            return false;
+        }
     }
 
     [[nodiscard]] static constexpr bool
-    (isblank)(int ch) noexcept
+    (isblank)(unsigned char const ch) noexcept
     {
-        assert(standard::strict_ischar(ch));
-        return (ch == ' ' || ch == '\t');
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
-    isupper(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::isupper(ch) != 0;
-    }
-
-    // Simple character conversions
-
-    [[nodiscard]] static int // TODO: constexpr
-    tolower(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::tolower(ch);
-    }
-
-    [[nodiscard]] static int // TODO: constexpr
-    toupper(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return std::toupper(ch);
-    }
-
-    [[nodiscard]] static constexpr std::uint32_t
-    toucs4(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return static_cast<std::uint32_t>(ch);
+        switch (ch) {
+        case ' ': case '\t':
+            return true;
+        default:
+            return false;
+        }
     }
 };
 

@@ -10,20 +10,18 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/skip_over.hpp>
-#include <iris/x4/core/traits/char_encoding_traits.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/char/detail/cast_char.hpp>
 #include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/char_class_tags.hpp>
-#include <iris/x4/char/detail/cast_char.hpp>
+#include <iris/x4/char/case_compare.hpp>
 
-#include <iris/x4/string/case_compare.hpp>
-
+#include <iris/x4/char_encoding/standard/char_properties.hpp>
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
-#endif
+#include <iris/x4/core/skip_over.hpp>
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
 
 #include <concepts>
 #include <iterator>
@@ -45,10 +43,30 @@ struct char_class_base
     is(char_classes::name##_tag, Char ch) noexcept \
     { \
         static_assert(std::same_as<Char, classify_type>); \
-        return (Encoding::is##name)(detail::cast_char<classify_type>(ch)); \
+        return (char_encoding::char_properties<Encoding>::is##name)(detail::cast_char<classify_type>(ch)); \
     }
 
-    IRIS_X4_CLASSIFY(char)
+    template<class Char>
+    [[nodiscard]] static constexpr bool is(char_classes::char_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, classify_type>);
+        return Encoding::ischar(detail::cast_char<classify_type>(ch));
+    }
+
+    template<class Char>
+    [[nodiscard]] static constexpr bool is(char_classes::space_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, classify_type>);
+        return Encoding::isspace(detail::cast_char<classify_type>(ch));
+    }
+
+    template<class Char>
+    [[nodiscard]] static constexpr bool is(char_classes::blank_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, classify_type>);
+        return (Encoding::isblank)(detail::cast_char<classify_type>(ch));
+    }
+
     IRIS_X4_CLASSIFY(alnum)
     IRIS_X4_CLASSIFY(alpha)
     IRIS_X4_CLASSIFY(digit)
@@ -58,8 +76,6 @@ struct char_class_base
     IRIS_X4_CLASSIFY(lower)
     IRIS_X4_CLASSIFY(print)
     IRIS_X4_CLASSIFY(punct)
-    IRIS_X4_CLASSIFY(space)
-    IRIS_X4_CLASSIFY(blank)
     IRIS_X4_CLASSIFY(upper)
 
 #undef IRIS_X4_CLASSIFY
@@ -68,7 +84,7 @@ struct char_class_base
 } // detail
 
 template<class Encoding, class Tag>
-struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encoding>
+struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, typename Encoding::char_type>
 {
     using encoding_type = Encoding;
     using tag = Tag;
@@ -128,13 +144,12 @@ struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encodin
 
 IRIS_X4_CHAR_CLASSES(standard)
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-IRIS_X4_CHAR_CLASSES(standard_wide)
-#endif
-
 #undef IRIS_X4_CHAR_CLASS
 #undef IRIS_X4_CHAR_CLASSES
 
+
+template<class Tag>
+struct unicode_char_class_parser;
 
 namespace detail {
 
@@ -160,6 +175,18 @@ struct to_builtin_fn
     template<class Encoding>
     [[nodiscard]] static constexpr builtin_skipper_kind
     operator()(char_class_parser<Encoding, char_classes::space_tag> const&) noexcept
+    {
+        return builtin_skipper_kind::space;
+    }
+
+    [[nodiscard]] static constexpr builtin_skipper_kind
+    operator()(unicode_char_class_parser<char_classes::blank_tag> const&) noexcept
+    {
+        return builtin_skipper_kind::blank;
+    }
+
+    [[nodiscard]] static constexpr builtin_skipper_kind
+    operator()(unicode_char_class_parser<char_classes::space_tag> const&) noexcept
     {
         return builtin_skipper_kind::space;
     }

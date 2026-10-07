@@ -10,9 +10,9 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/detail/check_char.hpp>
-#include <iris/x4/string/case_compare.hpp>
+#include <iris/x4/char/char_parser.hpp>
+#include <iris/x4/char/case_compare.hpp>
 
 #include <iris/unicode/string.hpp>
 
@@ -22,7 +22,7 @@
 namespace iris::x4 {
 
 template<class Encoding, class Attr = typename Encoding::char_type>
-struct literal_char : char_parser<literal_char<Encoding, Attr>, Encoding>
+struct literal_char : char_parser<literal_char<Encoding, Attr>, typename Encoding::char_type>
 {
     static_assert(X4Attribute<Attr>);
 

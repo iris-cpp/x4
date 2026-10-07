@@ -13,10 +13,15 @@
 #include <iris/x4/char/literal_char.hpp>
 #include <iris/x4/char/char_set.hpp>
 
+#include <iris/x4/char_encoding/standard.hpp> // IWYU pragma: keep
+#include <iris/x4/char_encoding/unicode.hpp> // IWYU pragma: keep
+
+#include <cstddef> // IWYU pragma: keep
+
 namespace iris::x4 {
 
 template<class Encoding>
-struct any_char : char_parser<any_char<Encoding>, Encoding>
+struct any_char : char_parser<any_char<Encoding>, typename Encoding::char_type>
 {
     using encoding_type = Encoding;
     using attribute_type = Encoding::char_type;
@@ -28,8 +33,8 @@ struct any_char : char_parser<any_char<Encoding>, Encoding>
     [[nodiscard]] static constexpr bool
     test(classify_type classify_ch, auto const& /* ctx */) noexcept
     {
-        static_assert(noexcept(encoding_type::ischar(classify_ch)));
-        return encoding_type::ischar(classify_ch);
+        static_assert(noexcept(Encoding::ischar(classify_ch)));
+        return Encoding::ischar(classify_ch);
     }
 
     template<std::same_as<char_type> CharT>

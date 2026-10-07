@@ -11,6 +11,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/config.hpp> // IWYU pragma: keep
+
 #include <type_traits>
 #include <concepts>
 

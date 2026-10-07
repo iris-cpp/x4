@@ -15,7 +15,11 @@
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/numeric/utils/extract_int.hpp>
 
+#include <concepts>
 #include <iterator>
+#include <string>
+#include <limits>
+
 #include <cstdint>
 
 // TODO: use `std::from_chars`
@@ -30,8 +34,7 @@ template<
 >
 struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 {
-    // check template parameter 'Radix' for validity
-    static_assert((Radix >= 2 && Radix <= 36), "Unsupported Radix");
+    static_assert(2 <= Radix && Radix <= 36);
 
     using attribute_type = T;
 
@@ -55,34 +58,17 @@ struct uint_parser : parser<uint_parser<T, Radix, MinDigits, MaxDigits>>
 
     [[nodiscard]] static std::string get_x4_info()
     {
-        if constexpr (MinDigits == 1 && MaxDigits == -1) {
-            if constexpr (Radix == 10) {
-                if constexpr (sizeof(T) == 1) {
-                    return "`uint8`";
-                } else if constexpr (sizeof(T) == 2) {
-                    return "`uint16`";
-                } else if constexpr (sizeof(T) == 4) {
-                    return "`uint32`";
-                } else if constexpr (sizeof(T) == 8) {
-                    return "`uint64`";
-                } else {
-                    static_assert(false, "sorry; unimplemented");
-                    return {};
-                }
-            } else if constexpr (Radix == 2) {
-                return "`bin`";
-            } else if constexpr (Radix == 8) {
-                return "`oct`";
-            } else if constexpr (Radix == 16) {
-                return "`hex`";
-            } else {
-                static_assert(false, "sorry; unimplemented");
-                return {};
-            }
+        if constexpr (std::same_as<T, unsigned> && Radix == 2 && MinDigits == 1 && MaxDigits == -1) {
+            return "`bin`";
+
+        } else if constexpr (std::same_as<T, unsigned> && Radix == 8 && MinDigits == 1 && MaxDigits == -1) {
+            return "`oct`";
+
+        } else if constexpr (std::same_as<T, unsigned> && Radix == 16 && MinDigits == 1 && MaxDigits == -1) {
+            return "`hex`";
 
         } else {
-            static_assert(false, "sorry; unimplemented");
-            return {};
+            return numeric::detail::integer_info<Radix, MinDigits, MaxDigits>("uint" + std::to_string(std::numeric_limits<T>::digits));
         }
     }
 };

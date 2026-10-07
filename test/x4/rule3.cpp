@@ -10,7 +10,7 @@
 #include "iris_x4_test.hpp"
 
 #include <iris/x4/rule.hpp>
-#include <iris/x4/char/char.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/primitive/eps.hpp>
 #include <iris/x4/operator/delimited_list.hpp>

@@ -44,12 +44,6 @@ struct char_tokens<char>
 };
 
 template<>
-struct char_tokens<wchar_t>
-{
-    static constexpr wchar_t hyphen = L'-';
-};
-
-template<>
 struct char_tokens<char32_t>
 {
     static constexpr char32_t hyphen = U'-';

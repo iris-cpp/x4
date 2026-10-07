@@ -11,6 +11,7 @@
 #include <iris/x4/debug/default_error_handler.hpp>
 #include <iris/x4/debug/annotate.hpp>
 #include <iris/x4/rule.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/numeric/int.hpp>
 #include <iris/x4/operator/sequence.hpp>

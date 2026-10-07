@@ -12,7 +12,8 @@
 
 #include <iris/x4/char/char_class_tags.hpp>
 #include <iris/x4/char/char_parser.hpp>
-#include <iris/x4/char/detail/cast_char.hpp>
+
+#include <iris/x4/char_encoding/unicode/char_properties.hpp>
 #include <iris/x4/char_encoding/unicode.hpp>
 
 #include <concepts>
@@ -270,28 +271,50 @@ namespace detail {
 
 struct unicode_char_class_base
 {
-    using encoding_type = char_encoding::unicode;
-    using char_type = char_encoding::unicode::char_type;
-
 #define IRIS_X4_BASIC_CLASSIFY(name) \
     template<class Char> \
-    static constexpr bool \
+    [[nodiscard]] static constexpr bool \
     is(char_classes::unicode::name##_tag, Char ch) noexcept \
     { \
-        return (encoding_type::is##name)(detail::cast_char<char_type>(ch)); \
+        static_assert(std::same_as<Char, char32_t>); \
+        return (char_encoding::char_properties<char_encoding::unicode>::is##name)(ch); \
     }
 
 #define IRIS_X4_CLASSIFY(name) \
     template<class Char> \
-    static constexpr bool \
+    [[nodiscard]] static constexpr bool \
     is(char_classes::unicode::name##_tag, Char ch) noexcept \
     { \
-        return (encoding_type::is_##name)(detail::cast_char<char_type>(ch)); \
+        static_assert(std::same_as<Char, char32_t>); \
+        return (char_encoding::char_properties<char_encoding::unicode>::is_##name)(ch); \
     }
 
     // Unicode Major Categories
 
-    IRIS_X4_BASIC_CLASSIFY(char)
+    template<class Char>
+    [[nodiscard]] static constexpr bool
+    is(char_classes::unicode::char_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, char32_t>);
+        return char_encoding::unicode::ischar(ch);
+    }
+
+    template<class Char>
+    [[nodiscard]] static constexpr bool
+    is(char_classes::unicode::space_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, char32_t>);
+        return char_encoding::unicode::isspace(ch);
+    }
+
+    template<class Char>
+    [[nodiscard]] static constexpr bool
+    is(char_classes::unicode::blank_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, char32_t>);
+        return (char_encoding::unicode::isblank)(ch);
+    }
+
     IRIS_X4_BASIC_CLASSIFY(alnum)
     IRIS_X4_BASIC_CLASSIFY(alpha)
     IRIS_X4_BASIC_CLASSIFY(digit)
@@ -301,8 +324,6 @@ struct unicode_char_class_base
     IRIS_X4_BASIC_CLASSIFY(lower)
     IRIS_X4_BASIC_CLASSIFY(print)
     IRIS_X4_BASIC_CLASSIFY(punct)
-    IRIS_X4_BASIC_CLASSIFY(space)
-    IRIS_X4_BASIC_CLASSIFY(blank)
     IRIS_X4_BASIC_CLASSIFY(upper)
 
     // Unicode Major Categories
@@ -539,22 +560,17 @@ struct unicode_char_class_base
 } // detail
 
 template<class Tag>
-struct unicode_char_class : char_parser<unicode_char_class<Tag>, char_encoding::unicode>
+struct unicode_char_class_parser : char_parser<unicode_char_class_parser<Tag>, char32_t>
 {
-    using tag = Tag;
-    using encoding_type = char_encoding::unicode;
-    using char_type = encoding_type::char_type;
-    using classify_type = encoding_type::classify_type;
-    using attribute_type = char_type;
+    using attribute_type = char32_t;
 
     static constexpr bool has_attribute = true;
 
     [[nodiscard]] static constexpr bool
-    test(std::same_as<char_type> auto const ch, auto const& /* ctx */) noexcept
+    test(std::same_as<char32_t> auto const ch, auto const& /* ctx */) noexcept
     {
-        auto const classify_ch = static_cast<classify_type>(ch);
-        static_assert(noexcept(encoding_type::ischar(classify_ch) && detail::unicode_char_class_base::is(tag{}, classify_ch)));
-        return encoding_type::ischar(classify_ch) && detail::unicode_char_class_base::is(tag{}, classify_ch);
+        static_assert(noexcept(char_encoding::unicode::ischar(ch) && detail::unicode_char_class_base::is(Tag{}, ch)));
+        return char_encoding::unicode::ischar(ch) && detail::unicode_char_class_base::is(Tag{}, ch);
     }
 
     static constexpr void test(auto const, auto const&) = delete; // Mixing incompatible char types is not allowed
@@ -562,7 +578,7 @@ struct unicode_char_class : char_parser<unicode_char_class<Tag>, char_encoding::
 
 #define IRIS_X4_CHAR_CLASS(name) \
     namespace unicode { \
-    [[maybe_unused]] inline constexpr unicode_char_class<char_classes::unicode::name##_tag> name{}; \
+    [[maybe_unused]] inline constexpr unicode_char_class_parser<char_classes::unicode::name##_tag> name{}; \
     } /* unicode */ \
     namespace parsers::unicode { \
     using x4::unicode::name; \

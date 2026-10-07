@@ -11,78 +11,35 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/char_encoding/standard.hpp>
+// Do NOT include `char_encoding/` related headers in this file
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
+#ifdef IRIS_X4_NO_STANDARD_WIDE
+# warning "wchar_t support is completely removed from X4 due to severe portability issue. Remove `#define IRIS_X4_NO_STANDARD_WIDE`."
 #endif
 
 #ifdef IRIS_X4_UNICODE
-# include <iris/x4/char_encoding/unicode.hpp>
+# warning "X4 now enables Unicode support by default. Remove `#define IRIS_X4_UNICODE`."
 #endif
 
 #include <iris/string.hpp>
 
 namespace iris::x4 {
 
+namespace char_encoding {
+struct standard;
+struct unicode;
+} // char_encoding
+
 namespace detail {
 
 template<CharLike CharT> struct char_encoding_for_impl;
 template<> struct char_encoding_for_impl<char> { using type = char_encoding::standard; };
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<> struct char_encoding_for_impl<wchar_t> { using type = char_encoding::standard_wide; };
-#endif
-
-#ifdef IRIS_X4_UNICODE
-template<> struct char_encoding_for_impl<char8_t> { using type = char_encoding::unicode; };
-template<> struct char_encoding_for_impl<char16_t> { using type = char_encoding::unicode; };
 template<> struct char_encoding_for_impl<char32_t> { using type = char_encoding::unicode; };
-#endif
-
-
-template<class Encoding>
-struct char_encoding_traits_impl
-{
-    using encoding_type = Encoding;
-
-    template<class... Args>
-    [[nodiscard]] static constexpr auto lit(Args&&... args)
-        noexcept(noexcept(Encoding::lit(std::forward<Args>(args)...)))
-    {
-        return Encoding::lit(std::forward<Args>(args)...);
-    }
-
-    template<class... Args>
-    [[nodiscard]] static constexpr auto string(Args&&... args)
-        noexcept(noexcept(Encoding::string(std::forward<Args>(args)...)))
-    {
-        return Encoding::string(std::forward<Args>(args)...);
-    }
-};
 
 } // detail
 
-
 template<CharLike CharT>
-using char_encoding_for = typename detail::char_encoding_for_impl<CharT>::type;
-
-
-template<CharLike CharT>
-struct char_encoding_traits;
-
-template<>
-struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<>
-struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
-#endif
-
-#ifdef IRIS_X4_UNICODE
-template<>
-struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
-#endif
+using char_encoding_for = detail::char_encoding_for_impl<CharT>::type;
 
 } // iris::x4
 

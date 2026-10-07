@@ -11,15 +11,15 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
+#include <iris/x4/char/case_compare.hpp>
+#include <iris/x4/string/detail/string_parse.hpp>
+
 #include <iris/x4/core/traits/numeric_traits.hpp>
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
 
 #include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
-
-#include <iris/x4/string/case_compare.hpp>
-#include <iris/x4/string/detail/string_parse.hpp>
 
 #include <concepts>
 #include <string_view>

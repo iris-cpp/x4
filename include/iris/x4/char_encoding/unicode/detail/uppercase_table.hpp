@@ -288,7 +288,7 @@ namespace iris::x4::unicode::detail {
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6
 };
 
-[[maybe_unused]] inline constexpr std::uint32_t uppercase_stage2[] = {
+[[maybe_unused]] inline constexpr char32_t uppercase_stage2[] = {
     // block 0
          0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
          0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
@@ -802,7 +802,7 @@ namespace iris::x4::unicode::detail {
          0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0
 };
 
-[[nodiscard]] constexpr std::uint32_t uppercase_lookup(std::uint32_t ch) noexcept
+[[nodiscard]] constexpr char32_t uppercase_lookup(char32_t const ch) noexcept
 {
    std::uint32_t block_offset = uppercase_stage1[ch / 256] * 256;
    return uppercase_stage2[block_offset + ch % 256];

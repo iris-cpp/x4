@@ -12,6 +12,7 @@
 
 #include <iris/x4/rule.hpp>
 #include <iris/x4/attribute/as.hpp>
+#include <iris/x4/char_string_literal.hpp>
 #include <iris/x4/char/char.hpp>
 #include <iris/x4/char/char_class.hpp>
 #include <iris/x4/directive/lexeme.hpp>

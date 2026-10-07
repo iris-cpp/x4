@@ -15,8 +15,6 @@
 ==============================================================================*/
 
 #include <iris/x4/core/traits/numeric_traits.hpp>
-#include <iris/x4/core/traits/char_encoding_traits.hpp>
-
 #include <iris/x4/core/unused.hpp>
 #include <iris/x4/core/write_attribute.hpp>
 
@@ -25,6 +23,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <string>
 
 #include <cassert>
 
@@ -94,27 +93,27 @@ struct digits_traits<T, 10>
     static constexpr int value = std::numeric_limits<T>::digits10;
 };
 
-// Traits class for radix specific number conversion
 template<unsigned Radix>
 struct radix_traits
 {
+    static_assert(2 <= Radix && Radix <= 36);
+
     template<class CharT>
     [[nodiscard]] static constexpr bool is_valid(CharT ch) noexcept
     {
         using token_def = numeric_token<CharT>;
         return (ch >= token_def::_0 && ch <= (Radix > 10 ? token_def::_9 : static_cast<CharT>(token_def::_0 + Radix -1)))
-            || (Radix > 10 && ch >= token_def::a && ch <= static_cast<CharT>(token_def::a + Radix -10 -1))
-            || (Radix > 10 && ch >= token_def::A && ch <= static_cast<CharT>(token_def::A + Radix -10 -1));
+            || (Radix > 10 && ch >= token_def::a && ch <= static_cast<CharT>(token_def::a + Radix - 10 - 1))
+            || (Radix > 10 && ch >= token_def::A && ch <= static_cast<CharT>(token_def::A + Radix - 10 - 1));
     }
 
     template<class CharT>
-    [[nodiscard]] static constexpr unsigned digit(CharT ch)
-        noexcept(noexcept(char_encoding_traits<CharT>::encoding_type::tolower(ch)))
+    [[nodiscard]] static constexpr unsigned digit(CharT ch) noexcept
     {
         using token_def = numeric_token<CharT>;
         return (Radix <= 10 || (ch >= token_def::_0 && ch <= token_def::_9))
             ? ch - token_def::_0
-            : char_encoding_traits<CharT>::encoding_type::tolower(ch) - token_def::a + 10;
+            : (ch >= token_def::a ? ch - token_def::a : ch - token_def::A) + 10;
     }
 };
 
@@ -469,8 +468,7 @@ extract_sign(It& first, Se const& last)
 template<class T, unsigned Radix, unsigned MinDigits, int MaxDigits, bool Accumulate = false>
 struct extract_uint
 {
-    // check template parameter 'Radix' for validity
-    static_assert(Radix >= 2 && Radix <= 36, "Unsupported Radix");
+    static_assert(2 <= Radix && Radix <= 36);
 
     using extract_type = detail::extract_int<
         T, Radix, MinDigits, MaxDigits,
@@ -516,11 +514,7 @@ struct extract_uint
 template<class T, unsigned Radix, unsigned MinDigits, int MaxDigits>
 struct extract_int
 {
-    // check template parameter 'Radix' for validity
-    static_assert(
-        Radix == 2 || Radix == 8 || Radix == 10 || Radix == 16,
-        "Unsupported Radix"
-    );
+    static_assert(2 <= Radix && Radix <= 36);
 
     using extract_pos_type = detail::extract_int<T, Radix, MinDigits, MaxDigits>;
     using extract_neg_type = detail::extract_int<T, Radix, MinDigits, MaxDigits, detail::negative_accumulator<Radix>>;
@@ -570,6 +564,41 @@ struct extract_int
         return false;
     }
 };
+
+namespace detail {
+
+template<unsigned Radix, unsigned MinDigits, int MaxDigits>
+[[nodiscard]] std::string integer_info(std::string name)
+{
+    std::string info = '`' + std::move(name) + '`';
+    if constexpr (Radix == 10 && MinDigits == 1 && MaxDigits == -1) {
+        return info;
+
+    } else {
+        info += " (";
+        if constexpr (Radix != 10) {
+            info += "radix " + std::to_string(Radix);
+            if constexpr (MinDigits != 1 || MaxDigits != -1) {
+                info += ", ";
+            }
+        }
+
+        if constexpr (MaxDigits == -1) {
+            if constexpr (MinDigits != 1) {
+                info += "at least " + std::to_string(MinDigits) + " digits";
+            }
+
+        } else if constexpr (MinDigits == static_cast<unsigned>(MaxDigits)) {
+            info += std::to_string(MinDigits) + " digits";
+
+        } else {
+            info += std::to_string(MinDigits) + " to " + std::to_string(MaxDigits) + " digits";
+        }
+        return info + ')';
+    }
+}
+
+} // detail
 
 } // iris::x4::numeric
 

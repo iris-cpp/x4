@@ -67,7 +67,7 @@ struct default_container<char>
 template<>
 struct default_container<wchar_t>
 {
-    using type = std::basic_string<wchar_t>;
+    using type = void; // wchar_t support has been removed from X4
 };
 
 template<>

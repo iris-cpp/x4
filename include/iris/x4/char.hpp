@@ -19,8 +19,6 @@
 #include <iris/x4/char/char_class.hpp> // IWYU pragma: export
 #include <iris/x4/char/char_set.hpp> // IWYU pragma: export
 
-#ifdef IRIS_X4_UNICODE
-# include <iris/x4/char/unicode_char_class.hpp> // IWYU pragma: export
-#endif
+#include <iris/x4/char/unicode_char_class.hpp> // IWYU pragma: export
 
 #endif
