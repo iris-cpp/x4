@@ -87,8 +87,7 @@ TEST_CASE("char")
         auto const is_rejected = [](auto const make_parser) {
             try {
                 (void)make_parser();
-            }
-            catch (std::invalid_argument const&) {
+            } catch (std::invalid_argument const&) {
                 return true;
             }
             return false;
@@ -96,6 +95,7 @@ TEST_CASE("char")
 
         // Visual Studio rejects U'\x110000' on IDE
         constexpr char32_t invalid_code_point = char32_t{0x110000};
+        constexpr char32_t non_character_code_point = char32_t{0x10FFF};
 
         CHECK(is_rejected([] { return unicode::char_(U"a\x110000"); }));
         CHECK(is_rejected([] { return unicode::char_(U'a', invalid_code_point); }));
@@ -105,6 +105,6 @@ TEST_CASE("char")
         CHECK(is_rejected([] { return x4::string(U"\x110000"); }));
         CHECK(is_rejected([] { return x4::lit(U"a\x110000"); }));
         CHECK(is_rejected([] { return x4::lit(U"abcdefg\x110000"); }));
-        CHECK(!is_rejected([] { return unicode::char_(U'\0', invalid_code_point); }));
+        CHECK(!is_rejected([] { return unicode::char_(U'\0', non_character_code_point); }));
     }
 }
