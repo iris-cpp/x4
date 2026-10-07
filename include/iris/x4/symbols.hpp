@@ -22,10 +22,6 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
-#endif
-
 #ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
@@ -238,22 +234,6 @@ symbols(std::string_view parser_name, std::string_view const (&keys)[N])
 {
     return {parser_name, keys};
 }
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<class T = unused_type, std::size_t N>
-[[nodiscard]] constexpr symbols_parser<char_encoding::standard_wide, T, N>
-symbols(std::string_view parser_name, symbols_entry<wchar_t, T> const (&entries)[N])
-{
-    return {parser_name, entries};
-}
-
-template<std::size_t N>
-[[nodiscard]] constexpr symbols_parser<char_encoding::standard_wide, unused_type, N>
-symbols(std::string_view parser_name, std::wstring_view const (&keys)[N])
-{
-    return {parser_name, keys};
-}
-#endif
 
 #ifdef IRIS_X4_UNICODE
 template<class T = unused_type, std::size_t N>

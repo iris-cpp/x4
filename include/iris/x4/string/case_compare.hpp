@@ -15,10 +15,6 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
-#endif
-
 #ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif

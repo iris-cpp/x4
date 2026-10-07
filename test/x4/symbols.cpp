@@ -105,11 +105,7 @@ TEST_CASE("symbols")
     }
 
     {
-        constexpr auto wide = x4::symbols<int>("symbol", {{L"x", 1}});
         int value = 0;
-        CHECK(parse(L"X", no_case[wide], value));
-        CHECK(value == 1);
-
         constexpr auto unicode = x4::symbols<int>("symbol", {{U"Äb", 1}});
         CHECK(parse(U"äB", no_case[unicode], value));
         CHECK(value == 1);

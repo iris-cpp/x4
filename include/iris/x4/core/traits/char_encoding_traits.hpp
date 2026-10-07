@@ -13,8 +13,8 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
+#ifdef IRIS_X4_NO_STANDARD_WIDE
+# warning "wchar_t support is completely removed from X4 due to severe portability issue"
 #endif
 
 #ifdef IRIS_X4_UNICODE
@@ -30,13 +30,7 @@ namespace detail {
 template<CharLike CharT> struct char_encoding_for_impl;
 template<> struct char_encoding_for_impl<char> { using type = char_encoding::standard; };
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<> struct char_encoding_for_impl<wchar_t> { using type = char_encoding::standard_wide; };
-#endif
-
 #ifdef IRIS_X4_UNICODE
-template<> struct char_encoding_for_impl<char8_t> { using type = char_encoding::unicode; };
-template<> struct char_encoding_for_impl<char16_t> { using type = char_encoding::unicode; };
 template<> struct char_encoding_for_impl<char32_t> { using type = char_encoding::unicode; };
 #endif
 
@@ -65,7 +59,7 @@ struct char_encoding_traits_impl
 
 
 template<CharLike CharT>
-using char_encoding_for = typename detail::char_encoding_for_impl<CharT>::type;
+using char_encoding_for = detail::char_encoding_for_impl<CharT>::type;
 
 
 template<CharLike CharT>
@@ -73,11 +67,6 @@ struct char_encoding_traits;
 
 template<>
 struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-template<>
-struct char_encoding_traits<wchar_t> : detail::char_encoding_traits_impl<char_encoding::standard_wide> {};
-#endif
 
 #ifdef IRIS_X4_UNICODE
 template<>

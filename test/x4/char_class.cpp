@@ -76,44 +76,6 @@ TEST_CASE("char_class")
     }
 
     {
-        using namespace x4::standard_wide;
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alnum);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(alpha);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(digit);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(xdigit);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(cntrl);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(graph);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(lower);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(print);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(punct);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(space);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(blank);
-        IRIS_X4_ASSERT_CONSTEXPR_CTORS(upper);
-        CHECK(parse(L"1", alnum));
-        CHECK(!parse(L" ", alnum));
-        CHECK(!parse(L"1", alpha));
-        CHECK(parse(L"x", alpha));
-        CHECK(parse(L" ", blank));
-        CHECK(!parse(L"x", blank));
-        CHECK(parse(L"1", digit));
-        CHECK(!parse(L"x", digit));
-        CHECK(parse(L"a", lower));
-        CHECK(!parse(L"A", lower));
-        CHECK(parse(L"!", punct));
-        CHECK(!parse(L"x", punct));
-        CHECK(parse(L" ", space));
-        CHECK(parse(L"\n", space));
-        CHECK(parse(L"\r", space));
-        CHECK(parse(L"\t", space));
-        CHECK(parse(L"A", upper));
-        CHECK(!parse(L"a", upper));
-        CHECK(parse(L"A", xdigit));
-        CHECK(parse(L"0", xdigit));
-        CHECK(parse(L"f", xdigit));
-        CHECK(!parse(L"g", xdigit));
-    }
-
-    {
         using namespace x4::unicode;
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(alnum);
         IRIS_X4_ASSERT_CONSTEXPR_CTORS(alpha);
@@ -155,7 +117,7 @@ TEST_CASE("char_class")
         CHECK(parse(U"\u2800", braille));
         CHECK(!parse(U" ", braille));
         CHECK(parse(U" ", ~braille));
-        // TODO: Add more unicode tests
+        // TODO: Add more Unicode tests
     }
 
     {   // test invalid unicode literals

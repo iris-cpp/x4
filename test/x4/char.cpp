@@ -21,7 +21,6 @@
 TEST_CASE("char")
 {
     namespace standard = x4::standard;
-    namespace standard_wide = x4::standard_wide;
     namespace unicode = x4::unicode;
 
     {
@@ -68,7 +67,7 @@ TEST_CASE("char")
         STATIC_CHECK(set.test(U'0', unused) && set.test(U'9', unused) && !set.test(U'/', unused) && !set.test(U':', unused));
         STATIC_CHECK(set.test(U'-', unused) && set.test(U'e', unused) && unicode::char_(U"a-").test(U'-', unused));
 
-        STATIC_CHECK(unicode::char_(U"a\0b").test(U'\0', unused) && unicode::char_(U"a\0b").test(U'b', unused));
+        STATIC_CHECK(unicode::char_(U"a\0b").test(U'\0', unused) && unicode::char_(U"a\0b").test(U'b', unused));  // NOLINT(bugprone-string-literal-with-embedded-nul)
         STATIC_CHECK(!unicode::char_(U"ab").test(U'\0', unused));
 
         STATIC_CHECK(standard::char_("\x7f-\x80").test('\x80', unused));
@@ -94,16 +93,18 @@ TEST_CASE("char")
             }
             return false;
         };
-        CHECK(is_rejected([] { return standard_wide::char_(L"a-cz-x"); }));
-        CHECK(is_rejected([] { return standard_wide::char_(L'z', L'x'); }));
+
+        // Visual Studio rejects U'\x110000' on IDE
+        constexpr char32_t invalid_code_point = char32_t{0x110000};
+
         CHECK(is_rejected([] { return unicode::char_(U"a\x110000"); }));
-        CHECK(is_rejected([] { return unicode::char_(U'a', U'\x110000'); }));
-        CHECK(is_rejected([] { return unicode::char_(U'\x110000'); }));
-        CHECK(is_rejected([] { return x4::lit(U'\x110000'); }));
+        CHECK(is_rejected([] { return unicode::char_(U'a', invalid_code_point); }));
+        CHECK(is_rejected([] { return unicode::char_(invalid_code_point); }));
+        CHECK(is_rejected([] { return x4::lit(invalid_code_point); }));
         CHECK(is_rejected([] { return x4::lit(U"\x110000"); }));
         CHECK(is_rejected([] { return x4::string(U"\x110000"); }));
         CHECK(is_rejected([] { return x4::lit(U"a\x110000"); }));
         CHECK(is_rejected([] { return x4::lit(U"abcdefg\x110000"); }));
-        CHECK(!is_rejected([] { return unicode::char_(U'\0', U'\x10FFFF'); }));
+        CHECK(!is_rejected([] { return unicode::char_(U'\0', invalid_code_point); }));
     }
 }

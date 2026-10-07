@@ -84,11 +84,8 @@ TEST_CASE("no_case")
 
     {
         // chsets
-
         CHECK(parse("x", no_case[x4::standard::char_("a-z")]));
         CHECK(parse("X", no_case[x4::standard::char_("a-z")]));
-        CHECK(parse(L"X", no_case[x4::standard_wide::char_(L"a-z")]));
-        CHECK(parse(L"X", no_case[x4::standard_wide::char_(L"X")]));
     }
 
     {

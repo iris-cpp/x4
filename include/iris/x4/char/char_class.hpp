@@ -21,10 +21,6 @@
 
 #include <iris/x4/char_encoding/standard.hpp>
 
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-# include <iris/x4/char_encoding/standard_wide.hpp>
-#endif
-
 #include <concepts>
 #include <iterator>
 
@@ -127,10 +123,6 @@ struct char_class_parser : char_parser<char_class_parser<Encoding, Tag>, Encodin
     IRIS_X4_CHAR_CLASS(encoding, upper)
 
 IRIS_X4_CHAR_CLASSES(standard)
-
-#ifndef IRIS_X4_NO_STANDARD_WIDE
-IRIS_X4_CHAR_CLASSES(standard_wide)
-#endif
 
 #undef IRIS_X4_CHAR_CLASS
 #undef IRIS_X4_CHAR_CLASSES
