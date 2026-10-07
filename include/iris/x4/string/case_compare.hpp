@@ -27,8 +27,8 @@ template<class Encoding>
 struct case_compare
 {
     using encoding_type = Encoding;
-    using char_type = typename Encoding::char_type;
-    using classify_type = typename Encoding::classify_type;
+    using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
 
     template<class Char, class CharSet>
     [[nodiscard]] static constexpr bool in_set(Char ch, CharSet const& set) noexcept
@@ -58,8 +58,8 @@ template<class Encoding>
 struct no_case_compare
 {
     using encoding_type = Encoding;
-    using char_type = typename Encoding::char_type;
-    using classify_type = typename Encoding::classify_type;
+    using char_type = Encoding::char_type;
+    using classify_type = Encoding::classify_type;
 
     template<class Char, class CharSet>
     [[nodiscard]] static constexpr bool in_set(Char ch, CharSet const& set) noexcept
