@@ -10,7 +10,13 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/string/case_compare.hpp>
+#include <iris/x4/char/case_compare.hpp>
+
+#include <iris/x4/char_encoding/standard.hpp>
+
+#ifdef IRIS_X4_UNICODE
+# include <iris/x4/char_encoding/unicode.hpp>
+#endif
 
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/parser.hpp>
@@ -19,12 +25,6 @@
 #include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/core/traits/char_traits.hpp>
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
-
-#include <iris/x4/char_encoding/standard.hpp>
-
-#ifdef IRIS_X4_UNICODE
-# include <iris/x4/char_encoding/unicode.hpp>
-#endif
 
 #include <iris/error/throwf.hpp>
 #include <iris/bits/specialization_of.hpp>

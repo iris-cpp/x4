@@ -10,16 +10,17 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/skip_over.hpp>
-#include <iris/x4/core/traits/char_encoding_traits.hpp>
+#include <iris/config.hpp> // IWYU pragma: keep
 
+#include <iris/x4/char/detail/cast_char.hpp>
 #include <iris/x4/char/char_parser.hpp>
 #include <iris/x4/char/char_class_tags.hpp>
-#include <iris/x4/char/detail/cast_char.hpp>
-
-#include <iris/x4/string/case_compare.hpp>
+#include <iris/x4/char/case_compare.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
+
+#include <iris/x4/core/skip_over.hpp>
+#include <iris/x4/core/traits/char_encoding_traits.hpp>
 
 #include <concepts>
 #include <iterator>

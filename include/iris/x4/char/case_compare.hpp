@@ -1,5 +1,5 @@
-#ifndef IRIS_ZZ_X4_STRING_CASE_COMPARE_HPP
-#define IRIS_ZZ_X4_STRING_CASE_COMPARE_HPP
+#ifndef IRIS_ZZ_X4_CHAR_CASE_COMPARE_HPP
+#define IRIS_ZZ_X4_CHAR_CASE_COMPARE_HPP
 
 /*=============================================================================
     Copyright (c) 2001-2014 Joel de Guzman
@@ -10,7 +10,6 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/core/context.hpp>
 #include <iris/x4/char/char_class_tags.hpp>
 
 #include <iris/x4/char_encoding/standard.hpp>
@@ -18,6 +17,8 @@
 #ifdef IRIS_X4_UNICODE
 # include <iris/x4/char_encoding/unicode.hpp>
 #endif
+
+#include <iris/x4/core/context.hpp>
 
 #include <concepts>
 
