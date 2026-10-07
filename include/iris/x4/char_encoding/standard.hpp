@@ -153,13 +153,6 @@ struct standard
         assert(standard::strict_ischar(ch));
         return std::toupper(ch);
     }
-
-    [[nodiscard]] static constexpr std::uint32_t
-    toucs4(int ch) noexcept
-    {
-        assert(standard::strict_ischar(ch));
-        return static_cast<std::uint32_t>(ch);
-    }
 };
 
 } // iris::x4::char_encoding

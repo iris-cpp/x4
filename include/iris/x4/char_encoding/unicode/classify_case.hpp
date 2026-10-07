@@ -10,23 +10,22 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#include <iris/x4/char_encoding/unicode/category.hpp>
 #include <iris/x4/char_encoding/unicode/detail/lowercase_table.hpp>
 #include <iris/x4/char_encoding/unicode/detail/uppercase_table.hpp>
 
 namespace iris::x4::unicode {
 
-[[nodiscard]] constexpr classify_type to_lowercase(classify_type ch) noexcept
+[[nodiscard]] constexpr char32_t to_lowercase(char32_t ch) noexcept
 {
     // The table returns 0 to signal that this code maps to itself
-    classify_type const r = detail::lowercase_lookup(ch);
+    char32_t const r = detail::lowercase_lookup(ch);
     return r == 0 ? ch : r;
 }
 
-[[nodiscard]] constexpr classify_type to_uppercase(classify_type ch) noexcept
+[[nodiscard]] constexpr char32_t to_uppercase(char32_t ch) noexcept
 {
     // The table returns 0 to signal that this code maps to itself
-    classify_type const r = detail::uppercase_lookup(ch);
+    char32_t const r = detail::uppercase_lookup(ch);
     return r == 0 ? ch : r;
 }
 

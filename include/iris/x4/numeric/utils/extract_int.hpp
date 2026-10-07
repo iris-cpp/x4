@@ -109,12 +109,12 @@ struct radix_traits
 
     template<class CharT>
     [[nodiscard]] static constexpr unsigned digit(CharT ch)
-        noexcept(noexcept(char_encoding_traits<CharT>::encoding_type::tolower(ch)))
+        noexcept(noexcept(char_encoding_for<CharT>::tolower(ch)))
     {
         using token_def = numeric_token<CharT>;
         return (Radix <= 10 || (ch >= token_def::_0 && ch <= token_def::_9))
             ? ch - token_def::_0
-            : char_encoding_traits<CharT>::encoding_type::tolower(ch) - token_def::a + 10;
+            : char_encoding_for<CharT>::tolower(ch) - token_def::a + 10;
     }
 };
 

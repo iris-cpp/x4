@@ -15,7 +15,7 @@
 
 namespace iris::x4::unicode {
 
-[[nodiscard]] constexpr properties::script get_script(classify_type ch) noexcept
+[[nodiscard]] constexpr properties::script get_script(char32_t ch) noexcept
 {
     return static_cast<properties::script>(detail::script_lookup(ch));
 }

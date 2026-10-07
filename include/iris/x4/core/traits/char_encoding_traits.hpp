@@ -34,44 +34,10 @@ template<> struct char_encoding_for_impl<char> { using type = char_encoding::sta
 template<> struct char_encoding_for_impl<char32_t> { using type = char_encoding::unicode; };
 #endif
 
-
-template<class Encoding>
-struct char_encoding_traits_impl
-{
-    using encoding_type = Encoding;
-
-    template<class... Args>
-    [[nodiscard]] static constexpr auto lit(Args&&... args)
-        noexcept(noexcept(Encoding::lit(std::forward<Args>(args)...)))
-    {
-        return Encoding::lit(std::forward<Args>(args)...);
-    }
-
-    template<class... Args>
-    [[nodiscard]] static constexpr auto string(Args&&... args)
-        noexcept(noexcept(Encoding::string(std::forward<Args>(args)...)))
-    {
-        return Encoding::string(std::forward<Args>(args)...);
-    }
-};
-
 } // detail
-
 
 template<CharLike CharT>
 using char_encoding_for = detail::char_encoding_for_impl<CharT>::type;
-
-
-template<CharLike CharT>
-struct char_encoding_traits;
-
-template<>
-struct char_encoding_traits<char> : detail::char_encoding_traits_impl<char_encoding::standard> {};
-
-#ifdef IRIS_X4_UNICODE
-template<>
-struct char_encoding_traits<char32_t> : detail::char_encoding_traits_impl<char_encoding::unicode> {};
-#endif
 
 } // iris::x4
 

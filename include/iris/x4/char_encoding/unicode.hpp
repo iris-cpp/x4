@@ -17,167 +17,190 @@
 
 #include <string>
 
-#include <cstdint>
-
 namespace iris::x4::char_encoding {
 
 struct unicode
 {
     using char_type = char32_t;
     using string_type = std::u32string;
-    using classify_type = x4::unicode::classify_type;
+    using classify_type = char32_t;
 
     [[nodiscard]] static constexpr bool
-    isascii_(classify_type ch) noexcept
+    isascii_(char32_t ch) noexcept
     {
-        return 0 == (ch & ~0x7f);
+        return (ch & ~0x7f) == 0;
     }
 
     [[nodiscard]] static constexpr bool
-    ischar(classify_type ch) noexcept
+    ischar(char32_t ch) noexcept
     {
-        // unicode code points in the range 0x00 to 0x10FFFF
         return ch <= 0x10FFFF;
     }
 
     [[nodiscard]] static constexpr bool
-    isalnum(classify_type ch) noexcept
+    isalnum(char32_t ch) noexcept
     {
         return x4::unicode::is_alphanumeric(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isalpha(classify_type ch) noexcept
+    isalpha(char32_t ch) noexcept
     {
         return x4::unicode::is_alphabetic(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isdigit(classify_type ch) noexcept
+    isdigit(char32_t ch) noexcept
     {
         return x4::unicode::is_decimal_number(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isxdigit(classify_type ch) noexcept
+    isxdigit(char32_t ch) noexcept
     {
         return x4::unicode::is_hex_digit(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    iscntrl(classify_type ch) noexcept
+    iscntrl(char32_t ch) noexcept
     {
         return x4::unicode::is_control(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isgraph(classify_type ch) noexcept
+    isgraph(char32_t ch) noexcept
     {
         return x4::unicode::is_graph(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    islower(classify_type ch) noexcept
+    islower(char32_t ch) noexcept
     {
         return x4::unicode::is_lowercase(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isprint(classify_type ch) noexcept
+    isprint(char32_t ch) noexcept
     {
         return x4::unicode::is_print(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    ispunct(classify_type ch) noexcept
+    ispunct(char32_t ch) noexcept
     {
         return x4::unicode::is_punctuation(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isspace(classify_type ch) noexcept
+    isspace(char32_t ch) noexcept
     {
         return x4::unicode::is_white_space(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    (isblank)(classify_type ch) noexcept
+    (isblank)(char32_t ch) noexcept
     {
         return x4::unicode::is_blank(ch);
     }
 
     [[nodiscard]] static constexpr bool
-    isupper(classify_type ch) noexcept
+    isupper(char32_t ch) noexcept
     {
         return x4::unicode::is_uppercase(ch);
     }
 
     // Mixing character encodings is semantically wrong
-    static constexpr void isascii_(char) = delete;
-    static constexpr void isascii_(wchar_t) = delete;
-    static constexpr void ischar(char) = delete;
-    static constexpr void ischar(wchar_t) = delete;
-    static constexpr void isalnum(char) = delete;
-    static constexpr void isalnum(wchar_t) = delete;
-    static constexpr void isalpha(char) = delete;
-    static constexpr void isalpha(wchar_t) = delete;
-    static constexpr void isdigit(char) = delete;
-    static constexpr void isdigit(wchar_t) = delete;
-    static constexpr void isxdigit(char) = delete;
-    static constexpr void isxdigit(wchar_t) = delete;
-    static constexpr void iscntrl(char) = delete;
-    static constexpr void iscntrl(wchar_t) = delete;
-    static constexpr void isgraph(char) = delete;
-    static constexpr void isgraph(wchar_t) = delete;
-    static constexpr void islower(char) = delete;
-    static constexpr void islower(wchar_t) = delete;
-    static constexpr void isprint(char) = delete;
-    static constexpr void isprint(wchar_t) = delete;
-    static constexpr void ispunct(char) = delete;
-    static constexpr void ispunct(wchar_t) = delete;
-    static constexpr void isspace(char) = delete;
-    static constexpr void isspace(wchar_t) = delete;
-    static constexpr void isblank(char) = delete;
-    static constexpr void isblank(wchar_t) = delete;
-    static constexpr void isupper(char) = delete;
-    static constexpr void isupper(wchar_t) = delete;
+    static constexpr bool isascii_(char) = delete;
+    static constexpr bool isascii_(wchar_t) = delete;
+    static constexpr bool isascii_(char8_t) = delete;
+    static constexpr bool isascii_(char16_t) = delete;
+    static constexpr bool ischar(char) = delete;
+    static constexpr bool ischar(wchar_t) = delete;
+    static constexpr bool ischar(char8_t) = delete;
+    static constexpr bool ischar(char16_t) = delete;
+    static constexpr bool isalnum(char) = delete;
+    static constexpr bool isalnum(wchar_t) = delete;
+    static constexpr bool isalnum(char8_t) = delete;
+    static constexpr bool isalnum(char16_t) = delete;
+    static constexpr bool isalpha(char) = delete;
+    static constexpr bool isalpha(wchar_t) = delete;
+    static constexpr bool isalpha(char8_t) = delete;
+    static constexpr bool isalpha(char16_t) = delete;
+    static constexpr bool isdigit(char) = delete;
+    static constexpr bool isdigit(wchar_t) = delete;
+    static constexpr bool isdigit(char8_t) = delete;
+    static constexpr bool isdigit(char16_t) = delete;
+    static constexpr bool isxdigit(char) = delete;
+    static constexpr bool isxdigit(wchar_t) = delete;
+    static constexpr bool isxdigit(char8_t) = delete;
+    static constexpr bool isxdigit(char16_t) = delete;
+    static constexpr bool iscntrl(char) = delete;
+    static constexpr bool iscntrl(wchar_t) = delete;
+    static constexpr bool iscntrl(char8_t) = delete;
+    static constexpr bool iscntrl(char16_t) = delete;
+    static constexpr bool isgraph(char) = delete;
+    static constexpr bool isgraph(wchar_t) = delete;
+    static constexpr bool isgraph(char8_t) = delete;
+    static constexpr bool isgraph(char16_t) = delete;
+    static constexpr bool islower(char) = delete;
+    static constexpr bool islower(wchar_t) = delete;
+    static constexpr bool islower(char8_t) = delete;
+    static constexpr bool islower(char16_t) = delete;
+    static constexpr bool isprint(char) = delete;
+    static constexpr bool isprint(wchar_t) = delete;
+    static constexpr bool isprint(char8_t) = delete;
+    static constexpr bool isprint(char16_t) = delete;
+    static constexpr bool ispunct(char) = delete;
+    static constexpr bool ispunct(wchar_t) = delete;
+    static constexpr bool ispunct(char8_t) = delete;
+    static constexpr bool ispunct(char16_t) = delete;
+    static constexpr bool isspace(char) = delete;
+    static constexpr bool isspace(wchar_t) = delete;
+    static constexpr bool isspace(char8_t) = delete;
+    static constexpr bool isspace(char16_t) = delete;
+    static constexpr bool isblank(char) = delete;
+    static constexpr bool isblank(wchar_t) = delete;
+    static constexpr bool isblank(char8_t) = delete;
+    static constexpr bool isblank(char16_t) = delete;
+    static constexpr bool isupper(char) = delete;
+    static constexpr bool isupper(wchar_t) = delete;
+    static constexpr bool isupper(char8_t) = delete;
+    static constexpr bool isupper(char16_t) = delete;
 
     // Simple character conversions
 
-    [[nodiscard]] static constexpr classify_type
-    tolower(classify_type ch) noexcept
+    [[nodiscard]] static constexpr char32_t
+    tolower(char32_t ch) noexcept
     {
         return x4::unicode::to_lowercase(ch);
     }
 
-    [[nodiscard]] static constexpr classify_type
-    toupper(classify_type ch) noexcept
+    [[nodiscard]] static constexpr char32_t
+    toupper(char32_t ch) noexcept
     {
         return x4::unicode::to_uppercase(ch);
     }
 
-    [[nodiscard]] static constexpr std::uint32_t
-    toucs4(classify_type ch) noexcept
-    {
-        return ch;
-    }
-
-    static constexpr void tolower(char) = delete;
-    static constexpr void tolower(wchar_t) = delete;
-    static constexpr void toupper(char) = delete;
-    static constexpr void toupper(wchar_t) = delete;
-    static constexpr void toucs4(char) = delete;
-    static constexpr void toucs4(wchar_t) = delete;
+    static constexpr bool tolower(char) = delete;
+    static constexpr bool tolower(wchar_t) = delete;
+    static constexpr bool tolower(char8_t) = delete;
+    static constexpr bool tolower(char16_t) = delete;
+    static constexpr bool toupper(char) = delete;
+    static constexpr bool toupper(wchar_t) = delete;
+    static constexpr bool toupper(char8_t) = delete;
+    static constexpr bool toupper(char16_t) = delete;
 
     // Major Categories
 #define IRIS_X4_MAJOR_CATEGORY(name) \
     [[nodiscard]] static constexpr bool \
-    is_##name(classify_type ch) noexcept \
+    is_##name(char32_t ch) noexcept \
     { \
         return x4::unicode::get_major_category(ch) == x4::unicode::properties::name; \
     } \
-    static constexpr void is_##name(char) = delete; \
-    static constexpr void is_##name(wchar_t) = delete;
+    static constexpr bool is_##name(char) = delete; \
+    static constexpr bool is_##name(wchar_t) = delete; \
+    static constexpr bool is_##name(char8_t) = delete; \
+    static constexpr bool is_##name(char16_t) = delete;
 
     IRIS_X4_MAJOR_CATEGORY(letter)
     IRIS_X4_MAJOR_CATEGORY(mark)
@@ -192,12 +215,14 @@ struct unicode
     // General Categories
 #define IRIS_X4_CATEGORY(name) \
     [[nodiscard]] static constexpr bool \
-    is_##name(classify_type ch) noexcept \
+    is_##name(char32_t ch) noexcept \
     { \
         return x4::unicode::get_category(ch) == x4::unicode::properties::name; \
     } \
-    static constexpr void is_##name(char) = delete; \
-    static constexpr void is_##name(wchar_t) = delete;
+    static constexpr bool is_##name(char) = delete; \
+    static constexpr bool is_##name(wchar_t) = delete; \
+    static constexpr bool is_##name(char8_t) = delete; \
+    static constexpr bool is_##name(char16_t) = delete;
 
     IRIS_X4_CATEGORY(uppercase_letter)
     IRIS_X4_CATEGORY(lowercase_letter)
@@ -241,12 +266,14 @@ struct unicode
     // Derived Categories
 #define IRIS_X4_DERIVED_CATEGORY(name) \
     [[nodiscard]] static constexpr bool \
-    is_##name(classify_type ch) noexcept \
+    is_##name(char32_t ch) noexcept \
     { \
         return x4::unicode::is_##name(ch); \
     } \
-    static constexpr void is_##name(char) = delete; \
-    static constexpr void is_##name(wchar_t) = delete;
+    static constexpr bool is_##name(char) = delete; \
+    static constexpr bool is_##name(wchar_t) = delete; \
+    static constexpr bool is_##name(char8_t) = delete; \
+    static constexpr bool is_##name(char16_t) = delete;
 
     IRIS_X4_DERIVED_CATEGORY(alphabetic)
     IRIS_X4_DERIVED_CATEGORY(uppercase)
@@ -261,12 +288,14 @@ struct unicode
     // Scripts
 #define IRIS_X4_SCRIPT(name) \
     [[nodiscard]] static constexpr bool \
-    is_##name(classify_type ch) noexcept \
+    is_##name(char32_t ch) noexcept \
     { \
         return x4::unicode::get_script(ch) == x4::unicode::properties::name; \
     } \
-    static constexpr void is_##name(char) = delete; \
-    static constexpr void is_##name(wchar_t) = delete;
+    static constexpr bool is_##name(char) = delete; \
+    static constexpr bool is_##name(wchar_t) = delete; \
+    static constexpr bool is_##name(char8_t) = delete; \
+    static constexpr bool is_##name(char16_t) = delete;
 
     IRIS_X4_SCRIPT(adlam)
     IRIS_X4_SCRIPT(caucasian_albanian)

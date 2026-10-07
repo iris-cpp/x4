@@ -17,8 +17,6 @@
 
 namespace iris::x4::unicode {
 
-using classify_type = std::uint32_t;
-
 // This header provides Basic (Level 1) Unicode Support
 // See http://unicode.org/reports/tr18/ for details
 
@@ -28,7 +26,7 @@ namespace properties {
 // MMM: major_category
 // CCC: category
 
-enum major_category
+enum major_category : std::uint8_t
 {
     letter,
     mark,
@@ -39,7 +37,7 @@ enum major_category
     symbol
 };
 
-enum category
+enum category : std::uint8_t
 {
     uppercase_letter = 0,   // [Lu] an uppercase letter
     lowercase_letter,       // [Ll] a lowercase letter
@@ -79,7 +77,7 @@ enum category
     other_symbol            // [So] a symbol of other type
 };
 
-enum derived_properties
+enum derived_properties : std::uint16_t
 {
     alphabetic = 64,
     uppercase = 128,
@@ -90,7 +88,7 @@ enum derived_properties
     default_ignorable_code_point = 4096
 };
 
-enum script
+enum script : std::uint8_t
 {
     adlam,
     caucasian_albanian,
