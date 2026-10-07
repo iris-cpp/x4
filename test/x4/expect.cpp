@@ -298,7 +298,6 @@ TEST_CASE("expect")
     using x4::eol;
     //using x4::attr;
     using x4::int_;
-    using x4::shared_symbols;
     using x4::with;
 
     IRIS_X4_ASSERT_CONSTEXPR_CTORS(expect['x']);
@@ -512,8 +511,7 @@ TEST_CASE("expect")
             CHECK(where == "a"sv);
         });
 
-        shared_symbols<> s;
-        s.add("cat");
+        constexpr auto s = x4::symbols("symbol", {"cat"});
         X4_TEST_SUCCESS_PASS("12cat", +digit > s);
         X4_TEST_FAILURE("12dog", +digit > s, {
             CHECK(where == "dog"sv);
