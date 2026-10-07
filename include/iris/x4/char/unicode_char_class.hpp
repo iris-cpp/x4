@@ -299,6 +299,22 @@ struct unicode_char_class_base
         return char_encoding::unicode::ischar(ch);
     }
 
+    template<class Char>
+    [[nodiscard]] static constexpr bool
+    is(char_classes::unicode::space_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, char32_t>);
+        return char_encoding::unicode::isspace(ch);
+    }
+
+    template<class Char>
+    [[nodiscard]] static constexpr bool
+    is(char_classes::unicode::blank_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, char32_t>);
+        return (char_encoding::unicode::isblank)(ch);
+    }
+
     IRIS_X4_BASIC_CLASSIFY(alnum)
     IRIS_X4_BASIC_CLASSIFY(alpha)
     IRIS_X4_BASIC_CLASSIFY(digit)
@@ -308,8 +324,6 @@ struct unicode_char_class_base
     IRIS_X4_BASIC_CLASSIFY(lower)
     IRIS_X4_BASIC_CLASSIFY(print)
     IRIS_X4_BASIC_CLASSIFY(punct)
-    IRIS_X4_BASIC_CLASSIFY(space)
-    IRIS_X4_BASIC_CLASSIFY(blank)
     IRIS_X4_BASIC_CLASSIFY(upper)
 
     // Unicode Major Categories

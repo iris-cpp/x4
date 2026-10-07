@@ -80,32 +80,12 @@ struct char_properties<unicode>
     }
 
     [[nodiscard]] static constexpr bool
-    isspace(char32_t ch) noexcept
-    {
-        return x4::unicode::is_white_space(ch);
-    }
-
-    [[nodiscard]] static constexpr bool
-    (isblank)(char32_t ch) noexcept
-    {
-        return x4::unicode::is_blank(ch);
-    }
-
-    [[nodiscard]] static constexpr bool
     isupper(char32_t ch) noexcept
     {
         return x4::unicode::is_uppercase(ch);
     }
 
     // Mixing character encodings is semantically wrong
-    static constexpr bool isascii_(char) = delete;
-    static constexpr bool isascii_(wchar_t) = delete;
-    static constexpr bool isascii_(char8_t) = delete;
-    static constexpr bool isascii_(char16_t) = delete;
-    static constexpr bool ischar(char) = delete;
-    static constexpr bool ischar(wchar_t) = delete;
-    static constexpr bool ischar(char8_t) = delete;
-    static constexpr bool ischar(char16_t) = delete;
     static constexpr bool isalnum(char) = delete;
     static constexpr bool isalnum(wchar_t) = delete;
     static constexpr bool isalnum(char8_t) = delete;
@@ -142,14 +122,6 @@ struct char_properties<unicode>
     static constexpr bool ispunct(wchar_t) = delete;
     static constexpr bool ispunct(char8_t) = delete;
     static constexpr bool ispunct(char16_t) = delete;
-    static constexpr bool isspace(char) = delete;
-    static constexpr bool isspace(wchar_t) = delete;
-    static constexpr bool isspace(char8_t) = delete;
-    static constexpr bool isspace(char16_t) = delete;
-    static constexpr bool isblank(char) = delete;
-    static constexpr bool isblank(wchar_t) = delete;
-    static constexpr bool isblank(char8_t) = delete;
-    static constexpr bool isblank(char16_t) = delete;
     static constexpr bool isupper(char) = delete;
     static constexpr bool isupper(wchar_t) = delete;
     static constexpr bool isupper(char8_t) = delete;

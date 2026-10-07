@@ -74,7 +74,7 @@ namespace iris::x4::unicode {
 {
     switch (ch)
     {
-    case '\n': case '\v': case '\f': case '\r':
+    case U'\n': case U'\v': case U'\f': case U'\r': case U'\u0085':
         return false;
     default:
         return unicode::is_white_space(ch) &&

@@ -23,6 +23,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <string>
 
 #include <cassert>
 
@@ -467,8 +468,7 @@ extract_sign(It& first, Se const& last)
 template<class T, unsigned Radix, unsigned MinDigits, int MaxDigits, bool Accumulate = false>
 struct extract_uint
 {
-    // check template parameter 'Radix' for validity
-    static_assert(Radix >= 2 && Radix <= 36, "Unsupported Radix");
+    static_assert(2 <= Radix && Radix <= 36);
 
     using extract_type = detail::extract_int<
         T, Radix, MinDigits, MaxDigits,
@@ -514,11 +514,7 @@ struct extract_uint
 template<class T, unsigned Radix, unsigned MinDigits, int MaxDigits>
 struct extract_int
 {
-    // check template parameter 'Radix' for validity
-    static_assert(
-        Radix == 2 || Radix == 8 || Radix == 10 || Radix == 16,
-        "Unsupported Radix"
-    );
+    static_assert(2 <= Radix && Radix <= 36);
 
     using extract_pos_type = detail::extract_int<T, Radix, MinDigits, MaxDigits>;
     using extract_neg_type = detail::extract_int<T, Radix, MinDigits, MaxDigits, detail::negative_accumulator<Radix>>;
@@ -568,6 +564,41 @@ struct extract_int
         return false;
     }
 };
+
+namespace detail {
+
+template<unsigned Radix, unsigned MinDigits, int MaxDigits>
+[[nodiscard]] std::string integer_info(std::string name)
+{
+    std::string info = '`' + std::move(name) + '`';
+    if constexpr (Radix == 10 && MinDigits == 1 && MaxDigits == -1) {
+        return info;
+
+    } else {
+        info += " (";
+        if constexpr (Radix != 10) {
+            info += "radix " + std::to_string(Radix);
+            if constexpr (MinDigits != 1 || MaxDigits != -1) {
+                info += ", ";
+            }
+        }
+
+        if constexpr (MaxDigits == -1) {
+            if constexpr (MinDigits != 1) {
+                info += "at least " + std::to_string(MinDigits) + " digits";
+            }
+
+        } else if constexpr (MinDigits == static_cast<unsigned>(MaxDigits)) {
+            info += std::to_string(MinDigits) + " digits";
+
+        } else {
+            info += std::to_string(MinDigits) + " to " + std::to_string(MaxDigits) + " digits";
+        }
+        return info + ')';
+    }
+}
+
+} // detail
 
 } // iris::x4::numeric
 

@@ -20,9 +20,6 @@
 #include <iris/x4/char_encoding/standard/char_properties.hpp>
 #include <iris/x4/char_encoding/standard.hpp>
 
-#include <iris/x4/char_encoding/unicode/char_properties.hpp>
-#include <iris/x4/char_encoding/unicode.hpp> // IWYU pragma: keep
-
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/traits/char_encoding_traits.hpp>
 
@@ -56,6 +53,20 @@ struct char_class_base
         return Encoding::ischar(detail::cast_char<classify_type>(ch));
     }
 
+    template<class Char>
+    [[nodiscard]] static constexpr bool is(char_classes::space_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, classify_type>);
+        return Encoding::isspace(detail::cast_char<classify_type>(ch));
+    }
+
+    template<class Char>
+    [[nodiscard]] static constexpr bool is(char_classes::blank_tag, Char ch) noexcept
+    {
+        static_assert(std::same_as<Char, classify_type>);
+        return (Encoding::isblank)(detail::cast_char<classify_type>(ch));
+    }
+
     IRIS_X4_CLASSIFY(alnum)
     IRIS_X4_CLASSIFY(alpha)
     IRIS_X4_CLASSIFY(digit)
@@ -65,8 +76,6 @@ struct char_class_base
     IRIS_X4_CLASSIFY(lower)
     IRIS_X4_CLASSIFY(print)
     IRIS_X4_CLASSIFY(punct)
-    IRIS_X4_CLASSIFY(space)
-    IRIS_X4_CLASSIFY(blank)
     IRIS_X4_CLASSIFY(upper)
 
 #undef IRIS_X4_CLASSIFY
@@ -139,6 +148,9 @@ IRIS_X4_CHAR_CLASSES(standard)
 #undef IRIS_X4_CHAR_CLASSES
 
 
+template<class Tag>
+struct unicode_char_class_parser;
+
 namespace detail {
 
 template<X4Subject Skipper>
@@ -163,6 +175,18 @@ struct to_builtin_fn
     template<class Encoding>
     [[nodiscard]] static constexpr builtin_skipper_kind
     operator()(char_class_parser<Encoding, char_classes::space_tag> const&) noexcept
+    {
+        return builtin_skipper_kind::space;
+    }
+
+    [[nodiscard]] static constexpr builtin_skipper_kind
+    operator()(unicode_char_class_parser<char_classes::blank_tag> const&) noexcept
+    {
+        return builtin_skipper_kind::blank;
+    }
+
+    [[nodiscard]] static constexpr builtin_skipper_kind
+    operator()(unicode_char_class_parser<char_classes::space_tag> const&) noexcept
     {
         return builtin_skipper_kind::space;
     }

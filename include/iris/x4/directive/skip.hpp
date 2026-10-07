@@ -29,7 +29,7 @@ template<class Encoding, class Tag>
 struct char_class_parser;
 
 template<class Tag>
-struct unicode_char_class;
+struct unicode_char_class_parser;
 
 namespace detail {
 
@@ -195,22 +195,7 @@ struct builtin_skip_gen_impl
     }
 };
 
-template<X4Subject Skipper>
-struct no_builtin_t {};
-
-struct no_builtin_fn
-{
-    template<X4Subject Skipper>
-    [[nodiscard]] static constexpr no_builtin_t<Skipper> operator()(Skipper const&) noexcept
-    {
-        return {};
-    }
-};
-
 } // detail
-
-[[maybe_unused]] inline constexpr detail::no_builtin_fn no_builtin{};
-
 
 namespace detail {
 
@@ -232,34 +217,18 @@ struct skip_gen
         return {};
     }
 
-    template<class Encoding, class Tag>
-    [[nodiscard]] static constexpr auto
-    operator()(no_builtin_t<char_class_parser<Encoding, Tag>> const&)
-        noexcept(noexcept(skip_gen::operator()(char_class_parser<Encoding, Tag>{})))
-    {
-        return skip_gen::operator()(char_class_parser<Encoding, Tag>{});
-    }
-
     [[nodiscard]]
     static constexpr builtin_skip_gen_impl<builtin_skipper_kind::blank>
-    operator()(unicode_char_class<char_classes::blank_tag> const&) noexcept
+    operator()(unicode_char_class_parser<char_classes::blank_tag> const&) noexcept
     {
         return {};
     }
 
     [[nodiscard]]
     static constexpr builtin_skip_gen_impl<builtin_skipper_kind::space>
-    operator()(unicode_char_class<char_classes::space_tag> const&) noexcept
+    operator()(unicode_char_class_parser<char_classes::space_tag> const&) noexcept
     {
         return {};
-    }
-
-    template<class Tag>
-    [[nodiscard]] static constexpr auto
-    operator()(no_builtin_t<unicode_char_class<Tag>> const&)
-        noexcept(noexcept(skip_gen::operator()(unicode_char_class<Tag>{})))
-    {
-        return skip_gen::operator()(unicode_char_class<Tag>{});
     }
 
     template<X4Subject Skipper>

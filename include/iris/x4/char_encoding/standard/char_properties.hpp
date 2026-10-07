@@ -102,20 +102,6 @@ struct char_properties<standard>
     }
 
     [[nodiscard]] static bool // TODO: constexpr
-    isspace(int ch) noexcept
-    {
-        assert(char_properties::strict_ischar(ch));
-        return std::isspace(ch) != 0;
-    }
-
-    [[nodiscard]] static constexpr bool
-    (isblank)(int ch) noexcept
-    {
-        assert(char_properties::strict_ischar(ch));
-        return (ch == ' ' || ch == '\t');
-    }
-
-    [[nodiscard]] static bool // TODO: constexpr
     isupper(int ch) noexcept
     {
         assert(char_properties::strict_ischar(ch));

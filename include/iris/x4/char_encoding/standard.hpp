@@ -17,7 +17,6 @@
 
 namespace iris::x4::char_encoding {
 
-// Test characters for specified conditions (using std functions)
 struct standard
 {
     using char_type = char;
@@ -36,6 +35,28 @@ struct standard
         // uses all 8 bits
         // we have to watch out for sign extensions
         return (0 == (ch & ~0xff) || ~0 == (ch | 0xff)) != 0;
+    }
+
+    [[nodiscard]] static constexpr bool
+    isspace(unsigned char const ch) noexcept
+    {
+        switch (ch) {
+        case ' ': case '\t': case '\n': case '\v': case '\f': case '\r':
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    [[nodiscard]] static constexpr bool
+    (isblank)(unsigned char const ch) noexcept
+    {
+        switch (ch) {
+        case ' ': case '\t':
+            return true;
+        default:
+            return false;
+        }
     }
 };
 
