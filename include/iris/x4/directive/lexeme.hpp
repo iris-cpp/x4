@@ -19,17 +19,26 @@
 #include <type_traits>
 #include <utility>
 
+#include <cassert>
+
 namespace iris::x4 {
 
 namespace detail {
 
 template<class Context>
-[[nodiscard]] constexpr decltype(auto) make_lexeme_context(Context const& ctx) noexcept
+[[nodiscard]] constexpr decltype(auto) make_lexeme_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
 {
+    static_assert(!has_context_of_v<Context, contexts::skipper, builtin_skipper_kind>);
+    assert(skipper_kind == builtin_skipper_kind::no_skip);
+
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using T = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
-    return detail::named_context<T>(x4::remove_first_context<contexts::skipper>(ctx));
+
+    // Note: we must use "append" here since the position of the skipper should be
+    // super stable in the context as the exact type is often referenced by
+    // `IRIS_X4_INSTANTIATE`.
+    using T = std::remove_cvref_t<decltype(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper_kind))>;
+    return detail::named_context<T>(x4::replace_first_or_append_context<contexts::skipper>(ctx, skipper_kind));
 }
 
 } // detail
@@ -43,22 +52,31 @@ struct lexeme_directive : proxy_parser<lexeme_directive<Subject>, Subject>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        auto it = first;
-        x4::skip_over(it, last, ctx); // pre-skip
+        auto local_it = first;
+        x4::skip_over(local_it, last, ctx); // pre-skip
 
-        bool const ok = this->subject.parse(
-            it, last,
-            detail::make_lexeme_context(ctx), // no skipper
-            attr
-        );
+        bool ok;
+        if constexpr (has_context_of_v<Context, contexts::skipper, builtin_skipper_kind>) {
+            builtin_skipper_kind& skipper_kind = x4::get<contexts::skipper>(ctx);
+            auto const old_skipper_kind = skipper_kind;
+            skipper_kind = builtin_skipper_kind::no_skip;
+            ok = this->subject.parse(local_it, last, ctx, attr);
+            skipper_kind = old_skipper_kind;
+
+        } else {
+            // This value could be reset by some nested parsers, so it can't be const
+            /* constexpr */ builtin_skipper_kind skipper_kind = builtin_skipper_kind::no_skip;
+            ok = this->subject.parse(local_it, last, detail::make_lexeme_context(ctx, skipper_kind), attr);
+        }
+
         if (ok) {
-            first = std::move(it);
+            first = std::move(local_it);
             return true;
         }
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
-                first = std::move(it);
+                first = std::move(local_it);
             }
         }
         return false;
