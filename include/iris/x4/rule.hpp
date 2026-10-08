@@ -353,20 +353,47 @@ call_rule_definition(
 
 #define IRIS_ZZ_X4_FIRST(x, ...) x
 
-#define IRIS_ZZ_X4_INSTANTIATE_I(rule_name, It, Se, Context) \
+#define IRIS_ZZ_X4_INSTANTIATE_I(export_macro, rule_name, It, Se, Context) \
     namespace rules { \
-    template bool parse_rule<It, Se, Context>( \
+    template export_macro bool parse_rule<It, Se, Context>( \
         IRIS_PP_CAT(rule_name, _id), \
         It&, Se const&, Context const&, \
         ::iris::x4::detail::rule_attr_ref<IRIS_PP_CAT(rule_name, _id)> \
     ); \
     } /* rules */
 
-// `IRIS_X4_INSTANTIATE(rule_name, It, Context)`
-// `IRIS_X4_INSTANTIATE(rule_name, It, Se, Context)`
+// Explicitly instantiates `parse_rule` for the given iterator, sentinel, and
+// context types. This allows the grammar definition to live entirely in a
+// .cpp file, keeping the X4 dependency of public headers to a minimum.
+//
+// The rule must be declared with `IRIS_X4_DECLARE_PUBLIC` and defined with
+// `IRIS_X4_DEFINE_PUBLIC`.
+//
 // Note: If a type contains a comma, wrap the entire type with parentheses.
+//
+// Usage:
+//   - `IRIS_X4_INSTANTIATE(rule_name, It, Context)`
+//   - `IRIS_X4_INSTANTIATE(rule_name, It, Se, Context)`
 #define IRIS_X4_INSTANTIATE(rule_name, It, SeOrContext, ...) \
     IRIS_ZZ_X4_INSTANTIATE_I( \
+        , /* export_macro */ \
+        rule_name, \
+        IRIS_PP_UNPAREN_IF_PAREN(It), \
+        IRIS_PP_UNPAREN_IF_PAREN(IRIS_ZZ_X4_FIRST(__VA_OPT__(SeOrContext,) It)), \
+        IRIS_PP_UNPAREN_IF_PAREN(IRIS_ZZ_X4_FIRST(__VA_ARGS__ __VA_OPT__(,) SeOrContext)) \
+    )
+
+// Similar to `IRIS_X4_INSTANTIATE`, but also exports the instantiation
+// across DLL boundaries using `export_macro`.
+//
+// Note: If a type contains a comma, wrap the entire type with parentheses.
+//
+// Usage:
+//   - `IRIS_X4_INSTANTIATE_EXPORT(export_macro, rule_name, It, Context)`
+//   - `IRIS_X4_INSTANTIATE_EXPORT(export_macro, rule_name, It, Se, Context)`
+#define IRIS_X4_INSTANTIATE_EXPORT(export_macro, rule_name, It, SeOrContext, ...) \
+    IRIS_ZZ_X4_INSTANTIATE_I( \
+        export_macro, \
         rule_name, \
         IRIS_PP_UNPAREN_IF_PAREN(It), \
         IRIS_PP_UNPAREN_IF_PAREN(IRIS_ZZ_X4_FIRST(__VA_OPT__(SeOrContext,) It)), \
