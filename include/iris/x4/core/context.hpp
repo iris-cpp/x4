@@ -58,7 +58,7 @@ concept has_context = detail::has_context_impl<Context, ID_To_Search>::value;
 template<class Context, class ID_To_Search, class T>
 concept has_context_of =
     has_context<Context, ID_To_Search> &&
-    std::same_as<typename detail::has_context_impl<Context, ID_To_Search>::context_value_type, T>;
+    std::same_as<std::remove_const_t<typename detail::has_context_impl<Context, ID_To_Search>::context_value_type>, T>;
 
 template<class ID_To_Get, class ID, class T, class Next>
 [[nodiscard]] constexpr decltype(auto)
