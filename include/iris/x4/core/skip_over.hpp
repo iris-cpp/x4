@@ -57,7 +57,10 @@ struct builtin_skipper_traits<builtin_skipper_kind::space>
 } // detail
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    requires X4Subject<get_context_plain_t<contexts::skipper, Context>>
+    requires
+        has_context<Context, contexts::skipper> &&
+        (!has_context_of<Context, contexts::skipper, builtin_skipper_kind>) &&
+        X4Subject<get_context_plain_t<contexts::skipper, Context>>
 constexpr void skip_over(It& first, Se const& last, Context const& ctx)
 {
     auto const& skipper = x4::get<contexts::skipper>(ctx);
@@ -68,10 +71,10 @@ constexpr void skip_over(It& first, Se const& last, Context const& ctx)
 
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
-    using SkipperOnlyContext = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
-    auto const& local_ctx = detail::named_context<SkipperOnlyContext>(x4::remove_first_context<contexts::skipper>(ctx));
+    using NoSkipperContext = std::remove_cvref_t<decltype(x4::remove_first_context<contexts::skipper>(ctx))>;
+    auto const& local_ctx = detail::named_context<NoSkipperContext>(x4::remove_first_context<contexts::skipper>(ctx));
 
-    if constexpr (x4::has_context_v<Context, contexts::error_handler>) {
+    if constexpr (has_context<Context, contexts::error_handler>) {
         auto& error_handler = x4::get<contexts::error_handler>(ctx);
         error_handler.on_skip(skipper_state::pre_skip);
 
@@ -86,12 +89,12 @@ constexpr void skip_over(It& first, Se const& last, Context const& ctx)
 
 // Implemented in `char_class.hpp`
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    requires std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>
+    requires has_context_of<Context, contexts::skipper, builtin_skipper_kind>
 constexpr void skip_over(It& first, Se const& last, Context const& ctx) noexcept;
 
 
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    requires (!has_context_v<Context, contexts::skipper>)
+    requires (!has_context<Context, contexts::skipper>)
 constexpr void skip_over(It&, Se const&, Context const&) noexcept
 {
 }

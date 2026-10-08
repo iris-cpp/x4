@@ -38,7 +38,7 @@ struct matches_directive : unary_parser<matches_directive<Subject>, Subject>
     {
         bool const matched = this->subject.parse(first, last, ctx, unused);
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) return false;
         }
 

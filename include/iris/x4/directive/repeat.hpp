@@ -116,7 +116,7 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
                 if (detail::parse_into_container(this->subject, local_it, last, ctx, chunk_buf.container())) {
                     // We can't merge here; it will lead to partial status
                 } else {
-                    if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                    if constexpr (has_context<Context, contexts::expectation_failure>) {
                         if (x4::has_expectation_failure(ctx)) {
                             // don't rollback iterator (mimicking exception-like behavior)
                             first = std::move(local_it);
@@ -137,7 +137,7 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
                 }
             }
 
-            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if constexpr (has_context<Context, contexts::expectation_failure>) {
                 return !x4::has_expectation_failure(ctx);
             } else {
                 return true;
@@ -153,7 +153,7 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
         typename Bounds::value_type i{};
         for (; !bounds_.got_min(i); ++i) {
             if (!detail::parse_into_container(this->subject, local_it, last, ctx, x4::assume_container(unused_attr))) {
-                if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+                if constexpr (has_context<Context, contexts::expectation_failure>) {
                     if (x4::has_expectation_failure(ctx)) {
                         // don't rollback iterator (mimicking exception-like behavior)
                         first = std::move(local_it);
@@ -171,7 +171,7 @@ struct repeat_directive : proxy_parser<repeat_directive<Subject, Bounds>, Subjec
             }
         }
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
         } else {
             return true;

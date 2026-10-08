@@ -81,7 +81,7 @@ struct delimited_list : parser<delimited_list<Subject, Separator>>
                 first = last_parse_it;
             }
 
-            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if constexpr (has_context<Context, contexts::expectation_failure>) {
                 if (x4::has_expectation_failure(ctx)) {
                     // don't rollback iterator (mimicking exception-like behavior)
                     first = std::move(last_parse_it);
@@ -110,7 +110,7 @@ struct delimited_list : parser<delimited_list<Subject, Separator>>
             first = last_parse_it;
         }
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 first = std::move(last_parse_it);

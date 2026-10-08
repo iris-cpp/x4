@@ -41,7 +41,7 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
             // We don't need to advance the iterator on this situation.
             return false;
         }
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             // In case of `Left - expect[r]`,
             // if Right yielded expectation error,
             // the whole difference expression (*this) should also yield error.
@@ -60,7 +60,7 @@ struct difference : binary_parser<difference<Left, Right>, Left, Right>
             first = std::move(it);
             return true;
         }
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 first = std::move(it);

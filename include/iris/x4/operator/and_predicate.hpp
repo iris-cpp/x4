@@ -35,7 +35,7 @@ struct and_predicate : unary_parser<and_predicate<Subject>, Subject>
         auto it = first;
         if (this->subject.parse(it, last, ctx, unused)) return true;
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 first = std::move(it);

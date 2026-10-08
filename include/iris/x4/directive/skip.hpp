@@ -81,8 +81,10 @@ private:
 namespace detail {
 
 template<class Context>
-[[nodiscard]] constexpr decltype(auto) make_builtin_skipper_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
+[[nodiscard]] constexpr decltype(auto) make_builtin_skip_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
 {
+    static_assert(!has_context_of<Context, contexts::skipper, builtin_skipper_kind>);
+
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
     // which makes the compilation error significantly shorter.
 
@@ -101,33 +103,23 @@ struct builtin_skip_directive : proxy_parser<builtin_skip_directive<Kind, Subjec
     using base_type = proxy_parser<builtin_skip_directive, Subject>;
     using base_type::base_type;
 
-    // Has existing builtin skipper
     template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
     [[nodiscard]] constexpr bool
     parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
     {
-        builtin_skipper_kind& skipper_kind = x4::get<contexts::skipper>(ctx);
-        auto const old_skipper_kind = skipper_kind;
-        skipper_kind = Kind;
+        if constexpr (has_context_of<Context, contexts::skipper, builtin_skipper_kind>) {
+            builtin_skipper_kind& skipper_kind = x4::get<contexts::skipper>(ctx);
+            auto const old_skipper_kind = skipper_kind;
+            skipper_kind = Kind;
+            bool const ok = this->subject.parse(first, last, ctx, attr);
+            skipper_kind = old_skipper_kind;
+            return ok;
 
-        bool const ok = this->subject.parse(first, last, ctx, attr);
-
-        skipper_kind = old_skipper_kind;
-        return ok;
-    }
-
-    // No existing builtin skipper
-    template<std::forward_iterator It, std::sentinel_for<It> Se, class Context, X4Attribute Attr>
-        requires
-            std::same_as<get_context_plain_t<contexts::skipper, Context>, unused_type> ||
-            (!std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>)
-    [[nodiscard]] constexpr bool
-    parse(It& first, Se const& last, Context const& ctx, Attr& attr) const
-    {
-        // This value could be reset by some nested parsers, so it can't be const
-        /* constexpr */ builtin_skipper_kind skipper_kind = Kind;
-
-        return this->subject.parse(first, last, detail::make_builtin_skipper_context(ctx, skipper_kind), attr);
+        } else {
+            // This value could be reset by some nested parsers, so it can't be const
+            /* constexpr */ builtin_skipper_kind skipper_kind = Kind;
+            return this->subject.parse(first, last, detail::make_builtin_skip_context(ctx, skipper_kind), attr);
+        }
     }
 
     [[nodiscard]] constexpr std::string get_x4_info() const

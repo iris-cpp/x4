@@ -27,34 +27,44 @@ template<class ID, class T, class Next>
 struct context;
 
 
-template<class Context, class ID_To_Search>
-struct has_context;
+namespace detail {
 
 template<class Context, class ID_To_Search>
-constexpr bool has_context_v = has_context<Context, ID_To_Search>::value;
+struct has_context_impl;
 
 template<class ID_To_Search>
-struct has_context<unused_type, ID_To_Search>
+struct has_context_impl<unused_type, ID_To_Search>
     : std::false_type
 {};
 
 template<class T, class Next, class ID_To_Search>
-struct has_context<context<ID_To_Search, T, Next>, ID_To_Search>
+struct has_context_impl<context<ID_To_Search, T, Next>, ID_To_Search>
     : std::true_type
-{};
+{
+    using context_value_type = T;
+};
 
 template<class ID, class T, class Next, class ID_To_Search>
     requires (!std::same_as<ID, ID_To_Search>)
-struct has_context<context<ID, T, Next>, ID_To_Search>
-    : has_context<std::remove_cvref_t<Next>, ID_To_Search>
+struct has_context_impl<context<ID, T, Next>, ID_To_Search>
+    : has_context_impl<std::remove_cvref_t<Next>, ID_To_Search>
 {};
 
+} // detail
+
+template<class Context, class ID_To_Search>
+concept has_context = detail::has_context_impl<Context, ID_To_Search>::value;
+
+template<class Context, class ID_To_Search, class T>
+concept has_context_of =
+    has_context<Context, ID_To_Search> &&
+    std::same_as<std::remove_const_t<typename detail::has_context_impl<Context, ID_To_Search>::context_value_type>, T>;
 
 template<class ID_To_Get, class ID, class T, class Next>
 [[nodiscard]] constexpr decltype(auto)
 get(context<ID, T, Next> const& ctx) noexcept
 {
-    if constexpr (has_context_v<context<ID, T, Next>, ID_To_Get>) {
+    if constexpr (has_context<context<ID, T, Next>, ID_To_Get>) {
         return ctx.get(std::type_identity<ID_To_Get>{});
     } else {
         return (unused); // return lvalue
@@ -74,22 +84,6 @@ void get(context<ID, T, Next> const&&) = delete; // dangling
 template<class ID, class Context>
 using get_context_plain_t = std::remove_cvref_t<decltype(x4::get<ID>(std::declval<Context const&>()))>;
 
-
-template<class Context, class ID, class T>
-struct has_context_of : std::false_type {};
-
-template<class Context, class ID, class T>
-    requires has_context_v<Context, ID>
-struct has_context_of<Context, ID, T>
-{
-    static_assert(!std::is_reference_v<T>);
-    static_assert(!std::is_const_v<T>);
-    static constexpr bool value = std::same_as<get_context_plain_t<ID, Context>, T>;
-};
-
-template<class Context, class ID, class T>
-constexpr bool has_context_of_v = has_context_of<Context, ID, T>::value;
-
 namespace detail {
 
 template<class ID>
@@ -99,7 +93,7 @@ template<class ID>
 concept AllowUnusedContextID = requires { requires ID::allow_unused; };
 
 template<class ID, class Next>
-concept HasNoDuplicateContext = !UniqueContextID<ID> || !has_context_v<Next, ID>;
+concept HasNoDuplicateContext = !UniqueContextID<ID> || !has_context<Next, ID>;
 
 template<class T>
 concept ContextValueType =
@@ -513,7 +507,7 @@ replace_first_context_impl(
         (void)new_val; // == unused
         return x4::remove_first_context<ID_To_Replace>(ctx);
 
-    } else if constexpr (!IsAppend && !has_context_v<context<ID, T, Next>, ID_To_Replace>) {
+    } else if constexpr (!IsAppend && !has_context<context<ID, T, Next>, ID_To_Replace>) {
         return context<ID_To_Replace, NewVal, context<ID, T, Next> const&>{new_val, ctx};
 
     } else if constexpr (std::same_as<ID, ID_To_Replace>) { // Match

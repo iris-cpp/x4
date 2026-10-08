@@ -105,7 +105,7 @@ struct has_on_expectation_failure<T, It, Se, Context> : std::true_type
         "`on_error` is obsolete due to its confusing name; use `on_expectation_failure` instead."
     );
     static_assert(
-        has_context_v<Context, contexts::expectation_failure>,
+        has_context<Context, contexts::expectation_failure>,
         "[BUG] The `on_expectation_failure` callback on the user-provided error handler "
         "is well-defined, but the actual `Context` passed to the `parse(...)` function "
         "does not contain a reference bound to `x4::contexts::expectation_failure`. "
