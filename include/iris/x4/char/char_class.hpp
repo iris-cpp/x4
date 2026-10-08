@@ -25,6 +25,7 @@
 
 #include <concepts>
 #include <iterator>
+#include <utility>
 
 #include <cassert>
 
@@ -216,14 +217,16 @@ constexpr void builtin_skip_over(It& first, Se const& last) noexcept
 // Forward declaration in "skip_over.hpp"
 // Need to sync this implementation with `skip_gen` ("skip.hpp")
 template<std::forward_iterator It, std::sentinel_for<It> Se, class Context>
-    requires std::same_as<get_context_plain_t<contexts::skipper, Context>, builtin_skipper_kind>
+    requires has_context_of<Context, contexts::skipper, builtin_skipper_kind>
 constexpr void skip_over(It& first, Se const& last, Context const& ctx) noexcept
 {
     switch (x4::get<contexts::skipper>(ctx)) {
     case builtin_skipper_kind::no_skip: return;
     case builtin_skipper_kind::blank: return detail::builtin_skip_over<char_classes::blank_tag>(first, last);
     case builtin_skipper_kind::space: return detail::builtin_skip_over<char_classes::space_tag>(first, last);
-    default: assert(false && "unsupported builtin skipper type"); break;
+    default:
+        assert(false && "unsupported builtin skipper type");
+        std::unreachable();
     }
 }
 

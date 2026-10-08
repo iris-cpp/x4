@@ -29,7 +29,7 @@ namespace detail {
 template<class Context>
 [[nodiscard]] constexpr decltype(auto) make_no_skip_context(Context const& ctx, builtin_skipper_kind& skipper_kind) noexcept
 {
-    static_assert(!has_context_of_v<Context, contexts::skipper, builtin_skipper_kind>);
+    static_assert(!has_context_of<Context, contexts::skipper, builtin_skipper_kind>);
     assert(skipper_kind == builtin_skipper_kind::no_skip);
 
     // Declare a concrete alias type; MSVC prints the alias instead of actual type,
@@ -56,7 +56,7 @@ struct no_skip_directive : proxy_parser<no_skip_directive<Subject>, Subject>
     {
         // No pre-skip here, in contrast to `lexeme`
 
-        if constexpr (has_context_of_v<Context, contexts::skipper, builtin_skipper_kind>) {
+        if constexpr (has_context_of<Context, contexts::skipper, builtin_skipper_kind>) {
             builtin_skipper_kind& skipper_kind = x4::get<contexts::skipper>(ctx);
             auto const old_skipper_kind = skipper_kind;
             skipper_kind = builtin_skipper_kind::no_skip;

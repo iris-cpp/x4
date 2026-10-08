@@ -188,7 +188,7 @@ struct action : proxy_parser<action<Subject, ActionF>, Subject>
             first = std::move(local_it);
             return true;
         }
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 first = std::move(local_it);
@@ -228,7 +228,7 @@ public:
             first = std::move(local_it);
             return true;
         }
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 first = std::move(local_it);
@@ -249,7 +249,7 @@ public:
             first = std::move(local_it);
             return true;
         }
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             if (x4::has_expectation_failure(ctx)) {
                 // don't rollback iterator (mimicking exception-like behavior)
                 first = std::move(local_it);

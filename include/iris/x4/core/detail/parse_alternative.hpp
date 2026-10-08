@@ -42,7 +42,7 @@ namespace iris::x4::detail {
 template<class Context>
 [[nodiscard]] constexpr bool alternative_should_stop(Context const& ctx) noexcept
 {
-    if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+    if constexpr (has_context<Context, contexts::expectation_failure>) {
         return x4::has_expectation_failure(ctx);
     } else {
         return false;

@@ -53,7 +53,7 @@ struct plus : unary_parser<plus<Subject>, Subject>
                 chunk_buf.merge();
             }
 
-            if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+            if constexpr (has_context<Context, contexts::expectation_failure>) {
                 return !x4::has_expectation_failure(ctx);
             } else {
                 return true;
@@ -72,7 +72,7 @@ struct plus : unary_parser<plus<Subject>, Subject>
         while (detail::parse_into_container(this->subject, first, last, ctx, x4::assume_container(unused_attr)))
             /* loop */;
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
         } else {
             return true;

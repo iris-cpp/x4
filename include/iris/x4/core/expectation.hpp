@@ -39,7 +39,7 @@ template<class Context>
 constexpr bool has_expectation_failure(Context const& ctx) noexcept
 {
     static_assert(
-        has_context_v<Context, contexts::expectation_failure>,
+        has_context<Context, contexts::expectation_failure>,
         "Context type was not specified for `x4::contexts::expectation_failure`. "
         "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
@@ -55,7 +55,7 @@ constexpr void set_expectation_failure(
 )
 {
     static_assert(
-        has_context_v<Context, contexts::expectation_failure>,
+        has_context<Context, contexts::expectation_failure>,
         "Context type was not specified for `x4::contexts::expectation_failure`. "
         "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
@@ -70,7 +70,7 @@ constexpr void set_expectation_failure_if_empty(
 )
 {
     static_assert(
-        has_context_v<Context, contexts::expectation_failure>,
+        has_context<Context, contexts::expectation_failure>,
         "Context type was not specified for `x4::contexts::expectation_failure`. "
         "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
@@ -84,7 +84,7 @@ template<class Context>
 constexpr decltype(auto) get_expectation_failure(Context const& ctx) noexcept
 {
     static_assert(
-        has_context_v<Context, contexts::expectation_failure>,
+        has_context<Context, contexts::expectation_failure>,
         "Context type was not specified for `x4::contexts::expectation_failure`. "
         "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."
@@ -97,7 +97,7 @@ template<class Context>
 constexpr void clear_expectation_failure(Context const& ctx) noexcept
 {
     static_assert(
-        has_context_v<Context, contexts::expectation_failure>,
+        has_context<Context, contexts::expectation_failure>,
         "Context type was not specified for `x4::contexts::expectation_failure`. "
         "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
         "Note that you must also bind the context to your skipper."

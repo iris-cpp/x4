@@ -53,7 +53,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
         }
         traits::attribute_traits<Attr>::reset(attr);
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
         } else {
             return true;
@@ -76,7 +76,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
         }
         traits::attribute_traits<Attr>::reset(attr);
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
         } else {
             return true;
@@ -107,7 +107,7 @@ struct optional : unary_parser<optional<Subject>, Subject>
             }
         }
 
-        if constexpr (has_context_v<Context, contexts::expectation_failure>) {
+        if constexpr (has_context<Context, contexts::expectation_failure>) {
             return !x4::has_expectation_failure(ctx);
         } else {
             return true;

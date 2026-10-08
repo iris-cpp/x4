@@ -80,7 +80,7 @@ struct parse_into_container_impl<expect_directive<Subject>>
     )
     {
         static_assert(
-            has_context_v<Context, contexts::expectation_failure>,
+            has_context<Context, contexts::expectation_failure>,
             "Context type was not specified for `x4::contexts::expectation_failure`. "
             "You probably forgot: `x4::with<x4::contexts::expectation_failure>(failure)[p]`. "
             "Note that you must also bind the context to your skipper."

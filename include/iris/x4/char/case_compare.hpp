@@ -69,7 +69,7 @@ template<class Encoding, class Context>
 [[nodiscard]] constexpr auto
 get_case_compare(Context const&) noexcept
 {
-    if constexpr (has_context_of_v<Context, detail::case_compare_tag, detail::case_compare_no_case_t>) {
+    if constexpr (has_context_of<Context, detail::case_compare_tag, detail::case_compare_no_case_t>) {
         return no_case_compare<Encoding>{};
     } else {
         return case_compare<Encoding>{};
