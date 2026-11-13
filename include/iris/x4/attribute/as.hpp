@@ -9,12 +9,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
+#include <iris/x4/traits/container_traits.hpp>
+
+#include <iris/x4/core/detail/strict_attribute_parser.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/unused.hpp>
-#include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/traits/write_rank.hpp>
-#include <iris/x4/core/write_attribute.hpp>
-#include <iris/x4/traits/container_traits.hpp>
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/action_context.hpp>
 
@@ -88,7 +88,7 @@ public:
                 } else {
                     if (!this->subject.parse(first, last, ctx, attr_)) return false;
                 }
-                planner::pass_declared_attribute(outer_attr, std::move(attr_));
+                detail::pass_declared_attribute(outer_attr, std::move(attr_));
                 return true;
             }
         }
@@ -140,7 +140,7 @@ public:
             } else {
                 if (!this->subject.parse(first, last, ctx, attr_)) return false;
             }
-            planner::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
+            detail::pass_declared_attribute(outer_attr, iris::unwrap_recursive(std::move(attr_)));
             return true;
         }
     }

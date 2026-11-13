@@ -13,8 +13,6 @@
 #include <iris/x4/core/context.hpp>
 #include <iris/x4/core/attribute.hpp>
 
-#include <iris/x4/debug/error_handler.hpp>
-
 #include <iris/enum/enum.hpp>
 
 #include <iterator>

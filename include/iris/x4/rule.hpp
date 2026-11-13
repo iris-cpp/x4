@@ -13,11 +13,10 @@
 
 #include <iris/config.hpp> // IWYU pragma: keep
 
-#include <iris/x4/core/traits/tuple_traits.hpp>
-#include <iris/x4/core/traits/write_rank.hpp>
-#include <iris/x4/core/write_attribute.hpp>
 #include <iris/x4/traits/container_traits.hpp>
 
+#include <iris/x4/core/detail/strict_attribute_parser.hpp>
+#include <iris/x4/core/traits/tuple_traits.hpp>
 #include <iris/x4/core/parser.hpp>
 #include <iris/x4/core/skip_over.hpp>
 #include <iris/x4/core/expectation.hpp>
@@ -143,7 +142,7 @@ struct rule : parser<rule<RuleID>>
                     if (!detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{rule_attr})) {
                         return false;
                     }
-                    planner::pass_declared_attribute(exposed_attr, std::move(rule_attr));
+                    detail::pass_declared_attribute(exposed_attr, std::move(rule_attr));
                     return true;
                 }
             }
@@ -160,7 +159,7 @@ struct rule : parser<rule<RuleID>>
             if (!detail::call_parse_rule<RuleID>(first, last, rule_agnostic_ctx, detail::rule_attr_ref<RuleID>{rule_attr})) {
                 return false;
             }
-            planner::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
+            detail::pass_declared_attribute(exposed_attr, iris::unwrap_recursive(std::move(rule_attr)));
             return true;
         }
     }

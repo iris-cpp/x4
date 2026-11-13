@@ -11,7 +11,6 @@
 #include <iris/config.hpp> // IWYU pragma: keep
 
 #include <iris/x4/core/traits/write_rank.hpp>
-#include <iris/x4/traits/container_traits.hpp>
 
 #include <iris/rvariant/rvariant.hpp>
 #include <iris/alloy/traits.hpp>
@@ -343,23 +342,6 @@ struct write_attribute_fn
 };
 
 } // detail
-
-// Passes `v`, the attribute of `x4::rule` or `x4::as<T>`, to the exposed attribute `s` by the ordinary
-// assignment, which the caller has checked by `X4StrictlyWritable<S&, V&&>`. A container which holds
-// the preceding results keeps them: the value assigned to a new container is appended to it.
-template<class S, class V>
-constexpr void pass_declared_attribute(S& s, V&& v)
-{
-    if constexpr (traits::X4Container<S>) {
-        if (!std::ranges::empty(s)) {
-            S assigned{};
-            assigned = std::forward<V>(v);
-            iris::container::transfer_from(s, std::move(assigned));
-            return;
-        }
-    }
-    s = std::forward<V>(v);
-}
 
 // Writes `v`, a part of a sequence or the value of one parse of a repetition, into the container
 // `s`: as a new element, part by part, or a range appended (P(S, y))
